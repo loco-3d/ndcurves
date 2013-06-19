@@ -1,0 +1,6 @@
+# Build and Release Folders
+bin/
+lib/
+
+# temp files
+.*~
