@@ -1,5 +1,5 @@
 /**
-* \file ExactCubic.h
+* \file cubic_function.h
 * \brief Definition of a cubic spline.
 * \author Steve T.
 * \version 0.1
@@ -16,7 +16,7 @@
 
 #include "MathDefs.h"
 
-#include "Curve_ABC.h"
+#include "curve_abc.h"
 
 #include <stdexcept>
 

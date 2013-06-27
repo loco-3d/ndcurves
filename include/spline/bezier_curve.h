@@ -10,7 +10,7 @@
 #ifndef _CLASS_BEZIERCURVE
 #define _CLASS_BEZIERCURVE
 
-#include "Curve_ABC.h"
+#include "curve_abc.h"
 
 #include "MathDefs.h"
 

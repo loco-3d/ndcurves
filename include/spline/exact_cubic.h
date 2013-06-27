@@ -20,8 +20,8 @@
 #ifndef _CLASS_EXACTCUBIC
 #define _CLASS_EXACTCUBIC
 
-#include "Curve_ABC.h"
-#include "CubicFunction.h"
+#include "curve_abc.h"
+#include "cubic_function.h"
 
 #include "MathDefs.h"
 
