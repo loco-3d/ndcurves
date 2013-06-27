@@ -12,7 +12,6 @@
 
 #include "Curve_ABC.h"
 
-#include "Exports.h"
 #include "MathDefs.h"
 
 #include <vector>
@@ -36,7 +35,7 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 	///\param PointsBegin, PointsEnd : the points parametering the Bezier curve
 	///\TODO : so far size above 3 is ignored
 	template<typename In>
-	SPLINE_API bezier_curve(In PointsBegin, In PointsEnd, const time_t minBound=0, const time_t maxBound=1)
+	bezier_curve(In PointsBegin, In PointsEnd, const time_t minBound=0, const time_t maxBound=1)
 	: minBound_(minBound)
 	, maxBound_(maxBound)
 	, size_(std::distance(PointsBegin, PointsEnd))
@@ -53,7 +52,7 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 	}
 
 	///\brief Destructor
-	SPLINE_API ~bezier_curve()
+	~bezier_curve()
 	{
 		// NOTHING
 	}
@@ -69,7 +68,7 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 	///  \brief Evaluation of the cubic spline at time t.
 	///  \param t : the time when to evaluate the spine
 	///  \param return : the value x(t)
-	SPLINE_API virtual point_t operator()(time_t t) const
+	virtual point_t operator()(time_t t) const
 	{
 		num_t nT = (t - minBound_) / (maxBound_ - minBound_);
 		if(Safe &! (0 <= nT && nT <= 1))
@@ -101,8 +100,8 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 /*Operations*/
 
 /*Helpers*/
-	SPLINE_API virtual time_t MinBound() const{return minBound_;}
-	SPLINE_API virtual time_t MaxBound() const{return minBound_;}
+	virtual time_t MinBound() const{return minBound_;}
+	virtual time_t MaxBound() const{return minBound_;}
 /*Helpers*/
 
 	public:

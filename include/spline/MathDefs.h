@@ -15,8 +15,6 @@
 #ifndef _SPLINEMATH
 #define _SPLINEMATH
 
-#include "Exports.h"
-
 #include <Eigen/Dense>
 #include <Eigen/SVD>
 

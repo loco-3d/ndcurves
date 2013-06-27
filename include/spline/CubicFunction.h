@@ -14,7 +14,6 @@
 #ifndef _STRUCT_CUBICFUNCTION
 #define _STRUCT_CUBICFUNCTION
 
-#include "Exports.h"
 #include "MathDefs.h"
 
 #include "Curve_ABC.h"
@@ -38,7 +37,7 @@ namespace spline
 /* Constructors - destructors */
 	public:
 		///\brief Constructor
-		SPLINE_API cubic_function(point_t const& a, point_t const& b, point_t const& c, point_t const &d, time_t min, time_t max)
+		cubic_function(point_t const& a, point_t const& b, point_t const& c, point_t const &d, time_t min, time_t max)
     			:a_(a), b_(b), c_(c), d_(d), t_min_(min), t_max_(max)
 		{
 			if(t_min_ >= t_max_ & Safe)
@@ -48,7 +47,7 @@ namespace spline
 		}
 
 		///\brief Destructor
-		SPLINE_API ~cubic_function()
+		~cubic_function()
 		{
 			// NOTHING
 		}
@@ -63,7 +62,7 @@ namespace spline
 		///  \brief Evaluation of the cubic spline at time t.
 		///  \param t : the time when to evaluate the spine
 		///  \param return : the value x(t)
-		SPLINE_API virtual point_t operator()(time_t t) const 
+		virtual point_t operator()(time_t t) const 
 		{
 		    	if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
 		    	time_t const dt (t-t_min_);
@@ -73,8 +72,8 @@ namespace spline
 		
 /*Helpers*/
 	public:
-		SPLINE_API num_t virtual MinBound() const {return t_min_;}
-		SPLINE_API num_t virtual MaxBound() const {return t_max_;}
+		num_t virtual MinBound() const {return t_min_;}
+		num_t virtual MaxBound() const {return t_max_;}
 /*Helpers*/
 
 /*Attributes*/

@@ -23,7 +23,6 @@
 #include "Curve_ABC.h"
 #include "CubicFunction.h"
 
-#include "Exports.h"
 #include "MathDefs.h"
 
 #include <functional>
@@ -57,7 +56,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	///\param wayPointsBegin : an iterator pointing to the first element of a waypoint container
 	///\param wayPointsEns   : an iterator pointing to the end           of a waypoint container
 	template<typename In>
-	SPLINE_API exact_cubic(In wayPointsBegin, In wayPointsEnd)
+	exact_cubic(In wayPointsBegin, In wayPointsEnd)
 	{
 		std::size_t const size(std::distance(wayPointsBegin, wayPointsEnd));
 		if(Safe && size < 1)
@@ -129,7 +128,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	}
 
 	///\brief Destructor
-	SPLINE_API ~exact_cubic()
+	~exact_cubic()
 	{
 		for(IT_cubic it = subSplines_.begin(); it != subSplines_.end(); ++ it)
 		{
@@ -147,7 +146,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	///  \brief Evaluation of the cubic spline at time t.
 	///  \param t : the time when to evaluate the spine
 	///  \param return : the value x(t)
-	SPLINE_API virtual point_t operator()(time_t t) const
+	virtual point_t operator()(time_t t) const
 	{
 
     		if(Safe && (t < subSplines_.front()->t_min_ || t > subSplines_.back()->t_max_)){throw std::out_of_range("TODO");}
@@ -163,8 +162,8 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 	/*Helpers*/
 	public:
-	SPLINE_API num_t virtual MinBound() const{return subSplines_.front()->t_min_;}
-	SPLINE_API num_t virtual MaxBound() const{return subSplines_.back()->t_max_;}
+	num_t virtual MinBound() const{return subSplines_.front()->t_min_;}
+	num_t virtual MaxBound() const{return subSplines_.back()->t_max_;}
 	/*Helpers*/
 
 	/*Attributes*/
