@@ -46,8 +46,11 @@ struct  curve_abc : std::unary_function<Time, Point>
 /*Operations*/
 
 /*Helpers*/
-	virtual time_t MinBound() const = 0;
-	virtual time_t MaxBound() const = 0;
+	public:
+	///  \brief Returns the minimum time for wich curve is defined
+	virtual time_t min() const = 0;
+	///  \brief Returns the maximum time for wich curve is defined
+	virtual time_t max() const = 0;
 /*Helpers*/
 
 	};

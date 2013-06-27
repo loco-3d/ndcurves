@@ -27,9 +27,6 @@
 
 #include <functional>
 #include <vector>
-#include <Eigen/StdVector>
-
-#include <iostream>
 
 namespace spline
 {
@@ -162,8 +159,8 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 	/*Helpers*/
 	public:
-	num_t virtual MinBound() const{return subSplines_.front()->t_min_;}
-	num_t virtual MaxBound() const{return subSplines_.back()->t_max_;}
+	num_t virtual min() const{return subSplines_.front()->t_min_;}
+	num_t virtual max() const{return subSplines_.back()->t_max_;}
 	/*Helpers*/
 
 	/*Attributes*/

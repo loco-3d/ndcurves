@@ -110,6 +110,16 @@ void CubicFunctionTest(bool& error)
 	{
 		std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
 	}
+	if(cf.max() != 1)
+	{
+		error = true;
+		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
+	}
+	if(cf.min() != 0)
+	{
+		error = true;
+		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
+	}
 }
 
 /*bezier_curve Function tests*/
@@ -180,6 +190,16 @@ void BezierCurveTest(bool& error)
 	{
 		std::cout << "Evaluation of bezier cf error, 1.1 should be an out of range value\n";
 	}
+	if(cf.max() != 1)
+	{
+		error = true;
+		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
+	}
+	if(cf.min() != 0)
+	{
+		error = true;
+		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
+	}
 }
 
 /*Exact Cubic Function tests*/
@@ -215,12 +235,12 @@ void ExactCubicNoErrorTest(bool& error)
 	{
 		std::cout << "Evaluation of exactCubic cf error, 1.2 should be an out of range value\n";
 	}
-	if(exactCubic.MaxBound() != 1)
+	if(exactCubic.max() != 1)
 	{
 		error = true;
 		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
 	}
-	if(exactCubic.MinBound() != 0)
+	if(exactCubic.min() != 0)
 	{
 		error = true;
 		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";

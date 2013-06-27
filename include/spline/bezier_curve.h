@@ -64,7 +64,6 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /*Operations*/
 	public:
-	public:
 	///  \brief Evaluation of the cubic spline at time t.
 	///  \param t : the time when to evaluate the spine
 	///  \param return : the value x(t)
@@ -100,8 +99,8 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 /*Operations*/
 
 /*Helpers*/
-	virtual time_t MinBound() const{return minBound_;}
-	virtual time_t MaxBound() const{return minBound_;}
+	virtual time_t min() const{return minBound_;}
+	virtual time_t max() const{return maxBound_;}
 /*Helpers*/
 
 	public:
