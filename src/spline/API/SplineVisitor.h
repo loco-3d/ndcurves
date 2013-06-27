@@ -6,6 +6,8 @@
 * \date 06/17/2013
 */
 
+#include "Exports.h"
+#include "MathDefs.h"
 
 #ifndef _CLASS_SPLINE_VISITOR
 #define _CLASS_SPLINE_VISITOR
@@ -40,3 +42,4 @@ namespace spline
 	};
 }
 #endif //_CLASS_SPLINE_VISITOR
+

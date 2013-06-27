@@ -20,27 +20,22 @@
 #ifndef _CLASS_EXACTCUBIC
 #define _CLASS_EXACTCUBIC
 
+#include "Curve_ABC.h"
+
 #include "Exports.h"
 #include "MathDefs.h"
 
 #include <memory>
+#include <vector>
 
 namespace spline
 {
-	/** Definition for a waypoint */
-	typedef std::pair<const Real, const Vector3>   Waypoint;
-	typedef std::deque<Waypoint>				 T_Waypoint;
-	typedef T_Waypoint::iterator				IT_Waypoint;
-	typedef T_Waypoint::const_iterator		   CIT_Waypoint;
-
-	class SplineVisitor;
-
 	struct CubicPImpl; // private implementation
 	/// \class ExactCubic
 	/// \brief Represents a set of cubic splines defining a continuous function 
 	/// crossing each of the waypoint given in its initialization
 	///
-	struct ExactCubic
+	struct ExactCubic : public Curve_ABC
 	{
 /* Constructors - destructors */
 	public:
@@ -61,18 +56,14 @@ namespace spline
 	///  \brief Evaluation of the cubic spline at time t.
 	///  \param t : the time when to evaluate the spine
 	///  \param result : a reference to the Point set to the x(t)
-	///  \param return : true if evaluation is successful, false if t is out of range
-	SPLINE_API bool Evaluate(const Real /*t*/, Vector3& /*result*/) const;
+	///  \return : true if evaluation is successful, false if t is out of range
+	SPLINE_API virtual bool Evaluate(const Real /*t*/, Vector3& /*result*/) const;
 /*Operations*/
 
 /*Helpers*/
 	public:
-///  \brief Given a timestep dt, returns a set of values for the exact spline
-///	 separated by this timestep
-///  \param visitor : an object called for each timestep in the spline interval.
-///  \param dt : the timestep
-///  \param result : a reference to the Point set to the x(t)
-SPLINE_API void Accept(SplineVisitor& /*visitor*/, Real /*dt*/) const;
+	SPLINE_API Real virtual MinBound() const;
+	SPLINE_API Real virtual MaxBound() const;
 /*Helpers*/
 
 /*Attributes*/
@@ -82,3 +73,4 @@ SPLINE_API void Accept(SplineVisitor& /*visitor*/, Real /*dt*/) const;
 	};
 }
 #endif //_CLASS_EXACTCUBIC
+

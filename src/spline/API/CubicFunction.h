@@ -16,6 +16,7 @@
 
 #include "Exports.h"
 #include "MathDefs.h"
+#include "Curve_ABC.h"
 
 namespace spline
 {
@@ -26,7 +27,7 @@ namespace spline
 	/// [tBegin, tEnd]. It follows the equation
 	/// x(t) = a + b(t - tBegin) + c(t - tBegin)^2 + d(t - tBegin)^3 
 	///
-	class CubicFunction
+	class CubicFunction : public Curve_ABC
 	{
 /* Constructors - destructors */
 	public:
@@ -46,17 +47,13 @@ namespace spline
 		///  \brief Evaluation of the cubic spline at time t.
 		///  \param t : the time when to evaluate the spine
 		///  \param result : a reference to the Point set to the x(t)
-		SPLINE_API bool Evaluate(const Real /*t*/, Vector3& /*result*/) const;
+		SPLINE_API virtual bool Evaluate(const Real /*t*/, Vector3& /*result*/) const;
 /*Operations*/
-
+		
 /*Helpers*/
 	public:
-///  \brief Given a timestep dt, returns a set of values for the exact spline
-///	 separated by this timestep
-///  \param visitor : an object called for each timestep in the spline interval.
-///  \param dt : the timestep
-///  \param result : a reference to the Point set to the x(t)
-SPLINE_API void Accept(SplineVisitor& /*visitor*/, Real /*dt*/) const;
+		SPLINE_API Real virtual MinBound() const;
+		SPLINE_API Real virtual MaxBound() const;
 /*Helpers*/
 
 /*Attributes*/
@@ -67,3 +64,4 @@ SPLINE_API void Accept(SplineVisitor& /*visitor*/, Real /*dt*/) const;
 	}; //class CubicFunction
 }
 #endif //_CLASS_CUBICFUNCTIONIMP
+

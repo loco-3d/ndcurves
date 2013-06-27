@@ -1,5 +1,4 @@
 #include "API/CubicFunction.h"
-#include "API/SplineVisitor.h"
 
 using namespace spline;
 
@@ -28,11 +27,12 @@ bool CubicFunction::Evaluate(const Real t, Vector3& result) const
 	}
 }
 
-void CubicFunction::Accept(SplineVisitor& visitor, Real dt) const
+Real CubicFunction::MinBound() const
 {
-	for(Real ti = tBegin_; ti <= tEnd_; ti = ti + dt)
-	{
-		Vector3 res; Evaluate(ti, res);
-		visitor.Visit(ti, res);
-	}
+	return tBegin_;
+}
+
+Real CubicFunction::MaxBound() const
+{
+	return tEnd_;
 }

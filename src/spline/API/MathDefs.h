@@ -20,7 +20,7 @@
 #include <Eigen/Dense>
 #include <Eigen/SVD>
 
-#include <deque>
+#include <vector>
 #include <utility> 
 
 namespace spline{
@@ -61,5 +61,14 @@ void PseudoInverse(_Matrix_Type_& pinvmat)
 	pinvmat = (svd.matrixV()*m_sigma_inv*svd.matrixU().transpose());
 }
 
+typedef std::vector<Vector3,Eigen::aligned_allocator<Vector3> > T_Vector;
+
+/** Definition for a waypoint */
+typedef std::pair<Real, Vector3>   	Waypoint;
+typedef std::vector<Waypoint>		T_Waypoint;
+typedef T_Waypoint::iterator		IT_Waypoint;
+typedef T_Waypoint::const_iterator	CIT_Waypoint;
+
 } // namespace spline
 #endif //_SPLINEMATH
+

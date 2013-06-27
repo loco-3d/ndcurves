@@ -1,6 +1,5 @@
 #include "API/ExactCubic.h"
 #include "API/CubicFunction.h"
-#include "API/SplineVisitor.h"
 
 #include <vector>
 
@@ -34,9 +33,10 @@ struct CubicPImpl{
 using namespace spline;
 
 ExactCubic::ExactCubic(const T_Waypoint& waypoints)
+	: Curve_ABC()
 {
 	size_t size = waypoints.size();
-	assert(size > 2);
+	assert(size > 1);
 	pImpl_.reset(new CubicPImpl(waypoints[size-1].first)); // setting max boundary
 	// refer to the paper to understand all this.
 	MatrixX h1 = MatrixX::Zero(size, size);
@@ -115,7 +115,7 @@ ExactCubic::ExactCubic(const T_Waypoint& waypoints)
 		CubicFunction* subSpline = new CubicFunction(a.row(i), b.row(i), c.row(i), d.row(i), waypoints[i].first, waypoints[i+1].first);
 		pImpl_->subSplines_.push_back(std::make_pair(waypoints[i].first, subSpline));
 	}
-	
+	//}
 }
 
 ExactCubic::~ExactCubic()
@@ -153,11 +153,13 @@ bool ExactCubic::Evaluate(const Real t, Vector3& value) const
 	}
 }
 
-void ExactCubic::Accept(SplineVisitor& visitor, Real dt) const
+Real ExactCubic::MinBound() const
 {
-	for(Real ti = pImpl_->subSplines_[0].first; ti <= pImpl_->maxTime_; ti = ti + dt)
-	{
-		Vector3 res; Evaluate(ti, res);
-		visitor.Visit(ti, res);
-	}
+	return this->pImpl_->subSplines_[0].first;
 }
+
+Real ExactCubic::MaxBound() const
+{
+	return pImpl_->maxTime_;
+}
+

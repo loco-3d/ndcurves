@@ -2,6 +2,7 @@
 #include "CubicFunction.h"
 #include "ExactCubic.h"
 #include "SplineVisitor.h"
+#include "BezierCurve.h"
 
 #include <string>
 #include <iostream>
@@ -87,6 +88,61 @@ void CubicFunctionTest(bool& error)
 	}
 }
 
+/*BezierCurve Function tests*/
+
+void BezierCurveTest(bool& error)
+{
+	std::string errMsg("In test BezierCurveTest ; unexpected result for x ");
+	Vector3 a(1,2,3);
+	Vector3 b(2,3,4);
+	Vector3 c(3,4,5);
+	Vector3 d(3,6,7);
+
+	spline::T_Vector params;
+	params.push_back(a);
+	params.push_back(b);
+
+	// 2d curve
+	BezierCurve cf(params);
+	Vector3 res1;
+	cf.Evaluate(0, res1); 
+	Vector3 x20 = a ;
+	ComparePoints(x20, res1, errMsg + "2(0) ", error);
+	
+	Vector3 x21 = b;
+	cf.Evaluate(1, res1); 
+	ComparePoints(x21, res1, errMsg + "2(1) ", error);
+	
+	//3d curve
+	params.push_back(c);
+	BezierCurve cf3(params);
+	cf3.Evaluate(0, res1); 
+	ComparePoints(a, res1, errMsg + "3(0) ", error);
+
+	cf3.Evaluate(1, res1); 
+	ComparePoints(c, res1, errMsg + "3(1) ", error);
+
+	//4d curve
+	params.push_back(d);
+	BezierCurve cf4(params, 0.4, 2);
+	cf4.Evaluate(0.4, res1); 
+	ComparePoints(a, res1, errMsg + "3(0) ", error);
+
+	cf4.Evaluate(2, res1); 
+	ComparePoints(d, res1, errMsg + "3(1) ", error);
+
+	if(cf.Evaluate(-0.4, res1))
+	{
+		error = true;
+		std::cout << "Evaluation of cubic cf2 error, 0.4 should be an out of range value\n";
+	}
+	if(cf.Evaluate(1.1, res1))
+	{
+		error = true;
+		std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
+	}
+}
+
 /*Exact Cubic Function tests*/
 void ExactCubicNoErrorTest(bool& error)
 {
@@ -112,6 +168,16 @@ void ExactCubicNoErrorTest(bool& error)
 		error = true;
 		std::cout << "Evaluation of exactCubic error, 1.2 should be an out of range value\n";
 	}
+	if(exactCubic.MaxBound() != 1)
+	{
+		error = true;
+		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
+	}
+	if(exactCubic.MinBound() != 0)
+	{
+		error = true;
+		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
+	}
 }
 
 void ExactCubicPointsCrossedTest(bool& error)
@@ -133,8 +199,6 @@ void ExactCubicPointsCrossedTest(bool& error)
 
 /*Cubic Visitor tests*/
 #include <vector>
-
-#include<Eigen/StdVector>
 
 namespace spline
 {
@@ -201,6 +265,7 @@ int main(int argc, char *argv[])
 	ExactCubicNoErrorTest(error);
 	ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
 	SplineVisitorTestFunction(error); // checks that given wayPoints are crossed
+	BezierCurveTest(error);
 	if(error)
 	{
 		std::cout << "There were some errors\n";
