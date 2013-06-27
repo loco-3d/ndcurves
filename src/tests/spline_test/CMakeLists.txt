@@ -6,4 +6,3 @@ add_executable(
         spline_tests Main.cpp
 )
 
-target_link_libraries (spline_tests spline)

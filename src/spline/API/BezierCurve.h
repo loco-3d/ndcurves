@@ -1,5 +1,5 @@
 /**
-* \file BezierCurve.h
+* \file bezier_curve.h
 * \brief class allowing to create a Bezier curve of dimension 1 <= n <= 3.
 * \author Steve T.
 * \version 0.1
@@ -15,51 +15,104 @@
 #include "Exports.h"
 #include "MathDefs.h"
 
-#include <memory>
 #include <vector>
 
 namespace spline
 {
-	/// \class BezierCurve
-	/// \brief Represents a curve
-	///
-	class BezierCurve : public Curve_ABC
-	{
+/// \class BezierCurve
+/// \brief Represents a curve
+///
+template<typename Time= double, typename Numeric=Time, int Dim=3, bool Safe=false
+, typename Point= Eigen::Matrix<Numeric, Dim, 1> >
+struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
+{
+	typedef Point 	point_t;
+	typedef Time 	time_t;
+	typedef Numeric	num_t;
+
 /* Constructors - destructors */
 	public:
-		///\brief Constructor
-		///\param points: the points parametering the Bezier curve
-		///\TODO : sor far size above 3 is ignored
-		SPLINE_API BezierCurve(const T_Vector&  /*points*/, const Real minBound=0, const Real maxBound=1);
+	///\brief Constructor
+	///\param PointsBegin, PointsEnd : the points parametering the Bezier curve
+	///\TODO : so far size above 3 is ignored
+	template<typename In>
+	SPLINE_API bezier_curve(In PointsBegin, In PointsEnd, const time_t minBound=0, const time_t maxBound=1)
+	: minBound_(minBound)
+	, maxBound_(maxBound)
+	, size_(std::distance(PointsBegin, PointsEnd))
+	{
+		In it(PointsBegin);
+		if(Safe && (size_<=1 || minBound == maxBound))
+		{
+			throw; // TODO 
+		}
+		for(; it != PointsEnd; ++it)
+		{
+			pts_.push_back(*it);
+		}
+	}
 
-		///\brief Destructor
-		SPLINE_API ~BezierCurve();
+	///\brief Destructor
+	SPLINE_API ~bezier_curve()
+	{
+		// NOTHING
+	}
 
 	private:
-		BezierCurve(const BezierCurve&);
-		BezierCurve& operator=(const BezierCurve&);
+	bezier_curve(const bezier_curve&);
+	bezier_curve& operator=(const bezier_curve&);
 /* Constructors - destructors */
 
 /*Operations*/
+	public:
 	public:
 	///  \brief Evaluation of the cubic spline at time t.
 	///  \param t : the time when to evaluate the spine
-	///  \param result : a reference to the Point set to the x(t)
-	///  \param return : true if evaluation is successful, false if t is out of range
-	SPLINE_API virtual bool Evaluate(const Real /*t*/, Vector3& /*result*/) const;
+	///  \param return : the value x(t)
+	SPLINE_API virtual point_t operator()(time_t t) const
+	{
+		num_t nT = (t - minBound_) / (maxBound_ - minBound_);
+		if(Safe &! (0 <= nT && nT <= 1))
+		{
+			throw; // TODO
+		}
+		else
+		{
+			num_t dt = (1 - nT);
+			switch(size_)
+			{	
+				case 2 :
+					return pts_[0] * dt +  nT * pts_[1];
+				break;
+				case 3 :
+					return 	pts_[0] * dt * dt 
+                       				+ 2 * pts_[1] * nT * dt
+						+ pts_[2] * nT * nT;
+				break;
+				default :
+					return 	pts_[0] * dt * dt * dt
+						+ 3 * pts_[1] * nT * dt * dt 
+						+ 3 * pts_[2] * nT * nT * dt 
+						+ pts_[3] * nT * nT *nT;
+				break;
+			}
+		}
+	}
 /*Operations*/
-	
-SPLINE_API virtual Real MinBound() const;
-SPLINE_API virtual Real MaxBound() const;
+
+/*Helpers*/
+	SPLINE_API virtual time_t MinBound() const{return minBound_;}
+	SPLINE_API virtual time_t MaxBound() const{return minBound_;}
 /*Helpers*/
 
 	public:
-		const int size_;
-		const Real minBound_, maxBound_;
+	const int size_;
+	const time_t minBound_, maxBound_;
 	
 	private:
-		const T_Vector  pts_;
-	};
+	typedef std::vector<Point,Eigen::aligned_allocator<Point> > T_Vector;
+	T_Vector  pts_;
+};
 }
 #endif //_CLASS_BEZIERCURVE
 

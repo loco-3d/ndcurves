@@ -5,63 +5,84 @@
 * \version 0.1
 * \date 06/17/2013
 *
-* This file contains definitions for the CubicFunction class.
-* It allows the creation and evaluation of natural 3D
-* smooth cubic splines
+* This file contains definitions for the CubicFunction struct.
+* It allows the creation and evaluation of natural
+* smooth cubic splines of arbitrary dimension
 */
 
 
-#ifndef _CLASS_CUBICFUNCTIONIMP
-#define _CLASS_CUBICFUNCTIONIMP
+#ifndef _STRUCT_CUBICFUNCTION
+#define _STRUCT_CUBICFUNCTION
 
 #include "Exports.h"
 #include "MathDefs.h"
+
 #include "Curve_ABC.h"
+
+#include <stdexcept>
 
 namespace spline
 {
-	class SplineVisitor;
-
 	/// \class CubicFunction
 	/// \brief Represents a cubic spline defined on the interval 
 	/// [tBegin, tEnd]. It follows the equation
-	/// x(t) = a + b(t - tBegin) + c(t - tBegin)^2 + d(t - tBegin)^3 
+	/// x(t) = a + b(t - t_min_) + c(t - t_min_)^2 + d(t - t_min_)^3 
 	///
-	class CubicFunction : public Curve_ABC
+	template<typename Time= double, typename Numeric=Time, int Dim=3, bool Safe=false
+	, typename Point= Eigen::Matrix<Numeric, Dim, 1> >
+	struct cubic_function : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	{
+	typedef Point 	point_t;
+  	typedef Time 	time_t;
+  	typedef Numeric	num_t;
 /* Constructors - destructors */
 	public:
 		///\brief Constructor
-		SPLINE_API CubicFunction(const Vector3& /*a*/, const Vector3& /*b*/, const Vector3& /*c*/, const Vector3& /*d*/, const Real /*tBegin*/, const Real /*tEnd*/);
+		SPLINE_API cubic_function(point_t const& a, point_t const& b, point_t const& c, point_t const &d, time_t min, time_t max)
+    			:a_(a), b_(b), c_(c), d_(d), t_min_(min), t_max_(max)
+		{
+			if(t_min_ >= t_max_ & Safe)
+			{
+				std::out_of_range("TODO");
+			}
+		}
 
 		///\brief Destructor
-		SPLINE_API ~CubicFunction();
+		SPLINE_API ~cubic_function()
+		{
+			// NOTHING
+		}
 
 	private:
-		CubicFunction(const CubicFunction&);
-		CubicFunction& operator=(const CubicFunction&);
+		//cubic_function(const cubic_function&);
+		//cubic_function& operator=(const cubic_function&);
 /* Constructors - destructors */
 
 /*Operations*/
 	public:
 		///  \brief Evaluation of the cubic spline at time t.
 		///  \param t : the time when to evaluate the spine
-		///  \param result : a reference to the Point set to the x(t)
-		SPLINE_API virtual bool Evaluate(const Real /*t*/, Vector3& /*result*/) const;
+		///  \param return : the value x(t)
+		SPLINE_API virtual point_t operator()(time_t t) const 
+		{
+		    	if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
+		    	time_t const dt (t-t_min_);
+		    	return a_+ b_ * dt + c_ * dt*dt  + d_ * dt*dt*dt;
+		}
 /*Operations*/
 		
 /*Helpers*/
 	public:
-		SPLINE_API Real virtual MinBound() const;
-		SPLINE_API Real virtual MaxBound() const;
+		SPLINE_API num_t virtual MinBound() const {return t_min_;}
+		SPLINE_API num_t virtual MaxBound() const {return t_max_;}
 /*Helpers*/
 
 /*Attributes*/
-	private:
-		const Vector3 a_, b_, c_ ,d_;
-		const Real tBegin_, tEnd_;
+	public:
+		const point_t a_, b_, c_ ,d_;
+		const time_t t_min_, t_max_;
 /*Attributes*/
 	}; //class CubicFunction
 }
-#endif //_CLASS_CUBICFUNCTIONIMP
+#endif //_STRUCT_CUBICFUNCTION
 

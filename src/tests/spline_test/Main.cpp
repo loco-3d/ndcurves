@@ -1,7 +1,6 @@
 
 #include "CubicFunction.h"
 #include "ExactCubic.h"
-#include "SplineVisitor.h"
 #include "BezierCurve.h"
 
 #include <string>
@@ -12,7 +11,14 @@ using namespace std;
 
 namespace spline
 {
-bool QuasiEqual(const Real a, const Real b, const float margin)
+typedef Eigen::Vector3d point_t;
+typedef cubic_function<double, double, 3, true, point_t> cubic_function_t;
+typedef exact_cubic   <double, double, 3, true, point_t> exact_cubic_t;
+typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
+typedef typename std::pair<double, point_t> Waypoint;
+typedef typename std::vector<Waypoint> T_Waypoint;
+
+bool QuasiEqual(const double a, const double b, const float margin)
 {
 	if ((a <= 0 && b <= 0) || (a >= 0 && b>= 0))
 	{
@@ -26,21 +32,22 @@ bool QuasiEqual(const Real a, const Real b, const float margin)
 
 const float margin = 0.01f;
 
-bool operator ==(const Vector3& a, const Vector3& b)
+bool operator ==(const point_t& a, const point_t& b)
 {
 	return QuasiEqual(a.x(), b.x(), margin) && QuasiEqual(a.y(), b.y(), margin) && QuasiEqual(a.z(), b.z(), margin);
 }
+
 } // namespace spline
 
 using namespace spline;
 
-ostream& operator<<(ostream& os, const Vector3& pt)
+ostream& operator<<(ostream& os, const point_t& pt)
 {
     os << "(" << pt.x() << ", " << pt.y() << ", " << pt.z() << ")";
     return os;
 }
 
-void ComparePoints(const Vector3& pt1, const Vector3& pt2, const std::string& errmsg, bool& error)
+void ComparePoints(const point_t& pt1, const point_t& pt2, const std::string& errmsg, bool& error)
 {
 	if(!(pt1 == pt2))
 	{
@@ -54,92 +61,124 @@ void ComparePoints(const Vector3& pt1, const Vector3& pt2, const std::string& er
 void CubicFunctionTest(bool& error)
 {
 	std::string errMsg("In test CubicFunctionTest ; unexpected result for x ");
-	Vector3 a(1,2,3);
-	Vector3 b(2,3,4);
-	Vector3 c(3,4,5);
-	Vector3 d(3,6,7);
+	point_t a(1,2,3);
+	point_t b(2,3,4);
+	point_t c(3,4,5);
+	point_t d(3,6,7);
 
-	CubicFunction cf(a, b, c, d, 0, 1);
-	Vector3 res1;
-	cf.Evaluate(0, res1); 
-	Vector3 x0(1,2,3);
+	cubic_function_t cf(a, b, c, d, 0, 1);
+	point_t res1;
+	res1 =cf(0); 
+	point_t x0(1,2,3);
 	ComparePoints(x0, res1, errMsg + "(0) ", error);
 	
-	Vector3 x1(9,15,19);
-	cf.Evaluate(1, res1); 
+	point_t x1(9,15,19);
+	
+	res1 =cf(1); 
 	ComparePoints(x1, res1, errMsg + "(1) ", error);
 	
-	Vector3 x2(3.125,5.25,7.125);
-	cf.Evaluate(0.5, res1); 
+	point_t x2(3.125,5.25,7.125);
+	res1 =cf(0.5);
 	ComparePoints(x2, res1, errMsg + "(0.5) ", error);
 
-	CubicFunction cf2(a, b, c, d, 0.5, 1);
-	cf2.Evaluate(0.5, res1); 
+	cubic_function_t cf2(a, b, c, d, 0.5, 1);
+	res1 = cf2(0.5); 
 	ComparePoints(x0, res1, errMsg + "x3 ", error);
-	if(cf2.Evaluate(0.4, res1))
+	error = true;	
+	try
 	{
-		error = true;
+		cf2(0.4);
+	}
+	catch(...)
+	{
+		error = false;
+	}
+	if(error)
+	{
 		std::cout << "Evaluation of cubic cf2 error, 0.4 should be an out of range value\n";
 	}
-	if(cf2.Evaluate(1.1, res1))
+	error = true;	
+	try
 	{
-		error = true;
+		cf2(1.1);
+	}
+	catch(...)
+	{
+		error = false;
+	}
+	if(error)
+	{
 		std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
 	}
 }
 
-/*BezierCurve Function tests*/
+/*bezier_curve Function tests*/
 
 void BezierCurveTest(bool& error)
 {
 	std::string errMsg("In test BezierCurveTest ; unexpected result for x ");
-	Vector3 a(1,2,3);
-	Vector3 b(2,3,4);
-	Vector3 c(3,4,5);
-	Vector3 d(3,6,7);
+	point_t a(1,2,3);
+	point_t b(2,3,4);
+	point_t c(3,4,5);
+	point_t d(3,6,7);
 
-	spline::T_Vector params;
+	std::vector<point_t> params;
 	params.push_back(a);
 	params.push_back(b);
 
 	// 2d curve
-	BezierCurve cf(params);
-	Vector3 res1;
-	cf.Evaluate(0, res1); 
-	Vector3 x20 = a ;
+	bezier_curve_t cf(params.begin(), params.end());
+	point_t res1;
+	res1 = cf(0); 
+	point_t x20 = a ;
 	ComparePoints(x20, res1, errMsg + "2(0) ", error);
 	
-	Vector3 x21 = b;
-	cf.Evaluate(1, res1); 
+	point_t x21 = b;
+	res1 = cf(1); 
 	ComparePoints(x21, res1, errMsg + "2(1) ", error);
 	
 	//3d curve
 	params.push_back(c);
-	BezierCurve cf3(params);
-	cf3.Evaluate(0, res1); 
+	bezier_curve_t cf3(params.begin(), params.end());
+	res1 = cf3(0); 
 	ComparePoints(a, res1, errMsg + "3(0) ", error);
 
-	cf3.Evaluate(1, res1); 
+	res1 = cf3(1); 
 	ComparePoints(c, res1, errMsg + "3(1) ", error);
 
 	//4d curve
 	params.push_back(d);
-	BezierCurve cf4(params, 0.4, 2);
-	cf4.Evaluate(0.4, res1); 
+	bezier_curve_t cf4(params.begin(), params.end(), 0.4, 2);
+	res1 = cf4(0.4); 
 	ComparePoints(a, res1, errMsg + "3(0) ", error);
-
-	cf4.Evaluate(2, res1); 
+	
+	res1 = cf4(2); 
 	ComparePoints(d, res1, errMsg + "3(1) ", error);
 
-	if(cf.Evaluate(-0.4, res1))
+	try
 	{
-		error = true;
-		std::cout << "Evaluation of cubic cf2 error, 0.4 should be an out of range value\n";
+		cf(-0.4);
 	}
-	if(cf.Evaluate(1.1, res1))
+	catch(...)
 	{
-		error = true;
-		std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
+		error = false;
+	}
+	if(error)
+	{
+		std::cout << "Evaluation of bezier cf error, -0.4 should be an out of range value\n";
+	}
+	error = true;	
+	try
+	{
+		cf(1.1);
+	}
+	catch(...)
+	{
+		error = false;
+	}
+	if(error)
+	{
+		std::cout << "Evaluation of bezier cf error, 1.1 should be an out of range value\n";
 	}
 }
 
@@ -147,26 +186,34 @@ void BezierCurveTest(bool& error)
 void ExactCubicNoErrorTest(bool& error)
 {
 	spline::T_Waypoint waypoints;
-	for(Real i = 0; i <= 1; i = i + 0.2)
+	for(double i = 0; i <= 1; i = i + 0.2)
 	{
-		waypoints.push_back(std::make_pair(i,Vector3(i,i,i)));
+		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
 	}
-	ExactCubic exactCubic(waypoints);
-	Vector3 res1;
-	if(!exactCubic.Evaluate(0, res1))
+	exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
+	point_t res1;
+	try
+	{
+		exactCubic(0);
+		exactCubic(1);
+	}
+	catch(...)
 	{
 		error = true;
-		std::cout << "Evaluation of exactCubic error, 0 should be in range value\n";
+		std::cout << "Evaluation of ExactCubicNoErrorTest error\n";
 	}
-	if(!exactCubic.Evaluate(1, res1))
+	error = true;
+	try
 	{
-		error = true;
-		std::cout << "Evaluation of exactCubic error, 1 should be in range value\n";
+		exactCubic(1.2);
 	}
-	if(exactCubic.Evaluate(1.2, res1))
+	catch(...)
 	{
-		error = true;
-		std::cout << "Evaluation of exactCubic error, 1.2 should be an out of range value\n";
+		error = false;
+	}
+	if(error)
+	{
+		std::cout << "Evaluation of exactCubic cf error, 1.2 should be an out of range value\n";
 	}
 	if(exactCubic.MaxBound() != 1)
 	{
@@ -183,78 +230,18 @@ void ExactCubicNoErrorTest(bool& error)
 void ExactCubicPointsCrossedTest(bool& error)
 {
 	spline::T_Waypoint waypoints;
-	for(Real i = 0; i <= 1; i = i + 0.2)
+	for(double i = 0; i <= 1; i = i + 0.2)
 	{
-		waypoints.push_back(std::make_pair(i,Vector3(i,i,i)));
+		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
 	}
-	ExactCubic exactCubic(waypoints);
-	Vector3 res1;
-	for(Real i = 0; i <= 1; i = i + 0.2)
+	exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
+	point_t res1;
+	for(double i = 0; i <= 1; i = i + 0.2)
 	{
-		exactCubic.Evaluate(i, res1);
+		res1 = exactCubic(i);
 		std::string errmsg("Error While checking that given wayPoints are crossed (expected / obtained)");
-		ComparePoints(Vector3(i,i,i), res1, errmsg, error);
+		ComparePoints(point_t(i,i,i), res1, errmsg, error);
 	}
-}
-
-/*Cubic Visitor tests*/
-#include <vector>
-
-namespace spline
-{
-	typedef std::vector<Vector3,Eigen::aligned_allocator<Vector3> > T_Vector;
-	typedef T_Vector::const_iterator CIT_Vector;
-	struct SplineVisitorTest : public SplineVisitor
-	{
-		SplineVisitorTest()
-			: previousTime_(-1)
-		{
-			// NOTHING
-		}
-
-		~SplineVisitorTest()
-		{
-			// NOTHING
-		}
-
-		virtual void Visit(const Real time, const Vector3& value)
-		{
-			if(previousTime_ >= time)
-			{
-				std::cout << "Error : Visit method called with non sequential time values" << std::endl;
-			}
-			previousTime_ = time;
-			values_.push_back(value);
-		}
-
-		Real previousTime_;
-		T_Vector values_;
-	};
-}
-
-void SplineVisitorTestFunction(bool& error)
-{
-	spline::T_Waypoint waypoints;
-	for(Real i = 0; i <= 1; i = i + 0.2)
-	{
-		waypoints.push_back(std::make_pair(i,Vector3(i,i,i)));
-	}
-	ExactCubic exactCubic(waypoints);
-	Vector3 res1;
-	SplineVisitorTest visitor;
-	exactCubic.Accept(visitor, 0.2);
-	CIT_Vector it = visitor.values_.begin();
-	for(Real i = 0; i <= 1; i = i + 0.2)
-	{
-		assert(it != visitor.values_.end());
-		exactCubic.Evaluate(i, res1);
-		std::string errmsg("Error While testing SplineVisitor at timestep (expected / obtained)");
-		ComparePoints(*it, res1, errmsg, error);
-		++it;
-	}
-	error = error & exactCubic.Evaluate(0.9, res1);
-	std::string errmsg("Error While testing SplineVisitor at timestep (expected / obtained)");
-	ComparePoints(Vector3(0.923, 0.923 ,0.923), res1, errmsg, error);
 }
 
 int main(int argc, char *argv[])
@@ -264,8 +251,7 @@ int main(int argc, char *argv[])
 	CubicFunctionTest(error);
 	ExactCubicNoErrorTest(error);
 	ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
-	SplineVisitorTestFunction(error); // checks that given wayPoints are crossed
-	BezierCurveTest(error);
+	//BezierCurveTest(error);
 	if(error)
 	{
 		std::cout << "There were some errors\n";
@@ -277,3 +263,4 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 }
+
