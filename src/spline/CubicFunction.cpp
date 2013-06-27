@@ -1,2 +1,0 @@
-#include "API/CubicFunction.h"
-

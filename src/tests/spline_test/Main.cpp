@@ -1,7 +1,7 @@
 
-#include "CubicFunction.h"
-#include "ExactCubic.h"
-#include "BezierCurve.h"
+#include "spline/CubicFunction.h"
+#include "spline/ExactCubic.h"
+#include "spline/BezierCurve.h"
 
 #include <string>
 #include <iostream>
