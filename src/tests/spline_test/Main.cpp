@@ -15,8 +15,8 @@ typedef Eigen::Vector3d point_t;
 typedef cubic_function<double, double, 3, true, point_t> cubic_function_t;
 typedef exact_cubic   <double, double, 3, true, point_t> exact_cubic_t;
 typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
-typedef typename std::pair<double, point_t> Waypoint;
-typedef typename std::vector<Waypoint> T_Waypoint;
+typedef std::pair<double, point_t> Waypoint;
+typedef std::vector<Waypoint> T_Waypoint;
 
 bool QuasiEqual(const double a, const double b, const float margin)
 {
