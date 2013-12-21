@@ -146,7 +146,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	virtual point_t operator()(time_t t) const
 	{
 
-    		if(Safe && (t < subSplines_.front()->t_min_ || t > subSplines_.back()->t_max_)){throw std::out_of_range("TODO");}
+    	if(Safe && (t < subSplines_.front()->t_min_ || t > subSplines_.back()->t_max_)){throw std::out_of_range("TODO");}
 		for(CIT_cubic it = subSplines_.begin(); it != subSplines_.end(); ++ it)
 		{
 			if(t >= ((*it)->t_min_) && t <= ((*it)->t_max_))

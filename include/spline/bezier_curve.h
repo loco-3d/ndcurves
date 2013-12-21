@@ -72,7 +72,7 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 		num_t nT = (t - minBound_) / (maxBound_ - minBound_);
 		if(Safe &! (0 <= nT && nT <= 1))
 		{
-			throw; // TODO
+			//throw; // TODO
 		}
 		else
 		{

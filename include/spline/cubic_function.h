@@ -40,7 +40,7 @@ struct cubic_function : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	cubic_function(point_t const& a, point_t const& b, point_t const& c, point_t const &d, time_t min, time_t max)
 		:a_(a), b_(b), c_(c), d_(d), t_min_(min), t_max_(max)
 	{
-		if(t_min_ >= t_max_ && Safe)
+		if(t_min_ > t_max_ && Safe)
 		{
 			std::out_of_range("TODO");
 		}

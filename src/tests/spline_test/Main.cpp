@@ -18,6 +18,13 @@ typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
 typedef std::pair<double, point_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 
+
+typedef Eigen::Matrix<double,1,1> point_one;
+typedef cubic_function<double, double, 1, true, point_one> cubic_function_one;
+typedef exact_cubic   <double, double, 1, true, point_one> exact_cubic_one;
+typedef std::pair<double, point_one> WaypointOne;
+typedef std::vector<WaypointOne> T_WaypointOne;
+
 bool QuasiEqual(const double a, const double b, const float margin)
 {
 	if ((a <= 0 && b <= 0) || (a >= 0 && b>= 0))
@@ -48,6 +55,15 @@ ostream& operator<<(ostream& os, const point_t& pt)
 }
 
 void ComparePoints(const point_t& pt1, const point_t& pt2, const std::string& errmsg, bool& error)
+{
+	if(!(pt1 == pt2))
+	{
+		error = true;
+		std::cout << errmsg << pt1 << " ; " << pt2 << "\n";
+	}
+}
+
+void ComparePoints(const point_one& pt1, const point_one& pt2, const std::string& errmsg, bool& error)
 {
 	if(!(pt1 == pt2))
 	{
@@ -247,6 +263,44 @@ void ExactCubicNoErrorTest(bool& error)
 	}
 }
 
+
+/*Exact Cubic Function tests*/
+void ExactCubicTwoPointsTest(bool& error)
+{
+	spline::T_Waypoint waypoints;
+	for(double i = 0; i < 2; ++i)
+	{
+		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
+	}
+	exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
+	
+	point_t res1 = exactCubic(0);
+	std::string errmsg("in ExactCubic 2 points Error While checking that given wayPoints  are crossed (expected / obtained)");
+	ComparePoints(point_t(0,0,0), res1, errmsg, error);
+		
+	res1 = exactCubic(1);
+	ComparePoints(point_t(1,1,1), res1, errmsg, error);
+}
+
+void ExactCubicOneDimTest(bool& error)
+{
+	spline::T_WaypointOne waypoints;
+	point_one zero; zero(0,0) = 9;
+	point_one one; one(0,0) = 14;
+	point_one two; two(0,0) = 25;
+	waypoints.push_back(std::make_pair(0., zero));
+	waypoints.push_back(std::make_pair(1., one));
+	waypoints.push_back(std::make_pair(2., two));
+	exact_cubic_one exactCubic(waypoints.begin(), waypoints.end());
+	
+	point_one res1 = exactCubic(0);
+	std::string errmsg("in ExactCubicOneDim Error While checking that given wayPoints  are crossed (expected / obtained)");
+	ComparePoints(zero, res1, errmsg, error);
+		
+	res1 = exactCubic(1);
+	ComparePoints(one, res1, errmsg, error);
+}
+
 void ExactCubicPointsCrossedTest(bool& error)
 {
 	spline::T_Waypoint waypoints;
@@ -271,6 +325,8 @@ int main(int argc, char *argv[])
 	CubicFunctionTest(error);
 	ExactCubicNoErrorTest(error);
 	ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
+	ExactCubicTwoPointsTest(error);
+	ExactCubicOneDimTest(error);
 	//BezierCurveTest(error);
 	if(error)
 	{
