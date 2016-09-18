@@ -97,7 +97,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 			if( i+2 < size)
 			{
 				In it2(next); ++ it2;
-				num_t const dTi_1(1/((*it2).first - (*next).first));
+				num_t const dTi_1((*it2).first - (*next).first);
 				num_t const dTi_1sqr(dTi_1 * dTi_1);
 				// this can be optimized but let's focus on clarity as long as not needed
 				h1(i+1, i)   =  2 / dTi;
