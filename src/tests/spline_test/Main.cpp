@@ -1,7 +1,7 @@
 
-#include "spline/cubic_function.h"
 #include "spline/exact_cubic.h"
 #include "spline/bezier_curve.h"
+#include "spline/spline_curve.h"
 
 #include <string>
 #include <iostream>
@@ -12,7 +12,8 @@ using namespace std;
 namespace spline
 {
 typedef Eigen::Vector3d point_t;
-typedef cubic_function<double, double, 3, true, point_t> cubic_function_t;
+typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
+typedef spline_curve  <double, double, 3, 3, true, point_t, t_point_t> cubic_function_t;
 typedef exact_cubic   <double, double, 3, true, point_t> exact_cubic_t;
 typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
 typedef std::pair<double, point_t> Waypoint;
@@ -20,7 +21,7 @@ typedef std::vector<Waypoint> T_Waypoint;
 
 
 typedef Eigen::Matrix<double,1,1> point_one;
-typedef cubic_function<double, double, 1, true, point_one> cubic_function_one;
+typedef spline_curve<double, double, 1, 3, true, point_one> cubic_function_one;
 typedef exact_cubic   <double, double, 1, true, point_one> exact_cubic_one;
 typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
@@ -59,7 +60,7 @@ void ComparePoints(const point_t& pt1, const point_t& pt2, const std::string& er
 	if(!(pt1 == pt2))
 	{
 		error = true;
-		std::cout << errmsg << pt1 << " ; " << pt2 << "\n";
+        std::cout << errmsg << pt1 << " ; " << pt2 << std::endl;
 	}
 }
 
@@ -68,7 +69,7 @@ void ComparePoints(const point_one& pt1, const point_one& pt2, const std::string
 	if(!(pt1 == pt2))
 	{
 		error = true;
-		std::cout << errmsg << pt1 << " ; " << pt2 << "\n";
+        std::cout << errmsg << pt1 << " ; " << pt2 <<  std::endl;
 	}
 }
 
@@ -81,25 +82,33 @@ void CubicFunctionTest(bool& error)
 	point_t b(2,3,4);
 	point_t c(3,4,5);
 	point_t d(3,6,7);
-
-	cubic_function_t cf(a, b, c, d, 0, 1);
+    t_point_t vec;
+    vec.push_back(a);
+    vec.push_back(b);
+    vec.push_back(c);
+    vec.push_back(d);
+    cubic_function_t cf(vec.begin(), vec.end(), 0, 1);
 	point_t res1;
 	res1 =cf(0); 
 	point_t x0(1,2,3);
-	ComparePoints(x0, res1, errMsg + "(0) ", error);
+    ComparePoints(x0, res1, errMsg + "(0) ", error);
 	
-	point_t x1(9,15,19);
-	
-	res1 =cf(1); 
-	ComparePoints(x1, res1, errMsg + "(1) ", error);
+    point_t x1(9,15,19);
+    res1 =cf(1);
+    ComparePoints(x1, res1, errMsg + "(1) ", error);
 	
 	point_t x2(3.125,5.25,7.125);
 	res1 =cf(0.5);
-	ComparePoints(x2, res1, errMsg + "(0.5) ", error);
+    ComparePoints(x2, res1, errMsg + "(0.5) ", error);
 
-	cubic_function_t cf2(a, b, c, d, 0.5, 1);
+    vec.clear();
+    vec.push_back(a);
+    vec.push_back(b);
+    vec.push_back(c);
+    vec.push_back(d);
+    cubic_function_t cf2(vec, 0.5, 1);
 	res1 = cf2(0.5); 
-	ComparePoints(x0, res1, errMsg + "x3 ", error);
+    ComparePoints(x0, res1, errMsg + "x3 ", error);
 	error = true;	
 	try
 	{
@@ -157,29 +166,29 @@ void BezierCurveTest(bool& error)
 	point_t res1;
 	res1 = cf(0); 
 	point_t x20 = a ;
-	ComparePoints(x20, res1, errMsg + "2(0) ", error);
+    ComparePoints(x20, res1, errMsg + "2(0) ", error);
 	
 	point_t x21 = b;
 	res1 = cf(1); 
-	ComparePoints(x21, res1, errMsg + "2(1) ", error);
+    ComparePoints(x21, res1, errMsg + "2(1) ", error);
 	
 	//3d curve
 	params.push_back(c);
 	bezier_curve_t cf3(params.begin(), params.end());
 	res1 = cf3(0); 
-	ComparePoints(a, res1, errMsg + "3(0) ", error);
+    ComparePoints(a, res1, errMsg + "3(0) ", error);
 
 	res1 = cf3(1); 
-	ComparePoints(c, res1, errMsg + "3(1) ", error);
+    ComparePoints(c, res1, errMsg + "3(1) ", error);
 
 	//4d curve
 	params.push_back(d);
 	bezier_curve_t cf4(params.begin(), params.end(), 0.4, 2);
 	res1 = cf4(0.4); 
-	ComparePoints(a, res1, errMsg + "3(0) ", error);
+    ComparePoints(a, res1, errMsg + "3(0) ", error);
 	
 	res1 = cf4(2); 
-	ComparePoints(d, res1, errMsg + "3(1) ", error);
+    ComparePoints(d, res1, errMsg + "3(1) ", error);
 
 	try
 	{
