@@ -24,7 +24,7 @@ namespace spline
 {
 /// \class SplineOptimizer
 /// \brief Mosek connection to produce optimized splines
-template<typename Time= double, typename Numeric=Time, int Dim=3, bool Safe=false
+template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1> >
 struct SplineOptimizer
 {
@@ -79,7 +79,7 @@ private:
 	typedef std::vector<waypoint_t> T_waypoints_t; 
 };
 
-template<typename Time, typename Numeric, int Dim, bool Safe, typename Point>
+template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point>
 template<typename In>
 inline void SplineOptimizer<Time, Numeric, Dim, Safe, Point>::ComputeHMatrices(In wayPointsBegin, In wayPointsEnd, 
 	MatrixX& h1, MatrixX& h2, MatrixX& h3, MatrixX& h4) const
@@ -116,7 +116,7 @@ inline void SplineOptimizer<Time, Numeric, Dim, Safe, Point>::ComputeHMatrices(I
 	}
 }
 
-template<typename Time, typename Numeric, int Dim, bool Safe, typename Point>
+template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point>
 template<typename In>
 inline exact_cubic<Time, Numeric, Dim, Safe, Point>*
 	SplineOptimizer<Time, Numeric, Dim, Safe, Point>::GenerateOptimizedCurve(In wayPointsBegin, In wayPointsEnd) const

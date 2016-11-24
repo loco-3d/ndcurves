@@ -27,7 +27,7 @@ namespace spline
 /// [tBegin, tEnd]. It follows the equation
 /// x(t) = a + b(t - t_min_) + c(t - t_min_)^2 + d(t - t_min_)^3 
 ///
-template<typename Time= double, typename Numeric=Time, int Dim=3, bool Safe=false
+template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1> >
 struct cubic_function : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {

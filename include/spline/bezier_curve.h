@@ -21,7 +21,7 @@ namespace spline
 /// \class BezierCurve
 /// \brief Represents a curve
 ///
-template<typename Time= double, typename Numeric=Time, int Dim=3, bool Safe=false
+template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1> >
 struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 {

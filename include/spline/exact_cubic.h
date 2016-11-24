@@ -34,7 +34,7 @@ namespace spline
 /// \brief Represents a set of cubic splines defining a continuous function 
 /// crossing each of the waypoint given in its initialization
 ///
-template<typename Time= double, typename Numeric=Time, int Dim=3, bool Safe=false
+template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1> >
 struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
