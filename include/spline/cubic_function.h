@@ -16,7 +16,7 @@
 
 #include "MathDefs.h"
 
-#include "curve_abc.h"
+#include "spline_curve.h"
 
 #include <stdexcept>
 
@@ -28,23 +28,30 @@ namespace spline
 /// x(t) = a + b(t - t_min_) + c(t - t_min_)^2 + d(t - t_min_)^3 
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
-, typename Point= Eigen::Matrix<Numeric, Dim, 1> >
-struct cubic_function : public curve_abc<Time, Numeric, Dim, Safe, Point>
+, typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
+struct cubic_function : public spline_curve<Time, Numeric, Dim,3, Safe, Point, T_Point>
 {
     typedef Point 	point_t;
+    typedef T_Point t_point_t;
   	typedef Time 	time_t;
-  	typedef Numeric	num_t;
+    typedef Numeric	num_t;
+    typedef spline_curve<Time, Numeric, Dim,3, Safe, Point, T_Point> spline_curve_t;
 /* Constructors - destructors */
 	public:
 	///\brief Constructor
 	cubic_function(point_t const& a, point_t const& b, point_t const& c, point_t const &d, time_t min, time_t max)
-        :a_(a), b_(b), c_(c), d_(d), t_min_(min), t_max_(max)
-	{
-        if(t_min_ > t_max_ && Safe)
-        {
-            std::out_of_range("TODO");
-        }
-    }
+        :spline_curve_t(makeVector(a,b,c,d), min, max) {}
+
+
+    ///\brief Constructor
+    cubic_function(const T_Point& coefficients, time_t min, time_t max)
+        :spline_curve_t(coefficients, min, max) {}
+
+
+    ///\brief Constructor
+    template<typename In>
+    cubic_function(In zeroOrderCoefficient, In out, time_t min, time_t max)
+        :spline_curve_t(zeroOrderCoefficient, out, min, max) {}
 
     ///\brief Destructor
     ~cubic_function()
@@ -57,32 +64,15 @@ struct cubic_function : public curve_abc<Time, Numeric, Dim, Safe, Point>
     cubic_function& operator=(const cubic_function&);
 /* Constructors - destructors */
 
-/*Operations*/
-    public:
-    ///  \brief Evaluation of the cubic spline at time t.
-    ///  \param t : the time when to evaluate the spine
-    ///  \param return : the value x(t)
-    virtual point_t operator()(time_t t) const
+    /*Operations*/
+    T_Point makeVector(point_t const& a, point_t const& b, point_t const& c, point_t const &d)
     {
-            if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
-            time_t const dt (t-t_min_);
-            return a_+ b_ * dt + c_ * dt*dt  + d_ * dt*dt*dt;
+        T_Point res;
+        res.push_back(a);res.push_back(b);res.push_back(c);res.push_back(d);
+        return res;
     }
-/*Operations*/
 
-/*Helpers*/
-    public:
-    ///  \brief Returns the minimum time for wich curve is defined
-    num_t virtual min() const {return t_min_;}
-    ///  \brief Returns the maximum time for wich curve is defined
-    num_t virtual max() const {return t_max_;}
-/*Helpers*/
-
-/*Attributes*/
-    public:
-    const point_t a_, b_, c_ ,d_;
-    const time_t t_min_, t_max_;
-/*Attributes*/
+    /*Operations*/
     }; //class CubicFunction
 }
 #endif //_STRUCT_CUBICFUNCTION
