@@ -22,6 +22,7 @@
 
 #include "curve_abc.h"
 #include "cubic_spline.h"
+#include "quintic_spline.h"
 
 #include "MathDefs.h"
 
@@ -35,15 +36,16 @@ namespace spline
 /// crossing each of the waypoint given in its initialization
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
-, typename Point= Eigen::Matrix<Numeric, Dim, 1> >
+, typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
 struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
 	typedef Point 	point_t;
+    typedef T_Point t_point_t;
 	typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 	typedef Time 	time_t;
 	typedef Numeric	num_t;
-	typedef cubic_spline<time_t, Numeric, Dim, Safe, Point> cubic_spline_t;
-    typedef typename std::vector<cubic_spline_t*> T_cubic;
+    typedef spline_curve<time_t, Numeric, Dim, Safe, point_t, t_point_t> spline_t;
+    typedef typename std::vector<spline_t*> T_cubic;
 	typedef typename T_cubic::iterator IT_cubic;
 	typedef typename T_cubic::const_iterator CIT_cubic;
 
@@ -77,8 +79,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 	
 		In it(wayPointsBegin), next(wayPointsBegin);
-		++next;
-		Numeric t_previous((*it).first);
+        ++next;
 
 		for(std::size_t i(0); next != wayPointsEnd; ++next, ++it, ++i)
 		{
@@ -119,9 +120,9 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 		it= wayPointsBegin, next=wayPointsBegin; ++ next;
 		for(int i=0; next != wayPointsEnd; ++i, ++it, ++next)
 		{
-            subSplines_.push_back(new cubic_spline_t(a.row(i), b.row(i), c.row(i), d.row(i), (*it).first, (*next).first));
+            add_cubic(a.row(i), b.row(i), c.row(i), d.row(i),(*it).first, (*next).first);
 		}
-        subSplines_.push_back(new cubic_spline_t(a.row(size-1), b.row(size-1), c.row(size-1), d.row(size-1), (*it).first, (*it).first));
+        add_cubic(a.row(size-1), b.row(size-1), c.row(size-1), d.row(size-1),(*it).first, (*it).first);
 	}
 
 	///\brief Destructor
@@ -132,6 +133,13 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
             delete(*it);
         }
 	}
+
+    private:
+    void add_cubic(point_t const& a, point_t const& b, point_t const& c, point_t const &d, const time_t min, const time_t max)
+    {
+        t_point_t coeffs = make_cubic_vector<point_t, t_point_t>(a,b,c,d);
+        subSplines_.push_back(new spline_t(coeffs.begin(),coeffs.end(), min, max));
+    }
 
 	private:
 	exact_cubic(const exact_cubic&);

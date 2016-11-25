@@ -30,7 +30,7 @@ namespace spline
 /// [tBegin, tEnd]. It follows the equation
 /// x(t) = a + b(t - t_min_) + ... + d(t - t_min_)^N, where N is the order
 ///
-template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, std::size_t Order=3, bool Safe=false,
+template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
          typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
 struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
@@ -43,11 +43,12 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     public:
     ///\brief Constructor
     ///\param coefficients : a container containing all coefficients of the spline, starting
-    /// with the zero order coefficient, up to the highest order
+    /// with the zero order coefficient, up to the highest order. Spline order is given
+    /// by the size of the coefficients
     ///\param min: LOWER bound on interval definition of the spline
     ///\param max: UPPER bound on interval definition of the spline
     spline_curve(const T_Point& coefficients, const time_t min, const time_t max)
-        :coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(Order)
+        :coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.size()+1)
     {
         if(Safe)
         {
@@ -70,7 +71,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///\param max: UPPER bound on interval definition of the spline
     template<typename In>
     spline_curve(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
-        :coefficients_(init_coeffs(zeroOrderCoefficient, out)), t_min_(min), t_max_(max), dim_(Dim), order_(Order)
+        :coefficients_(init_coeffs(zeroOrderCoefficient, out)), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.size()+1)
     {
         if(Safe)
         {
@@ -145,7 +146,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     template<typename In>
     t_point_t init_coeffs(In zeroOrderCoefficient, In highestOrderCoefficient)
     {
-        t_point_t res(Order+1);
+        t_point_t res(std::distance(zeroOrderCoefficient, highestOrderCoefficient));
         std::copy(zeroOrderCoefficient, highestOrderCoefficient, res.begin());
         return res;
     }
