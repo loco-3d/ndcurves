@@ -1,13 +1,13 @@
 /**
-* \file cubic_function.h
+* \file spline_curve.h
 * \brief Definition of a cubic spline.
 * \author Steve T.
 * \version 0.1
 * \date 06/17/2013
 *
-* This file contains definitions for the CubicFunction struct.
+* This file contains definitions for the spline_curve struct.
 * It allows the creation and evaluation of natural
-* smooth cubic splines of arbitrary dimension
+* smooth splines of arbitrary dimension and order
 */
 
 
@@ -46,12 +46,19 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// with the zero order coefficient, up to the highest order
     ///\param min: LOWER bound on interval definition of the spline
     ///\param max: UPPER bound on interval definition of the spline
-    spline_curve(const T_Point& coefficients, time_t min, time_t max)
+    spline_curve(const T_Point& coefficients, const time_t min, const time_t max)
         :coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(Order)
     {
-        if(t_min_ > t_max_ && Safe)
+        if(Safe)
         {
-            std::out_of_range("TODO");
+            if(t_min_ > t_max_)
+            {
+                std::out_of_range("TODO");
+            }
+            if(coefficients_.size() != order_+1)
+            {
+                std::runtime_error("Spline order and coefficients do not match");
+            }
         }
     }
 
@@ -62,12 +69,19 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///\param min: LOWER bound on interval definition of the spline
     ///\param max: UPPER bound on interval definition of the spline
     template<typename In>
-    spline_curve(In zeroOrderCoefficient, In out, time_t min, time_t max)
+    spline_curve(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
         :coefficients_(init_coeffs(zeroOrderCoefficient, out)), t_min_(min), t_max_(max), dim_(Dim), order_(Order)
     {
-        if(t_min_ > t_max_ && Safe)
+        if(Safe)
         {
-            std::out_of_range("TODO");
+            if(t_min_ > t_max_)
+            {
+                std::out_of_range("TODO");
+            }
+            if(coefficients_.size() != order_+1)
+            {
+                std::runtime_error("Spline order and coefficients do not match");
+            }
         }
     }
 
@@ -77,9 +91,20 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         // NOTHING
     }
 
-    private:
-    spline_curve(const spline_curve&);
-    spline_curve& operator=(const spline_curve&);
+
+    spline_curve(const spline_curve& other)
+        : t_min_(other.t_min_), t_max_(other.t_max_)
+        , coefficients_(other.coefficients_) {}
+
+    //private:
+    spline_curve& operator=(const spline_curve& other)
+    {
+        t_min_ = other.t_min_;
+        t_max_ = other.t_max_;
+        coefficients_ = other.coefficients_;
+        return *this;
+    }
+
 /* Constructors - destructors */
 
 /*Operations*/

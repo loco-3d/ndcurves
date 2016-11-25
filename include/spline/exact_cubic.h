@@ -21,7 +21,7 @@
 #define _CLASS_EXACTCUBIC
 
 #include "curve_abc.h"
-#include "cubic_function.h"
+#include "cubic_spline.h"
 
 #include "MathDefs.h"
 
@@ -42,8 +42,8 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 	typedef Time 	time_t;
 	typedef Numeric	num_t;
-	typedef cubic_function<time_t, Numeric, Dim, Safe, Point> cubic_function_t;
-	typedef typename std::vector<cubic_function_t*> T_cubic;
+	typedef cubic_spline<time_t, Numeric, Dim, Safe, Point> cubic_spline_t;
+    typedef typename std::vector<cubic_spline_t*> T_cubic;
 	typedef typename T_cubic::iterator IT_cubic;
 	typedef typename T_cubic::const_iterator CIT_cubic;
 
@@ -119,18 +119,18 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 		it= wayPointsBegin, next=wayPointsBegin; ++ next;
 		for(int i=0; next != wayPointsEnd; ++i, ++it, ++next)
 		{
-			subSplines_.push_back(new cubic_function_t(a.row(i), b.row(i), c.row(i), d.row(i), (*it).first, (*next).first));
+            subSplines_.push_back(new cubic_spline_t(a.row(i), b.row(i), c.row(i), d.row(i), (*it).first, (*next).first));
 		}
-		subSplines_.push_back(new cubic_function_t(a.row(size-1), b.row(size-1), c.row(size-1), d.row(size-1), (*it).first, (*it).first));
+        subSplines_.push_back(new cubic_spline_t(a.row(size-1), b.row(size-1), c.row(size-1), d.row(size-1), (*it).first, (*it).first));
 	}
 
 	///\brief Destructor
 	~exact_cubic()
-	{
-		for(IT_cubic it = subSplines_.begin(); it != subSplines_.end(); ++ it)
-		{
-			delete(*it);
-		}
+    {
+        for(IT_cubic it = subSplines_.begin(); it != subSplines_.end(); ++ it)
+        {
+            delete(*it);
+        }
 	}
 
 	private:
@@ -146,12 +146,12 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	virtual point_t operator()(time_t t) const
 	{
 
-    	if(Safe && (t < subSplines_.front()->t_min_ || t > subSplines_.back()->t_max_)){throw std::out_of_range("TODO");}
+        if(Safe && (t < subSplines_.front()->t_min_ || t > subSplines_.back()->t_max_)){throw std::out_of_range("TODO");}
 		for(CIT_cubic it = subSplines_.begin(); it != subSplines_.end(); ++ it)
 		{
-			if(t >= ((*it)->t_min_) && t <= ((*it)->t_max_))
+            if(t >= ((*it)->t_min_) && t <= ((*it)->t_max_))
 			{
-				return (*it)->operator()(t);
+                return (*it)->operator()(t);
 			}
 		}
 	}
@@ -159,8 +159,8 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 	/*Helpers*/
 	public:
-	num_t virtual min() const{return subSplines_.front()->t_min_;}
-	num_t virtual max() const{return subSplines_.back()->t_max_;}
+    num_t virtual min() const{return subSplines_.front()->t_min_;}
+    num_t virtual max() const{return subSplines_.back()->t_max_;}
 	/*Helpers*/
 
 	/*Attributes*/

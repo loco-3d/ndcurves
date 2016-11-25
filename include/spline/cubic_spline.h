@@ -1,5 +1,5 @@
 /**
-* \file cubic_function.h
+* \file cubic_spline.h
 * \brief Definition of a cubic spline.
 * \author Steve T.
 * \version 0.1
@@ -11,8 +11,8 @@
 */
 
 
-#ifndef _STRUCT_CUBICFUNCTION
-#define _STRUCT_CUBICFUNCTION
+#ifndef _STRUCT_CUBICSPLINE
+#define _STRUCT_CUBICSPLINE
 
 #include "MathDefs.h"
 
@@ -29,39 +29,39 @@ namespace spline
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
-struct cubic_function : public spline_curve<Time, Numeric, Dim,3, Safe, Point, T_Point>
+struct cubic_spline : public spline_curve<Time, Numeric, Dim,3, Safe, Point, T_Point>
 {
     typedef Point 	point_t;
     typedef T_Point t_point_t;
-  	typedef Time 	time_t;
+    typedef Time 	time_t;
     typedef Numeric	num_t;
     typedef spline_curve<Time, Numeric, Dim,3, Safe, Point, T_Point> spline_curve_t;
 /* Constructors - destructors */
-	public:
-	///\brief Constructor
-	cubic_function(point_t const& a, point_t const& b, point_t const& c, point_t const &d, time_t min, time_t max)
+    public:
+    ///\brief Constructor
+    cubic_spline(point_t const& a, point_t const& b, point_t const& c, point_t const &d, time_t min, time_t max)
         :spline_curve_t(makeVector(a,b,c,d), min, max) {}
 
 
     ///\brief Constructor
-    cubic_function(const T_Point& coefficients, time_t min, time_t max)
+    cubic_spline(const T_Point& coefficients, time_t min, time_t max)
         :spline_curve_t(coefficients, min, max) {}
 
 
     ///\brief Constructor
     template<typename In>
-    cubic_function(In zeroOrderCoefficient, In out, time_t min, time_t max)
+    cubic_spline(In zeroOrderCoefficient, In out, time_t min, time_t max)
         :spline_curve_t(zeroOrderCoefficient, out, min, max) {}
 
     ///\brief Destructor
-    ~cubic_function()
+    ~cubic_spline()
     {
         // NOTHING
     }
 
     private:
-    cubic_function(const cubic_function&);
-    cubic_function& operator=(const cubic_function&);
+    //cubic_spline(const cubic_spline&);
+    //cubic_spline& operator=(const cubic_spline&);
 /* Constructors - destructors */
 
     /*Operations*/
@@ -73,7 +73,7 @@ struct cubic_function : public spline_curve<Time, Numeric, Dim,3, Safe, Point, T
     }
 
     /*Operations*/
-    }; //class CubicFunction
+    }; //class cubic_spline
 }
-#endif //_STRUCT_CUBICFUNCTION
+#endif //_STRUCT_CUBICSPLINE
 
