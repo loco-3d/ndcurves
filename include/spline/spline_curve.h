@@ -97,14 +97,8 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         : t_min_(other.t_min_), t_max_(other.t_max_)
         , coefficients_(other.coefficients_) {}
 
-    //private:
-    spline_curve& operator=(const spline_curve& other)
-    {
-        t_min_ = other.t_min_;
-        t_max_ = other.t_max_;
-        coefficients_ = other.coefficients_;
-        return *this;
-    }
+    private:
+    spline_curve& operator=(const spline_curve& other);
 
 /* Constructors - destructors */
 
