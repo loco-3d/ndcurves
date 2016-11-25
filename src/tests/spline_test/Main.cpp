@@ -1,6 +1,6 @@
 
 #include "spline/exact_cubic.h"
-#include "spline/cubic_zero_vel_acc.h"
+#include "spline/exact_cubic_vel_acc_cons.h"
 #include "spline/bezier_curve.h"
 #include "spline/spline_curve.h"
 

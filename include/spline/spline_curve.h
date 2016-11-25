@@ -35,11 +35,12 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
 struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
     typedef Point 	point_t;
-    typedef T_Point  t_point_t;
-    typedef typename t_point_t::const_iterator cit_point_t;
     typedef Time 	time_t;
     typedef Numeric	num_t;
     typedef curve_abc<Time, Numeric, Dim, Safe, Point> curve_abc_t;
+    typedef Eigen::Matrix<double, Dim, Eigen::Dynamic> coeff_t;
+    typedef Eigen::Ref<coeff_t> coeff_t_ref;
+
 /* Constructors - destructors */
     public:
     ///\brief Constructor
@@ -48,21 +49,25 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// by the size of the coefficients
     ///\param min: LOWER bound on interval definition of the spline
     ///\param max: UPPER bound on interval definition of the spline
+    spline_curve(const coeff_t_ref& coefficients, const time_t min, const time_t max)
+        : curve_abc_t(),
+          coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.cols()-1)
+    {
+        safe_check();
+    }
+
+    ///\brief Constructor
+    ///\param coefficients : a container containing all coefficients of the spline, starting
+    /// with the zero order coefficient, up to the highest order. Spline order is given
+    /// by the size of the coefficients
+    ///\param min: LOWER bound on interval definition of the spline
+    ///\param max: UPPER bound on interval definition of the spline
     spline_curve(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
-          coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.size()+1)
+          coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
+          t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.cols()-1)
     {
-        if(Safe)
-        {
-            if(t_min_ > t_max_)
-            {
-                std::out_of_range("TODO");
-            }
-            if(coefficients_.size() != order_+1)
-            {
-                std::runtime_error("Spline order and coefficients do not match");
-            }
-        }
+        safe_check();
     }
 
     ///\brief Constructor
@@ -73,8 +78,26 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///\param max: UPPER bound on interval definition of the spline
     template<typename In>
     spline_curve(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
-        :coefficients_(init_coeffs(zeroOrderCoefficient, out)), dim_(Dim), order_(coefficients_.size()+1),
+        :coefficients_(init_coeffs(zeroOrderCoefficient, out)), dim_(Dim), order_(coefficients_.cols()-1),
           t_min_(min), t_max_(max)
+    {
+        safe_check();
+    }
+
+    ///\brief Destructor
+    ~spline_curve()
+    {
+        // NOTHING
+    }
+
+
+    spline_curve(const spline_curve& other)
+        : coefficients_(other.coefficients_), dim_(other.dim_), order_(other.order_),
+          t_min_(other.t_min_), t_max_(other.t_max_){}
+
+    private:
+    //spline_curve& operator=(const spline_curve& other);
+    void safe_check()
     {
         if(Safe)
         {
@@ -88,20 +111,6 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             }
         }
     }
-
-    ///\brief Destructor
-    ~spline_curve()
-    {
-        // NOTHING
-    }
-
-
-    spline_curve(const spline_curve& other)
-        : t_min_(other.t_min_), t_max_(other.t_max_)
-        , coefficients_(other.coefficients_) {}
-
-    private:
-    //spline_curve& operator=(const spline_curve& other);
 
 /* Constructors - destructors */
 
@@ -114,11 +123,10 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
         time_t const dt (t-t_min_);
-        time_t cdt(dt);
-        cit_point_t cit = coefficients_.begin();
-        point_t currentPoint_ = *cit; ++cit;
-        for(; cit != coefficients_.end(); ++cit, cdt*=dt)
-            currentPoint_ += cdt *(*cit);
+        time_t cdt(1);
+        point_t currentPoint_ = point_t::Zero();
+        for(int i = 0; i < order_+1; ++i, cdt*=dt)
+            currentPoint_ += cdt *coefficients_.col(i);
         return currentPoint_;
     }
 /*Operations*/
@@ -133,7 +141,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /*Attributes*/
     public:
-    t_point_t coefficients_;
+    coeff_t coefficients_;
     std::size_t dim_;
     std::size_t order_;
 
@@ -143,10 +151,14 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     private:
     template<typename In>
-    t_point_t init_coeffs(In zeroOrderCoefficient, In highestOrderCoefficient)
+    coeff_t init_coeffs(In zeroOrderCoefficient, In highestOrderCoefficient)
     {
-        t_point_t res(std::distance(zeroOrderCoefficient, highestOrderCoefficient));
-        std::copy(zeroOrderCoefficient, highestOrderCoefficient, res.begin());
+        std::size_t size = std::distance(zeroOrderCoefficient, highestOrderCoefficient);
+        coeff_t res = coeff_t(Dim, size); int i = 0;
+        for(In cit = zeroOrderCoefficient; cit != highestOrderCoefficient; ++cit, ++i)
+        {
+            res.col(i) = *cit;
+        }
         return res;
     }
 }; //class spline_curve
