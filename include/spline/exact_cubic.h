@@ -41,7 +41,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
 	typedef Point 	point_t;
     typedef T_Point t_point_t;
-	typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
+    typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 	typedef Time 	time_t;
 	typedef Numeric	num_t;
     typedef spline_curve<time_t, Numeric, Dim, Safe, point_t, t_point_t> spline_t;
@@ -57,9 +57,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	///\param wayPointsEns   : an iterator pointing to the end           of a waypoint container
 	template<typename In>
 	exact_cubic(In wayPointsBegin, In wayPointsEnd)
-        : curve_abc_t(), subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd))
-    {
-	}
+        : curve_abc_t(), subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd)) {}
 
 	///\brief Destructor
     ~exact_cubic(){}

@@ -44,12 +44,12 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 /* Constructors - destructors */
     public:
     ///\brief Constructor
-    ///\param coefficients : a container containing all coefficients of the spline, starting
-    /// with the zero order coefficient, up to the highest order. Spline order is given
-    /// by the size of the coefficients
+    ///\param coefficients : a reference to an Eigen matrix where each column is a coefficient,
+    /// from the zero order coefficient, up to the highest order. Spline order is given
+    /// by the number of the columns -1.
     ///\param min: LOWER bound on interval definition of the spline
     ///\param max: UPPER bound on interval definition of the spline
-    spline_curve(const coeff_t_ref& coefficients, const time_t min, const time_t max)
+    spline_curve(const coeff_t_ref coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.cols()-1)
     {
