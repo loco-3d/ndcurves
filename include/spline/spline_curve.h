@@ -98,7 +98,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         , coefficients_(other.coefficients_) {}
 
     private:
-    spline_curve& operator=(const spline_curve& other);
+    //spline_curve& operator=(const spline_curve& other);
 
 /* Constructors - destructors */
 
@@ -130,10 +130,10 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /*Attributes*/
     public:
-    const t_point_t coefficients_;
-    const time_t t_min_, t_max_;
-    const std::size_t dim_;
-    const std::size_t order_;
+    t_point_t coefficients_;
+    time_t t_min_, t_max_;
+    std::size_t dim_;
+    std::size_t order_;
 /*Attributes*/
 
     private:

@@ -78,8 +78,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 	
 		In it(wayPointsBegin), next(wayPointsBegin);
-		++next;
-		Numeric t_previous((*it).first);
+        ++next;
 
 		for(std::size_t i(0); next != wayPointsEnd; ++next, ++it, ++i)
 		{
