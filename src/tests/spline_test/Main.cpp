@@ -1,5 +1,6 @@
 
 #include "spline/exact_cubic.h"
+#include "spline/cubic_zero_vel_acc.h"
 #include "spline/bezier_curve.h"
 #include "spline/spline_curve.h"
 
@@ -14,7 +15,7 @@ namespace spline
 typedef Eigen::Vector3d point_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
 typedef spline_curve  <double, double, 3, true, point_t, t_point_t> cubic_function_t;
-typedef exact_cubic   <double, double, 3, true, point_t> exact_cubic_t;
+typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
 typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
 typedef std::pair<double, point_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;

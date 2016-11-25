@@ -33,6 +33,14 @@ T_Point make_cubic_vector(Point const& a, Point const& b, Point const& c, Point 
     res.push_back(a);res.push_back(b);res.push_back(c);res.push_back(d);
     return res;
 }
+
+template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point, typename T_Point>
+spline_curve<Time,Numeric,Dim,Safe,Point,T_Point> create_cubic(Point const& a, Point const& b, Point const& c, Point const &d,
+               const Time min, const Time max)
+{
+    T_Point coeffs = make_cubic_vector<Point, T_Point>(a,b,c,d);
+    return spline_curve<Time,Numeric,Dim,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), min, max);
+}
 }
 #endif //_STRUCT_CUBICSPLINE
 

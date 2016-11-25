@@ -39,6 +39,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     typedef typename t_point_t::const_iterator cit_point_t;
     typedef Time 	time_t;
     typedef Numeric	num_t;
+    typedef curve_abc<Time, Numeric, Dim, Safe, Point> curve_abc_t;
 /* Constructors - destructors */
     public:
     ///\brief Constructor
@@ -48,7 +49,8 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///\param min: LOWER bound on interval definition of the spline
     ///\param max: UPPER bound on interval definition of the spline
     spline_curve(const T_Point& coefficients, const time_t min, const time_t max)
-        :coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.size()+1)
+        : curve_abc_t(),
+          coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.size()+1)
     {
         if(Safe)
         {
@@ -71,7 +73,8 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///\param max: UPPER bound on interval definition of the spline
     template<typename In>
     spline_curve(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
-        :coefficients_(init_coeffs(zeroOrderCoefficient, out)), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.size()+1)
+        :coefficients_(init_coeffs(zeroOrderCoefficient, out)), dim_(Dim), order_(coefficients_.size()+1),
+          t_min_(min), t_max_(max)
     {
         if(Safe)
         {
@@ -131,9 +134,11 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 /*Attributes*/
     public:
     t_point_t coefficients_;
-    time_t t_min_, t_max_;
     std::size_t dim_;
     std::size_t order_;
+
+    private:
+    time_t t_min_, t_max_;
 /*Attributes*/
 
     private:

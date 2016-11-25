@@ -35,6 +35,14 @@ T_Point make_quintic_vector(Point const& a, Point const& b, Point const& c,
     res.push_back(d);res.push_back(e);res.push_back(f);
     return res;
 }
+
+template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point, typename T_Point>
+spline_curve<Time,Numeric,Dim,Safe,Point,T_Point> create_quintic(Point const& a, Point const& b, Point const& c, Point const &d, Point const &e, Point const &f,
+               const Time min, const Time max)
+{
+    T_Point coeffs = make_quintic_vector<Point, T_Point>(a,b,c,d,e,f);
+    return spline_curve<Time,Numeric,Dim,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), min, max);
+}
 }
 #endif //_STRUCT_QUINTIC_SPLINE
 

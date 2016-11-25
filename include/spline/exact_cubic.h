@@ -48,6 +48,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     typedef typename std::vector<spline_t> t_spline_t;
     typedef typename t_spline_t::iterator it_spline_t;
     typedef typename t_spline_t::const_iterator cit_spline_t;
+    typedef curve_abc<Time, Numeric, Dim, Safe, Point> curve_abc_t;
 
 	/* Constructors - destructors */
 	public:
@@ -56,7 +57,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	///\param wayPointsEns   : an iterator pointing to the end           of a waypoint container
 	template<typename In>
 	exact_cubic(In wayPointsBegin, In wayPointsEnd)
-        : subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd))
+        : curve_abc_t(), subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd))
     {
 	}
 
@@ -131,17 +132,12 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
         it= wayPointsBegin, next=wayPointsBegin; ++ next;
         for(int i=0; next != wayPointsEnd; ++i, ++it, ++next)
         {
-            add_cubic(a.row(i), b.row(i), c.row(i), d.row(i),(*it).first, (*next).first, subSplines);
+            subSplines.push_back(
+                create_cubic<Time,Numeric,Dim,Safe,Point,T_Point>(a.row(i), b.row(i), c.row(i), d.row(i),(*it).first, (*next).first));
         }
-        add_cubic(a.row(size-1), b.row(size-1), c.row(size-1), d.row(size-1),(*it).first, (*it).first, subSplines);
+        subSplines.push_back(
+                create_cubic<Time,Numeric,Dim,Safe,Point,T_Point>(a.row(size-1), b.row(size-1), c.row(size-1), d.row(size-1), (*it).first, (*it).first));
         return subSplines;
-    }
-
-    void add_cubic(point_t const& a, point_t const& b, point_t const& c, point_t const &d,
-                   const time_t min, const time_t max, t_spline_t& subSplines) const
-    {
-        t_point_t coeffs = make_cubic_vector<point_t, t_point_t>(a,b,c,d);
-        subSplines.push_back(spline_t(coeffs.begin(),coeffs.end(), min, max));
     }
 
 	private:
@@ -156,10 +152,10 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	///  \param return : the value x(t)
 	virtual point_t operator()(time_t t) const
 	{
-        if(Safe && (t < subSplines_.front().t_min_ || t > subSplines_.back().t_max_)){throw std::out_of_range("TODO");}
+        if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}
         for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
 		{
-            if(t >= (it->t_min_) && t <= (it->t_max_))
+            if(t >= (it->min()) && t <= (it->max()))
 			{
                 return it->operator()(t);
 			}
@@ -169,8 +165,8 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 	/*Helpers*/
 	public:
-    num_t virtual min() const{return subSplines_.front().t_min_;}
-    num_t virtual max() const{return subSplines_.back().t_max_;}
+    num_t virtual min() const{return subSplines_.front().min();}
+    num_t virtual max() const{return subSplines_.back().max();}
 	/*Helpers*/
 
 	/*Attributes*/
