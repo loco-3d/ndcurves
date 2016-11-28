@@ -129,6 +129,33 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             currentPoint_ += cdt *coefficients_.col(i);
         return currentPoint_;
     }
+
+
+    ///  \brief Evaluation of the derivative spline at time t.
+    ///  \param t : the time when to evaluate the spine
+    ///  \param return : the value x(t)
+    point_t derivate(time_t t, std::size_t order) const
+    {
+        if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
+        time_t const dt (t-t_min_);
+        time_t cdt(1);
+        point_t currentPoint_ = point_t::Zero();
+        for(int i = order; i < order_+1; ++i, cdt*=dt)
+        {
+            currentPoint_ += cdt *coefficients_.col(i) * fact(i, order);
+        }
+        return currentPoint_;
+    }
+
+    private:
+    num_t fact(const std::size_t n, const std::size_t order) const
+    {
+        std::size_t res(1);
+        for(std::size_t i = 0; i < order; ++i)
+            res *= n-i;
+        return res;
+    }
+
 /*Operations*/
 
 /*Helpers*/

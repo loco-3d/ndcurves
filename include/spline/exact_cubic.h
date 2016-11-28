@@ -59,10 +59,16 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	exact_cubic(In wayPointsBegin, In wayPointsEnd)
         : curve_abc_t(), subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd)) {}
 
+
+    ///\brief Constructor
+    ///\param subSplines: vector of subsplines
+    exact_cubic(const t_spline_t& subSplines)
+        : curve_abc_t(), subSplines_(subSplines) {}
+
 	///\brief Destructor
     ~exact_cubic(){}
 
-    protected:
+    private:
     template<typename In>
     t_spline_t computeWayPoints(In wayPointsBegin, In wayPointsEnd) const
     {
@@ -158,7 +164,22 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
                 return it->operator()(t);
 			}
 		}
-	}
+    }
+
+    ///  \brief Evaluation of the derivative spline at time t.
+    ///  \param t : the time when to evaluate the spine
+    ///  \param return : the value x(t)
+    virtual point_t derivate(time_t t, std::size_t order) const
+    {
+        if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}
+        for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
+        {
+            if(t >= (it->min()) && t <= (it->max()))
+            {
+                return it->derivate(t, order);
+            }
+        }
+    }
 	/*Operations*/
 
 	/*Helpers*/

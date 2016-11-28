@@ -16,7 +16,9 @@ typedef Eigen::Vector3d point_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
 typedef spline_curve  <double, double, 3, true, point_t, t_point_t> cubic_function_t;
 typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
+typedef cubic_zero_vel <double, double, 3, true, point_t> cubic_zero_vel_t;
 typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
+typedef cubic_zero_vel_t::spline_constraints spline_constraints_t;
 typedef std::pair<double, point_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 
@@ -311,6 +313,24 @@ void ExactCubicOneDimTest(bool& error)
 	ComparePoints(one, res1, errmsg, error);
 }
 
+void CheckWayPointConstraint(const std::string& errmsg, const double step, const spline::T_Waypoint& wayPoints, const exact_cubic_t* curve, bool& error )
+{
+    point_t res1;
+    for(double i = 0; i <= 1; i = i + step)
+    {
+        res1 = (*curve)(i);
+        ComparePoints(point_t(i,i,i), res1, errmsg, error);
+    }
+}
+
+void CheckDerivative(const std::string& errmsg, const double eval_point, const std::size_t order, const point_t& target, const exact_cubic_t* curve, bool& error )
+{
+    point_t res1;
+    res1 = curve->derivate(eval_point,order);
+    ComparePoints(target, res1, errmsg, error);
+}
+
+
 void ExactCubicPointsCrossedTest(bool& error)
 {
 	spline::T_Waypoint waypoints;
@@ -318,25 +338,52 @@ void ExactCubicPointsCrossedTest(bool& error)
 	{
 		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
 	}
-	exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
-	point_t res1;
-	for(double i = 0; i <= 1; i = i + 0.2)
-	{
-		res1 = exactCubic(i);
-		std::string errmsg("Error While checking that given wayPoints are crossed (expected / obtained)");
-		ComparePoints(point_t(i,i,i), res1, errmsg, error);
-	}
+    exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
+    std::string errmsg("Error While checking that given wayPoints are crossed (expected / obtained)");
+    CheckWayPointConstraint(errmsg, 0.2, waypoints, &exactCubic, error);
+
 }
 
-int main(int argc, char *argv[])
+void ExactCubicVelocityConstraintsTest(bool& error)
+{
+    spline::T_Waypoint waypoints;
+    for(double i = 0; i <= 1; i = i + 0.2)
+    {
+        waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
+    }
+    std::string errmsg("Error in ExactCubicVelocityConstraintsTest (1); while checking that given wayPoints are crossed (expected / obtained)");
+    spline_constraints_t constraints;
+    cubic_zero_vel_t exactCubic(waypoints.begin(), waypoints.end());
+    // now check that init and end velocity are 0
+    CheckWayPointConstraint(errmsg, 0.2, waypoints, &exactCubic, error);
+    std::string errmsg3("Error in ExactCubicVelocityConstraintsTest (2); while checking derivative (expected / obtained)");
+    // now check derivatives
+    CheckDerivative(errmsg3,0,1,constraints.init_vel,&exactCubic, error);
+    CheckDerivative(errmsg3,1,1,constraints.end_vel,&exactCubic, error);
+
+    constraints.end_vel = point_t(1,2,3);
+    constraints.init_vel = point_t(-1,-2,-3);
+    std::string errmsg2("Error in ExactCubicVelocityConstraintsTest (3); while checking that given wayPoints are crossed (expected / obtained)");
+    cubic_zero_vel_t exactCubic2(waypoints.begin(), waypoints.end(),constraints);
+    CheckWayPointConstraint(errmsg2, 0.2, waypoints, &exactCubic2, error);
+
+    std::string errmsg4("Error in ExactCubicVelocityConstraintsTest (4); while checking derivative (expected / obtained)");
+    // now check derivatives
+    CheckDerivative(errmsg4,0,1,constraints.init_vel,&exactCubic2, error);
+    CheckDerivative(errmsg4,1,1,constraints.end_vel,&exactCubic2, error);
+}
+
+
+int main(int /*argc*/, char* /*argv[]*/)
 {
 	std::cout << "performing tests... \n";
 	bool error = false;
-	CubicFunctionTest(error);
+    CubicFunctionTest(error);
 	ExactCubicNoErrorTest(error);
 	ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
 	ExactCubicTwoPointsTest(error);
-	ExactCubicOneDimTest(error);
+    ExactCubicOneDimTest(error);
+    ExactCubicVelocityConstraintsTest(error);
 	//BezierCurveTest(error);
 	if(error)
 	{

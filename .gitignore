@@ -1,6 +1,8 @@
 # Build and Release Folders
 bin/
 lib/
+build/
 
 # temp files
 .*~
+*.user
