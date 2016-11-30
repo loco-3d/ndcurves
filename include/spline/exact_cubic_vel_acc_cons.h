@@ -68,8 +68,8 @@ struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Po
         point_t init_acc;
         point_t end_vel;
         point_t end_acc;
-        point_t init_normal;
-        point_t end_normal;
+        point_t init_normal; //TODO
+        point_t end_normal; //TODO
     };
 
 	/* Constructors - destructors */
@@ -84,7 +84,7 @@ struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Po
 	///\brief Destructor
     ~cubic_zero_vel(){}
 
-    private:
+    /*private:
     MatrixX setVelConstraintsAndComputeB(const spline_constraints& constraints,
                                          const Eigen::Ref<MatrixX> x,
                                          Eigen::Ref<MatrixX> h1, Eigen::Ref<MatrixX> h2) const
@@ -102,6 +102,41 @@ struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Po
         MatrixX h1inv = h1.inverse();
         b = h1inv * (h2 *x + cons); //h1 * b = h2 * x => b = (h1)^-1 * h2 * x
         return b;
+    }*/
+
+    private:
+    template<typename In>
+    void compute_one_spline(In wayPointsBegin, In wayPointsNext, spline_constraints& constraints, t_spline_t& subSplines)
+    {
+        const point_t& a0 = wayPointsBegin->second, a1 = wayPointsNext->second;
+        const point_t& b0 = constraints.init_vel , c0 = constraints.init_acc;
+        const num_t& init_t = wayPointsBegin->first, end_t = - wayPointsNext->first;
+        const num_t dt = end_t - init_t, dt_2 = dt * dt, dt_3 = dt_2 * dt;
+        const point_t d0 = (a1 - a0 - b0 * dt - c0 * dt_2) / dt_3;
+        subSplines.push_back(create_cubic<Time,Numeric,Dim,Safe,Point,T_Point>
+                             (a0,b0,c0,d0,init_t, end_t));
+        constraints.init_vel = subSplines.back().derivate(end_t, 1);
+        constraints.init_acc = subSplines.back().derivate(end_t, 2);
+    }
+
+    template<typename In>
+    void compute_end_spline(In wayPointsBegin, In wayPointsNext, spline_constraints& constraints, t_spline_t& subSplines)
+    {
+        const point_t& a0 = wayPointsBegin->second, a1 = wayPointsNext->second;
+        const point_t& b0 = constraints.init_vel, b1 = constraints.end_vel,
+                       c0 = constraints.init_acc, c1 = constraints.end_acc;
+        const num_t& init_t = wayPointsBegin->first, end_t = - wayPointsNext->first;
+        const num_t dt = end_t - init_t, dt_2 = dt * dt, dt_3 = dt_2 * dt;
+        //solving a system of four linear eq with 4 unknows: d0, e0
+        const num_t alpha_0 = a1 - a0 + b0 *dt + c0 * dt_2;
+        const num_t alpha_1 = b1 - b0 + b0 *dt + c0 * dt_2;
+
+        /*subSplines.push_back(create_cubic<Time,Numeric,Dim,Safe,Point,T_Point>
+                             (a0,b0,c0,d0,e0, init_t, end_t));
+        constraints.init_vel = subSplines.back().derivate(end_t, 1);
+        constraints.init_acc = subSplines.back().derivate(end_t, 2);*/
+
+        //solving
     }
 
     template<typename In>
@@ -112,9 +147,20 @@ struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Po
         {
             throw; // TODO
         }
-        t_spline_t subSplines; subSplines.reserve(size);
+        t_spline_t subSplines; subSplines.reserve(size-1);
+        spline_constraints cons = constraints;
 
-        // refer to the paper to understand all this.
+        In it(wayPointsBegin), next(wayPointsBegin), end(wayPointsEnd-1);
+        ++next;
+        for(std::size_t i(0); next != end; ++next, ++it, ++i)
+        {
+            compute_one_spline<In>(it, next, cons, subSplines);
+        }
+        compute_end_spline<In>(it, next,cons, subSplines);
+        return subSplines;
+        // then solving last step
+
+        /*// refer to the paper to understand all this.
         MatrixX h1 = MatrixX::Zero(size, size);
         MatrixX h2 = MatrixX::Zero(size, size);
         MatrixX h3 = MatrixX::Zero(size, size);
@@ -173,7 +219,7 @@ struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Po
         }
         //subSplines.push_back(
         //        create_cubic<Time,Numeric,Dim,Safe,Point,T_Point>(a.row(size-1), b.row(size-1), c.row(size-1), d.row(size-1), (*it).first, (*it).first));
-        return subSplines;
+        return subSplines;*/
     }
 
 
