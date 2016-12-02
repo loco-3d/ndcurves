@@ -102,13 +102,9 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         if(Safe)
         {
             if(t_min_ > t_max_)
-            {
                 std::out_of_range("TODO");
-            }
             if(coefficients_.size() != order_+1)
-            {
                 std::runtime_error("Spline order and coefficients do not match");
-            }
         }
     }
 
@@ -141,9 +137,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         time_t cdt(1);
         point_t currentPoint_ = point_t::Zero();
         for(int i = order; i < order_+1; ++i, cdt*=dt)
-        {
             currentPoint_ += cdt *coefficients_.col(i) * fact(i, order);
-        }
         return currentPoint_;
     }
 
@@ -183,9 +177,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         std::size_t size = std::distance(zeroOrderCoefficient, highestOrderCoefficient);
         coeff_t res = coeff_t(Dim, size); int i = 0;
         for(In cit = zeroOrderCoefficient; cit != highestOrderCoefficient; ++cit, ++i)
-        {
             res.col(i) = *cit;
-        }
         return res;
     }
 }; //class spline_curve

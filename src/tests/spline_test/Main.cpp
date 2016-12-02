@@ -325,8 +325,7 @@ void CheckWayPointConstraint(const std::string& errmsg, const double step, const
 
 void CheckDerivative(const std::string& errmsg, const double eval_point, const std::size_t order, const point_t& target, const exact_cubic_t* curve, bool& error )
 {
-    point_t res1;
-    res1 = curve->derivate(eval_point,order);
+    point_t res1 = curve->derivate(eval_point,order);
     ComparePoints(target, res1, errmsg, error);
 }
 
@@ -360,9 +359,13 @@ void ExactCubicVelocityConstraintsTest(bool& error)
     // now check derivatives
     CheckDerivative(errmsg3,0,1,constraints.init_vel,&exactCubic, error);
     CheckDerivative(errmsg3,1,1,constraints.end_vel,&exactCubic, error);
+    CheckDerivative(errmsg3,0,2,constraints.init_acc,&exactCubic, error);
+    CheckDerivative(errmsg3,1,2,constraints.end_acc,&exactCubic, error);
 
     constraints.end_vel = point_t(1,2,3);
     constraints.init_vel = point_t(-1,-2,-3);
+    constraints.end_acc = point_t(4,5,6);
+    constraints.init_acc = point_t(-4,-4,-6);
     std::string errmsg2("Error in ExactCubicVelocityConstraintsTest (3); while checking that given wayPoints are crossed (expected / obtained)");
     cubic_zero_vel_t exactCubic2(waypoints.begin(), waypoints.end(),constraints);
     CheckWayPointConstraint(errmsg2, 0.2, waypoints, &exactCubic2, error);
@@ -370,11 +373,13 @@ void ExactCubicVelocityConstraintsTest(bool& error)
     std::string errmsg4("Error in ExactCubicVelocityConstraintsTest (4); while checking derivative (expected / obtained)");
     // now check derivatives
     CheckDerivative(errmsg4,0,1,constraints.init_vel,&exactCubic2, error);
-    CheckDerivative(errmsg4,1,1,constraints.end_vel,&exactCubic2, error);
+    CheckDerivative(errmsg4,1,1,constraints.end_vel ,&exactCubic2, error);
+    CheckDerivative(errmsg4,0,2,constraints.init_acc,&exactCubic2, error);
+    CheckDerivative(errmsg4,1,2,constraints.end_acc ,&exactCubic2, error);
 }
 
 
-int main(int /*argc*/, char* /*argv[]*/)
+int main(int /*argc*/, char** /*argv[]*/)
 {
 	std::cout << "performing tests... \n";
 	bool error = false;
@@ -384,7 +389,7 @@ int main(int /*argc*/, char* /*argv[]*/)
 	ExactCubicTwoPointsTest(error);
     ExactCubicOneDimTest(error);
     ExactCubicVelocityConstraintsTest(error);
-	//BezierCurveTest(error);
+    //BezierCurveTest(error);
 	if(error)
 	{
 		std::cout << "There were some errors\n";
