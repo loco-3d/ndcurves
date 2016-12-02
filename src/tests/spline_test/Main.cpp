@@ -1,8 +1,8 @@
 
 #include "spline/exact_cubic.h"
-#include "spline/exact_cubic_vel_acc_cons.h"
 #include "spline/bezier_curve.h"
 #include "spline/spline_curve.h"
+#include "spline/spline_deriv_constraint.h"
 
 #include <string>
 #include <iostream>
@@ -16,9 +16,9 @@ typedef Eigen::Vector3d point_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
 typedef spline_curve  <double, double, 3, true, point_t, t_point_t> cubic_function_t;
 typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
-typedef cubic_zero_vel <double, double, 3, true, point_t> cubic_zero_vel_t;
+typedef spline_deriv_constraint <double, double, 3, true, point_t> spline_deriv_constraint_t;
 typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
-typedef cubic_zero_vel_t::spline_constraints spline_constraints_t;
+typedef spline_deriv_constraint_t::spline_constraints spline_constraints_t;
 typedef std::pair<double, point_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 
@@ -352,7 +352,7 @@ void ExactCubicVelocityConstraintsTest(bool& error)
     }
     std::string errmsg("Error in ExactCubicVelocityConstraintsTest (1); while checking that given wayPoints are crossed (expected / obtained)");
     spline_constraints_t constraints;
-    cubic_zero_vel_t exactCubic(waypoints.begin(), waypoints.end());
+    spline_deriv_constraint_t exactCubic(waypoints.begin(), waypoints.end());
     // now check that init and end velocity are 0
     CheckWayPointConstraint(errmsg, 0.2, waypoints, &exactCubic, error);
     std::string errmsg3("Error in ExactCubicVelocityConstraintsTest (2); while checking derivative (expected / obtained)");
@@ -367,7 +367,7 @@ void ExactCubicVelocityConstraintsTest(bool& error)
     constraints.end_acc = point_t(4,5,6);
     constraints.init_acc = point_t(-4,-4,-6);
     std::string errmsg2("Error in ExactCubicVelocityConstraintsTest (3); while checking that given wayPoints are crossed (expected / obtained)");
-    cubic_zero_vel_t exactCubic2(waypoints.begin(), waypoints.end(),constraints);
+    spline_deriv_constraint_t exactCubic2(waypoints.begin(), waypoints.end(),constraints);
     CheckWayPointConstraint(errmsg2, 0.2, waypoints, &exactCubic2, error);
 
     std::string errmsg4("Error in ExactCubicVelocityConstraintsTest (4); while checking derivative (expected / obtained)");

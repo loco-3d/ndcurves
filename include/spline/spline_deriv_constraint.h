@@ -29,17 +29,17 @@
 
 namespace spline
 {
-/// \class cubic_zero_vel.
+/// \class spline_deriv_constraint.
 /// \brief Represents a set of cubic splines defining a continuous function 
 /// crossing each of the waypoint given in its initialization. Additional constraints
-/// are used to increase the order of the last and first splines, to start and finish
-/// trajectory with zero velocity and acceleration. Thus the first and last splines
+/// are used to increase the order of the last spline, to start and finish
+/// trajectory with user defined velocity and acceleration.
 ///
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
          typename Point= Eigen::Matrix<Numeric, Dim, 1>,
          typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
-struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Point>
+struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Point>
 {
     typedef Point 	point_t;
     typedef T_Point t_point_t;
@@ -57,20 +57,13 @@ struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Po
     struct spline_constraints
     {
         spline_constraints():
-            init_vel(point_t::Zero()),init_acc(init_vel),end_vel(init_vel),end_acc(init_vel),
-            init_normal(init_vel),end_normal(init_vel) {}
-
-        spline_constraints(const point_t& n0, point_t& n1):
-            init_vel(point_t::Zero()),init_acc(init_vel),end_vel(init_vel),end_acc(init_vel),
-            init_normal(n0),end_normal(n1) {}
+            init_vel(point_t::Zero()),init_acc(init_vel),end_vel(init_vel),end_acc(init_vel){}
 
        ~spline_constraints(){}
         point_t init_vel;
         point_t init_acc;
         point_t end_vel;
         point_t end_acc;
-        point_t init_normal; //TODO
-        point_t end_normal; //TODO
     };
 
 	/* Constructors - destructors */
@@ -79,11 +72,11 @@ struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Po
 	///\param wayPointsBegin : an iterator pointing to the first element of a waypoint container
 	///\param wayPointsEns   : an iterator pointing to the end           of a waypoint container
     template<typename In>
-    cubic_zero_vel(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints = spline_constraints())
+    spline_deriv_constraint(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints = spline_constraints())
         : exact_cubic_t(computeWayPoints<In>(wayPointsBegin, wayPointsEnd, constraints)) {}
 
 	///\brief Destructor
-    ~cubic_zero_vel(){}
+    ~spline_deriv_constraint(){}
 
     private:
     template<typename In>
@@ -135,11 +128,9 @@ struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Po
     t_spline_t computeWayPoints(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints) const
     {
         std::size_t const size(std::distance(wayPointsBegin, wayPointsEnd));
-        if(Safe && size < 1)
-            throw; // TODO
+        if(Safe && size < 1) throw; // TODO
         t_spline_t subSplines; subSplines.reserve(size-1);
         spline_constraints cons = constraints;
-
         In it(wayPointsBegin), next(wayPointsBegin), end(wayPointsEnd-1);
         ++next;
         for(std::size_t i(0); next != end; ++next, ++it, ++i)
@@ -148,10 +139,9 @@ struct cubic_zero_vel : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Po
         return subSplines;
     }
 
-
 	private:
-    cubic_zero_vel(const cubic_zero_vel&);
-    cubic_zero_vel& operator=(const cubic_zero_vel&);
+    spline_deriv_constraint(const spline_deriv_constraint&);
+    spline_deriv_constraint& operator=(const spline_deriv_constraint&);
     /* Constructors - destructors */
     /*Attributes*/
     public:
