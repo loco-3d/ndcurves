@@ -3,6 +3,7 @@
 #include "spline/bezier_curve.h"
 #include "spline/spline_curve.h"
 #include "spline/spline_deriv_constraint.h"
+#include "spline/helpers/effector_spline.h"
 
 #include <string>
 #include <iostream>
@@ -378,6 +379,63 @@ void ExactCubicVelocityConstraintsTest(bool& error)
     CheckDerivative(errmsg4,1,2,constraints.end_acc ,&exactCubic2, error);
 }
 
+void CheckPointOnline(const std::string& errmsg, const point_t& A, const point_t& B, const double target, const exact_cubic_t* curve, bool& error )
+{
+    point_t res1 = curve->operator ()(target);
+    point_t ar =(res1-A); ar.normalize();
+    point_t rb =(B-res1); rb.normalize();
+    if(ar.dot(rb) < 0.99999)
+    {
+        error = true;
+        std::cout << errmsg << " ; " << A.transpose() << "\n ; " << B.transpose() << "\n ; " <<
+                     target << " ; " << res1.transpose() <<  std::endl;
+    }
+}
+
+void EffectorTrajectoryTest(bool& error)
+{
+    // create arbitrary trajectory
+    spline::T_Waypoint waypoints;
+    for(double i = 0; i <= 10; i = i + 2)
+    {
+        waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
+    }
+    helpers::exact_cubic_t* eff_traj = helpers::effector_spline(waypoints.begin(),waypoints.end(),
+                                                               Eigen::Vector3d::UnitZ(),Eigen::Vector3d(0,0,2),
+                                                               1,1,1,0.5);
+    point_t zero(0,0,0);
+    point_t off1(0,0,1);
+    point_t off2(10,10,11);
+    point_t end(10,10,10);
+    std::string errmsg("Error in EffectorTrajectoryTest; while checking waypoints (expected / obtained)");
+    std::string errmsg2("Error in EffectorTrajectoryTest; while checking derivative (expected / obtained)");
+    //first check start / goal positions
+    ComparePoints(zero, (*eff_traj)(0), errmsg, error);
+    ComparePoints(off1, (*eff_traj)(1), errmsg, error);
+    ComparePoints(off2, (*eff_traj)(9.5), errmsg, error);
+    ComparePoints(end , (*eff_traj)(10), errmsg, error);
+
+    //then check offset at start / goal positions
+    // now check derivatives
+    CheckDerivative(errmsg2,0,1,zero,eff_traj, error);
+    CheckDerivative(errmsg2,10,1,zero ,eff_traj, error);
+    CheckDerivative(errmsg2,0,2,zero,eff_traj, error);
+    CheckDerivative(errmsg2,10,2,zero ,eff_traj, error);
+
+    //check that end and init splines are line
+    std::string errmsg3("Error in EffectorTrajectoryTest; while checking that init/end splines are line (point A/ point B, time value / point obtained) \n");
+    for(double i = 0.1; i<1; i+=0.1)
+    {
+        CheckPointOnline(errmsg3,(*eff_traj)(0),(*eff_traj)(1),i,eff_traj,error);
+    }
+
+    for(double i = 9.6; i<10; i+=0.1)
+    {
+        CheckPointOnline(errmsg3,(*eff_traj)(9.5),(*eff_traj)(10),i,eff_traj,error);
+    }
+
+}
+
 
 int main(int /*argc*/, char** /*argv[]*/)
 {
@@ -389,10 +447,11 @@ int main(int /*argc*/, char** /*argv[]*/)
 	ExactCubicTwoPointsTest(error);
     ExactCubicOneDimTest(error);
     ExactCubicVelocityConstraintsTest(error);
+    EffectorTrajectoryTest(error);
     //BezierCurveTest(error);
 	if(error)
 	{
-		std::cout << "There were some errors\n";
+        std::cout << "There were some errors\n";
 		return -1;
 	}
 	else

@@ -152,7 +152,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	/*Operations*/
 	public:
 	///  \brief Evaluation of the cubic spline at time t.
-	///  \param t : the time when to evaluate the spine
+    ///  \param t : the time when to evaluate the spline
 	///  \param return : the value x(t)
 	virtual point_t operator()(time_t t) const
     {
@@ -167,7 +167,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     ///  \brief Evaluation of the derivative spline at time t.
-    ///  \param t : the time when to evaluate the spine
+    ///  \param t : the time when to evaluate the spline
     ///  \param return : the value x(t)
     virtual point_t derivate(time_t t, std::size_t order) const
     {
