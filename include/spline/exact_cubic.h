@@ -154,16 +154,16 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	///  \brief Evaluation of the cubic spline at time t.
     ///  \param t : the time when to evaluate the spline
 	///  \param return : the value x(t)
-	virtual point_t operator()(time_t t) const
+    virtual point_t operator()(const time_t t) const
     {
         if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}
         for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
 		{
             if(t >= (it->min()) && t <= (it->max()))
-			{
+            {
                 return it->operator()(t);
 			}
-		}
+        }
     }
 
     ///  \brief Evaluation of the derivative spline at time t.

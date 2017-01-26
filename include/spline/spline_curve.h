@@ -115,7 +115,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  \brief Evaluation of the cubic spline at time t.
     ///  \param t : the time when to evaluate the spine
     ///  \param return : the value x(t)
-    virtual point_t operator()(time_t t) const
+    virtual point_t operator()(const time_t t) const
     {
         if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
         time_t const dt (t-t_min_);

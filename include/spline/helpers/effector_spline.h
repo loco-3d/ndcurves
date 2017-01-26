@@ -79,7 +79,7 @@ spline_constraints_t compute_required_offset_velocity_acceleration(const spline_
 
 
 /// \brief Helper method to create a spline typically used to
-/// guide the 2d or 3d trajectory of a robot end effector.
+/// guide the 3d trajectory of a robot end effector.
 /// Given a set of waypoints, and the normal vector of the start and
 /// ending positions, automatically create the spline such that:
 /// + init and end velocities / accelerations are 0.
@@ -90,28 +90,28 @@ spline_constraints_t compute_required_offset_velocity_acceleration(const spline_
 /// \param land_normal      : normal to be followed by end effector at landing
 /// \param lift_offset      : length of the straight line along normal at take-off
 /// \param land_offset      : length of the straight line along normal at landing
-/// \param time_lift_offset : time travelled along straight line at take-off
-/// \param time_land_offset : time travelled along straight line at landing
+/// \param lift_offset_duration : time travelled along straight line at take-off
+/// \param land_offset_duration : time travelled along straight line at landing
 ///
 template<typename In>
 exact_cubic_t* effector_spline(
         In wayPointsBegin, In wayPointsEnd, const Point& lift_normal=Eigen::Vector3d::UnitZ(), const Point& land_normal=Eigen::Vector3d::UnitZ(),
         const Numeric lift_offset=0.02, const Numeric land_offset=0.02,
-        const Time time_lift_offset=0.02, const Time time_land_offset=0.02)
+        const Time lift_offset_duration=0.02, const Time land_offset_duration=0.02)
 {
     T_Waypoint waypoints;
     const Waypoint& inPoint=*wayPointsBegin, endPoint =*(wayPointsEnd-1);
     waypoints.push_back(inPoint);
     //adding initial offset
-    waypoints.push_back(compute_offset(inPoint, lift_normal ,lift_offset, time_lift_offset));
+    waypoints.push_back(compute_offset(inPoint, lift_normal ,lift_offset, lift_offset_duration));
     //inserting all waypoints but last
     waypoints.insert(waypoints.end(),wayPointsBegin+1,wayPointsEnd-1);
     //inserting waypoint to start landing
-    const Waypoint& landWaypoint=compute_offset(endPoint, land_normal ,land_offset, -time_land_offset);
+    const Waypoint& landWaypoint=compute_offset(endPoint, land_normal ,land_offset, -land_offset_duration);
     waypoints.push_back(landWaypoint);
     //specifying end velocity constraint such that landing will be in straight line
-    spline_t end_spline=make_end_spline(land_normal,landWaypoint.second,land_offset,landWaypoint.first,time_land_offset);
-    spline_constraints_t constraints = compute_required_offset_velocity_acceleration(end_spline,time_land_offset);
+    spline_t end_spline=make_end_spline(land_normal,landWaypoint.second,land_offset,landWaypoint.first,land_offset_duration);
+    spline_constraints_t constraints = compute_required_offset_velocity_acceleration(end_spline,land_offset_duration);
     spline_deriv_constraint_t all_but_end(waypoints.begin(), waypoints.end(),constraints);
     t_spline_t splines = all_but_end.subSplines_;
     splines.push_back(end_spline);

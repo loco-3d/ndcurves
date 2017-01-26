@@ -42,7 +42,7 @@ struct  curve_abc : std::unary_function<Time, Point>
 	///  \brief Evaluation of the cubic spline at time t.
 	///  \param t : the time when to evaluate the spine
 	///  \param return : the value x(t)
-    virtual point_t operator()(time_t t) const = 0;
+    virtual point_t operator()(const time_t t) const = 0;
 /*Operations*/
 
 /*Helpers*/

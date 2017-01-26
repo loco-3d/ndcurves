@@ -4,6 +4,7 @@
 #include "spline/spline_curve.h"
 #include "spline/spline_deriv_constraint.h"
 #include "spline/helpers/effector_spline.h"
+#include "spline/helpers/effector_spline_rotation.h"
 
 #include <string>
 #include <iostream>
@@ -42,12 +43,7 @@ bool QuasiEqual(const double a, const double b, const float margin)
 	}
 }
 
-const float margin = 0.01f;
-
-bool operator ==(const point_t& a, const point_t& b)
-{
-	return QuasiEqual(a.x(), b.x(), margin) && QuasiEqual(a.y(), b.y(), margin) && QuasiEqual(a.z(), b.z(), margin);
-}
+const double margin = 0.001;
 
 } // namespace spline
 
@@ -59,21 +55,12 @@ ostream& operator<<(ostream& os, const point_t& pt)
     return os;
 }
 
-void ComparePoints(const point_t& pt1, const point_t& pt2, const std::string& errmsg, bool& error)
+void ComparePoints(const Eigen::VectorXd& pt1, const Eigen::VectorXd& pt2, const std::string& errmsg, bool& error)
 {
-	if(!(pt1 == pt2))
+    if((pt1-pt2).norm() > margin)
 	{
 		error = true;
         std::cout << errmsg << pt1 << " ; " << pt2 << std::endl;
-	}
-}
-
-void ComparePoints(const point_one& pt1, const point_one& pt2, const std::string& errmsg, bool& error)
-{
-    if(!(pt1 == pt2))
-	{
-		error = true;
-        std::cout << errmsg << pt1 << " ; " << pt2 <<  std::endl;
 	}
 }
 
@@ -402,10 +389,10 @@ void EffectorTrajectoryTest(bool& error)
     }
     helpers::exact_cubic_t* eff_traj = helpers::effector_spline(waypoints.begin(),waypoints.end(),
                                                                Eigen::Vector3d::UnitZ(),Eigen::Vector3d(0,0,2),
-                                                               1,1,1,0.5);
+                                                               1,0.02,1,0.5);
     point_t zero(0,0,0);
     point_t off1(0,0,1);
-    point_t off2(10,10,11);
+    point_t off2(10,10,10.02);
     point_t end(10,10,10);
     std::string errmsg("Error in EffectorTrajectoryTest; while checking waypoints (expected / obtained)");
     std::string errmsg2("Error in EffectorTrajectoryTest; while checking derivative (expected / obtained)");
@@ -429,13 +416,40 @@ void EffectorTrajectoryTest(bool& error)
         CheckPointOnline(errmsg3,(*eff_traj)(0),(*eff_traj)(1),i,eff_traj,error);
     }
 
-    for(double i = 9.6; i<10; i+=0.1)
+    for(double i = 9.981; i<10; i+=0.002)
     {
         CheckPointOnline(errmsg3,(*eff_traj)(9.5),(*eff_traj)(10),i,eff_traj,error);
     }
-
+    delete eff_traj;
 }
 
+helpers::quat_t GetXRotQuat(const double theta)
+{
+    Eigen::AngleAxisd m (theta, Eigen::Vector3d::UnitX());
+    return helpers::quat_t(Eigen::Quaterniond(m).coeffs().data());
+}
+
+void EffectorSplineRotationNoRotationTest(bool& error)
+{
+    // create arbitrary trajectory
+    spline::T_Waypoint waypoints;
+    for(double i = 0; i <= 10; i = i + 2)
+    {
+        waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
+    }
+    helpers::effector_spline_rotation eff_traj(waypoints.begin(),waypoints.end());
+    helpers::config_t q_init; q_init    << 0.,0.,0.,0.,0.,0.,1.;
+    helpers::config_t q_end; q_end      << 10.,10.,10.,0.,0.,0.,1.;
+    helpers::config_t q_to; q_to        << 0.,0,0.02,0.,0.,0.,1.;
+    helpers::config_t q_land; q_land    << 10,10, 10.02, 0, 0.,0.,1.;
+    helpers::config_t q_mod; q_mod      << 6.,6.,6.,0.,0.,0.,1.;
+    std::string errmsg("Error in EffectorSplineRotationNoRotationTest; while checking waypoints (expected / obtained)");
+    ComparePoints(q_init , eff_traj(0),    errmsg,error);
+    ComparePoints(q_to   , eff_traj(0.02), errmsg,error);
+    ComparePoints(q_land , eff_traj(9.98), errmsg,error);
+    ComparePoints(q_mod  , eff_traj(6),    errmsg,error);
+    ComparePoints(q_end  , eff_traj(10),   errmsg,error);
+}
 
 int main(int /*argc*/, char** /*argv[]*/)
 {
@@ -448,6 +462,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     ExactCubicOneDimTest(error);
     ExactCubicVelocityConstraintsTest(error);
     EffectorTrajectoryTest(error);
+    EffectorSplineRotationNoRotationTest(error);
     //BezierCurveTest(error);
 	if(error)
 	{
