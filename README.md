@@ -36,8 +36,6 @@ waypoints.push_back(std::make_pair(2., Eigen::Vector3d(1,1,0)));
 
 exact_cubic_t* eff_traj = effector_spline(waypoints.begin(),waypoints.end());
 
-effector_spline_rotation traj(waypoints.begin(), waypoints.end());
-
 // evaluate spline
 (*eff_traj)(0.); // (0,0,0)
 (*eff_traj)(2.); // (1,1,0)
