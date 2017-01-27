@@ -43,7 +43,7 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 		In it(PointsBegin);
 		if(Safe && (size_<=1 || minBound == maxBound))
 		{
-			throw; // TODO 
+            throw std::out_of_range("TODO"); // TODO
 		}
 		for(; it != PointsEnd; ++it)
 		{
@@ -72,8 +72,8 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 		num_t nT = (t - minBound_) / (maxBound_ - minBound_);
 		if(Safe &! (0 <= nT && nT <= 1))
 		{
-			//throw; // TODO
-		}
+            throw std::out_of_range("TODO"); // TODO
+        }
 		else
 		{
 			num_t dt = (1 - nT);

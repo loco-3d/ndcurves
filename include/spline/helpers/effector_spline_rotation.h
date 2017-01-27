@@ -101,13 +101,13 @@ class effector_spline_rotation
     ///  \param t : the time when to evaluate the spline
     ///  \param quat : quaternion updated as the interpolation result
     ///
-    quat_t interpolate_quat(time_t t) const
+    quat_t interpolate_quat(Numeric t) const
     {
-        if(t<=time_lift_offset_) return quat_t(to_quat_.coeffs().data());
-        if(t>=time_land_offset_) return quat_t(land_quat_.coeffs().data());
+        if(t<=time_lift_offset_) return to_quat_.coeffs();
+        if(t>=time_land_offset_) return land_quat_.coeffs();
         //normalize u
         Numeric u = (t - time_lift_offset_) /(time_land_offset_ - time_lift_offset_);
-        return quat_t(to_quat_.slerp(u, land_quat_).coeffs().data());
+        return to_quat_.slerp(u, land_quat_).coeffs();
     }
     /*Operations*/
 

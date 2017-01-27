@@ -451,19 +451,43 @@ void EffectorSplineRotationNoRotationTest(bool& error)
     ComparePoints(q_end  , eff_traj(10),   errmsg,error);
 }
 
+void EffectorSplineRotationRotationTest(bool& error)
+{
+    // create arbitrary trajectory
+    spline::T_Waypoint waypoints;
+    for(double i = 0; i <= 10; i = i + 2)
+    {
+        waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
+    }
+    helpers::quat_t init_quat = GetXRotQuat(M_PI);
+    helpers::effector_spline_rotation eff_traj(waypoints.begin(),waypoints.end(), init_quat);
+    helpers::config_t q_init =  helpers::config_t::Zero(); q_init.tail<4>() = init_quat;
+    helpers::config_t q_end; q_end      << 10.,10.,10.,0.,0.,0.,1.;
+    helpers::config_t q_to   = q_init; q_to(2)  +=0.02;
+    helpers::config_t q_land = q_end ; q_land(2)+=0.02;
+    helpers::quat_t q_mod = GetXRotQuat(M_PI_2);;
+    std::string errmsg("Error in EffectorSplineRotationNoRotationTest; while checking waypoints (expected / obtained)");
+    ComparePoints(q_init, eff_traj(0),           errmsg,error);
+    ComparePoints(q_to  , eff_traj(0.02),        errmsg,error);
+    ComparePoints(q_land, eff_traj(9.98),        errmsg,error);
+    ComparePoints(q_mod , eff_traj(5).tail<4>(), errmsg,error);
+    ComparePoints(q_end , eff_traj(10),          errmsg,error);
+}
+
 int main(int /*argc*/, char** /*argv[]*/)
 {
-	std::cout << "performing tests... \n";
-	bool error = false;
+    std::cout << "performing tests... \n";
+    bool error = false;
     CubicFunctionTest(error);
-	ExactCubicNoErrorTest(error);
-	ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
-	ExactCubicTwoPointsTest(error);
+    ExactCubicNoErrorTest(error);
+    ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
+    ExactCubicTwoPointsTest(error);
     ExactCubicOneDimTest(error);
     ExactCubicVelocityConstraintsTest(error);
     EffectorTrajectoryTest(error);
     EffectorSplineRotationNoRotationTest(error);
-    //BezierCurveTest(error);
+    EffectorSplineRotationRotationTest(error);
+    BezierCurveTest(error);
 	if(error)
 	{
         std::cout << "There were some errors\n";
