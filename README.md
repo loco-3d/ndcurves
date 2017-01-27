@@ -8,7 +8,7 @@ To do so, tools are provided to:
 > - create **exact** splines of arbitrary order (that pass exactly by an arbitrary number waypoints)
 > - constrain initial / end velocities and acceleration for the spline.
 > - constrain take-off and landing phases to follow a straight line along a given normal (to avoid undesired collisions between the effector and the contact surface)
-> automatically handle 3d rotation of the effector.
+> - automatically handle 3d rotation of the effector.
 
 The library is template-based, thus generic:  the curves can be of any dimension, and can be implemented in double, float  ...
 
