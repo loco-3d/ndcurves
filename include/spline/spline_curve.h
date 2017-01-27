@@ -95,8 +95,10 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         : coefficients_(other.coefficients_), dim_(other.dim_), order_(other.order_),
           t_min_(other.t_min_), t_max_(other.t_max_){}
 
-    private:
+
     //spline_curve& operator=(const spline_curve& other);
+
+    private:
     void safe_check()
     {
         if(Safe)
@@ -162,9 +164,9 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /*Attributes*/
     public:
-    coeff_t coefficients_;
-    std::size_t dim_;
-    std::size_t order_;
+    coeff_t coefficients_; //const
+    std::size_t dim_; //const
+    std::size_t order_; //const
 
     private:
     time_t t_min_, t_max_;

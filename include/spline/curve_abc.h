@@ -31,10 +31,10 @@ struct  curve_abc : std::unary_function<Time, Point>
 /* Constructors - destructors */
 	public:
 	///\brief Constructor
-	curve_abc(){};
+    curve_abc(){}
 
 	///\brief Destructor
-	~curve_abc(){};
+    ~curve_abc(){}
 /* Constructors - destructors */
 
 /*Operations*/

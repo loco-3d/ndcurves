@@ -65,6 +65,10 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     exact_cubic(const t_spline_t& subSplines)
         : curve_abc_t(), subSplines_(subSplines) {}
 
+    ///\brief Copy Constructor
+    exact_cubic(const exact_cubic& other)
+        : curve_abc_t(), subSplines_(other.subSplines_) {}
+
 	///\brief Destructor
     ~exact_cubic(){}
 
@@ -144,8 +148,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return subSplines;
     }
 
-	private:
-	exact_cubic(const exact_cubic&);
+    private:
 	exact_cubic& operator=(const exact_cubic&);
 	/* Constructors - destructors */
 

@@ -27,10 +27,34 @@ namespace spline
 {
 namespace helpers
 {
+
 typedef Eigen::Matrix<Numeric, 4, 1> quat_t;
 typedef Eigen::Ref<quat_t> quat_ref_t;
 typedef const Eigen::Ref<const quat_t> quat_ref_const_t;
 typedef Eigen::Matrix<Numeric, 7, 1> config_t;
+typedef Eigen::Matrix<Numeric, 1, 1> point_one_dim_t;
+typedef spline_deriv_constraint <Numeric, Numeric, 1, false, point_one_dim_t> spline_deriv_constraint_one_dim;
+typedef std::pair<Numeric, point_one_dim_t > waypoint_one_dim_t;
+typedef std::vector<waypoint_one_dim_t> t_waypoint_one_dim_t;
+
+
+class time_reparametrization_spline: public spline_deriv_constraint_one_dim
+{
+    public:
+    time_reparametrization_spline()
+        : spline_deriv_constraint_one_dim(computeWayPoints()){}
+
+    ~time_reparametrization_spline(){}
+
+    spline_deriv_constraint_one_dim computeWayPoints() const
+    {
+        // initializing time reparametrization for spline
+        t_waypoint_one_dim_t waypoints;
+        waypoints.push_back(std::make_pair(0,point_one_dim_t::Zero()));
+        waypoints.push_back(std::make_pair(1,point_one_dim_t::Ones()));
+        return spline_deriv_constraint_one_dim(waypoints.begin(), waypoints.end());
+    }
+};
 
 /// \class effector_spline_rotation
 /// \brief Represents a trajectory for and end effector
@@ -69,6 +93,7 @@ class effector_spline_rotation
         , to_quat_(to_quat.data()), land_quat_(land_quat.data())
         , time_lift_offset_(spline_->min()+lift_offset_duration)
         , time_land_offset_(spline_->max()-land_offset_duration)
+        , rotation_spline_()
     {
         // NOTHING
     }
@@ -97,6 +122,7 @@ class effector_spline_rotation
         return res;
     }
 
+
     ///  \brief Interpolates between two quaternions
     ///  \param t : the time when to evaluate the spline
     ///  \param quat : quaternion updated as the interpolation result
@@ -107,8 +133,10 @@ class effector_spline_rotation
         if(t>=time_land_offset_) return land_quat_.coeffs();
         //normalize u
         Numeric u = (t - time_lift_offset_) /(time_land_offset_ - time_lift_offset_);
-        return to_quat_.slerp(u, land_quat_).coeffs();
+        // reparametrize u
+        return to_quat_.slerp(rotation_spline_(u)[0], land_quat_).coeffs();
     }
+
     /*Operations*/
 
     /*Attributes*/
@@ -118,6 +146,7 @@ class effector_spline_rotation
     const Eigen::Quaterniond land_quat_;
     const double time_lift_offset_;
     const double time_land_offset_;
+    const time_reparametrization_spline rotation_spline_; // should be static
     /*Attributes*/
 };
 

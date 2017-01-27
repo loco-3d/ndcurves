@@ -79,6 +79,11 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
 	///\brief Destructor
     ~spline_deriv_constraint(){}
 
+    ///\brief Copy Constructor
+    spline_deriv_constraint(const spline_deriv_constraint& other)
+        : exact_cubic_t(other.subSplines_) {}
+
+
     private:
     template<typename In>
     void compute_one_spline(In wayPointsBegin, In wayPointsNext, spline_constraints& constraints, t_spline_t& subSplines) const
@@ -140,8 +145,7 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
         return subSplines;
     }
 
-	private:
-    spline_deriv_constraint(const spline_deriv_constraint&);
+    private:
     spline_deriv_constraint& operator=(const spline_deriv_constraint&);
     /* Constructors - destructors */
 };

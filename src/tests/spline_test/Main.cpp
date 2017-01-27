@@ -474,6 +474,39 @@ void EffectorSplineRotationRotationTest(bool& error)
     ComparePoints(q_end , eff_traj(10),          errmsg,error);
 }
 
+void TestReparametrization(bool& error)
+{
+    helpers::time_reparametrization_spline sp;
+    if(sp.min() != 0)
+    {
+        std::cout << "in TestReparametrization; min value is not 0, got " << sp.min() << std::endl;
+        error = true;
+    }
+    if(sp.max() != 1)
+    {
+        std::cout << "in TestReparametrization; max value is not 1, got " << sp.max() << std::endl;
+        error = true;
+    }
+    if(sp(1)[0] != 1.)
+    {
+        std::cout << "in TestReparametrization; end value is not 1, got " << sp(1)[0] << std::endl;
+        error = true;
+    }
+    if(sp(0)[0] != 0.)
+    {
+        std::cout << "in TestReparametrization; init value is not 0, got " << sp(0)[0] << std::endl;
+        error = true;
+    }
+    for(double i =0; i<1; i+=0.002)
+    {
+        if(sp(i)[0]>sp(i+0.002)[0])
+        {
+            std::cout << "in TestReparametrization; reparametrization not monotonous " << sp.max() << std::endl;
+            error = true;
+        }
+    }
+}
+
 int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
@@ -487,6 +520,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     EffectorTrajectoryTest(error);
     EffectorSplineRotationNoRotationTest(error);
     EffectorSplineRotationRotationTest(error);
+    TestReparametrization(error);
     BezierCurveTest(error);
 	if(error)
 	{
