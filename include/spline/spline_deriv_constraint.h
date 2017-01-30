@@ -38,8 +38,9 @@ namespace spline
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
          typename Point= Eigen::Matrix<Numeric, Dim, 1>,
-         typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
-struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Point>
+         typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >,
+         typename SplineBase=spline_curve<Time, Numeric, Dim, Safe, Point, T_Point> >
+struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase>
 {
     typedef Point 	point_t;
     typedef T_Point t_point_t;
@@ -82,7 +83,6 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
     ///\brief Copy Constructor
     spline_deriv_constraint(const spline_deriv_constraint& other)
         : exact_cubic_t(other.subSplines_) {}
-
 
     private:
     template<typename In>
@@ -146,7 +146,6 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
     }
 
     private:
-    spline_deriv_constraint& operator=(const spline_deriv_constraint&);
     /* Constructors - destructors */
 };
 }

@@ -21,6 +21,7 @@
 #define _CLASS_EFFECTOR_SPLINE_ROTATION
 
 #include "spline/helpers/effector_spline.h"
+#include "spline/curve_abc.h"
 #include <Eigen/Geometry>
 
 namespace spline
@@ -32,19 +33,51 @@ typedef Eigen::Matrix<Numeric, 4, 1> quat_t;
 typedef Eigen::Ref<quat_t> quat_ref_t;
 typedef const Eigen::Ref<const quat_t> quat_ref_const_t;
 typedef Eigen::Matrix<Numeric, 7, 1> config_t;
+typedef curve_abc<Time, Numeric, 4, false, quat_t> curve_abc_quat_t;
+typedef std::pair<Numeric, quat_t > waypoint_quat_t;
+typedef std::vector<waypoint_quat_t> t_waypoint_quat_t;
 typedef Eigen::Matrix<Numeric, 1, 1> point_one_dim_t;
 typedef spline_deriv_constraint <Numeric, Numeric, 1, false, point_one_dim_t> spline_deriv_constraint_one_dim;
 typedef std::pair<Numeric, point_one_dim_t > waypoint_one_dim_t;
 typedef std::vector<waypoint_one_dim_t> t_waypoint_one_dim_t;
 
 
-class time_reparametrization_spline: public spline_deriv_constraint_one_dim
+class rotation_spline: public curve_abc_quat_t
 {
     public:
-    time_reparametrization_spline()
-        : spline_deriv_constraint_one_dim(computeWayPoints()){}
+     rotation_spline (quat_ref_const_t quat_from=quat_t(0,0,0,1), quat_ref_const_t quat_to=quat_t(0,0,0,1),
+                               const double min = 0., const double max = 1.)
+         : curve_abc_quat_t()
+         , quat_from_(quat_from.data()), quat_to_(quat_to.data()), min_(min), max_(max)
+         , time_reparam_(computeWayPoints())
+     {}
 
-    ~time_reparametrization_spline(){}
+    ~rotation_spline() {}
+
+    /* Copy Constructors / operator=*/
+    rotation_spline& operator=(const rotation_spline& from)
+    {
+        quat_from_ = from.quat_from_;
+        quat_to_ = from.quat_to_;
+        min_ =from.min_; max_ = from.max_;
+        time_reparam_ = spline_deriv_constraint_one_dim(from.time_reparam_);
+    }
+    /* Copy Constructors / operator=*/
+
+    quat_t operator()(const Numeric t) const
+    {
+        if(t<=min()) return quat_from_.coeffs();
+        if(t>=max()) return quat_to_.coeffs();
+        //normalize u
+        Numeric u = (t - min()) /(max() - min());
+        // reparametrize u
+        return quat_from_.slerp(time_reparam_(u)[0], quat_to_).coeffs();
+    }
+
+    virtual quat_t derivate(time_t /*t*/, std::size_t /*order*/) const
+    {
+        throw std::runtime_error("TODO quaternion spline does not implement derivate");
+    }
 
     spline_deriv_constraint_one_dim computeWayPoints() const
     {
@@ -54,7 +87,21 @@ class time_reparametrization_spline: public spline_deriv_constraint_one_dim
         waypoints.push_back(std::make_pair(1,point_one_dim_t::Ones()));
         return spline_deriv_constraint_one_dim(waypoints.begin(), waypoints.end());
     }
+
+    virtual time_t min() const{return min_;}
+    virtual time_t max() const{return max_;}
+
+    public:
+    Eigen::Quaterniond quat_from_; //const
+    Eigen::Quaterniond quat_to_;   //const
+    double min_;                   //const
+    double max_;                   //const
+    spline_deriv_constraint_one_dim time_reparam_; //const
 };
+
+
+typedef exact_cubic<Time, Numeric, 4, false, quat_t, std::vector<quat_t,Eigen::aligned_allocator<quat_t> >, rotation_spline> exact_cubic_quat_t;
+
 
 /// \class effector_spline_rotation
 /// \brief Represents a trajectory for and end effector
@@ -93,7 +140,40 @@ class effector_spline_rotation
         , to_quat_(to_quat.data()), land_quat_(land_quat.data())
         , time_lift_offset_(spline_->min()+lift_offset_duration)
         , time_land_offset_(spline_->max()-land_offset_duration)
-        , rotation_spline_()
+        , quat_spline_(simple_quat_spline())
+    {
+        // NOTHING
+    }
+
+    /// \brief Constructor.
+    /// Given a set of waypoints, and the normal vector of the start and
+    /// ending positions, automatically create the spline such that:
+    /// + init and end velocities / accelerations are 0.
+    /// + the effector lifts and lands exactly in the direction of the specified normals
+    /// \param wayPointsBegin       : an iterator pointing to the first element of a waypoint container
+    /// \param wayPointsEnd         : an iterator pointing to the end           of a waypoint container
+    /// \param quatWayPointsBegin   : en iterator pointing to the first element of a 4D vector (x, y, z, w) container of
+    ///  quaternions indicating rotation at specific time steps.
+    /// \param quatWayPointsEnd     : en iterator pointing to the end           of a 4D vector (x, y, z, w) container of
+    ///  quaternions indicating rotation at specific time steps.
+    /// \param lift_normal          : normal to be followed by end effector at take-off
+    /// \param land_normal          : normal to be followed by end effector at landing
+    /// \param lift_offset          : length of the straight line along normal at take-off
+    /// \param land_offset          : length of the straight line along normal at landing
+    /// \param lift_offset_duration : time travelled along straight line at take-off
+    /// \param land_offset_duration : time travelled along straight line at landing
+    ///
+    template<typename In, typename InQuat>
+    effector_spline_rotation(In wayPointsBegin, In wayPointsEnd,
+            InQuat quatWayPointsBegin, InQuat quatWayPointsEnd,
+            const Point& lift_normal=Eigen::Vector3d::UnitZ(), const Point& land_normal=Eigen::Vector3d::UnitZ(),
+            const Numeric lift_offset=0.02, const Numeric land_offset=0.02,
+            const Time lift_offset_duration=0.02, const Time land_offset_duration=0.02)
+        : spline_(effector_spline(wayPointsBegin, wayPointsEnd, lift_normal, land_normal, lift_offset, land_offset, lift_offset_duration, land_offset_duration))
+        , to_quat_((quatWayPointsBegin->second).data()), land_quat_(((quatWayPointsEnd-1)->second).data())
+        , time_lift_offset_(spline_->min()+lift_offset_duration)
+        , time_land_offset_(spline_->max()-land_offset_duration)
+        , quat_spline_(quat_spline(quatWayPointsBegin, quatWayPointsEnd))
     {
         // NOTHING
     }
@@ -122,19 +202,39 @@ class effector_spline_rotation
         return res;
     }
 
-
-    ///  \brief Interpolates between two quaternions
-    ///  \param t : the time when to evaluate the spline
-    ///  \param quat : quaternion updated as the interpolation result
-    ///
-    quat_t interpolate_quat(Numeric t) const
+    public:
+    quat_t interpolate_quat(const Numeric t) const
     {
         if(t<=time_lift_offset_) return to_quat_.coeffs();
         if(t>=time_land_offset_) return land_quat_.coeffs();
-        //normalize u
-        Numeric u = (t - time_lift_offset_) /(time_land_offset_ - time_lift_offset_);
-        // reparametrize u
-        return to_quat_.slerp(rotation_spline_(u)[0], land_quat_).coeffs();
+        return quat_spline_(t);
+    }
+
+    private:
+    exact_cubic_quat_t simple_quat_spline() const
+    {
+        std::vector<rotation_spline> splines;
+        splines.push_back(rotation_spline(to_quat_.coeffs(),land_quat_.coeffs(),time_lift_offset_, time_land_offset_));
+        return exact_cubic_quat_t(splines);
+    }
+
+    template <typename InQuat>
+    exact_cubic_quat_t quat_spline(InQuat quatWayPointsBegin, InQuat quatWayPointsEnd) const
+    {
+        if(std::distance(quatWayPointsBegin, quatWayPointsEnd) < 1)
+            return simple_quat_spline();
+        exact_cubic_quat_t::t_spline_t splines;
+        InQuat it(quatWayPointsBegin);
+        Time init = time_lift_offset_;
+        Eigen::Quaterniond current_quat = to_quat_;
+        for(; it != quatWayPointsEnd; ++it)
+        {
+            splines.push_back(rotation_spline(current_quat.coeffs(), it->second, init, it->first));
+            current_quat = it->second;
+            init = it->first;
+        }
+        splines.push_back(rotation_spline(current_quat.coeffs(), land_quat_.coeffs(), init, time_land_offset_));
+        return exact_cubic_quat_t(splines);
     }
 
     /*Operations*/
@@ -146,7 +246,7 @@ class effector_spline_rotation
     const Eigen::Quaterniond land_quat_;
     const double time_lift_offset_;
     const double time_land_offset_;
-    const time_reparametrization_spline rotation_spline_; // should be static
+    const exact_cubic_quat_t quat_spline_;
     /*Attributes*/
 };
 

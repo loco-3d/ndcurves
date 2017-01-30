@@ -429,6 +429,13 @@ helpers::quat_t GetXRotQuat(const double theta)
     return helpers::quat_t(Eigen::Quaterniond(m).coeffs().data());
 }
 
+double GetXRotFromQuat(helpers::quat_ref_const_t q)
+{
+    Eigen::Quaterniond quat (q.data());
+    Eigen::AngleAxisd m (quat);
+    return m.angle() / M_PI * 180.;
+}
+
 void EffectorSplineRotationNoRotationTest(bool& error)
 {
     // create arbitrary trajectory
@@ -466,7 +473,7 @@ void EffectorSplineRotationRotationTest(bool& error)
     helpers::config_t q_to   = q_init; q_to(2)  +=0.02;
     helpers::config_t q_land = q_end ; q_land(2)+=0.02;
     helpers::quat_t q_mod = GetXRotQuat(M_PI_2);;
-    std::string errmsg("Error in EffectorSplineRotationNoRotationTest; while checking waypoints (expected / obtained)");
+    std::string errmsg("Error in EffectorSplineRotationRotationTest; while checking waypoints (expected / obtained)");
     ComparePoints(q_init, eff_traj(0),           errmsg,error);
     ComparePoints(q_to  , eff_traj(0.02),        errmsg,error);
     ComparePoints(q_land, eff_traj(9.98),        errmsg,error);
@@ -474,9 +481,46 @@ void EffectorSplineRotationRotationTest(bool& error)
     ComparePoints(q_end , eff_traj(10),          errmsg,error);
 }
 
+void EffectorSplineRotationWayPointRotationTest(bool& error)
+{
+    // create arbitrary trajectory
+    spline::T_Waypoint waypoints;
+    for(double i = 0; i <= 10; i = i + 2)
+    {
+        waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
+    }
+    helpers::quat_t init_quat = GetXRotQuat(0);
+    helpers::t_waypoint_quat_t quat_waypoints_;
+
+
+    helpers::quat_t q_pi_0 = GetXRotQuat(0);
+    helpers::quat_t q_pi_2 = GetXRotQuat(M_PI_2);
+    helpers::quat_t q_pi   = GetXRotQuat(M_PI);
+
+    quat_waypoints_.push_back(std::make_pair(0.4,q_pi_0));
+    quat_waypoints_.push_back(std::make_pair(6,q_pi_2));
+    quat_waypoints_.push_back(std::make_pair(8,q_pi));
+
+
+    helpers::effector_spline_rotation eff_traj(waypoints.begin(),waypoints.end(),
+                                               quat_waypoints_.begin(), quat_waypoints_.end());
+    helpers::config_t q_init =  helpers::config_t::Zero(); q_init.tail<4>() = init_quat;
+    helpers::config_t q_end; q_end      << 10.,10.,10.,0.,0.,0.,1.; q_end.tail<4>() = q_pi;
+    helpers::config_t q_mod; q_mod.head<3>() = point_t(6,6,6) ; q_mod.tail<4>() = q_pi_2;
+    helpers::config_t q_to   = q_init; q_to(2)  +=0.02;
+    helpers::config_t q_land = q_end ; q_land(2)+=0.02;
+    std::string errmsg("Error in EffectorSplineRotationWayPointRotationTest; while checking waypoints (expected / obtained)");
+    ComparePoints(q_init, eff_traj(0),           errmsg,error);
+    ComparePoints(q_to  , eff_traj(0.02),        errmsg,error);
+    ComparePoints(q_land, eff_traj(9.98),        errmsg,error);
+    ComparePoints(q_mod , eff_traj(6), errmsg,error);
+    ComparePoints(q_end , eff_traj(10),          errmsg,error);
+}
+
 void TestReparametrization(bool& error)
 {
-    helpers::time_reparametrization_spline sp;
+    helpers::rotation_spline s;
+    const helpers::spline_deriv_constraint_one_dim& sp = s.time_reparam_;
     if(sp.min() != 0)
     {
         std::cout << "in TestReparametrization; min value is not 0, got " << sp.min() << std::endl;
@@ -521,6 +565,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     EffectorSplineRotationNoRotationTest(error);
     EffectorSplineRotationRotationTest(error);
     TestReparametrization(error);
+    EffectorSplineRotationWayPointRotationTest(error);
     BezierCurveTest(error);
 	if(error)
 	{

@@ -36,7 +36,8 @@ namespace spline
 /// crossing each of the waypoint given in its initialization
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
-, typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
+, typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >
+, typename SplineBase=spline_curve<Time, Numeric, Dim, Safe, Point, T_Point> >
 struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
 	typedef Point 	point_t;
@@ -44,7 +45,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 	typedef Time 	time_t;
 	typedef Numeric	num_t;
-    typedef spline_curve<time_t, Numeric, Dim, Safe, point_t, t_point_t> spline_t;
+    typedef SplineBase spline_t;
     typedef typename std::vector<spline_t> t_spline_t;
     typedef typename t_spline_t::iterator it_spline_t;
     typedef typename t_spline_t::const_iterator cit_spline_t;
@@ -149,7 +150,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     private:
-	exact_cubic& operator=(const exact_cubic&);
+    //exact_cubic& operator=(const exact_cubic&);
 	/* Constructors - destructors */
 
 	/*Operations*/
@@ -193,7 +194,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 	/*Attributes*/
     public:
-    const t_spline_t subSplines_;
+    t_spline_t subSplines_; // const
 	/*Attributes*/
 };
 }
