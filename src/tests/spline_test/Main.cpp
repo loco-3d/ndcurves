@@ -181,30 +181,40 @@ void BezierCurveTest(bool& error)
 	res1 = cf4(2); 
     ComparePoints(d, res1, errMsg + "3(1) ", error);
 
+    //testing bernstein polynomes
+    std::string errMsg2("In test BezierCurveTest ; Bernstein polynoms do not evaluate as analytical evaluation");
+    for(double d = 0.; d <1.; d+=0.1)
+    {
+        ComparePoints( cf3.evalBernstein(d) , cf3 (d), errMsg2, error);
+    }
+
+    bool error_in(true);
 	try
 	{
 		cf(-0.4);
 	}
 	catch(...)
 	{
-		error = false;
+        error_in = false;
 	}
-	if(error)
+    if(error_in)
 	{
 		std::cout << "Evaluation of bezier cf error, -0.4 should be an out of range value\n";
+        error = true;
 	}
-	error = true;	
+    error_in = true;
 	try
 	{
 		cf(1.1);
 	}
 	catch(...)
 	{
-		error = false;
+        error_in = false;
 	}
-	if(error)
+    if(error_in)
 	{
 		std::cout << "Evaluation of bezier cf error, 1.1 should be an out of range value\n";
+        error = true;
 	}
 	if(cf.max() != 1)
 	{

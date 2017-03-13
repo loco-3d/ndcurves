@@ -11,10 +11,12 @@
 #define _CLASS_BEZIERCURVE
 
 #include "curve_abc.h"
+#include "bernstein.h"
 
 #include "MathDefs.h"
 
 #include <vector>
+#include <stdexcept>
 
 namespace spline
 {
@@ -27,7 +29,8 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 {
 	typedef Point 	point_t;
 	typedef Time 	time_t;
-	typedef Numeric	num_t;
+    typedef Numeric	num_t;
+    typedef std::vector<point_t,Eigen::aligned_allocator<point_t> > t_point_t;
 
 /* Constructors - destructors */
 	public:
@@ -39,11 +42,13 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 	: minBound_(minBound)
 	, maxBound_(maxBound)
 	, size_(std::distance(PointsBegin, PointsEnd))
+    , bernstein_(spline::makeBernstein<num_t>(size_-1))
 	{
+        assert(bernstein_.size() == size_);
 		In it(PointsBegin);
 		if(Safe && (size_<=1 || minBound == maxBound))
 		{
-            throw std::out_of_range("TODO"); // TODO
+            throw std::out_of_range("can't create bezier min bound is higher than max bound"); // TODO
 		}
 		for(; it != PointsEnd; ++it)
 		{
@@ -58,8 +63,8 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 	}
 
 	private:
-	bezier_curve(const bezier_curve&);
-	bezier_curve& operator=(const bezier_curve&);
+//	bezier_curve(const bezier_curve&);
+//  bezier_curve& operator=(const bezier_curve&);
 /* Constructors - destructors */
 
 /*Operations*/
@@ -72,7 +77,7 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 		num_t nT = (t - minBound_) / (maxBound_ - minBound_);
 		if(Safe &! (0 <= nT && nT <= 1))
 		{
-            throw std::out_of_range("TODO"); // TODO
+            throw std::out_of_range("can't evaluate bezier curve, out of range"); // TODO
         }
 		else
 		{
@@ -87,15 +92,33 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
                        				+ 2 * pts_[1] * nT * dt
 						+ pts_[2] * nT * nT;
 				break;
-				default :
+                case 4 :
 					return 	pts_[0] * dt * dt * dt
 						+ 3 * pts_[1] * nT * dt * dt 
 						+ 3 * pts_[2] * nT * nT * dt 
 						+ pts_[3] * nT * nT *nT;
+                default :
+                    return evalBernstein(dt);
 				break;
 			}
 		}
 	}
+
+    ///
+    /// \brief Evaluates all Bernstein polynomes for a certain degree
+    ///
+    point_t evalBernstein(const Numeric u) const
+    {
+        point_t res = point_t::Zero();
+        typename t_point_t::const_iterator pts_it = pts_.begin();
+        for(typename std::vector<Bern<Numeric> >::const_iterator cit = bernstein_.begin();
+            cit !=bernstein_.end(); ++cit, ++pts_it)
+        {
+            res += cit->operator()(u) * (*pts_it);
+        }
+        return res;
+    }
+
 /*Operations*/
 
 /*Helpers*/
@@ -104,12 +127,14 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 /*Helpers*/
 
 	public:
-	const int size_;
-	const time_t minBound_, maxBound_;
+    const time_t minBound_, maxBound_;
+    const std::size_t size_;
+    const std::vector<Bern<Numeric> > bernstein_;
 	
-	private:
-	typedef std::vector<Point,Eigen::aligned_allocator<Point> > T_Vector;
-	T_Vector  pts_;
+    private:
+    t_point_t  pts_;
+
+    //storing bernstein polynoms, even in low dimension
 };
 }
 #endif //_CLASS_BEZIERCURVE
