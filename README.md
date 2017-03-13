@@ -59,10 +59,20 @@ Please refer to the Main.cpp files to see all the unit tests and possibilities o
 
 Installation
 -------------
-The library is header only, so you just need to copy the include folder where you need.
-Eigen is required for the library to work.
+## Dependencies
+* [Eigen (version >= 3.2.2)](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 
-To run the tests, there is a CMakeLists.txt:
+## Additional dependencies for python bindings
+* [Boost.Python](http://www.boost.org/doc/libs/1_63_0/libs/python/doc/html/index.html)
+* [eigenpy](https://github.com/stack-of-tasks/eigenpy)
+
+To handle this with cmake, use the recursive option to clone the repository.
+For instance, using http:
+```
+git clone --recursive https://github.com/stonneau/spline.git $SPLINE_DIR
+```
+The library is header only, so the build only serves to build the tests and python bindings:
+
 ```
 	cd $SPLINE_DIR && mkdir build && cd build
 	cmake .. && make 
@@ -74,3 +84,21 @@ If everything went fine you should obtain the following output:
 performing tests... 
 no errors found 
 ```
+### Optional: Python bindings installation
+To install the Python bindings, in the CMakeLists.txt file, first enable the BUILD_PYTHON_INTERFACE option:
+```
+OPTION (BUILD_PYTHON_INTERFACE "Build the python binding" ON)
+```
+
+Then rebuild the library:
+```
+cd $SPLINE_DIR/build
+cmake -DCMAKE_INSTALL_PREFIX=${DEVEL_DIR}/install ..
+make install
+```
+The python bindings should then be accessible through the package centroidal_dynamics.
+To see example of use, you can refer to the [test file](https://github.com/stonneau/spline/blob/master/python/test/test.py)
+which is rather self explanatory:
+
+In spite of an exhaustive documentation, please refer to the C++ documentation, which mostly applies
+to python. For the moment, only bezier curves are binded.
