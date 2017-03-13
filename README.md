@@ -12,7 +12,7 @@ To do so, tools are provided to:
 
 The library is template-based, thus generic:  the curves can be of any dimension, and can be implemented in double, float  ...
 
-While a Bezier curve implementation is provided (limited to degree 3), the main interest 
+While a Bezier curve implementation is provided, the main interest 
 of this library is to create spline curves of arbitrary order
 
 ----------
