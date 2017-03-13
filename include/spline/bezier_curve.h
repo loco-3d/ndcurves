@@ -21,7 +21,9 @@
 namespace spline
 {
 /// \class BezierCurve
-/// \brief Represents a curve
+/// \brief Represents a Bezier curve of arbitrary dimension and order.
+/// For degree lesser than 4, the evaluation is analitycal.Otherwise
+/// the bernstein polynoms are used to evaluate the spline at a given location.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1> >
@@ -36,7 +38,7 @@ struct bezier_curve : public  curve_abc<Time, Numeric, Dim, Safe, Point>
 	public:
 	///\brief Constructor
 	///\param PointsBegin, PointsEnd : the points parametering the Bezier curve
-	///\TODO : so far size above 3 is ignored
+    ///
 	template<typename In>
 	bezier_curve(In PointsBegin, In PointsEnd, const time_t minBound=0, const time_t maxBound=1)
 	: minBound_(minBound)
