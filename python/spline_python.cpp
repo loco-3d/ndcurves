@@ -1,6 +1,7 @@
 #include "spline/bezier_curve.h"
 #include "spline/spline_curve.h"
 #include "spline/exact_cubic.h"
+#include "spline/spline_deriv_constraint.h"
 
 #include <vector>
 
@@ -12,6 +13,7 @@
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 typedef double real;
 typedef Eigen::Vector3d point_t;
+typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point_t;
 typedef Eigen::VectorXd time_waypoints_t;
 typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point_list_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
@@ -24,9 +26,17 @@ typedef spline::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cub
 typedef spline_curve_t::coeff_t coeff_t;
 typedef std::pair<real, point_t> waypoint_t;
 typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t;
+
+
+typedef spline::spline_deriv_constraint  <real, real, 3, true, point_t, t_point_t> spline_deriv_constraint_t;
+typedef spline_deriv_constraint_t::spline_constraints spline_constraints_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_curve_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_constraints_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_deriv_constraint_t)
 
 namespace spline
 {
@@ -74,12 +84,25 @@ exact_cubic_t* wrapExactCubicConstructor(const coeff_t& array, const time_waypoi
 }
 
 
+spline_deriv_constraint_t* wrapSplineDerivConstraint(const coeff_t& array, const time_waypoints_t& time_wp, const spline_constraints_t& constraints)
+{
+    t_waypoint_t wps = getWayPoints(array, time_wp);
+    return new spline_deriv_constraint_t(wps.begin(), wps.end(),constraints);
+}
+
+spline_deriv_constraint_t* wrapSplineDerivConstraintNoConstraints(const coeff_t& array, const time_waypoints_t& time_wp)
+{
+    t_waypoint_t wps = getWayPoints(array, time_wp);
+    return new spline_deriv_constraint_t(wps.begin(), wps.end());
+}
+
 BOOST_PYTHON_MODULE(spline)
 {
     /** BEGIN eigenpy init**/
     eigenpy::enableEigenPy();
 
     eigenpy::enableEigenPySpecific<point_t,point_t>();
+    eigenpy::enableEigenPySpecific<ret_point_t,ret_point_t>();
     eigenpy::enableEigenPySpecific<point_list_t,point_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
     /*eigenpy::exposeAngleAxis();
@@ -119,6 +142,31 @@ BOOST_PYTHON_MODULE(spline)
             .def("derivate", &exact_cubic_t::derivate)
         ;
     /** END bezier curve**/
+
+
+    /** BEGIN spline constraints**/
+    class_<spline_constraints_t>
+        ("spline_constraints", init<>())
+            .def_readwrite("init_vel", &spline_constraints_t::init_vel)
+            .def_readwrite("init_acc", &spline_constraints_t::init_acc)
+            .def_readwrite("end_vel", &spline_constraints_t::end_vel)
+            .def_readwrite("end_acc", &spline_constraints_t::end_acc)
+        ;
+    /** END spline constraints**/
+
+
+    /** BEGIN spline_deriv_constraints**/
+    class_<spline_deriv_constraint_t>
+        ("spline_deriv_constraint", no_init)
+            .def("__init__", make_constructor(&wrapSplineDerivConstraint))
+            .def("__init__", make_constructor(&wrapSplineDerivConstraintNoConstraints))
+            .def("min", &exact_cubic_t::min)
+            .def("max", &exact_cubic_t::max)
+            .def("__call__", &exact_cubic_t::operator())
+            .def("derivate", &exact_cubic_t::derivate)
+        ;
+    /** END spline_deriv_constraints**/
+
 
 }
 

@@ -1,4 +1,4 @@
-from spline import bezier, spline, exact_cubic
+from spline import bezier, spline, exact_cubic, spline_constraints, spline_constraints, spline_deriv_constraint
 
 from numpy import matrix
 
@@ -29,3 +29,13 @@ a.max()
 a(0.4)
 assert((a.derivate(0.4,0) == a(0.4)).all())
 a.derivate(0.4,2)
+
+#testing spline_deriv_constraints
+c = spline_constraints();
+#~ c.init_vel; // TODO: error in reading DATA at the time ...
+#~ c.end_vel;
+c.init_acc = matrix([0.,1.,1.]);
+#~ c.end_acc;
+
+a = spline_deriv_constraint (waypoints, time_waypoints)
+a = spline_deriv_constraint (waypoints, time_waypoints, c)
