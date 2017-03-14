@@ -32,10 +32,16 @@ a.derivate(0.4,2)
 
 #testing spline_deriv_constraints
 c = spline_constraints();
-#~ c.init_vel; // TODO: error in reading DATA at the time ...
-#~ c.end_vel;
+c.init_vel; #  TODO: error in reading DATA at the time ...
+c.end_vel;
+c.init_acc;
+c.end_acc;
+
+
+c.init_vel = matrix([0.,1.,1.]);
+c.end_vel  = matrix([0.,1.,1.]);
 c.init_acc = matrix([0.,1.,1.]);
-#~ c.end_acc;
+c.end_acc  = matrix([0.,1.,1.]);
 
 a = spline_deriv_constraint (waypoints, time_waypoints)
 a = spline_deriv_constraint (waypoints, time_waypoints, c)

@@ -96,6 +96,48 @@ spline_deriv_constraint_t* wrapSplineDerivConstraintNoConstraints(const coeff_t&
     return new spline_deriv_constraint_t(wps.begin(), wps.end());
 }
 
+point_t get_init_vel(const spline_constraints_t& c)
+{
+    return c.init_vel;
+}
+
+point_t get_init_acc(const spline_constraints_t& c)
+{
+    return c.init_acc;
+}
+
+point_t get_end_vel(const spline_constraints_t& c)
+{
+    return c.end_vel;
+}
+
+point_t get_end_acc(const spline_constraints_t& c)
+{
+    return c.end_acc;
+}
+
+void set_init_vel(spline_constraints_t& c, const point_t& val)
+{
+    c.init_vel = val;
+}
+
+void set_init_acc(spline_constraints_t& c, const point_t& val)
+{
+    c.init_acc = val;
+}
+
+void set_end_vel(spline_constraints_t& c, const point_t& val)
+{
+    c.end_vel = val;
+}
+
+void set_end_acc(spline_constraints_t& c, const point_t& val)
+{
+    c.end_acc = val;
+}
+
+
+
 BOOST_PYTHON_MODULE(spline)
 {
     /** BEGIN eigenpy init**/
@@ -147,10 +189,10 @@ BOOST_PYTHON_MODULE(spline)
     /** BEGIN spline constraints**/
     class_<spline_constraints_t>
         ("spline_constraints", init<>())
-            .def_readwrite("init_vel", &spline_constraints_t::init_vel)
-            .def_readwrite("init_acc", &spline_constraints_t::init_acc)
-            .def_readwrite("end_vel", &spline_constraints_t::end_vel)
-            .def_readwrite("end_acc", &spline_constraints_t::end_acc)
+            .add_property("init_vel", &get_init_vel, &set_init_vel)
+            .add_property("init_acc", &get_init_acc, &set_init_acc)
+            .add_property("end_vel", &get_end_vel, &set_end_vel)
+            .add_property("end_acc", &get_end_acc, &set_end_acc)
         ;
     /** END spline constraints**/
 
