@@ -21,7 +21,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 
 SETUP_PROJECT()
 
-OPTION (BUILD_PYTHON_INTERFACE "Build the python binding" ON)
+OPTION (BUILD_PYTHON_INTERFACE "Build the python binding" OFF)
 IF(BUILD_PYTHON_INTERFACE)
 # search for python
 	FINDPYTHON(2.7 REQUIRED)
