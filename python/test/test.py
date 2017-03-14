@@ -32,7 +32,7 @@ a.derivate(0.4,2)
 
 #testing spline_deriv_constraints
 c = spline_constraints();
-c.init_vel; #  TODO: error in reading DATA at the time ...
+c.init_vel; 
 c.end_vel;
 c.init_acc;
 c.end_acc;
