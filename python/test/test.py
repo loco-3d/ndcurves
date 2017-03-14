@@ -11,6 +11,10 @@ a = bezier(waypoints, -1., 3.)
 a.min()
 a.max()
 a(0.4)
+assert((a.derivate(0.4,0) == a(0.4)).all())
+a.derivate(0.4,2)
+
+a = a.compute_derivate(100)
 
 
 #testing spline function
