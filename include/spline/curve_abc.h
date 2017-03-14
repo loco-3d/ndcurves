@@ -43,6 +43,13 @@ struct  curve_abc : std::unary_function<Time, Point>
 	///  \param t : the time when to evaluate the spine
 	///  \param return : the value x(t)
     virtual point_t operator()(const time_t t) const = 0;
+
+
+    ///  \brief Evaluation of the derivative spline at time t.
+    ///  \param t : the time when to evaluate the spline
+    ///  \param order : order of the derivative
+    ///  \param return : the value x(t)
+    virtual point_t derivate(const time_t t, const std::size_t order) const = 0;
 /*Operations*/
 
 /*Helpers*/

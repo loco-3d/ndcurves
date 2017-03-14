@@ -55,9 +55,9 @@ ostream& operator<<(ostream& os, const point_t& pt)
     return os;
 }
 
-void ComparePoints(const Eigen::VectorXd& pt1, const Eigen::VectorXd& pt2, const std::string& errmsg, bool& error)
+void ComparePoints(const Eigen::VectorXd& pt1, const Eigen::VectorXd& pt2, const std::string& errmsg, bool& error, bool notequal = false)
 {
-    if((pt1-pt2).norm() > margin)
+    if((pt1-pt2).norm() > margin && !notequal)
 	{
 		error = true;
         std::cout << errmsg << pt1 << " ; " << pt2 << std::endl;
@@ -227,6 +227,27 @@ void BezierCurveTest(bool& error)
 		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
 	}
 }
+
+void BezierDerivativeCurveTest(bool& error)
+{
+    std::string errMsg("In test BezierDerivativeCurveTest ; unexpected result for x ");
+    point_t a(1,2,3);
+    point_t b(2,3,4);
+    point_t c(3,4,5);
+
+    std::vector<point_t> params;
+    params.push_back(a);
+    params.push_back(b);
+
+    params.push_back(c);
+    bezier_curve_t cf3(params.begin(), params.end());
+
+    ComparePoints(cf3(0), cf3.derivate(0.,0), errMsg, error);
+    ComparePoints(cf3(0), cf3.derivate(0.,1), errMsg, error, true);
+    ComparePoints(point_t::Zero(), cf3.derivate(0.,100), errMsg, error);
+}
+
+
 
 /*Exact Cubic Function tests*/
 void ExactCubicNoErrorTest(bool& error)
@@ -577,6 +598,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     TestReparametrization(error);
     EffectorSplineRotationWayPointRotationTest(error);
     BezierCurveTest(error);
+    BezierDerivativeCurveTest(error);
 	if(error)
 	{
         std::cout << "There were some errors\n";

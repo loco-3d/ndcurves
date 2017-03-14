@@ -172,8 +172,9 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     ///  \brief Evaluation of the derivative spline at time t.
     ///  \param t : the time when to evaluate the spline
+    ///  \param order : order of the derivative
     ///  \param return : the value x(t)
-    virtual point_t derivate(time_t t, std::size_t order) const
+    virtual point_t derivate(const time_t t, const std::size_t order) const
     {
         if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}
         for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
