@@ -16,7 +16,7 @@ namespace spline
 {
 typedef Eigen::Vector3d point_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
-typedef spline_curve  <double, double, 3, true, point_t, t_point_t> cubic_function_t;
+typedef spline_curve  <double, double, 3, true, point_t, t_point_t> spline_curve_t;
 typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
 typedef spline_deriv_constraint <double, double, 3, true, point_t> spline_deriv_constraint_t;
 typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
@@ -26,7 +26,7 @@ typedef std::vector<Waypoint> T_Waypoint;
 
 
 typedef Eigen::Matrix<double,1,1> point_one;
-typedef spline_curve<double, double, 1, true, point_one> cubic_function_one;
+typedef spline_curve<double, double, 1, true, point_one> spline_curve_one;
 typedef exact_cubic   <double, double, 1, true, point_one> exact_cubic_one;
 typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
@@ -78,7 +78,7 @@ void CubicFunctionTest(bool& error)
     vec.push_back(b);
     vec.push_back(c);
     vec.push_back(d);
-    cubic_function_t cf(vec.begin(), vec.end(), 0, 1);
+    spline_curve_t cf(vec.begin(), vec.end(), 0, 1);
 	point_t res1;
 	res1 =cf(0); 
 	point_t x0(1,2,3);
@@ -97,7 +97,7 @@ void CubicFunctionTest(bool& error)
     vec.push_back(b);
     vec.push_back(c);
     vec.push_back(d);
-    cubic_function_t cf2(vec, 0.5, 1);
+    spline_curve_t cf2(vec, 0.5, 1);
 	res1 = cf2(0.5); 
     ComparePoints(x0, res1, errMsg + "x3 ", error);
 	error = true;	
