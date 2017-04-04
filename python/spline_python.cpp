@@ -161,6 +161,7 @@ BOOST_PYTHON_MODULE(spline)
             .def("__call__", &bezier_t::operator())
             .def("derivate", &bezier_t::derivate)
             .def("compute_derivate", &bezier_t::compute_derivate)
+            .def("compute_primitive", &bezier_t::compute_primitive)
         ;
     /** END bezier curve**/
 
