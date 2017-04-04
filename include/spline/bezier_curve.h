@@ -179,6 +179,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return res;
     }
 
+    const t_point_t& waypoints() const
+    {
+        return pts_;
+    }
+
 /*Operations*/
 
 /*Helpers*/

@@ -98,6 +98,19 @@ t_waypoint_t getWayPoints(const coeff_t& array, const time_waypoints_t& time_wp)
     return res;
 }
 
+template <typename BezierType, int dim>
+Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> wayPointsToList(const BezierType& self)
+{
+    typedef typename BezierType::t_point_t t_point;
+    typedef typename BezierType::t_point_t::const_iterator cit_point;
+    const t_point& wps = self.waypoints();
+    Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> res (dim, wps.size());
+    int col = 0;
+    for(cit_point cit = wps.begin(); cit != wps.end(); ++cit, ++col)
+        res.block<dim,1>(0,col) = *cit;
+    return res;
+}
+
 exact_cubic_t* wrapExactCubicConstructor(const coeff_t& array, const time_waypoints_t& time_wp)
 {
     t_waypoint_t wps = getWayPoints(array, time_wp);
@@ -186,6 +199,7 @@ BOOST_PYTHON_MODULE(spline)
             .def("derivate", &bezier6_t::derivate)
             .def("compute_derivate", &bezier6_t::compute_derivate)
             .def("compute_primitive", &bezier6_t::compute_primitive)
+            .def("waypoints", &wayPointsToList<bezier6_t,6>)
         ;
     /** END bezier curve**/
 
@@ -200,6 +214,7 @@ BOOST_PYTHON_MODULE(spline)
             .def("derivate", &bezier_t::derivate)
             .def("compute_derivate", &bezier_t::compute_derivate)
             .def("compute_primitive", &bezier_t::compute_primitive)
+            .def("waypoints", &wayPointsToList<bezier_t,3>)
         ;
     /** END bezier curve**/
 
