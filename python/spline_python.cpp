@@ -13,14 +13,21 @@
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 typedef double real;
 typedef Eigen::Vector3d point_t;
+typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> point6_t;
 typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point_t;
+typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> ret_point6_t;
 typedef Eigen::VectorXd time_waypoints_t;
 typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point_list_t;
+typedef Eigen::Matrix<real, 6, Eigen::Dynamic> point_list6_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
+typedef std::vector<point6_t,Eigen::aligned_allocator<point6_t> >  t_point6_t;
 typedef std::pair<real, point_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
+typedef std::pair<real, point6_t> Waypoint6;
+typedef std::vector<Waypoint6> T_Waypoint6;
 
 typedef spline::bezier_curve  <real, real, 3, true, point_t> bezier_t;
+typedef spline::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
 typedef spline::spline_curve  <real, real, 3, true, point_t, t_point_t> spline_curve_t;
 typedef spline::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
 typedef spline_curve_t::coeff_t coeff_t;
@@ -33,6 +40,7 @@ typedef spline_deriv_constraint_t::spline_constraints spline_constraints_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier6_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_constraints_t)
@@ -41,10 +49,10 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_deriv_constraint_t)
 namespace spline
 {
 using namespace boost::python;
-
-t_point_t vectorFromEigenArray(const point_list_t& array)
+template <typename PointList, typename T_Point>
+T_Point vectorFromEigenArray(const PointList& array)
 {
-    t_point_t res;
+    T_Point res;
     for(int i =0;i<array.cols();++i)
         res.push_back(array.col(i));
     return res;
@@ -52,15 +60,28 @@ t_point_t vectorFromEigenArray(const point_list_t& array)
 
 bezier_t* wrapBezierConstructor(const point_list_t& array)
 {
-    t_point_t asVector = vectorFromEigenArray(array);
+    t_point_t asVector = vectorFromEigenArray<point_list_t, t_point_t>(array);
     return new bezier_t(asVector.begin(), asVector.end());
 }
 
 
 bezier_t* wrapBezierConstructorBounds(const point_list_t& array, const real lb, const real ub)
 {
-    t_point_t asVector = vectorFromEigenArray(array);
+    t_point_t asVector = vectorFromEigenArray<point_list_t, t_point_t>(array);
     return new bezier_t(asVector.begin(), asVector.end(), lb, ub);
+}
+
+bezier6_t* wrapBezierConstructor6(const point_list6_t& array)
+{
+    t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
+    return new bezier6_t(asVector.begin(), asVector.end());
+}
+
+
+bezier6_t* wrapBezierConstructorBounds6(const point_list6_t& array, const real lb, const real ub)
+{
+    t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
+    return new bezier6_t(asVector.begin(), asVector.end(), lb, ub);
 }
 
 spline_curve_t* wrapSplineConstructor(const coeff_t& array)
@@ -146,10 +167,27 @@ BOOST_PYTHON_MODULE(spline)
     eigenpy::enableEigenPySpecific<point_t,point_t>();
     eigenpy::enableEigenPySpecific<ret_point_t,ret_point_t>();
     eigenpy::enableEigenPySpecific<point_list_t,point_list_t>();
+    eigenpy::enableEigenPySpecific<point6_t,point6_t>();
+    eigenpy::enableEigenPySpecific<ret_point6_t,ret_point6_t>();
+    eigenpy::enableEigenPySpecific<point_list6_t,point_list6_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
     /*eigenpy::exposeAngleAxis();
     eigenpy::exposeQuaternion();*/
     /** END eigenpy init**/
+
+    /** BEGIN bezier curve 6**/
+    class_<bezier6_t>
+        ("bezier6", no_init)
+            .def("__init__", make_constructor(&wrapBezierConstructor6))
+            .def("__init__", make_constructor(&wrapBezierConstructorBounds6))
+            .def("min", &bezier6_t::min)
+            .def("max", &bezier6_t::max)
+            .def("__call__", &bezier6_t::operator())
+            .def("derivate", &bezier6_t::derivate)
+            .def("compute_derivate", &bezier6_t::compute_derivate)
+            .def("compute_primitive", &bezier6_t::compute_primitive)
+        ;
+    /** END bezier curve**/
 
     /** BEGIN bezier curve**/
     class_<bezier_t>

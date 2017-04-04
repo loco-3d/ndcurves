@@ -124,6 +124,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         if(derived_wp.empty())
             derived_wp.push_back(point_t::Zero());
         bezier_curve_t deriv(derived_wp.begin(), derived_wp.end(),minBound_,maxBound_);
+        std::cout << "deriv size" << deriv.size_ << std::endl;
+        std::cout << "val size" << size_ << std::endl;
         assert(deriv.size_ +1 == this->size_);
         return deriv.compute_derivate(order-1);
     }
