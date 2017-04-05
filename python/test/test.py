@@ -6,15 +6,30 @@ waypoints = matrix([[1.,2.,3.],[4.,5.,6.]]).transpose()
 time_waypoints = matrix([0.,1.])
 
 #testing bezier curve
-a = bezier(waypoints)
 a = bezier(waypoints, -1., 3.)
+
+a = bezier(waypoints)
+assert(a.degree == a.nbWaypoints -1)
 a.min()
 a.max()
 a(0.4)
 assert((a.derivate(0.4,0) == a(0.4)).all())
 a.derivate(0.4,2)
-
 a = a.compute_derivate(100)
+
+prim = a.compute_primitive(1)
+
+for i in range(10):
+	t = float(i) / 10.
+	assert(a(t) == prim.derivate(t,1)).all()
+assert(prim(0) == matrix([0.,0.,0.])).all()
+
+prim = a.compute_primitive(2)
+for i in range(10):
+	t = float(i) / 10.
+	assert(a(t) == prim.derivate(t,2)).all()
+assert(prim(0) == matrix([0.,0.,0.])).all()
+
 
 
 #testing spline function
