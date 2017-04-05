@@ -60,57 +60,56 @@ T_Point vectorFromEigenArray(const PointList& array)
     return res;
 }
 
+template <typename Bezier, typename PointList, typename T_Point>
+Bezier* wrapBezierConstructorTemplate(const PointList& array, const real lb = 0., const real ub =1.)
+{
+    T_Point asVector = vectorFromEigenArray<PointList, T_Point>(array);
+    return new Bezier(asVector.begin(), asVector.end(), lb, ub);
+}
+
+template <typename Bezier, typename PointList, typename T_Point, typename CurveConstraints>
+Bezier* wrapBezierConstructorConstraintsTemplate(const PointList& array, const CurveConstraints& constraints, const real lb = 0., const real ub =1.)
+{
+    T_Point asVector = vectorFromEigenArray<PointList, T_Point>(array);
+    return new Bezier(asVector.begin(), asVector.end(), constraints, lb, ub);
+}
+
+/*3D constructors */
 bezier_t* wrapBezierConstructor(const point_list_t& array)
 {
-    t_point_t asVector = vectorFromEigenArray<point_list_t, t_point_t>(array);
-    return new bezier_t(asVector.begin(), asVector.end());
+    return wrapBezierConstructorTemplate<bezier_t, point_list_t, t_point_t>(array) ;
 }
-
-
 bezier_t* wrapBezierConstructorBounds(const point_list_t& array, const real lb, const real ub)
 {
-    t_point_t asVector = vectorFromEigenArray<point_list_t, t_point_t>(array);
-    return new bezier_t(asVector.begin(), asVector.end(), lb, ub);
+    return wrapBezierConstructorTemplate<bezier_t, point_list_t, t_point_t>(array, lb, ub) ;
 }
-
 bezier_t* wrapBezierConstructorConstraints(const point_list_t& array, const curve_constraints_t& constraints)
 {
-    t_point_t asVector = vectorFromEigenArray<point_list_t, t_point_t>(array);
-    return new bezier_t(asVector.begin(), asVector.end(), constraints);
+    return wrapBezierConstructorConstraintsTemplate<bezier_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints) ;
 }
-
-
-bezier_t* wrapBezierConstructorConstraintsBounds(const point_list_t& array, const curve_constraints_t& constraints, const real lb, const real ub)
+bezier_t* wrapBezierConstructorBoundsConstraints(const point_list_t& array, const curve_constraints_t& constraints, const real lb, const real ub)
 {
-    t_point_t asVector = vectorFromEigenArray<point_list_t, t_point_t>(array);
-    return new bezier_t(asVector.begin(), asVector.end(), constraints, lb, ub);
+    return wrapBezierConstructorConstraintsTemplate<bezier_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, lb, ub) ;
 }
-
+/*END 3D constructors */
+/*6D constructors */
 bezier6_t* wrapBezierConstructor6(const point_list6_t& array)
 {
-    t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
-    return new bezier6_t(asVector.begin(), asVector.end());
+    return wrapBezierConstructorTemplate<bezier6_t, point_list6_t, t_point6_t>(array) ;
 }
-
-
 bezier6_t* wrapBezierConstructorBounds6(const point_list6_t& array, const real lb, const real ub)
 {
-    t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
-    return new bezier6_t(asVector.begin(), asVector.end(), lb, ub);
+    return wrapBezierConstructorTemplate<bezier6_t, point_list6_t, t_point6_t>(array, lb, ub) ;
 }
-
 bezier6_t* wrapBezierConstructor6Constraints(const point_list6_t& array, const curve_constraints6_t& constraints)
 {
-    t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
-    return new bezier6_t(asVector.begin(), asVector.end(), constraints);
+    return wrapBezierConstructorConstraintsTemplate<bezier6_t, point_list6_t, t_point6_t, curve_constraints6_t>(array, constraints) ;
 }
-
-
 bezier6_t* wrapBezierConstructorBounds6Constraints(const point_list6_t& array, const curve_constraints6_t& constraints, const real lb, const real ub)
 {
-    t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
-    return new bezier6_t(asVector.begin(), asVector.end(), constraints, lb, ub);
+    return wrapBezierConstructorConstraintsTemplate<bezier6_t, point_list6_t, t_point6_t, curve_constraints6_t>(array, constraints, lb, ub) ;
 }
+/*END 6D constructors */
 
 spline_curve_t* wrapSplineConstructor(const coeff_t& array)
 {
@@ -221,6 +220,8 @@ BOOST_PYTHON_MODULE(spline)
         ("bezier6", no_init)
             .def("__init__", make_constructor(&wrapBezierConstructor6))
             .def("__init__", make_constructor(&wrapBezierConstructorBounds6))
+            //.def("__init__", make_constructor(&wrapBezierConstructor6Constraints))
+            //.def("__init__", make_constructor(&wrapBezierConstructorBounds6Constraints))
             .def("min", &bezier6_t::min)
             .def("max", &bezier6_t::max)
             .def("__call__", &bezier6_t::operator())
@@ -238,6 +239,8 @@ BOOST_PYTHON_MODULE(spline)
         ("bezier", no_init)
             .def("__init__", make_constructor(&wrapBezierConstructor))
             .def("__init__", make_constructor(&wrapBezierConstructorBounds))
+            .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
+            .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
             .def("min", &bezier_t::min)
             .def("max", &bezier_t::max)
             .def("__call__", &bezier_t::operator())
@@ -274,7 +277,7 @@ BOOST_PYTHON_MODULE(spline)
     /** END bezier curve**/
 
 
-    /** BEGIN spline constraints**/
+    /** BEGIN curve constraints**/
     class_<curve_constraints_t>
         ("curve_constraints", init<>())
             .add_property("init_vel", &get_init_vel, &set_init_vel)
@@ -282,7 +285,7 @@ BOOST_PYTHON_MODULE(spline)
             .add_property("end_vel", &get_end_vel, &set_end_vel)
             .add_property("end_acc", &get_end_acc, &set_end_acc)
         ;
-    /** END spline constraints**/
+    /** END curve constraints**/
 
 
     /** BEGIN spline_deriv_constraints**/
