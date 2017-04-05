@@ -38,6 +38,7 @@ typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t
 
 typedef spline::spline_deriv_constraint  <real, real, 3, true, point_t, t_point_t> spline_deriv_constraint_t;
 typedef spline::curve_constraints<point_t> curve_constraints_t;
+typedef spline::curve_constraints<point6_t> curve_constraints6_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
@@ -72,6 +73,19 @@ bezier_t* wrapBezierConstructorBounds(const point_list_t& array, const real lb, 
     return new bezier_t(asVector.begin(), asVector.end(), lb, ub);
 }
 
+bezier_t* wrapBezierConstructorConstraints(const point_list_t& array, const curve_constraints_t& constraints)
+{
+    t_point_t asVector = vectorFromEigenArray<point_list_t, t_point_t>(array);
+    return new bezier_t(asVector.begin(), asVector.end(), constraints);
+}
+
+
+bezier_t* wrapBezierConstructorConstraintsBounds(const point_list_t& array, const curve_constraints_t& constraints, const real lb, const real ub)
+{
+    t_point_t asVector = vectorFromEigenArray<point_list_t, t_point_t>(array);
+    return new bezier_t(asVector.begin(), asVector.end(), constraints, lb, ub);
+}
+
 bezier6_t* wrapBezierConstructor6(const point_list6_t& array)
 {
     t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
@@ -83,6 +97,19 @@ bezier6_t* wrapBezierConstructorBounds6(const point_list6_t& array, const real l
 {
     t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
     return new bezier6_t(asVector.begin(), asVector.end(), lb, ub);
+}
+
+bezier6_t* wrapBezierConstructor6Constraints(const point_list6_t& array, const curve_constraints6_t& constraints)
+{
+    t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
+    return new bezier6_t(asVector.begin(), asVector.end(), constraints);
+}
+
+
+bezier6_t* wrapBezierConstructorBounds6Constraints(const point_list6_t& array, const curve_constraints6_t& constraints, const real lb, const real ub)
+{
+    t_point6_t asVector = vectorFromEigenArray<point_list6_t, t_point6_t>(array);
+    return new bezier6_t(asVector.begin(), asVector.end(), constraints, lb, ub);
 }
 
 spline_curve_t* wrapSplineConstructor(const coeff_t& array)
