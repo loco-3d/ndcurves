@@ -200,6 +200,8 @@ BOOST_PYTHON_MODULE(spline)
             .def("compute_derivate", &bezier6_t::compute_derivate)
             .def("compute_primitive", &bezier6_t::compute_primitive)
             .def("waypoints", &wayPointsToList<bezier6_t,6>)
+            .def_readonly("degree", &bezier6_t::degree_)
+            .def_readonly("nbWaypoints", &bezier6_t::size_)
         ;
     /** END bezier curve**/
 
@@ -215,6 +217,8 @@ BOOST_PYTHON_MODULE(spline)
             .def("compute_derivate", &bezier_t::compute_derivate)
             .def("compute_primitive", &bezier_t::compute_primitive)
             .def("waypoints", &wayPointsToList<bezier_t,3>)
+            .def_readonly("degree", &bezier_t::degree_)
+            .def_readonly("nbWaypoints", &bezier_t::size_)
         ;
     /** END bezier curve**/
 

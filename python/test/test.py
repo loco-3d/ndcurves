@@ -9,6 +9,7 @@ time_waypoints = matrix([0.,1.])
 a = bezier(waypoints, -1., 3.)
 
 a = bezier(waypoints)
+assert(a.degree == a.nbWaypoints -1)
 a.min()
 a.max()
 a(0.4)
