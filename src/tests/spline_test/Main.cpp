@@ -60,7 +60,7 @@ void ComparePoints(const Eigen::VectorXd& pt1, const Eigen::VectorXd& pt2, const
     if((pt1-pt2).norm() > margin && !notequal)
 	{
 		error = true;
-        std::cout << errmsg << pt1 << " ; " << pt2 << std::endl;
+        std::cout << errmsg << pt1.transpose() << " ; " << pt2.transpose() << std::endl;
 	}
 }
 
@@ -247,6 +247,37 @@ void BezierDerivativeCurveTest(bool& error)
     ComparePoints(point_t::Zero(), cf3.derivate(0.,100), errMsg, error);
 }
 
+void BezierDerivativeCurveConstraintTest(bool& error)
+{
+    std::string errMsg("In test BezierDerivativeCurveConstraintTest ; unexpected result for x ");
+    point_t a(1,2,3);
+    point_t b(2,3,4);
+    point_t c(3,4,5);
+
+    bezier_curve_t::curve_constraints_t constraints;
+    constraints.init_vel = point_t(-1,-1,-1);
+    constraints.init_acc = point_t(-2,-2,-2);
+    constraints.end_vel = point_t(-10,-10,-10);
+    constraints.end_acc = point_t(-20,-20,-20);
+
+    std::vector<point_t> params;
+    params.push_back(a);
+    params.push_back(b);
+
+    params.push_back(c);
+    bezier_curve_t cf3(params.begin(), params.end(), constraints);
+
+    assert(cf3.degree_ == params.size() + 3);
+    assert(cf3.size_   == params.size() + 4);
+
+    ComparePoints(a, cf3(0), errMsg, error);
+    ComparePoints(c, cf3(1), errMsg, error);
+    ComparePoints(constraints.init_vel, cf3.derivate(0.,1), errMsg, error);
+    ComparePoints(constraints.end_vel , cf3.derivate(1.,1), errMsg, error);
+    ComparePoints(constraints.init_acc, cf3.derivate(0.,2), errMsg, error);
+    ComparePoints(constraints.end_vel, cf3.derivate(1.,1), errMsg, error);
+    ComparePoints(constraints.end_acc, cf3.derivate(1.,2), errMsg, error);
+}
 
 
 /*Exact Cubic Function tests*/
@@ -599,6 +630,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     EffectorSplineRotationWayPointRotationTest(error);
     BezierCurveTest(error);
     BezierDerivativeCurveTest(error);
+    BezierDerivativeCurveConstraintTest(error);
 	if(error)
 	{
         std::cout << "There were some errors\n";

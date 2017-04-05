@@ -12,6 +12,7 @@
 
 #include "curve_abc.h"
 #include "bernstein.h"
+#include "curve_constraint.h"
 
 #include "MathDefs.h"
 
@@ -34,7 +35,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	typedef Point 	point_t;
 	typedef Time 	time_t;
     typedef Numeric	num_t;
+    typedef curve_constraints<point_t> curve_constraints_t;
     typedef std::vector<point_t,Eigen::aligned_allocator<point_t> > t_point_t;
+    typedef typename t_point_t::const_iterator cit_point_t;
     typedef bezier_curve<Time, Numeric, Dim, Safe, Point > bezier_curve_t;
 
 /* Constructors - destructors */
@@ -49,18 +52,36 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	, size_(std::distance(PointsBegin, PointsEnd))
     , degree_(size_-1)
     , bernstein_(spline::makeBernstein<num_t>(degree_))
-	{
+    {
         assert(bernstein_.size() == size_);
 		In it(PointsBegin);
         if(Safe && (size_<1 || minBound >= maxBound))
-		{
             throw std::out_of_range("can't create bezier min bound is higher than max bound"); // TODO
-		}
-		for(; it != PointsEnd; ++it)
-		{
-			pts_.push_back(*it);
-		}
-	}
+        for(; it != PointsEnd; ++it)
+            pts_.push_back(*it);
+    }
+
+
+    ///\brief Constructor
+    /// This constructor will add 4 points (2 after the first one, 2 before the last one)
+    /// to ensure that velocity and acceleration constraints are respected
+    ///\param PointsBegin, PointsEnd : the points parametering the Bezier curve
+    ///\param constraints : constraints applying on start / end velocities and acceleration
+    ///
+    template<typename In>
+    bezier_curve(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints, const time_t minBound=0, const time_t maxBound=1)
+    : minBound_(minBound)
+    , maxBound_(maxBound)
+    , size_(std::distance(PointsBegin, PointsEnd)+4)
+    , degree_(size_-1)
+    , bernstein_(spline::makeBernstein<num_t>(degree_))
+    {
+        if(Safe && (size_<1 || minBound >= maxBound))
+            throw std::out_of_range("can't create bezier min bound is higher than max bound");
+        t_point_t updatedList = add_constraints<In>(PointsBegin, PointsEnd, constraints);
+        for(cit_point_t cit = updatedList.begin(); cit != updatedList.end(); ++cit)
+            pts_.push_back(*cit);
+    }
 
 	///\brief Destructor
 	~bezier_curve()
@@ -86,8 +107,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             throw std::out_of_range("can't evaluate bezier curve, out of range"); // TODO
         }
 		else
-		{
-			num_t dt = (1 - nT);
+        {
+            num_t dt = (1 - nT);
 			switch(size_)
             {
                 case 1 :
@@ -106,7 +127,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 						+ 3 * pts_[2] * nT * nT * dt 
 						+ pts_[3] * nT * nT *nT;
                 default :
-                    return evalBernstein(dt);
+                    return evalBernstein(nT);
 				break;
 			}
 		}
@@ -154,7 +175,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  \param order : order of the derivative
     ///  \param t : the time when to evaluate the spine
     ///  \param return : the value x(t)
-    virtual point_t     derivate(const time_t t, const std::size_t order) const
+    virtual point_t derivate(const time_t t, const std::size_t order) const
     {
         bezier_curve_t deriv =compute_derivate(order);
         return deriv(t);
@@ -169,17 +190,41 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         typename t_point_t::const_iterator pts_it = pts_.begin();
         for(typename std::vector<Bern<Numeric> >::const_iterator cit = bernstein_.begin();
             cit !=bernstein_.end(); ++cit, ++pts_it)
-        {
             res += cit->operator()(u) * (*pts_it);
-        }
         return res;
     }
 
     const t_point_t& waypoints() const {return pts_;}
 
+    private:
+    template<typename In>
+    t_point_t add_constraints(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints)
+    {
+        t_point_t res;
+        point_t P0, P1, P2, P_n_2, P_n_1, PN;
+        P0 = *PointsBegin; PN = *(PointsEnd-1);
+        P1    = P0+ constraints.init_vel / degree_;
+        P_n_1 = PN -constraints.end_vel  / degree_;
+        P2    = constraints.init_acc / (degree_ * (degree_-1)) + 2* P1    - P0;
+        P_n_2 = constraints.end_acc  / (degree_ * (degree_-1)) + 2* P_n_1 - PN;
+
+        res.push_back(P0);
+        res.push_back(P1);
+        res.push_back(P2);
+
+        for(In it = PointsBegin+1; it != PointsEnd-1; ++it)
+            res.push_back(*it);
+
+        res.push_back(P_n_2);
+        res.push_back(P_n_1);
+        res.push_back(PN);
+        return res;
+    }
+
 /*Operations*/
 
 /*Helpers*/
+    public:
 	virtual time_t min() const{return minBound_;}
 	virtual time_t max() const{return maxBound_;}
 /*Helpers*/
