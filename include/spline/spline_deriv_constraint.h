@@ -21,6 +21,7 @@
 #define _CLASS_CUBICZEROVELACC
 
 #include "exact_cubic.h"
+#include "curve_constraint.h"
 
 #include "MathDefs.h"
 
@@ -53,19 +54,7 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
     typedef typename std::vector<spline_t> t_spline_t;
     typedef typename t_spline_t::iterator it_spline_t;
     typedef typename t_spline_t::const_iterator cit_spline_t;
-
-    public:
-    struct spline_constraints
-    {
-        spline_constraints():
-            init_vel(point_t::Zero()),init_acc(init_vel),end_vel(init_vel),end_acc(init_vel){}
-
-       ~spline_constraints(){}
-        point_t init_vel;
-        point_t init_acc;
-        point_t end_vel;
-        point_t end_acc;
-    };
+    typedef curve_constraints<point_t> spline_constraints;
 
 	/* Constructors - destructors */
 	public:

@@ -1,4 +1,4 @@
-from spline import bezier, spline, exact_cubic, spline_constraints, spline_constraints, spline_deriv_constraint
+from spline import bezier, spline, exact_cubic, curve_constraints, spline_deriv_constraint
 
 from numpy import matrix
 
@@ -50,7 +50,7 @@ assert((a.derivate(0.4,0) == a(0.4)).all())
 a.derivate(0.4,2)
 
 #testing spline_deriv_constraints
-c = spline_constraints();
+c = curve_constraints();
 c.init_vel; 
 c.end_vel;
 c.init_acc;

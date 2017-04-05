@@ -2,6 +2,7 @@
 #include "spline/spline_curve.h"
 #include "spline/exact_cubic.h"
 #include "spline/spline_deriv_constraint.h"
+#include "spline/curve_constraint.h"
 
 #include <vector>
 
@@ -36,14 +37,14 @@ typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t
 
 
 typedef spline::spline_deriv_constraint  <real, real, 3, true, point_t, t_point_t> spline_deriv_constraint_t;
-typedef spline_deriv_constraint_t::spline_constraints spline_constraints_t;
+typedef spline::curve_constraints<point_t> curve_constraints_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier6_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_constraints_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_deriv_constraint_t)
 
 namespace spline
@@ -118,7 +119,7 @@ exact_cubic_t* wrapExactCubicConstructor(const coeff_t& array, const time_waypoi
 }
 
 
-spline_deriv_constraint_t* wrapSplineDerivConstraint(const coeff_t& array, const time_waypoints_t& time_wp, const spline_constraints_t& constraints)
+spline_deriv_constraint_t* wrapSplineDerivConstraint(const coeff_t& array, const time_waypoints_t& time_wp, const curve_constraints_t& constraints)
 {
     t_waypoint_t wps = getWayPoints(array, time_wp);
     return new spline_deriv_constraint_t(wps.begin(), wps.end(),constraints);
@@ -130,42 +131,42 @@ spline_deriv_constraint_t* wrapSplineDerivConstraintNoConstraints(const coeff_t&
     return new spline_deriv_constraint_t(wps.begin(), wps.end());
 }
 
-point_t get_init_vel(const spline_constraints_t& c)
+point_t get_init_vel(const curve_constraints_t& c)
 {
     return c.init_vel;
 }
 
-point_t get_init_acc(const spline_constraints_t& c)
+point_t get_init_acc(const curve_constraints_t& c)
 {
     return c.init_acc;
 }
 
-point_t get_end_vel(const spline_constraints_t& c)
+point_t get_end_vel(const curve_constraints_t& c)
 {
     return c.end_vel;
 }
 
-point_t get_end_acc(const spline_constraints_t& c)
+point_t get_end_acc(const curve_constraints_t& c)
 {
     return c.end_acc;
 }
 
-void set_init_vel(spline_constraints_t& c, const point_t& val)
+void set_init_vel(curve_constraints_t& c, const point_t& val)
 {
     c.init_vel = val;
 }
 
-void set_init_acc(spline_constraints_t& c, const point_t& val)
+void set_init_acc(curve_constraints_t& c, const point_t& val)
 {
     c.init_acc = val;
 }
 
-void set_end_vel(spline_constraints_t& c, const point_t& val)
+void set_end_vel(curve_constraints_t& c, const point_t& val)
 {
     c.end_vel = val;
 }
 
-void set_end_acc(spline_constraints_t& c, const point_t& val)
+void set_end_acc(curve_constraints_t& c, const point_t& val)
 {
     c.end_acc = val;
 }
@@ -247,8 +248,8 @@ BOOST_PYTHON_MODULE(spline)
 
 
     /** BEGIN spline constraints**/
-    class_<spline_constraints_t>
-        ("spline_constraints", init<>())
+    class_<curve_constraints_t>
+        ("curve_constraints", init<>())
             .add_property("init_vel", &get_init_vel, &set_init_vel)
             .add_property("init_acc", &get_init_acc, &set_init_acc)
             .add_property("end_vel", &get_end_vel, &set_end_vel)
