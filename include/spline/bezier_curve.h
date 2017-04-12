@@ -127,7 +127,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 						+ 3 * pts_[2] * nT * nT * dt 
 						+ pts_[3] * nT * nT *nT;
                 default :
-                    return evalBernstein(nT);
+                    return evalHorner(nT);
 				break;
 			}
 		}
@@ -192,6 +192,27 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             cit !=bernstein_.end(); ++cit, ++pts_it)
             res += cit->operator()(u) * (*pts_it);
         return res;
+    }
+
+
+    ///
+    /// \brief Evaluates all Bernstein polynomes for a certain degree using horner's scheme
+    ///
+    point_t evalHorner(const Numeric t) const
+    {
+        typename t_point_t::const_iterator pts_it = pts_.begin();
+        Numeric u, bc, tn;
+        u = 1.0 - t;
+        bc = 1;
+        tn = 1;
+        point_t tmp =(*pts_it)*u; ++pts_it;
+        for(int i=1; i<degree_; i++, ++pts_it)
+        {
+            tn = tn*t;
+            bc = bc*(degree_-i+1)/i;
+            tmp = (tmp + tn*bc*(*pts_it))*u;
+        }
+        return (tmp + tn*t*(*pts_it));
     }
 
     const t_point_t& waypoints() const {return pts_;}
