@@ -1,18 +1,18 @@
 /**
-* \file spline_curve.h
+* \file polynom.h
 * \brief Definition of a cubic spline.
 * \author Steve T.
 * \version 0.1
 * \date 06/17/2013
 *
-* This file contains definitions for the spline_curve struct.
+* This file contains definitions for the polynom struct.
 * It allows the creation and evaluation of natural
 * smooth splines of arbitrary dimension and order
 */
 
 
-#ifndef _STRUCT_SPLINE
-#define _STRUCT_SPLINE
+#ifndef _STRUCT_POLYNOM
+#define _STRUCT_POLYNOM
 
 #include "MathDefs.h"
 
@@ -25,14 +25,14 @@
 
 namespace spline
 {
-/// \class spline_curve
-/// \brief Represents a spline curve of arbitrary order defined on the interval
+/// \class polynom
+/// \brief Represents a polynomf arbitrary order defined on the interval
 /// [tBegin, tEnd]. It follows the equation
 /// x(t) = a + b(t - t_min_) + ... + d(t - t_min_)^N, where N is the order
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
          typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
-struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
+struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
     typedef Point 	point_t;
     typedef Time 	time_t;
@@ -49,7 +49,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// by the number of the columns -1.
     ///\param min: LOWER bound on interval definition of the spline
     ///\param max: UPPER bound on interval definition of the spline
-    spline_curve(const coeff_t& coefficients, const time_t min, const time_t max)
+    polynom(const coeff_t& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.cols()-1)
     {
@@ -62,7 +62,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// by the size of the coefficients
     ///\param min: LOWER bound on interval definition of the spline
     ///\param max: UPPER bound on interval definition of the spline
-    spline_curve(const T_Point& coefficients, const time_t min, const time_t max)
+    polynom(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
           t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.cols()-1)
@@ -77,7 +77,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///\param min: LOWER bound on interval definition of the spline
     ///\param max: UPPER bound on interval definition of the spline
     template<typename In>
-    spline_curve(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
+    polynom(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
         :coefficients_(init_coeffs(zeroOrderCoefficient, out)), dim_(Dim), order_(coefficients_.cols()-1),
           t_min_(min), t_max_(max)
     {
@@ -85,18 +85,18 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     ///\brief Destructor
-    ~spline_curve()
+    ~polynom()
     {
         // NOTHING
     }
 
 
-    spline_curve(const spline_curve& other)
+    polynom(const polynom& other)
         : coefficients_(other.coefficients_), dim_(other.dim_), order_(other.order_),
           t_min_(other.t_min_), t_max_(other.t_max_){}
 
 
-    //spline_curve& operator=(const spline_curve& other);
+    //polynom& operator=(const polynom& other);
 
     private:
     void safe_check()
@@ -114,7 +114,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /*Operations*/
     public:
-    ///  \brief Evaluation of the cubic spline at time t.
+    /*///  \brief Evaluation of the cubic spline at time t.
     ///  \param t : the time when to evaluate the spine
     ///  \param return : the value x(t)
     virtual point_t operator()(const time_t t) const
@@ -126,6 +126,20 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         for(int i = 0; i < order_+1; ++i, cdt*=dt)
             currentPoint_ += cdt *coefficients_.col(i);
         return currentPoint_;
+    }*/
+
+
+    ///  \brief Evaluation of the cubic spline at time t using horner's scheme.
+    ///  \param t : the time when to evaluate the spine
+    ///  \param return : the value x(t)
+    virtual point_t operator()(const time_t t) const
+    {
+        if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
+        time_t const dt (t-t_min_);
+        point_t h = coefficients_.col(order_);
+        for(int i=order_-1; i>=0; i--)
+            h = dt*h + coefficients_.col(i);
+        return h;
     }
 
 
@@ -183,7 +197,7 @@ struct spline_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             res.col(i) = *cit;
         return res;
     }
-}; //class spline_curve
+}; //class polynom
 }
-#endif //_STRUCT_SPLINE
+#endif //_STRUCT_POLYNOM
 

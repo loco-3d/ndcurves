@@ -40,7 +40,7 @@ namespace spline
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
          typename Point= Eigen::Matrix<Numeric, Dim, 1>,
          typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >,
-         typename SplineBase=spline_curve<Time, Numeric, Dim, Safe, Point, T_Point> >
+         typename SplineBase=polynom<Time, Numeric, Dim, Safe, Point, T_Point> >
 struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase>
 {
     typedef Point 	point_t;
@@ -49,7 +49,7 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
     typedef Eigen::Matrix<Numeric, 3, 3> Matrix3;
     typedef Time 	time_t;
     typedef Numeric	num_t;
-    typedef spline_curve<time_t, Numeric, Dim, Safe, point_t, t_point_t> spline_t;
+    typedef polynom<time_t, Numeric, Dim, Safe, point_t, t_point_t> spline_t;
     typedef exact_cubic<time_t, Numeric, Dim, Safe, point_t, t_point_t> exact_cubic_t;
     typedef typename std::vector<spline_t> t_spline_t;
     typedef typename t_spline_t::iterator it_spline_t;
