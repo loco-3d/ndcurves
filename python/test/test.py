@@ -1,7 +1,9 @@
-from spline import bezier, bezier6, polynom, exact_cubic, curve_constraints, spline_deriv_constraint
+from spline import bezier, bezier6, polynom, exact_cubic, curve_constraints, spline_deriv_constraint, from_bezier
 
 from numpy import matrix
 from numpy.linalg import norm
+
+__EPS = 1e-6
 
 waypoints = matrix([[1.,2.,3.],[4.,5.,6.]]).transpose()
 waypoints6 = matrix([[1.,2.,3.,7.,5.,5.],[4.,5.,6.,4.,5.,6.]]).transpose()
@@ -78,3 +80,9 @@ c.end_acc  = matrix([0.,1.,1.]);
 
 a = spline_deriv_constraint (waypoints, time_waypoints)
 a = spline_deriv_constraint (waypoints, time_waypoints, c)
+
+#converting bezier to polynom
+
+a = bezier(waypoints)
+a_pol = from_bezier(a)
+assert norm(a(0.3) - a_pol(0.3)) < __EPS

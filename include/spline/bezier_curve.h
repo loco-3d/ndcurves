@@ -253,10 +253,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 /*Helpers*/
 
 	public:
-    const time_t minBound_, maxBound_;
-    const std::size_t size_;
-    const std::size_t degree_;
-    const std::vector<Bern<Numeric> > bernstein_;
+    /*const*/ time_t minBound_, maxBound_;
+    /*const*/ std::size_t size_;
+    /*const*/ std::size_t degree_;
+    /*const*/ std::vector<Bern<Numeric> > bernstein_;
 	
     private:
     t_point_t  pts_;

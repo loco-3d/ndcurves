@@ -3,6 +3,8 @@
 #include "spline/exact_cubic.h"
 #include "spline/spline_deriv_constraint.h"
 #include "spline/curve_constraint.h"
+#include "spline/bezier_polynom_conversion.h"
+
 
 #include <vector>
 
@@ -299,6 +301,10 @@ BOOST_PYTHON_MODULE(spline)
             .def("derivate", &exact_cubic_t::derivate)
         ;
     /** END spline_deriv_constraints**/
+
+    /** BEGIN Bezier to polynom conversion**/
+    def("from_bezier", from_bezier<bezier_t,polynom_t>);
+    /** END Bezier to polynom conversion**/
 
 
 }
