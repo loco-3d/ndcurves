@@ -183,6 +183,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     ///
     /// \brief Evaluates all Bernstein polynomes for a certain degree
+    /// Warning: the horner scheme is about 100 times faster than this method.
+    /// This method will probably be removed in the future
     ///
     point_t evalBernstein(const Numeric u) const
     {
