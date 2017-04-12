@@ -1,4 +1,4 @@
-from spline import bezier, bezier6, spline, exact_cubic, curve_constraints, spline_deriv_constraint
+from spline import bezier, bezier6, polynom, exact_cubic, curve_constraints, spline_deriv_constraint
 
 from numpy import matrix
 from numpy.linalg import norm
@@ -46,9 +46,9 @@ assert norm(a.derivate(0,1) - c.init_vel) < 1e-10
 assert norm(a.derivate(1,2) - c.end_acc) < 1e-10
 
 
-#testing spline function
-a = spline(waypoints)
-a = spline(waypoints, -1., 3.)
+#testing polynom function
+a = polynom(waypoints)
+a = polynom(waypoints, -1., 3.)
 a.min()
 a.max()
 a(0.4)

@@ -1,5 +1,5 @@
 #include "spline/bezier_curve.h"
-#include "spline/spline_curve.h"
+#include "spline/polynom.h"
 #include "spline/exact_cubic.h"
 #include "spline/spline_deriv_constraint.h"
 #include "spline/curve_constraint.h"
@@ -29,9 +29,9 @@ typedef std::vector<Waypoint6> T_Waypoint6;
 
 typedef spline::bezier_curve  <real, real, 3, true, point_t> bezier_t;
 typedef spline::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
-typedef spline::spline_curve  <real, real, 3, true, point_t, t_point_t> spline_curve_t;
+typedef spline::polynom  <real, real, 3, true, point_t, t_point_t> polynom_t;
 typedef spline::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
-typedef spline_curve_t::coeff_t coeff_t;
+typedef polynom_t::coeff_t coeff_t;
 typedef std::pair<real, point_t> waypoint_t;
 typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t;
 
@@ -43,7 +43,7 @@ typedef spline::curve_constraints<point6_t> curve_constraints6_t;
 
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier6_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_curve_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynom_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_deriv_constraint_t)
@@ -111,9 +111,9 @@ bezier6_t* wrapBezierConstructorBounds6Constraints(const point_list6_t& array, c
 }
 /*END 6D constructors */
 
-spline_curve_t* wrapSplineConstructor(const coeff_t& array)
+polynom_t* wrapSplineConstructor(const coeff_t& array)
 {
-    return new spline_curve_t(array, 0., 1.);
+    return new polynom_t(array, 0., 1.);
 }
 
 
@@ -255,12 +255,12 @@ BOOST_PYTHON_MODULE(spline)
 
 
     /** BEGIN spline curve function**/
-    class_<spline_curve_t>("spline",  init<const spline_curve_t::coeff_t, const real, const real >())
+    class_<polynom_t>("polynom",  init<const polynom_t::coeff_t, const real, const real >())
             .def("__init__", make_constructor(&wrapSplineConstructor))
-            .def("min", &spline_curve_t::min)
-            .def("max", &spline_curve_t::max)
-            .def("__call__", &spline_curve_t::operator())
-            .def("derivate", &spline_curve_t::derivate)
+            .def("min", &polynom_t::min)
+            .def("max", &polynom_t::max)
+            .def("__call__", &polynom_t::operator())
+            .def("derivate", &polynom_t::derivate)
         ;
     /** END cubic function**/
 

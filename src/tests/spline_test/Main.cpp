@@ -1,7 +1,7 @@
 
 #include "spline/exact_cubic.h"
 #include "spline/bezier_curve.h"
-#include "spline/spline_curve.h"
+#include "spline/polynom.h"
 #include "spline/spline_deriv_constraint.h"
 #include "spline/helpers/effector_spline.h"
 #include "spline/helpers/effector_spline_rotation.h"
@@ -16,7 +16,7 @@ namespace spline
 {
 typedef Eigen::Vector3d point_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
-typedef spline_curve  <double, double, 3, true, point_t, t_point_t> spline_curve_t;
+typedef polynom  <double, double, 3, true, point_t, t_point_t> polynom_t;
 typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
 typedef spline_deriv_constraint <double, double, 3, true, point_t> spline_deriv_constraint_t;
 typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
@@ -26,7 +26,7 @@ typedef std::vector<Waypoint> T_Waypoint;
 
 
 typedef Eigen::Matrix<double,1,1> point_one;
-typedef spline_curve<double, double, 1, true, point_one> spline_curve_one;
+typedef polynom<double, double, 1, true, point_one> polynom_one;
 typedef exact_cubic   <double, double, 1, true, point_one> exact_cubic_one;
 typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
@@ -68,28 +68,28 @@ void ComparePoints(const Eigen::VectorXd& pt1, const Eigen::VectorXd& pt2, const
 
 void CubicFunctionTest(bool& error)
 {
-	std::string errMsg("In test CubicFunctionTest ; unexpected result for x ");
+    std::string errMsg("In test CubicFunctionTest ; unexpected result for x ");
 	point_t a(1,2,3);
 	point_t b(2,3,4);
 	point_t c(3,4,5);
-	point_t d(3,6,7);
+    point_t d(3,6,7);
     t_point_t vec;
     vec.push_back(a);
     vec.push_back(b);
     vec.push_back(c);
     vec.push_back(d);
-    spline_curve_t cf(vec.begin(), vec.end(), 0, 1);
-	point_t res1;
-	res1 =cf(0); 
-	point_t x0(1,2,3);
+    polynom_t cf(vec.begin(), vec.end(), 0, 1);
+    point_t res1;
+    res1 =cf(0);
+    point_t x0(1,2,3);
     ComparePoints(x0, res1, errMsg + "(0) ", error);
-	
+
     point_t x1(9,15,19);
     res1 =cf(1);
     ComparePoints(x1, res1, errMsg + "(1) ", error);
-	
-	point_t x2(3.125,5.25,7.125);
-	res1 =cf(0.5);
+
+    point_t x2(3.125,5.25,7.125);
+    res1 =cf(0.5);
     ComparePoints(x2, res1, errMsg + "(0.5) ", error);
 
     vec.clear();
@@ -97,45 +97,45 @@ void CubicFunctionTest(bool& error)
     vec.push_back(b);
     vec.push_back(c);
     vec.push_back(d);
-    spline_curve_t cf2(vec, 0.5, 1);
-	res1 = cf2(0.5); 
+    polynom_t cf2(vec, 0.5, 1);
+    res1 = cf2(0.5);
     ComparePoints(x0, res1, errMsg + "x3 ", error);
-	error = true;	
-	try
-	{
-		cf2(0.4);
-	}
-	catch(...)
-	{
-		error = false;
-	}
-	if(error)
-	{
-		std::cout << "Evaluation of cubic cf2 error, 0.4 should be an out of range value\n";
-	}
-	error = true;	
-	try
-	{
-		cf2(1.1);
-	}
-	catch(...)
-	{
-		error = false;
-	}
-	if(error)
-	{
-		std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
-	}
-	if(cf.max() != 1)
-	{
-		error = true;
-		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
-	}
-	if(cf.min() != 0)
-	{
-		error = true;
-		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
-	}
+    error = true;
+    try
+    {
+        cf2(0.4);
+    }
+    catch(...)
+    {
+        error = false;
+    }
+    if(error)
+    {
+        std::cout << "Evaluation of cubic cf2 error, 0.4 should be an out of range value\n";
+    }
+    error = true;
+    try
+    {
+        cf2(1.1);
+    }
+    catch(...)
+    {
+        error = false;
+    }
+    if(error)
+    {
+        std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
+    }
+    if(cf.max() != 1)
+    {
+        error = true;
+        std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
+    }
+    if(cf.min() != 0)
+    {
+        error = true;
+        std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
+    }
 }
 
 /*bezier_curve Function tests*/
