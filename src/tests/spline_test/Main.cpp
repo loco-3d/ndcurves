@@ -186,6 +186,7 @@ void BezierCurveTest(bool& error)
     for(double d = 0.; d <1.; d+=0.1)
     {
         ComparePoints( cf3.evalBernstein(d) , cf3 (d), errMsg2, error);
+        ComparePoints( cf3.evalHorner(d) , cf3 (d), errMsg2, error);
     }
 
     bool error_in(true);
@@ -226,6 +227,102 @@ void BezierCurveTest(bool& error)
 		error = true;
 		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
 	}
+}
+
+#include <ctime>
+void BezierCurveTestCompareHornerAndBernstein(bool& error)
+{
+    using namespace std;
+    std::vector<double> values;
+    for (int i =0; i < 100000; ++i)
+        values.push_back(rand()/RAND_MAX);
+
+    //first compare regular evaluation (low dim pol)
+    point_t a(1,2,3);
+    point_t b(2,3,4);
+    point_t c(3,4,5);
+    point_t d(3,6,7);
+    point_t e(3,61,7);
+    point_t f(3,56,7);
+    point_t g(3,36,7);
+    point_t h(43,6,7);
+    point_t i(3,6,77);
+
+    std::vector<point_t> params;
+    params.push_back(a);
+    params.push_back(b);
+    params.push_back(c);
+
+    // 3d curve
+    bezier_curve_t cf(params.begin(), params.end());
+
+    clock_t s0,e0,s1,e1,s2,e2;
+    s0 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf(*cit);
+    }
+    e0 = clock();
+
+    s1 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf.evalBernstein(*cit);
+    }
+    e1 = clock();
+
+    s2 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf.evalHorner(*cit);
+    }
+    e2 = clock();
+
+
+    std::cout << "time for analytical eval " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for bernstein eval "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for horner eval "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
+
+
+
+    std::cout << "now with high order polynom "    << std::endl;
+
+
+    params.push_back(d);
+    params.push_back(e);
+    params.push_back(f);
+    params.push_back(g);
+    params.push_back(h);
+    params.push_back(i);
+
+    bezier_curve_t cf2(params.begin(), params.end());
+
+    s1 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf2.evalBernstein(*cit);
+    }
+    e1 = clock();
+
+    s2 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf2.evalHorner(*cit);
+    }
+    e2 = clock();
+
+    s0 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf2(*cit);
+    }
+    e0 = clock();
+
+
+    std::cout << "time for analytical eval " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for bernstein eval "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for horner eval "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
+
 }
 
 void BezierDerivativeCurveTest(bool& error)
@@ -617,7 +714,7 @@ int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
     bool error = false;
-    CubicFunctionTest(error);
+    /*CubicFunctionTest(error);
     ExactCubicNoErrorTest(error);
     ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
     ExactCubicTwoPointsTest(error);
@@ -630,7 +727,8 @@ int main(int /*argc*/, char** /*argv[]*/)
     EffectorSplineRotationWayPointRotationTest(error);
     BezierCurveTest(error);
     BezierDerivativeCurveTest(error);
-    BezierDerivativeCurveConstraintTest(error);
+    BezierDerivativeCurveConstraintTest(error);*/
+    BezierCurveTestCompareHornerAndBernstein(error);
 	if(error)
 	{
         std::cout << "There were some errors\n";
