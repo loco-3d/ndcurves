@@ -58,6 +58,8 @@ struct  curve_abc : std::unary_function<Time, Point>
 	virtual time_t min() const = 0;
 	///  \brief Returns the maximum time for wich curve is defined
 	virtual time_t max() const = 0;
+
+    std::pair<time_t, time_t> timeRange() {return std::make_pair(min(), max());}
 /*Helpers*/
 
 	};
