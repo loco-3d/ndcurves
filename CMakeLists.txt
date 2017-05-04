@@ -39,7 +39,6 @@ add_subdirectory (src/tests/spline_test)
 
 install(FILES
 	${CMAKE_SOURCE_DIR}/include/spline/bernstein.h
-	${CMAKE_SOURCE_DIR}/include/spline/bezier_polynom_conversion.h
 	${CMAKE_SOURCE_DIR}/include/spline/curve_abc.h
 	${CMAKE_SOURCE_DIR}/include/spline/exact_cubic.h
 	${CMAKE_SOURCE_DIR}/include/spline/MathDefs.h
