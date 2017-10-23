@@ -4,6 +4,7 @@
 #include "spline/spline_deriv_constraint.h"
 #include "spline/curve_constraint.h"
 #include "spline/bezier_polynom_conversion.h"
+#include "spline/bernstein.h"
 
 
 #include <vector>
@@ -37,12 +38,15 @@ typedef polynom_t::coeff_t coeff_t;
 typedef std::pair<real, point_t> waypoint_t;
 typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t;
 
+typedef spline::Bern<double> bernstein_t;
+
 
 typedef spline::spline_deriv_constraint  <real, real, 3, true, point_t, t_point_t> spline_deriv_constraint_t;
 typedef spline::curve_constraints<point_t> curve_constraints_t;
 typedef spline::curve_constraints<point6_t> curve_constraints6_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier6_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynom_t)
@@ -301,6 +305,13 @@ BOOST_PYTHON_MODULE(spline)
             .def("derivate", &exact_cubic_t::derivate)
         ;
     /** END spline_deriv_constraints**/
+
+    /** BEGIN bernstein polynom**/
+    class_<bernstein_t>
+        ("bernstein", init<const unsigned int, const unsigned int>())
+            .def("__call__", &bernstein_t::operator())
+        ;
+    /** END bernstein polynom**/
 
     /** BEGIN Bezier to polynom conversion**/
     def("from_bezier", from_bezier<bezier_t,polynom_t>);
