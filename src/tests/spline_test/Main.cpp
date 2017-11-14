@@ -5,6 +5,7 @@
 #include "spline/spline_deriv_constraint.h"
 #include "spline/helpers/effector_spline.h"
 #include "spline/helpers/effector_spline_rotation.h"
+#include "spline/bezier_polynom_conversion.h"
 
 #include <string>
 #include <iostream>
@@ -174,9 +175,7 @@ void BezierCurveTest(bool& error)
 
 	//4d curve
 	params.push_back(d);
-	bezier_curve_t cf4(params.begin(), params.end(), 0.4, 2);
-	res1 = cf4(0.4); 
-    ComparePoints(a, res1, errMsg + "3(0) ", error);
+    bezier_curve_t cf4(params.begin(), params.end(), 2);
 	
 	res1 = cf4(2); 
     ComparePoints(d, res1, errMsg + "3(1) ", error);
@@ -344,6 +343,32 @@ void BezierDerivativeCurveTest(bool& error)
     ComparePoints(point_t::Zero(), cf3.derivate(0.,100), errMsg, error);
 }
 
+void BezierDerivativeCurveTimeReparametrizationTest(bool& error)
+{
+    std::string errMsg("In test BezierDerivativeCurveTimeReparametrizationTest ; unexpected result for x ");
+    point_t a(1,2,3);
+    point_t b(2,3,4);
+    point_t c(3,4,5);
+    point_t d(3,4,5);
+    point_t e(3,4,5);
+    point_t f(3,4,5);
+
+    std::vector<point_t> params;
+    params.push_back(a);
+    params.push_back(b);
+    params.push_back(c);
+    params.push_back(d);
+    params.push_back(e);
+    params.push_back(f);
+    double T = 2.;
+    bezier_curve_t cf(params.begin(), params.end());
+    bezier_curve_t cfT(params.begin(), params.end(),T);
+
+    ComparePoints(cf(0.5), cfT(1), errMsg, error);
+    ComparePoints(cf.derivate(0.5,1), cfT.derivate(1,1) * T, errMsg, error);
+    ComparePoints(cf.derivate(0.5,2), cfT.derivate(1,2) * T*T, errMsg, error);
+}
+
 void BezierDerivativeCurveConstraintTest(bool& error)
 {
     std::string errMsg("In test BezierDerivativeCurveConstraintTest ; unexpected result for x ");
@@ -376,6 +401,39 @@ void BezierDerivativeCurveConstraintTest(bool& error)
     ComparePoints(constraints.end_acc, cf3.derivate(1.,2), errMsg, error);
 }
 
+
+void BezierToPolynomConversionTest(bool& error)
+{
+    std::string errMsg("In test BezierToPolynomConversionTest ; unexpected result for x ");
+    point_t a(1,2,3);
+    point_t b(2,3,4);
+    point_t c(3,4,5);
+    point_t d(3,6,7);
+    point_t e(3,61,7);
+    point_t f(3,56,7);
+    point_t g(3,36,7);
+    point_t h(43,6,7);
+    point_t i(3,6,77);
+
+    std::vector<point_t> params;
+    params.push_back(a);
+    params.push_back(b);
+    params.push_back(c);
+    params.push_back(d);
+    params.push_back(e);
+    params.push_back(f);
+    params.push_back(g);
+    params.push_back(h);
+    params.push_back(i);
+
+    bezier_curve_t cf(params.begin(), params.end());
+    polynom_t pol =from_bezier<bezier_curve_t, polynom_t>(cf);
+    for(double i =0.; i<1.; i+=0.01)
+    {
+        ComparePoints(cf(i),pol(i),errMsg, error, true);
+        ComparePoints(cf(i),pol(i),errMsg, error, false);
+    }
+}
 
 /*Exact Cubic Function tests*/
 void ExactCubicNoErrorTest(bool& error)
@@ -714,7 +772,7 @@ int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
     bool error = false;
-    /*CubicFunctionTest(error);
+    CubicFunctionTest(error);
     ExactCubicNoErrorTest(error);
     ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
     ExactCubicTwoPointsTest(error);
@@ -727,8 +785,10 @@ int main(int /*argc*/, char** /*argv[]*/)
     EffectorSplineRotationWayPointRotationTest(error);
     BezierCurveTest(error);
     BezierDerivativeCurveTest(error);
-    BezierDerivativeCurveConstraintTest(error);*/
+    BezierDerivativeCurveConstraintTest(error);
     BezierCurveTestCompareHornerAndBernstein(error);
+    BezierDerivativeCurveTimeReparametrizationTest(error);
+    BezierToPolynomConversionTest(error);
 	if(error)
 	{
         std::cout << "There were some errors\n";

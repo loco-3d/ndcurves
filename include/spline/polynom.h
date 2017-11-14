@@ -35,6 +35,7 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
 struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
     typedef Point 	point_t;
+    typedef T_Point t_point_t;
     typedef Time 	time_t;
     typedef Numeric	num_t;
     typedef curve_abc<Time, Numeric, Dim, Safe, Point> curve_abc_t;
