@@ -23,7 +23,7 @@ namespace spline
 ///
 /// \brief Computes factorial of a number
 ///
-unsigned int fact(const unsigned int n)
+inline unsigned int fact(const unsigned int n)
 {
     assert(n>=0);
     int res = 1;
@@ -35,7 +35,7 @@ unsigned int fact(const unsigned int n)
 ///
 /// \brief Computes a binomal coefficient
 ///
-unsigned int bin(const unsigned  int n, const unsigned  int k)
+inline unsigned int bin(const unsigned  int n, const unsigned  int k)
 {
     return fact(n) / (fact(k) * fact(n - k));
 }
