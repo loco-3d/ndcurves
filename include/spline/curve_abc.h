@@ -34,7 +34,7 @@ struct  curve_abc : std::unary_function<Time, Point>
     curve_abc(){}
 
 	///\brief Destructor
-    ~curve_abc(){}
+    virtual ~curve_abc(){}
 /* Constructors - destructors */
 
 /*Operations*/

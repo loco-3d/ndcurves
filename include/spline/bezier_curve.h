@@ -51,7 +51,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     , mult_T_(1.)
 	, size_(std::distance(PointsBegin, PointsEnd))
     , degree_(size_-1)
-    , bernstein_(spline::makeBernstein<num_t>(degree_))
+    , bernstein_(spline::makeBernstein<num_t>((unsigned int)degree_))
     {
         assert(bernstein_.size() == size_);
 		In it(PointsBegin);
@@ -70,7 +70,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     , mult_T_(1.)
     , size_(std::distance(PointsBegin, PointsEnd))
     , degree_(size_-1)
-    , bernstein_(spline::makeBernstein<num_t>(degree_))
+    , bernstein_(spline::makeBernstein<num_t>((unsigned int)degree_))
     {
         assert(bernstein_.size() == size_);
         In it(PointsBegin);
@@ -91,7 +91,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     , mult_T_(mult_T)
     , size_(std::distance(PointsBegin, PointsEnd))
     , degree_(size_-1)
-    , bernstein_(spline::makeBernstein<num_t>(degree_))
+    , bernstein_(spline::makeBernstein<num_t>((unsigned int)degree_))
     {
         assert(bernstein_.size() == size_);
         In it(PointsBegin);
@@ -113,7 +113,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     , mult_T_(1.)
     , size_(std::distance(PointsBegin, PointsEnd)+4)
     , degree_(size_-1)
-    , bernstein_(spline::makeBernstein<num_t>(degree_))
+    , bernstein_(spline::makeBernstein<num_t>((unsigned int)degree_))
     {
         if(Safe && (size_<1 || T_ <= 0.))
             throw std::out_of_range("can't create bezier min bound is higher than max bound");
@@ -180,7 +180,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         if(order == 0) return *this;
         t_point_t derived_wp;
         for(typename t_point_t::const_iterator pit =  pts_.begin(); pit != pts_.end()-1; ++pit)
-            derived_wp.push_back(degree_ * (*(pit+1) - (*pit)));
+            derived_wp.push_back((num_t)degree_ * (*(pit+1) - (*pit)));
         if(derived_wp.empty())
             derived_wp.push_back(point_t::Zero());
         bezier_curve_t deriv(derived_wp.begin(), derived_wp.end(),T_, mult_T_ * (1./T_) );
@@ -247,10 +247,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         bc = 1;
         tn = 1;
         point_t tmp =(*pts_it)*u; ++pts_it;
-        for(int i=1; i<degree_; i++, ++pts_it)
+        for(unsigned int i=1; i<degree_; i++, ++pts_it)
         {
             tn = tn*t;
-            bc = bc*(degree_-i+1)/i;
+            bc = bc*((num_t)(degree_-i+1))/i;
             tmp = (tmp + tn*bc*(*pts_it))*u;
         }
         return (tmp + tn*t*(*pts_it));
@@ -265,10 +265,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         t_point_t res;
         point_t P0, P1, P2, P_n_2, P_n_1, PN;
         P0 = *PointsBegin; PN = *(PointsEnd-1);
-        P1    = P0+ constraints.init_vel / degree_;
-        P_n_1 = PN -constraints.end_vel  / degree_;
-        P2    = constraints.init_acc / (degree_ * (degree_-1)) + 2* P1    - P0;
-        P_n_2 = constraints.end_acc  / (degree_ * (degree_-1)) + 2* P_n_1 - PN;
+        P1    = P0+ constraints.init_vel / (num_t)degree_;
+        P_n_1 = PN -constraints.end_vel  / (num_t)degree_;
+        P2    = constraints.init_acc / (num_t)(degree_ * (degree_-1)) + 2* P1    - P0;
+        P_n_2 = constraints.end_acc  / (num_t)(degree_ * (degree_-1)) + 2* P_n_1 - PN;
 
         res.push_back(P0);
         res.push_back(P1);

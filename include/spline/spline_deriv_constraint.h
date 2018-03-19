@@ -67,7 +67,7 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
         : exact_cubic_t(computeWayPoints<In>(wayPointsBegin, wayPointsEnd, constraints)) {}
 
 	///\brief Destructor
-    ~spline_deriv_constraint(){}
+    virtual ~spline_deriv_constraint(){}
 
     ///\brief Copy Constructor
     spline_deriv_constraint(const spline_deriv_constraint& other)
