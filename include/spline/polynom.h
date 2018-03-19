@@ -52,7 +52,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///\param max: UPPER bound on interval definition of the spline
     polynom(const coeff_t& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
-          coefficients_(coefficients), t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.cols()-1)
+          coefficients_(coefficients), dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
         safe_check();
     }
@@ -66,7 +66,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     polynom(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
-          t_min_(min), t_max_(max), dim_(Dim), order_(coefficients_.cols()-1)
+          dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
         safe_check();
     }
@@ -79,8 +79,8 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///\param max: UPPER bound on interval definition of the spline
     template<typename In>
     polynom(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
-        :coefficients_(init_coeffs(zeroOrderCoefficient, out)), dim_(Dim), order_(coefficients_.cols()-1),
-          t_min_(min), t_max_(max)
+        :coefficients_(init_coeffs(zeroOrderCoefficient, out)),
+          dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
         safe_check();
     }
@@ -93,8 +93,8 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 
     polynom(const polynom& other)
-        : coefficients_(other.coefficients_), dim_(other.dim_), order_(other.order_),
-          t_min_(other.t_min_), t_max_(other.t_max_){}
+        : coefficients_(other.coefficients_),
+          dim_(other.dim_), order_(other.order_), t_min_(other.t_min_), t_max_(other.t_max_){}
 
 
     //polynom& operator=(const polynom& other);
@@ -106,7 +106,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
             if(t_min_ > t_max_)
                 std::out_of_range("TODO");
-            if(coefficients_.size() != order_+1)
+            if(coefficients_.size() != int(order_+1))
                 std::runtime_error("Spline order and coefficients do not match");
         }
     }
@@ -138,7 +138,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
         time_t const dt (t-t_min_);
         point_t h = coefficients_.col(order_);
-        for(int i=order_-1; i>=0; i--)
+        for(int i=(int)(order_-1); i>=0; i--)
             h = dt*h + coefficients_.col(i);
         return h;
     }
@@ -154,7 +154,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         time_t const dt (t-t_min_);
         time_t cdt(1);
         point_t currentPoint_ = point_t::Zero();
-        for(int i = order; i < order_+1; ++i, cdt*=dt)
+        for(int i = (int)(order); i < (int)(order_+1); ++i, cdt*=dt)
             currentPoint_ += cdt *coefficients_.col(i) * fact(i, order);
         return currentPoint_;
     }
@@ -162,9 +162,9 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     private:
     num_t fact(const std::size_t n, const std::size_t order) const
     {
-        std::size_t res(1);
+        num_t res(1);
         for(std::size_t i = 0; i < order; ++i)
-            res *= n-i;
+            res *= (num_t)(n-i);
         return res;
     }
 

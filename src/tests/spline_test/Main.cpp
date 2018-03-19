@@ -36,7 +36,7 @@ bool QuasiEqual(const double a, const double b, const float margin)
 {
 	if ((a <= 0 && b <= 0) || (a >= 0 && b>= 0))
 	{
-		return (abs(a-b)) <= margin;
+        return (abs(a-b)) <= margin;
 	}
 	else
 	{
@@ -229,7 +229,7 @@ void BezierCurveTest(bool& error)
 }
 
 #include <ctime>
-void BezierCurveTestCompareHornerAndBernstein(bool& error)
+void BezierCurveTestCompareHornerAndBernstein(bool& /*error*/)
 {
     using namespace std;
     std::vector<double> values;
@@ -518,7 +518,7 @@ void ExactCubicOneDimTest(bool& error)
 	ComparePoints(one, res1, errmsg, error);
 }
 
-void CheckWayPointConstraint(const std::string& errmsg, const double step, const spline::T_Waypoint& wayPoints, const exact_cubic_t* curve, bool& error )
+void CheckWayPointConstraint(const std::string& errmsg, const double step, const spline::T_Waypoint& /*wayPoints*/, const exact_cubic_t* curve, bool& error )
 {
     point_t res1;
     for(double i = 0; i <= 1; i = i + step)

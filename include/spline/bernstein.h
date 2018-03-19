@@ -25,9 +25,8 @@ namespace spline
 ///
 inline unsigned int fact(const unsigned int n)
 {
-    assert(n>=0);
-    int res = 1;
-    for (int i=2 ; i <= n ; ++i)
+    unsigned int res = 1;
+    for (unsigned int i=2 ; i <= n ; ++i)
        res *= i;
     return res;
 }

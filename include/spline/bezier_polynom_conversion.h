@@ -47,7 +47,7 @@ Polynom from_bezier(const Bezier& curve)
     for(std::size_t i = 1; i<= curve.degree_; ++i)
     {
         current = current.compute_derivate(1);
-        fact *= i;
+        fact *= (num_t)i;
         coefficients.push_back(current(0.)/fact);
     }
     return Polynom(coefficients,curve.min(),curve.max());

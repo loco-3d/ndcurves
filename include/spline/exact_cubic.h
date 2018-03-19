@@ -71,7 +71,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
         : curve_abc_t(), subSplines_(other.subSplines_) {}
 
 	///\brief Destructor
-    ~exact_cubic(){}
+    virtual ~exact_cubic(){}
 
     private:
     template<typename In>
@@ -162,12 +162,12 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}
         for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
-		{
-            if(t >= (it->min()) && t <= (it->max()))
-            {
+        {
+            if( (t >= (it->min()) && t <= (it->max())) || it+1 == subSplines_.end())
                 return it->operator()(t);
-			}
         }
+        // this should not happen
+        throw std::runtime_error("Exact cubic evaluation failed; t is outside bounds");
     }
 
     ///  \brief Evaluation of the derivative spline at time t.
@@ -179,11 +179,11 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
         if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}
         for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
         {
-            if(t >= (it->min()) && t <= (it->max()))
-            {
+            if( (t >= (it->min()) && t <= (it->max())) || it+1 == subSplines_.end())
                 return it->derivate(t, order);
-            }
         }
+        // this should not happen
+        throw std::runtime_error("Exact cubic evaluation failed; t is outside bounds");
     }
 	/*Operations*/
 

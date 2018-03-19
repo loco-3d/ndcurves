@@ -61,6 +61,7 @@ class rotation_spline: public curve_abc_quat_t
         quat_to_ = from.quat_to_;
         min_ =from.min_; max_ = from.max_;
         time_reparam_ = spline_deriv_constraint_one_dim(from.time_reparam_);
+        return *this;
     }
     /* Copy Constructors / operator=*/
 
