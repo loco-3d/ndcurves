@@ -182,7 +182,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         for(typename t_point_t::const_iterator pit =  pts_.begin(); pit != pts_.end()-1; ++pit)
             derived_wp.push_back((num_t)degree_ * (*(pit+1) - (*pit)));
         if(derived_wp.empty())
-            derived_wp.push_back(point_t::Zero());
+            derived_wp.push_back(point_t::Zero(Dim));
         bezier_curve_t deriv(derived_wp.begin(), derived_wp.end(),T_, mult_T_ * (1./T_) );
         return deriv.compute_derivate(order-1);
     }
@@ -195,7 +195,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         if(order == 0) return *this;
         num_t new_degree = (num_t)(degree_+1);
         t_point_t n_wp;
-        point_t current_sum =  point_t::Zero();
+        point_t current_sum =  point_t::Zero(Dim);
         // recomputing waypoints q_i from derivative waypoints p_i. q_0 is the given constant.
         // then q_i = (sum( j = 0 -> j = i-1) p_j) /n+1
         n_wp.push_back(current_sum);
@@ -227,7 +227,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     point_t evalBernstein(const Numeric u) const
     {
-        point_t res = point_t::Zero();
+        point_t res = point_t::Zero(Dim);
         typename t_point_t::const_iterator pts_it = pts_.begin();
         for(typename std::vector<Bern<Numeric> >::const_iterator cit = bernstein_.begin();
             cit !=bernstein_.end(); ++cit, ++pts_it)
@@ -331,7 +331,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             return split(t1).second;
 
         std::pair<bezier_curve_t,bezier_curve_t> c_split = this->split(t1);
-        return c_split.second->split(t2).first;
+        return c_split.second.split(t2-t1).first;
     }
 
     private:
@@ -381,7 +381,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     static bezier_curve_t zero(const time_t T=1.)
     {
         std::vector<point_t> ts;
-        ts.push_back(point_t::Zero());
+        ts.push_back(point_t::Zero(Dim));
         return bezier_curve_t(ts.begin(), ts.end(),T);
     }
 };
