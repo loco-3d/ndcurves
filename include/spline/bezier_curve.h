@@ -331,7 +331,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             return split(t1).second;
 
         std::pair<bezier_curve_t,bezier_curve_t> c_split = this->split(t1);
-        return c_split.second->split(t2).first;
+        return c_split.second.split(t2-t1).first;
     }
 
     private:
