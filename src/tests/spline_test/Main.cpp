@@ -255,7 +255,7 @@ void BezierCurveTestCompareHornerAndBernstein(bool& /*error*/)
     // 3d curve
     bezier_curve_t cf(params.begin(), params.end());
 
-    clock_t s0,e0,s1,e1,s2,e2;
+    clock_t s0,e0,s1,e1,s2,e2,s3,e3;
     s0 = clock();
     for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
     {
@@ -277,12 +277,18 @@ void BezierCurveTestCompareHornerAndBernstein(bool& /*error*/)
     }
     e2 = clock();
 
+    s3 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf.evalDeCasteljau(*cit);
+    }
+    e3 = clock();
 
-    std::cout << "time for analytical eval " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "time for bernstein eval "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "time for horner eval "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
 
-
+    std::cout << "time for analytical eval  " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for bernstein eval   "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for horner eval      "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for deCasteljau eval "     <<   double(e3 - s3) / CLOCKS_PER_SEC << std::endl;
 
     std::cout << "now with high order polynom "    << std::endl;
 
@@ -317,10 +323,19 @@ void BezierCurveTestCompareHornerAndBernstein(bool& /*error*/)
     }
     e0 = clock();
 
+    s3 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf2.evalDeCasteljau(*cit);
+    }
+    e3 = clock();
 
-    std::cout << "time for analytical eval " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "time for bernstein eval "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "time for horner eval "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
+
+
+    std::cout << "time for analytical eval  " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for bernstein eval   "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for horner eval      "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for deCasteljau eval "     <<   double(e3 - s3) / CLOCKS_PER_SEC << std::endl;
 
 }
 
@@ -768,6 +783,67 @@ void TestReparametrization(bool& error)
     }
 }
 
+point_t randomPoint(const double min, const double max ){
+    point_t p;
+    for(size_t i = 0 ; i < 3 ; ++i)
+        p[i] =  (rand()/(double)RAND_MAX ) * (max-min) + min;
+    return p;
+}
+
+void BezierEvalDeCasteljau(bool& error){
+    using namespace std;
+    std::vector<double> values;
+    for (int i =0; i < 100000; ++i)
+        values.push_back(rand()/RAND_MAX);
+
+    //first compare regular evaluation (low dim pol)
+    point_t a(1,2,3);
+    point_t b(2,3,4);
+    point_t c(3,4,5);
+    point_t d(3,6,7);
+    point_t e(3,61,7);
+    point_t f(3,56,7);
+    point_t g(3,36,7);
+    point_t h(43,6,7);
+    point_t i(3,6,77);
+
+    std::vector<point_t> params;
+    params.push_back(a);
+    params.push_back(b);
+    params.push_back(c);
+
+    // 3d curve
+    bezier_curve_t cf(params.begin(), params.end());
+
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        if(cf.evalDeCasteljau(*cit) != cf(*cit)){
+            error = true;
+            std::cout<<" De Casteljau evaluation did not return the same value as analytical"<<std::endl;
+        }
+    }
+
+    params.push_back(d);
+    params.push_back(e);
+    params.push_back(f);
+    params.push_back(g);
+    params.push_back(h);
+    params.push_back(i);
+
+    bezier_curve_t cf2(params.begin(), params.end());
+
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        if(cf.evalDeCasteljau(*cit) != cf(*cit)){
+            error = true;
+            std::cout<<" De Casteljau evaluation did not return the same value as analytical"<<std::endl;
+        }
+    }
+
+}
+
+
+
 int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
@@ -789,6 +865,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierCurveTestCompareHornerAndBernstein(error);
     BezierDerivativeCurveTimeReparametrizationTest(error);
     BezierToPolynomConversionTest(error);
+    BezierEvalDeCasteljau(error);
 	if(error)
 	{
         std::cout << "There were some errors\n";

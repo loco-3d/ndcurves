@@ -258,6 +258,47 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     const t_point_t& waypoints() const {return pts_;}
 
+
+    /**
+     * @brief evalDeCasteljau evaluate the curve value at time t using deCasteljau algorithm
+     * @param t unNormalized time
+     * @return the point at time t
+     */
+    point_t evalDeCasteljau(const Numeric T) const {
+        // normalize time :
+        const Numeric t = T/T_;
+        t_point_t pts = deCasteljauReduction(waypoints(),t);
+        while(pts.size() > 1){
+            pts = deCasteljauReduction(pts,t);
+        }
+        return pts[0]*mult_T_;
+    }
+
+    t_point_t deCasteljauReduction(const Numeric t) const{
+        return deCasteljauReduction(waypoints(),t/T_);
+    }
+
+    /**
+     * @brief deCasteljauReduction compute the de Casteljau's reduction of the given list of points at time t
+     * @param pts the original list of points
+     * @param t the NORMALIZED time
+     * @return the reduced list of point (size of pts - 1)
+     */
+    t_point_t deCasteljauReduction(const t_point_t& pts, const Numeric t) const{
+        if(t < 0 || t > 1)
+            throw std::out_of_range("In deCasteljau reduction : t is not in [0;1]");
+        if(pts.size() == 1)
+            return pts;
+
+        t_point_t new_pts;
+        for(cit_point_t cit = pts.begin() ; cit != (pts.end() - 1) ; ++cit){
+            new_pts.push_back((1-t) * (*cit) + t*(*(cit+1)));
+        }
+        return new_pts;
+    }
+
+
+
     private:
     template<typename In>
     t_point_t add_constraints(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints)
