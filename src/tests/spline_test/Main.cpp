@@ -843,6 +843,82 @@ void BezierEvalDeCasteljau(bool& error){
 }
 
 
+/**
+ * @brief BezierSplitCurve test the 'split' method of bezier curve
+ * @param error
+ */
+void BezierSplitCurve(bool& error){
+    // test for degree 5
+    int n = 5;
+    double t_min = 0.2;
+    double t_max = 10;
+    for(size_t i = 0 ; i < 1 ; ++i){
+        // build a random curve and split it at random time :
+        //std::cout<<"build a random curve"<<std::endl;
+        point_t a;
+        std::vector<point_t> wps;
+        for(size_t j = 0 ; j <= n ; ++j){
+            wps.push_back(randomPoint(-10.,10.));
+        }
+        double t = (rand()/(double)RAND_MAX )*(t_max-t_min) + t_min;
+        double ts = (rand()/(double)RAND_MAX )*(t);
+
+        bezier_curve_t c(wps.begin(), wps.end(),t);
+        std::pair<bezier_curve_t,bezier_curve_t> cs = c.split(ts);
+        //std::cout<<"split curve of duration "<<t<<" at "<<ts<<std::endl;
+
+        // test on splitted curves :
+
+        if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) )){
+            error = true;
+            std::cout<<" Degree of the splitted curve are not the same as the original curve"<<std::endl;
+        }
+
+        if(c.max() != (cs.first.max() + cs.second.max())){
+            error = true;
+            std::cout<<"Duration of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        if(c(0) != cs.first(0)){
+            error = true;
+            std::cout<<"initial point of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        if(c(t) != cs.second(cs.second.max())){
+            error = true;
+            std::cout<<"final point of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        if(cs.first.max() != ts){
+            error = true;
+            std::cout<<"timing of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        if(cs.first(ts) != cs.second(0.)){
+            error = true;
+            std::cout<<"splitting point of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        // check along curve :
+        double ti = 0.;
+        while(ti <= ts){
+            if((cs.first(ti) - c(ti)).norm() > 1e-14){
+                error = true;
+                std::cout<<"first splitted curve and original curve doesn't correspond, error = "<<cs.first(ti) - c(ti) <<std::endl;
+            }
+            ti += 0.01;
+        }
+        while(ti <= t){
+            if((cs.second(ti-ts) - c(ti)).norm() > 1e-14){
+                error = true;
+                std::cout<<"second splitted curve and original curve doesn't correspond, error = "<<cs.second(ti-ts) - c(ti)<<std::endl;
+            }
+            ti += 0.01;
+        }
+    }
+}
+
+
 
 int main(int /*argc*/, char** /*argv[]*/)
 {
@@ -866,7 +942,8 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierDerivativeCurveTimeReparametrizationTest(error);
     BezierToPolynomConversionTest(error);
     BezierEvalDeCasteljau(error);
-	if(error)
+    BezierSplitCurve(error);
+    if(error)
 	{
         std::cout << "There were some errors\n";
 		return -1;
