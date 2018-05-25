@@ -255,7 +255,7 @@ void BezierCurveTestCompareHornerAndBernstein(bool& /*error*/)
     // 3d curve
     bezier_curve_t cf(params.begin(), params.end());
 
-    clock_t s0,e0,s1,e1,s2,e2;
+    clock_t s0,e0,s1,e1,s2,e2,s3,e3;
     s0 = clock();
     for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
     {
@@ -277,12 +277,18 @@ void BezierCurveTestCompareHornerAndBernstein(bool& /*error*/)
     }
     e2 = clock();
 
+    s3 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf.evalDeCasteljau(*cit);
+    }
+    e3 = clock();
 
-    std::cout << "time for analytical eval " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "time for bernstein eval "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "time for horner eval "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
 
-
+    std::cout << "time for analytical eval  " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for bernstein eval   "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for horner eval      "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for deCasteljau eval "     <<   double(e3 - s3) / CLOCKS_PER_SEC << std::endl;
 
     std::cout << "now with high order polynom "    << std::endl;
 
@@ -317,10 +323,19 @@ void BezierCurveTestCompareHornerAndBernstein(bool& /*error*/)
     }
     e0 = clock();
 
+    s3 = clock();
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        cf2.evalDeCasteljau(*cit);
+    }
+    e3 = clock();
 
-    std::cout << "time for analytical eval " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "time for bernstein eval "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "time for horner eval "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
+
+
+    std::cout << "time for analytical eval  " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for bernstein eval   "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for horner eval      "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time for deCasteljau eval "     <<   double(e3 - s3) / CLOCKS_PER_SEC << std::endl;
 
 }
 
@@ -768,6 +783,143 @@ void TestReparametrization(bool& error)
     }
 }
 
+point_t randomPoint(const double min, const double max ){
+    point_t p;
+    for(size_t i = 0 ; i < 3 ; ++i)
+        p[i] =  (rand()/(double)RAND_MAX ) * (max-min) + min;
+    return p;
+}
+
+void BezierEvalDeCasteljau(bool& error){
+    using namespace std;
+    std::vector<double> values;
+    for (int i =0; i < 100000; ++i)
+        values.push_back(rand()/RAND_MAX);
+
+    //first compare regular evaluation (low dim pol)
+    point_t a(1,2,3);
+    point_t b(2,3,4);
+    point_t c(3,4,5);
+    point_t d(3,6,7);
+    point_t e(3,61,7);
+    point_t f(3,56,7);
+    point_t g(3,36,7);
+    point_t h(43,6,7);
+    point_t i(3,6,77);
+
+    std::vector<point_t> params;
+    params.push_back(a);
+    params.push_back(b);
+    params.push_back(c);
+
+    // 3d curve
+    bezier_curve_t cf(params.begin(), params.end());
+
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        if(cf.evalDeCasteljau(*cit) != cf(*cit)){
+            error = true;
+            std::cout<<" De Casteljau evaluation did not return the same value as analytical"<<std::endl;
+        }
+    }
+
+    params.push_back(d);
+    params.push_back(e);
+    params.push_back(f);
+    params.push_back(g);
+    params.push_back(h);
+    params.push_back(i);
+
+    bezier_curve_t cf2(params.begin(), params.end());
+
+    for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
+    {
+        if(cf.evalDeCasteljau(*cit) != cf(*cit)){
+            error = true;
+            std::cout<<" De Casteljau evaluation did not return the same value as analytical"<<std::endl;
+        }
+    }
+
+}
+
+
+/**
+ * @brief BezierSplitCurve test the 'split' method of bezier curve
+ * @param error
+ */
+void BezierSplitCurve(bool& error){
+    // test for degree 5
+    int n = 5;
+    double t_min = 0.2;
+    double t_max = 10;
+    for(size_t i = 0 ; i < 1 ; ++i){
+        // build a random curve and split it at random time :
+        //std::cout<<"build a random curve"<<std::endl;
+        point_t a;
+        std::vector<point_t> wps;
+        for(size_t j = 0 ; j <= n ; ++j){
+            wps.push_back(randomPoint(-10.,10.));
+        }
+        double t = (rand()/(double)RAND_MAX )*(t_max-t_min) + t_min;
+        double ts = (rand()/(double)RAND_MAX )*(t);
+
+        bezier_curve_t c(wps.begin(), wps.end(),t);
+        std::pair<bezier_curve_t,bezier_curve_t> cs = c.split(ts);
+        //std::cout<<"split curve of duration "<<t<<" at "<<ts<<std::endl;
+
+        // test on splitted curves :
+
+        if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) )){
+            error = true;
+            std::cout<<" Degree of the splitted curve are not the same as the original curve"<<std::endl;
+        }
+
+        if(c.max() != (cs.first.max() + cs.second.max())){
+            error = true;
+            std::cout<<"Duration of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        if(c(0) != cs.first(0)){
+            error = true;
+            std::cout<<"initial point of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        if(c(t) != cs.second(cs.second.max())){
+            error = true;
+            std::cout<<"final point of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        if(cs.first.max() != ts){
+            error = true;
+            std::cout<<"timing of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        if(cs.first(ts) != cs.second(0.)){
+            error = true;
+            std::cout<<"splitting point of the splitted curve doesn't correspond to the original"<<std::endl;
+        }
+
+        // check along curve :
+        double ti = 0.;
+        while(ti <= ts){
+            if((cs.first(ti) - c(ti)).norm() > 1e-14){
+                error = true;
+                std::cout<<"first splitted curve and original curve doesn't correspond, error = "<<cs.first(ti) - c(ti) <<std::endl;
+            }
+            ti += 0.01;
+        }
+        while(ti <= t){
+            if((cs.second(ti-ts) - c(ti)).norm() > 1e-14){
+                error = true;
+                std::cout<<"second splitted curve and original curve doesn't correspond, error = "<<cs.second(ti-ts) - c(ti)<<std::endl;
+            }
+            ti += 0.01;
+        }
+    }
+}
+
+
+
 int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
@@ -789,7 +941,9 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierCurveTestCompareHornerAndBernstein(error);
     BezierDerivativeCurveTimeReparametrizationTest(error);
     BezierToPolynomConversionTest(error);
-	if(error)
+    BezierEvalDeCasteljau(error);
+    BezierSplitCurve(error);
+    if(error)
 	{
         std::cout << "There were some errors\n";
 		return -1;

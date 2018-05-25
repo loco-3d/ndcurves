@@ -258,6 +258,82 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     const t_point_t& waypoints() const {return pts_;}
 
+
+    /**
+     * @brief evalDeCasteljau evaluate the curve value at time t using deCasteljau algorithm
+     * @param t unNormalized time
+     * @return the point at time t
+     */
+    point_t evalDeCasteljau(const Numeric T) const {
+        // normalize time :
+        const Numeric t = T/T_;
+        t_point_t pts = deCasteljauReduction(waypoints(),t);
+        while(pts.size() > 1){
+            pts = deCasteljauReduction(pts,t);
+        }
+        return pts[0]*mult_T_;
+    }
+
+    t_point_t deCasteljauReduction(const Numeric t) const{
+        return deCasteljauReduction(waypoints(),t/T_);
+    }
+
+    /**
+     * @brief deCasteljauReduction compute the de Casteljau's reduction of the given list of points at time t
+     * @param pts the original list of points
+     * @param t the NORMALIZED time
+     * @return the reduced list of point (size of pts - 1)
+     */
+    t_point_t deCasteljauReduction(const t_point_t& pts, const Numeric t) const{
+        if(t < 0 || t > 1)
+            throw std::out_of_range("In deCasteljau reduction : t is not in [0;1]");
+        if(pts.size() == 1)
+            return pts;
+
+        t_point_t new_pts;
+        for(cit_point_t cit = pts.begin() ; cit != (pts.end() - 1) ; ++cit){
+            new_pts.push_back((1-t) * (*cit) + t*(*(cit+1)));
+        }
+        return new_pts;
+    }
+
+
+    /**
+     * @brief split split the curve in 2 at time t
+     * @param t
+     * @return
+     */
+    std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric T){
+        t_point_t wps_first(size_),wps_second(size_);
+        const double t = T/T_;
+        wps_first[0] = pts_.front();
+        wps_second[degree_] = pts_.back();
+        t_point_t casteljau_pts = waypoints();
+        size_t id = 1;
+        while(casteljau_pts.size() > 1){
+            casteljau_pts = deCasteljauReduction(casteljau_pts,t);
+            wps_first[id] = casteljau_pts.front();
+            wps_second[degree_-id] = casteljau_pts.back();
+            ++id;
+        }
+
+        bezier_curve_t c_first(wps_first.begin(), wps_first.end(), T,mult_T_);
+        bezier_curve_t c_second(wps_second.begin(), wps_second.end(), T_-T,mult_T_);
+        return std::make_pair(c_first,c_second);
+    }
+
+    bezier_curve_t extract(const Numeric t1, const Numeric t2){
+        if(t1 < 0. || t1 > T_ || t2 < 0. || t2 > T_)
+            throw std::out_of_range("In Extract curve : times out of bounds");
+        if(t1 == 0.)
+            return split(t2).first;
+        if(t2 == T_)
+            return split(t1).second;
+
+        std::pair<bezier_curve_t,bezier_curve_t> c_split = this->split(t1);
+        return c_split.second->split(t2).first;
+    }
+
     private:
     template<typename In>
     t_point_t add_constraints(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints)
