@@ -304,6 +304,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
      * @return
      */
     std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric T){
+        if (T == T_)
+            throw std::runtime_error("can't split curve, interval range is equal to original curve");
         t_point_t wps_first(size_),wps_second(size_);
         const double t = T/T_;
         wps_first[0] = pts_.front();
