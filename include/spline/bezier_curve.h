@@ -325,6 +325,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     bezier_curve_t extract(const Numeric t1, const Numeric t2){
         if(t1 < 0. || t1 > T_ || t2 < 0. || t2 > T_)
             throw std::out_of_range("In Extract curve : times out of bounds");
+        if(t1 == 0. &&  t2 == T_)
+            return bezier_curve_t(waypoints().begin(), waypoints().end(), T_,mult_T_);
         if(t1 == 0.)
             return split(t2).first;
         if(t2 == T_)
