@@ -36,7 +36,7 @@ IF(BUILD_PYTHON_INTERFACE)
 
 ENDIF(BUILD_PYTHON_INTERFACE)
 
-add_subdirectory (src/tests/spline_test)
+add_subdirectory (tests)
 
 install(FILES
 	${CMAKE_SOURCE_DIR}/include/spline/bernstein.h
