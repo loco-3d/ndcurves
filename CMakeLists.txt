@@ -34,27 +34,8 @@ IF(BUILD_PYTHON_INTERFACE)
 
 ENDIF(BUILD_PYTHON_INTERFACE)
 
-add_subdirectory (tests)
 
-install(FILES
-	${CMAKE_SOURCE_DIR}/include/spline/bernstein.h
-	${CMAKE_SOURCE_DIR}/include/spline/bezier_polynom_conversion.h
-	${CMAKE_SOURCE_DIR}/include/spline/curve_abc.h
-	${CMAKE_SOURCE_DIR}/include/spline/exact_cubic.h
-	${CMAKE_SOURCE_DIR}/include/spline/MathDefs.h
-	${CMAKE_SOURCE_DIR}/include/spline/polynom.h
-	${CMAKE_SOURCE_DIR}/include/spline/spline_deriv_constraint.h
-	${CMAKE_SOURCE_DIR}/include/spline/bezier_curve.h
-	${CMAKE_SOURCE_DIR}/include/spline/cubic_spline.h
-	${CMAKE_SOURCE_DIR}/include/spline/curve_constraint.h
-	${CMAKE_SOURCE_DIR}/include/spline/quintic_spline.h
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/include/spline
-	)
-
-install(FILES
-	${CMAKE_SOURCE_DIR}/include/spline/helpers/effector_spline.h
-	${CMAKE_SOURCE_DIR}/include/spline/helpers/effector_spline_rotation.h
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/include/spline/helpers
-	)
+ADD_SUBDIRECTORY(include/hpp/spline)
+ADD_SUBDIRECTORY(tests)
 
 SETUP_PROJECT_FINALIZE()

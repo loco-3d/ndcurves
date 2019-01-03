@@ -1,11 +1,11 @@
 
-#include "spline/exact_cubic.h"
-#include "spline/bezier_curve.h"
-#include "spline/polynom.h"
-#include "spline/spline_deriv_constraint.h"
-#include "spline/helpers/effector_spline.h"
-#include "spline/helpers/effector_spline_rotation.h"
-#include "spline/bezier_polynom_conversion.h"
+#include "hpp/spline/exact_cubic.h"
+#include "hpp/spline/bezier_curve.h"
+#include "hpp/spline/polynom.h"
+#include "hpp/spline/spline_deriv_constraint.h"
+#include "hpp/spline/helpers/effector_spline.h"
+#include "hpp/spline/helpers/effector_spline_rotation.h"
+#include "hpp/spline/bezier_polynom_conversion.h"
 
 #include <string>
 #include <iostream>
@@ -156,28 +156,28 @@ void BezierCurveTest(bool& error)
 	// 2d curve
 	bezier_curve_t cf(params.begin(), params.end());
 	point_t res1;
-	res1 = cf(0); 
+	res1 = cf(0);
 	point_t x20 = a ;
     ComparePoints(x20, res1, errMsg + "2(0) ", error);
-	
+
 	point_t x21 = b;
-	res1 = cf(1); 
+	res1 = cf(1);
     ComparePoints(x21, res1, errMsg + "2(1) ", error);
-	
+
 	//3d curve
 	params.push_back(c);
 	bezier_curve_t cf3(params.begin(), params.end());
-	res1 = cf3(0); 
+	res1 = cf3(0);
     ComparePoints(a, res1, errMsg + "3(0) ", error);
 
-	res1 = cf3(1); 
+	res1 = cf3(1);
     ComparePoints(c, res1, errMsg + "3(1) ", error);
 
 	//4d curve
 	params.push_back(d);
     bezier_curve_t cf4(params.begin(), params.end(), 2);
-	
-	res1 = cf4(2); 
+
+	res1 = cf4(2);
     ComparePoints(d, res1, errMsg + "3(1) ", error);
 
     //testing bernstein polynomes
@@ -505,11 +505,11 @@ void ExactCubicTwoPointsTest(bool& error)
 		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
 	}
 	exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
-	
+
 	point_t res1 = exactCubic(0);
 	std::string errmsg("in ExactCubic 2 points Error While checking that given wayPoints  are crossed (expected / obtained)");
 	ComparePoints(point_t(0,0,0), res1, errmsg, error);
-		
+
 	res1 = exactCubic(1);
 	ComparePoints(point_t(1,1,1), res1, errmsg, error);
 }
@@ -524,11 +524,11 @@ void ExactCubicOneDimTest(bool& error)
 	waypoints.push_back(std::make_pair(1., one));
 	waypoints.push_back(std::make_pair(2., two));
 	exact_cubic_one exactCubic(waypoints.begin(), waypoints.end());
-	
+
 	point_one res1 = exactCubic(0);
 	std::string errmsg("in ExactCubicOneDim Error While checking that given wayPoints  are crossed (expected / obtained)");
 	ComparePoints(zero, res1, errmsg, error);
-		
+
 	res1 = exactCubic(1);
 	ComparePoints(one, res1, errmsg, error);
 }
@@ -954,4 +954,3 @@ int main(int /*argc*/, char** /*argv[]*/)
 		return 0;
 	}
 }
-
