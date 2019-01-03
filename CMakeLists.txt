@@ -3,11 +3,12 @@ project(spline)
 INCLUDE(cmake/base.cmake)
 INCLUDE(cmake/python.cmake)
 
-SET(PROJECT_NAME spline)
+SET(PROJECT_ORG humanoid-path-planner)
+SET(PROJECT_NAME hpp-spline)
 SET(PROJECT_DESCRIPTION
 	 "template based classes for creating and manipulating spline and bezier curves. Comes with extra options specific to end-effector trajectories in robotics."
  )
-SET(PROJECT_URL "")
+SET(PROJECT_URL "https://github.com/${PROJECT_ORG}/${PROJECT_NAME}")
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/build/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/")
@@ -51,7 +52,7 @@ install(FILES
 	${CMAKE_SOURCE_DIR}/include/spline/quintic_spline.h
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/include/spline
 	)
-    
+
 install(FILES
 	${CMAKE_SOURCE_DIR}/include/spline/helpers/effector_spline.h
 	${CMAKE_SOURCE_DIR}/include/spline/helpers/effector_spline_rotation.h
