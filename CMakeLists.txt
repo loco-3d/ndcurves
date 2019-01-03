@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(spline)
 INCLUDE(cmake/base.cmake)
+INCLUDE(cmake/test.cmake)
 INCLUDE(cmake/python.cmake)
 
 SET(PROJECT_ORG humanoid-path-planner)
@@ -10,9 +11,6 @@ SET(PROJECT_DESCRIPTION
  )
 SET(PROJECT_URL "https://github.com/${PROJECT_ORG}/${PROJECT_NAME}")
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/build/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/")
-set(LIBRARY_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/lib/")
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
