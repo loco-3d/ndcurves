@@ -22,3 +22,5 @@ PKG_CONFIG_USE_DEPENDENCY(spline eigenpy)
 INSTALL(
 	FILES ${LIBRARY_OUTPUT_PATH}spline.so	DESTINATION ${PYTHON_SITELIB}
 )
+
+ADD_PYTHON_UNIT_TEST("python-spline" "python/test/test.py" "python")
