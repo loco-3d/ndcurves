@@ -205,7 +205,7 @@ void set_end_acc(curve_constraints_t& c, const point_t& val)
 
 
 
-BOOST_PYTHON_MODULE(spline)
+BOOST_PYTHON_MODULE(hpp_spline)
 {
     /** BEGIN eigenpy init**/
     eigenpy::enableEigenPy();
