@@ -6,6 +6,8 @@
 #include "hpp/spline/bezier_polynom_conversion.h"
 #include "hpp/spline/bernstein.h"
 
+#include "python_definitions.h"
+#include "python_variables.h"
 
 #include <vector>
 
@@ -15,20 +17,7 @@
 #include <boost/python.hpp>
 
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
-typedef double real;
-typedef Eigen::Vector3d point_t;
-typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> point6_t;
-typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point_t;
-typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> ret_point6_t;
-typedef Eigen::VectorXd time_waypoints_t;
-typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point_list_t;
-typedef Eigen::Matrix<real, 6, Eigen::Dynamic> point_list6_t;
-typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
-typedef std::vector<point6_t,Eigen::aligned_allocator<point6_t> >  t_point6_t;
-typedef std::pair<real, point_t> Waypoint;
-typedef std::vector<Waypoint> T_Waypoint;
-typedef std::pair<real, point6_t> Waypoint6;
-typedef std::vector<Waypoint6> T_Waypoint6;
+using namespace  spline;
 
 typedef spline::bezier_curve  <real, real, 3, true, point_t> bezier_t;
 typedef spline::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
@@ -57,14 +46,6 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_deriv_constraint_t)
 namespace spline
 {
 using namespace boost::python;
-template <typename PointList, typename T_Point>
-T_Point vectorFromEigenArray(const PointList& array)
-{
-    T_Point res;
-    for(int i =0;i<array.cols();++i)
-        res.push_back(array.col(i));
-    return res;
-}
 
 template <typename Bezier, typename PointList, typename T_Point>
 Bezier* wrapBezierConstructorTemplate(const PointList& array, const real ub =1.)
@@ -258,6 +239,37 @@ BOOST_PYTHON_MODULE(hpp_spline)
             .def_readonly("nbWaypoints", &bezier_t::size_)
         ;
     /** END bezier curve**/
+
+
+    /** BEGIN variable points bezier curve**/
+    class_<LinearControlPointsHolder>
+        ("LinearWaypoint", no_init)
+        .def_readonly("A", &LinearControlPointsHolder::A)
+        .def_readonly("b", &LinearControlPointsHolder::b)
+        ;
+
+    class_<LinearBezierVector>
+        ("bezierVarVector", no_init)
+        .def_readonly("size", &LinearBezierVector::size)
+        .def("at", &LinearBezierVector::at, return_value_policy<manage_new_object>())
+        ;
+
+    class_<bezier_linear_variable_t>
+        ("bezierVar", no_init)
+            .def("__init__", make_constructor(&wrapBezierLinearConstructor))
+            .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
+            .def("min", &bezier_linear_variable_t::min)
+            .def("max", &bezier_linear_variable_t::max)
+            //.def("__call__", &bezier_linear_control_t::operator())
+            .def("derivate", &bezier_linear_variable_t::derivate)
+            .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
+            .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
+            .def("split", &split, return_value_policy<manage_new_object>())
+            .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
+            .def_readonly("degree", &bezier_linear_variable_t::degree_)
+            .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
+        ;
+    /** END variable points bezier curve**/
 
 
     /** BEGIN spline curve function**/
