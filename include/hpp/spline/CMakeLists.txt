@@ -10,6 +10,7 @@ SET(${PROJECT_NAME}_HEADERS
   cubic_spline.h
   curve_constraint.h
   quintic_spline.h
+  linear_variable.h
   )
 
 INSTALL(FILES
