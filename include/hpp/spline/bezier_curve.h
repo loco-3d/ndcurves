@@ -139,37 +139,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	///  \param t : the time when to evaluate the spine
 	///  \param return : the value x(t)
     virtual point_t operator()(const time_t t) const
-	{
-        num_t nT = t /  T_;
-                if(Safe &! (0 <= t && t <= T_))
-		{
-            throw std::out_of_range("can't evaluate bezier curve, out of range"); // TODO
-        }
-		else
         {
-            num_t dt = (1 - nT);
-			switch(size_)
-            {
-                case 1 :
-                    return mult_T_ * pts_[0];
-				case 2 :
-                    return mult_T_ * (pts_[0] * dt +  nT * pts_[1]);
-				break;
-				case 3 :
-                    return 	mult_T_ * (pts_[0] * dt * dt
-                       				+ 2 * pts_[1] * nT * dt
-                        + pts_[2] * nT * nT);
-				break;
-                case 4 :
-                    return 	mult_T_ * (pts_[0] * dt * dt * dt
-						+ 3 * pts_[1] * nT * dt * dt 
-						+ 3 * pts_[2] * nT * nT * dt 
-                        + pts_[3] * nT * nT *nT);
-                default :
-                    return evalHorner(t);
-				break;
-			}
-		}
+            if(Safe &! (0 <= t && t <= T_))
+                throw std::out_of_range("can't evaluate bezier curve, out of range"); // TODO
+            return evalHorner(t);
 	}
 
     ///  \brief Computes the derivative curve at order N.
