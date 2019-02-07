@@ -1,4 +1,4 @@
-from spline import *
+from hpp_spline import *
 from numpy import matrix, array, zeros, ones, diag, cross
 from numpy.linalg import norm
 
@@ -130,7 +130,7 @@ def computeTrajectory(bezVar, splits, save, filename = uuid.uuid4().hex.upper()[
 
 #solve and gen problem
 def gen(save = False):
-        testConstant = genBezierInput(4)
+        testConstant = genBezierInput(20)
         splits = genSplit(4)
         return computeTrajectory(testConstant,splits, save), testConstant
 

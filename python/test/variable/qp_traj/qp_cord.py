@@ -1,4 +1,4 @@
-from spline import *
+from hpp_spline import *
 from varBezier import varBezier
 from convex_hull import *
 
