@@ -181,11 +181,14 @@ void BezierCurveTest(bool& error)
     ComparePoints(d, res1, errMsg + "3(1) ", error);
 
     //testing bernstein polynomes
+    bezier_curve_t cf5(params.begin(), params.end(),2.);
     std::string errMsg2("In test BezierCurveTest ; Bernstein polynoms do not evaluate as analytical evaluation");
-    for(double d = 0.; d <1.; d+=0.1)
+    for(double d = 0.; d <2.; d+=0.1)
     {
-        ComparePoints( cf3.evalBernstein(d) , cf3 (d), errMsg2, error);
-        ComparePoints( cf3.evalHorner(d) , cf3 (d), errMsg2, error);
+        ComparePoints( cf5.evalBernstein(d) , cf5 (d), errMsg2, error);
+        ComparePoints( cf5.evalHorner(d) , cf5 (d), errMsg2, error);
+        ComparePoints( cf5.compute_derivate(1).evalBernstein(d) , cf5.compute_derivate(1) (d), errMsg2, error);
+        ComparePoints( cf5.compute_derivate(1).evalHorner(d) , cf5.compute_derivate(1) (d), errMsg2, error);
     }
 
     bool error_in(true);
