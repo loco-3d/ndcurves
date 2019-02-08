@@ -139,37 +139,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	///  \param t : the time when to evaluate the spine
 	///  \param return : the value x(t)
     virtual point_t operator()(const time_t t) const
-	{
-        num_t nT = t /  T_;
-		if(Safe &! (0 <= nT && nT <= 1))
-		{
-            throw std::out_of_range("can't evaluate bezier curve, out of range"); // TODO
-        }
-		else
         {
-            num_t dt = (1 - nT);
-			switch(size_)
-            {
-                case 1 :
-                    return mult_T_ * pts_[0];
-				case 2 :
-                    return mult_T_ * (pts_[0] * dt +  nT * pts_[1]);
-				break;
-				case 3 :
-                    return 	mult_T_ * (pts_[0] * dt * dt
-                       				+ 2 * pts_[1] * nT * dt
-                        + pts_[2] * nT * nT);
-				break;
-                case 4 :
-                    return 	mult_T_ * (pts_[0] * dt * dt * dt
-						+ 3 * pts_[1] * nT * dt * dt 
-						+ 3 * pts_[2] * nT * nT * dt 
-                        + pts_[3] * nT * nT *nT);
-                default :
-                    return mult_T_ * evalHorner(nT);
-				break;
-			}
-		}
+            if(Safe &! (0 <= t && t <= T_))
+                throw std::out_of_range("can't evaluate bezier curve, out of range"); // TODO
+            return evalHorner(t);
 	}
 
     ///  \brief Computes the derivative curve at order N.
@@ -225,14 +198,15 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// Warning: the horner scheme is about 100 times faster than this method.
     /// This method will probably be removed in the future
     ///
-    point_t evalBernstein(const Numeric u) const
+    point_t evalBernstein(const Numeric t) const
     {
+        const Numeric u = t/T_;
         point_t res = point_t::Zero(Dim);
         typename t_point_t::const_iterator pts_it = pts_.begin();
         for(typename std::vector<Bern<Numeric> >::const_iterator cit = bernstein_.begin();
             cit !=bernstein_.end(); ++cit, ++pts_it)
             res += cit->operator()(u) * (*pts_it);
-        return res;
+        return res*mult_T_;
     }
 
 
@@ -241,19 +215,20 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     point_t evalHorner(const Numeric t) const
     {
+        const Numeric u = t/T_;
         typename t_point_t::const_iterator pts_it = pts_.begin();
-        Numeric u, bc, tn;
-        u = 1.0 - t;
+        Numeric u_op, bc, tn;
+        u_op = 1.0 - u;
         bc = 1;
         tn = 1;
-        point_t tmp =(*pts_it)*u; ++pts_it;
+        point_t tmp =(*pts_it)*u_op; ++pts_it;
         for(unsigned int i=1; i<degree_; i++, ++pts_it)
         {
-            tn = tn*t;
+            tn = tn*u;
             bc = bc*((num_t)(degree_-i+1))/i;
-            tmp = (tmp + tn*bc*(*pts_it))*u;
+            tmp = (tmp + tn*bc*(*pts_it))*u_op;
         }
-        return (tmp + tn*t*(*pts_it));
+        return (tmp + tn*u*(*pts_it))*mult_T_;
     }
 
     const t_point_t& waypoints() const {return pts_;}
@@ -264,12 +239,12 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
      * @param t unNormalized time
      * @return the point at time t
      */
-    point_t evalDeCasteljau(const Numeric T) const {
+    point_t evalDeCasteljau(const Numeric t) const {
         // normalize time :
-        const Numeric t = T/T_;
-        t_point_t pts = deCasteljauReduction(waypoints(),t);
+        const Numeric u = t/T_;
+        t_point_t pts = deCasteljauReduction(waypoints(),u);
         while(pts.size() > 1){
-            pts = deCasteljauReduction(pts,t);
+            pts = deCasteljauReduction(pts,u);
         }
         return pts[0]*mult_T_;
     }
@@ -281,18 +256,18 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /**
      * @brief deCasteljauReduction compute the de Casteljau's reduction of the given list of points at time t
      * @param pts the original list of points
-     * @param t the NORMALIZED time
+     * @param u the NORMALIZED time
      * @return the reduced list of point (size of pts - 1)
      */
-    t_point_t deCasteljauReduction(const t_point_t& pts, const Numeric t) const{
-        if(t < 0 || t > 1)
-            throw std::out_of_range("In deCasteljau reduction : t is not in [0;1]");
+    t_point_t deCasteljauReduction(const t_point_t& pts, const Numeric u) const{
+        if(u < 0 || u > 1)
+            throw std::out_of_range("In deCasteljau reduction : u is not in [0;1]");
         if(pts.size() == 1)
             return pts;
 
         t_point_t new_pts;
         for(cit_point_t cit = pts.begin() ; cit != (pts.end() - 1) ; ++cit){
-            new_pts.push_back((1-t) * (*cit) + t*(*(cit+1)));
+            new_pts.push_back((1-u) * (*cit) + u*(*(cit+1)));
         }
         return new_pts;
     }
@@ -303,24 +278,24 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
      * @param t
      * @return
      */
-    std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric T){
-        if (T == T_)
+    std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric t){
+        if (t == T_)
             throw std::runtime_error("can't split curve, interval range is equal to original curve");
         t_point_t wps_first(size_),wps_second(size_);
-        const double t = T/T_;
+        const double u = t/T_;
         wps_first[0] = pts_.front();
         wps_second[degree_] = pts_.back();
         t_point_t casteljau_pts = waypoints();
         size_t id = 1;
         while(casteljau_pts.size() > 1){
-            casteljau_pts = deCasteljauReduction(casteljau_pts,t);
+            casteljau_pts = deCasteljauReduction(casteljau_pts,u);
             wps_first[id] = casteljau_pts.front();
             wps_second[degree_-id] = casteljau_pts.back();
             ++id;
         }
 
-        bezier_curve_t c_first(wps_first.begin(), wps_first.end(), T,mult_T_);
-        bezier_curve_t c_second(wps_second.begin(), wps_second.end(), T_-T,mult_T_);
+        bezier_curve_t c_first(wps_first.begin(), wps_first.end(), t,mult_T_);
+        bezier_curve_t c_second(wps_second.begin(), wps_second.end(), T_-t,mult_T_);
         return std::make_pair(c_first,c_second);
     }
 
