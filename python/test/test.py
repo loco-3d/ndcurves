@@ -37,7 +37,7 @@ class TestSpline(unittest.TestCase):
         prim = a.compute_primitive(2)
         for i in range(10):
             t = float(i) / 10.
-            assert_allclose(a(t), prim.derivate(t, 2))
+            assert_allclose(a(t), prim.derivate(t, 2), atol=1e-20)
         assert_allclose(prim(0), matrix([0., 0., 0.]).T)
 
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).T
