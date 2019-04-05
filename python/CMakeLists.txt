@@ -1,24 +1,21 @@
-cmake_minimum_required( VERSION 2.8 )
-
-include_directories("${EIGEN3_INCLUDE_DIR}")
+STRING(REGEX REPLACE "-" "_" PY_NAME ${PROJECT_NAME})
 
 ADD_REQUIRED_DEPENDENCY("eigenpy")
 
-include_directories("${PROJECT_SOURCE_DIR}/include")
-FILE(GLOB_RECURSE HeaderFiles "${PROJECT_SOURCE_DIR}/include/spline/*.h")
-
 # Define the wrapper library that wraps our library
-add_library( spline SHARED spline_python.cpp )
+add_library( ${PY_NAME} SHARED spline_python.cpp )
 #~ target_link_libraries( centroidal_dynamics ${Boost_LIBRARIES} ${PROJECT_NAME} )
 # don't prepend wrapper library name with lib
-set_target_properties( spline PROPERTIES PREFIX "" )
+set_target_properties( ${PY_NAME} PROPERTIES PREFIX "" )
 
 IF(APPLE)
-	# We need to change the extension for python bindings
-	SET_TARGET_PROPERTIES(spline PROPERTIES SUFFIX ".so")
+  # We need to change the extension for python bindings
+  SET_TARGET_PROPERTIES(${PY_NAME} PROPERTIES SUFFIX ".so")
 ENDIF(APPLE)
-PKG_CONFIG_USE_DEPENDENCY(spline eigenpy)
+PKG_CONFIG_USE_DEPENDENCY(${PY_NAME} eigenpy)
 
 INSTALL(
-	FILES ${LIBRARY_OUTPUT_PATH}spline.so	DESTINATION ${PYTHON_SITELIB}
-)
+  TARGETS ${PY_NAME}	DESTINATION ${PYTHON_SITELIB}
+  )
+
+ADD_PYTHON_UNIT_TEST("python-spline" "python/test/test.py" "python")

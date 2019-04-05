@@ -1,6 +1,4 @@
 # Build and Release Folders
-bin/
-lib/
 build/
 build-rel/
 
