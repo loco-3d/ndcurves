@@ -20,7 +20,7 @@
 
 #include <stdexcept>
 
-namespace spline
+namespace curve
 {
 /// \brief Creates coefficient vector of a quintic spline defined on the interval
 /// [tBegin, tEnd]. It follows the equation

@@ -23,7 +23,7 @@
 #include <functional>
 #include <stdexcept>
 
-namespace spline
+namespace curve
 {
 /// \class polynom
 /// \brief Represents a polynomf arbitrary order defined on the interval

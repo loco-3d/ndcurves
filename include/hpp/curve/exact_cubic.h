@@ -29,7 +29,7 @@
 #include <functional>
 #include <vector>
 
-namespace spline
+namespace curve
 {
 /// \class ExactCubic
 /// \brief Represents a set of cubic splines defining a continuous function 

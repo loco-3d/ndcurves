@@ -17,7 +17,7 @@
 #include <functional>
 #include <vector>
 
-namespace spline
+namespace curve
 {
 template <typename Point>
 struct curve_constraints

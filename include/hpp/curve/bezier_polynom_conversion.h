@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-namespace spline
+namespace curve
 {
 /// \brief Provides methods for converting a curve from a bernstein representation
 /// to a polynom representation

@@ -28,7 +28,7 @@
 #include <functional>
 #include <vector>
 
-namespace spline
+namespace curve
 {
 /// \class spline_deriv_constraint.
 /// \brief Represents a set of cubic splines defining a continuous function 

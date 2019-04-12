@@ -16,7 +16,7 @@
 
 #include <functional>
 
-namespace spline
+namespace curve
 {
 /// \struct curve_abc
 /// \brief Represents a curve of dimension Dim
