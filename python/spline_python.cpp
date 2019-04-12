@@ -242,7 +242,7 @@ BOOST_PYTHON_MODULE(curves)
 
     /** BEGIN bezier curve**/
     class_<bezier3_t>
-        ("bezier", no_init)
+        ("bezier3", no_init)
             .def("__init__", make_constructor(&wrapBezierConstructor))
             .def("__init__", make_constructor(&wrapBezierConstructorBounds))
             .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
