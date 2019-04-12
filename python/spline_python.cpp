@@ -1,10 +1,10 @@
-#include "hpp/curve/bezier_curve.h"
-#include "hpp/curve/polynom.h"
-#include "hpp/curve/exact_cubic.h"
-#include "hpp/curve/spline_deriv_constraint.h"
-#include "hpp/curve/curve_constraint.h"
-#include "hpp/curve/bezier_polynom_conversion.h"
-#include "hpp/curve/bernstein.h"
+#include "curve/bezier_curve.h"
+#include "curve/polynom.h"
+#include "curve/exact_cubic.h"
+#include "curve/spline_deriv_constraint.h"
+#include "curve/curve_constraint.h"
+#include "curve/bezier_polynom_conversion.h"
+#include "curve/bernstein.h"
 
 
 #include <vector>

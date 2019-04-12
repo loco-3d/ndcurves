@@ -20,7 +20,7 @@
 #ifndef _CLASS_EFFECTORSPLINE
 #define _CLASS_EFFECTORSPLINE
 
-#include "hpp/curve/spline_deriv_constraint.h"
+#include "curve/spline_deriv_constraint.h"
 
 namespace curve
 {

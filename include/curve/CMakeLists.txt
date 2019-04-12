@@ -14,7 +14,7 @@ SET(${PROJECT_NAME}_HEADERS
 
 INSTALL(FILES
   ${${PROJECT_NAME}_HEADERS}
-  DESTINATION include/hpp/curve
+  DESTINATION include/curve
   )
 
 ADD_SUBDIRECTORY(helpers)

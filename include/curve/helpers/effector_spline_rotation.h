@@ -20,8 +20,8 @@
 #ifndef _CLASS_EFFECTOR_SPLINE_ROTATION
 #define _CLASS_EFFECTOR_SPLINE_ROTATION
 
-#include "hpp/curve/helpers/effector_spline.h"
-#include "hpp/curve/curve_abc.h"
+#include "curve/helpers/effector_spline.h"
+#include "curve/curve_abc.h"
 #include <Eigen/Geometry>
 
 namespace curve
