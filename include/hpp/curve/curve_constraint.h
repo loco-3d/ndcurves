@@ -32,5 +32,5 @@ struct curve_constraints
     point_t end_vel;
     point_t end_acc;
 };
-}
+} // namespace curve
 #endif //_CLASS_CUBICZEROVELACC

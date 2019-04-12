@@ -198,6 +198,6 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     t_spline_t subSplines_; // const
 	/*Attributes*/
 };
-}
+} // namespace curve
 #endif //_CLASS_EXACTCUBIC
 

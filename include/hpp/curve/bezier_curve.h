@@ -364,6 +364,6 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return bezier_curve_t(ts.begin(), ts.end(),T);
     }
 };
-}
+} // namespace curve
 #endif //_CLASS_BEZIERCURVE
 

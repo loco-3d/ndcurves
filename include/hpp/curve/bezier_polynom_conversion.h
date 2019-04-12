@@ -67,6 +67,6 @@ Bezier from_polynom(const Polynom& polynom)
     typedef Bezier::cit_point_t    cit_point_t;
     typedef Bezier::bezier_curve_t   bezier_curve_t;
 }*/
-}
+} // namespace curve
 #endif //_BEZIER_POLY_CONVERSION
 

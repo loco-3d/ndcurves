@@ -199,6 +199,6 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return res;
     }
 }; //class polynom
-}
+} // namespace curve
 #endif //_STRUCT_POLYNOM
 

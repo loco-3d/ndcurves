@@ -63,6 +63,6 @@ struct  curve_abc : std::unary_function<Time, Point>
 /*Helpers*/
 
 	};
-}
+} // namespace curve
 #endif //_STRUCT_CURVE_ABC
 

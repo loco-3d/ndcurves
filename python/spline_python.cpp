@@ -320,4 +320,4 @@ BOOST_PYTHON_MODULE(curves)
 
 }
 
-} // namespace spline
+} // namespace curve

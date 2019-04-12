@@ -137,6 +137,6 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
     private:
     /* Constructors - destructors */
 };
-}
+} // namespace curve
 #endif //_CLASS_CUBICZEROVELACC
 
