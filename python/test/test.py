@@ -9,8 +9,8 @@ from numpy.testing import assert_allclose
 from curves import bezier3, bezier6, curve_constraints, exact_cubic, from_bezier, polynom, spline_deriv_constraint
 
 
-class TestSpline(unittest.TestCase):
-    def test_spline(self):
+class TestCurve(unittest.TestCase):
+    def test_curve(self):
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).T
         waypoints6 = matrix([[1., 2., 3., 7., 5., 5.], [4., 5., 6., 4., 5., 6.]]).T
         time_waypoints = matrix([0., 1.]).T
