@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(spline)
+project(curve)
 INCLUDE(cmake/base.cmake)
 INCLUDE(cmake/test.cmake)
 INCLUDE(cmake/python.cmake)

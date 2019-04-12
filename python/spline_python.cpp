@@ -1,10 +1,10 @@
-#include "hpp/spline/bezier_curve.h"
-#include "hpp/spline/polynom.h"
-#include "hpp/spline/exact_cubic.h"
-#include "hpp/spline/spline_deriv_constraint.h"
-#include "hpp/spline/curve_constraint.h"
-#include "hpp/spline/bezier_polynom_conversion.h"
-#include "hpp/spline/bernstein.h"
+#include "hpp/curve/bezier_curve.h"
+#include "hpp/curve/polynom.h"
+#include "hpp/curve/exact_cubic.h"
+#include "hpp/curve/spline_deriv_constraint.h"
+#include "hpp/curve/curve_constraint.h"
+#include "hpp/curve/bezier_polynom_conversion.h"
+#include "hpp/curve/bernstein.h"
 
 
 #include <vector>
@@ -30,20 +30,20 @@ typedef std::vector<Waypoint> T_Waypoint;
 typedef std::pair<real, point6_t> Waypoint6;
 typedef std::vector<Waypoint6> T_Waypoint6;
 
-typedef spline::bezier_curve  <real, real, 3, true, point_t> bezier_t;
-typedef spline::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
-typedef spline::polynom  <real, real, 3, true, point_t, t_point_t> polynom_t;
-typedef spline::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
+typedef curve::bezier_curve  <real, real, 3, true, point_t> bezier_t;
+typedef curve::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
+typedef curve::polynom  <real, real, 3, true, point_t, t_point_t> polynom_t;
+typedef curve::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
 typedef polynom_t::coeff_t coeff_t;
 typedef std::pair<real, point_t> waypoint_t;
 typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t;
 
-typedef spline::Bern<double> bernstein_t;
+typedef curve::Bern<double> bernstein_t;
 
 
-typedef spline::spline_deriv_constraint  <real, real, 3, true, point_t, t_point_t> spline_deriv_constraint_t;
-typedef spline::curve_constraints<point_t> curve_constraints_t;
-typedef spline::curve_constraints<point6_t> curve_constraints6_t;
+typedef curve::spline_deriv_constraint  <real, real, 3, true, point_t, t_point_t> spline_deriv_constraint_t;
+typedef curve::curve_constraints<point_t> curve_constraints_t;
+typedef curve::curve_constraints<point6_t> curve_constraints6_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
@@ -54,7 +54,7 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_deriv_constraint_t)
 
-namespace spline
+namespace curve
 {
 using namespace boost::python;
 template <typename PointList, typename T_Point>
