@@ -5,7 +5,7 @@ INCLUDE(cmake/test.cmake)
 INCLUDE(cmake/python.cmake)
 INCLUDE(cmake/hpp.cmake)
 
-SET(PROJECT_NAME hpp-spline)
+SET(PROJECT_NAME curves)
 SET(PROJECT_DESCRIPTION
   "template based classes for creating and manipulating spline and bezier curves. Comes with extra options specific to end-effector trajectories in robotics."
   )

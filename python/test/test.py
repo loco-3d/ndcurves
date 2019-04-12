@@ -6,7 +6,7 @@ from numpy import matrix
 from numpy.linalg import norm
 from numpy.testing import assert_allclose
 
-from hpp_spline import bezier, bezier6, curve_constraints, exact_cubic, from_bezier, polynom, spline_deriv_constraint
+from curves import bezier, bezier6, curve_constraints, exact_cubic, from_bezier, polynom, spline_deriv_constraint
 
 
 class TestSpline(unittest.TestCase):
