@@ -20,11 +20,11 @@
 #ifndef _CLASS_EFFECTOR_SPLINE_ROTATION
 #define _CLASS_EFFECTOR_SPLINE_ROTATION
 
-#include "hpp/spline/helpers/effector_spline.h"
-#include "hpp/spline/curve_abc.h"
+#include "curve/helpers/effector_spline.h"
+#include "curve/curve_abc.h"
 #include <Eigen/Geometry>
 
-namespace spline
+namespace curve
 {
 namespace helpers
 {
@@ -252,5 +252,5 @@ class effector_spline_rotation
 };
 
 } // namespace helpers
-} // namespace spline
+} // namespace curve
 #endif //_CLASS_EFFECTOR_SPLINE_ROTATION

@@ -17,7 +17,7 @@
 #include <functional>
 #include <vector>
 
-namespace spline
+namespace curve
 {
 template <typename Point>
 struct curve_constraints
@@ -32,5 +32,5 @@ struct curve_constraints
     point_t end_vel;
     point_t end_acc;
 };
-}
+} // namespace curve
 #endif //_CLASS_CUBICZEROVELACC

@@ -5,5 +5,5 @@ SET(${PROJECT_NAME}_HELPERS_HEADERS
 
 INSTALL(FILES
   ${${PROJECT_NAME}_HELPERS_HEADERS}
-  DESTINATION include/hpp/spline/helpers
+  DESTINATION include/curve/helpers
   )
