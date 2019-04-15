@@ -1,7 +1,7 @@
 from numpy import matrix
 from numpy.linalg import norm
 
-from curves import bezier, bezier6, curve_constraints, exact_cubic, from_bezier, polynom, spline_deriv_constraint
+from curves import bezier3, bezier6, curve_constraints, exact_cubic, from_bezier, polynom, spline_deriv_constraint
 
 __EPS = 1e-6
 
@@ -11,7 +11,7 @@ time_waypoints = matrix([0., 1.]).transpose()
 
 # testing bezier curve
 a = bezier6(waypoints6)
-a = bezier(waypoints, 3.)
+a = bezier3(waypoints, 3.)
 
 assert (a.degree == a.nbWaypoints - 1)
 a.min()
@@ -35,8 +35,8 @@ for i in range(10):
 assert (prim(0) == matrix([0., 0., 0.])).all()
 
 waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
-a0 = bezier(waypoints)
-a1 = bezier(waypoints, 3.)
+a0 = bezier3(waypoints)
+a1 = bezier3(waypoints, 3.)
 prim0 = a0.compute_primitive(1)
 prim1 = a1.compute_primitive(1)
 
@@ -56,7 +56,7 @@ c.init_acc = matrix([0., 1., -1.]).transpose()
 c.end_acc = matrix([0., 100., 1.]).transpose()
 
 waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-a = bezier(waypoints, c)
+a = bezier3(waypoints, c)
 assert norm(a.derivate(0, 1) - c.init_vel) < 1e-10
 assert norm(a.derivate(1, 2) - c.end_acc) < 1e-10
 
@@ -94,6 +94,6 @@ a = spline_deriv_constraint(waypoints, time_waypoints, c)
 
 # converting bezier to polynom
 
-a = bezier(waypoints)
+a = bezier3(waypoints)
 a_pol = from_bezier(a)
 assert norm(a(0.3) - a_pol(0.3)) < __EPS

@@ -19,7 +19,7 @@
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 using namespace curve;
 
-typedef curve::bezier_curve  <real, real, 3, true, point_t> bezier_t;
+typedef curve::bezier_curve  <real, real, 3, true, point_t> bezier3_t;
 typedef curve::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
 typedef curve::polynom  <real, real, 3, true, point_t, t_point_t> polynom_t;
 typedef curve::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
@@ -36,7 +36,7 @@ typedef curve::curve_constraints<point6_t> curve_constraints6_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier6_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynom_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
@@ -62,21 +62,21 @@ Bezier* wrapBezierConstructorConstraintsTemplate(const PointList& array, const C
 }
 
 /*3D constructors */
-bezier_t* wrapBezierConstructor(const point_list_t& array)
+bezier3_t* wrapBezierConstructor(const point_list_t& array)
 {
-    return wrapBezierConstructorTemplate<bezier_t, point_list_t, t_point_t>(array) ;
+    return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array) ;
 }
-bezier_t* wrapBezierConstructorBounds(const point_list_t& array, const real ub)
+bezier3_t* wrapBezierConstructorBounds(const point_list_t& array, const real ub)
 {
-    return wrapBezierConstructorTemplate<bezier_t, point_list_t, t_point_t>(array, ub) ;
+    return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array, ub) ;
 }
-bezier_t* wrapBezierConstructorConstraints(const point_list_t& array, const curve_constraints_t& constraints)
+bezier3_t* wrapBezierConstructorConstraints(const point_list_t& array, const curve_constraints_t& constraints)
 {
-    return wrapBezierConstructorConstraintsTemplate<bezier_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints) ;
+    return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints) ;
 }
-bezier_t* wrapBezierConstructorBoundsConstraints(const point_list_t& array, const curve_constraints_t& constraints, const real ub)
+bezier3_t* wrapBezierConstructorBoundsConstraints(const point_list_t& array, const curve_constraints_t& constraints, const real ub)
 {
-    return wrapBezierConstructorConstraintsTemplate<bezier_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, ub) ;
+    return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, ub) ;
 }
 /*END 3D constructors */
 /*6D constructors */
@@ -222,21 +222,21 @@ BOOST_PYTHON_MODULE(curves)
     /** END bezier curve**/
 
     /** BEGIN bezier curve**/
-    class_<bezier_t>
-        ("bezier", no_init)
+    class_<bezier3_t>
+        ("bezier3", no_init)
             .def("__init__", make_constructor(&wrapBezierConstructor))
             .def("__init__", make_constructor(&wrapBezierConstructorBounds))
             .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
             .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
-            .def("min", &bezier_t::min)
-            .def("max", &bezier_t::max)
-            .def("__call__", &bezier_t::operator())
-            .def("derivate", &bezier_t::derivate)
-            .def("compute_derivate", &bezier_t::compute_derivate)
-            .def("compute_primitive", &bezier_t::compute_primitive)
-            .def("waypoints", &wayPointsToList<bezier_t,3>)
-            .def_readonly("degree", &bezier_t::degree_)
-            .def_readonly("nbWaypoints", &bezier_t::size_)
+            .def("min", &bezier3_t::min)
+            .def("max", &bezier3_t::max)
+            .def("__call__", &bezier3_t::operator())
+            .def("derivate", &bezier3_t::derivate)
+            .def("compute_derivate", &bezier3_t::compute_derivate)
+            .def("compute_primitive", &bezier3_t::compute_primitive)
+            .def("waypoints", &wayPointsToList<bezier3_t,3>)
+            .def_readonly("degree", &bezier3_t::degree_)
+            .def_readonly("nbWaypoints", &bezier3_t::size_)
         ;
     /** END bezier curve**/
 
@@ -326,7 +326,7 @@ BOOST_PYTHON_MODULE(curves)
     /** END bernstein polynom**/
 
     /** BEGIN Bezier to polynom conversion**/
-    def("from_bezier", from_bezier<bezier_t,polynom_t>);
+    def("from_bezier", from_bezier<bezier3_t,polynom_t>);
     /** END Bezier to polynom conversion**/
 
 
