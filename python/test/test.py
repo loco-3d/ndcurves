@@ -1,7 +1,7 @@
 from numpy import matrix
 from numpy.linalg import norm
 
-from hpp_spline import bezier, bezier6, curve_constraints, exact_cubic, from_bezier, polynom, spline_deriv_constraint
+from curves import bezier, bezier6, curve_constraints, exact_cubic, from_bezier, polynom, spline_deriv_constraint
 
 __EPS = 1e-6
 

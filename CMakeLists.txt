@@ -5,7 +5,7 @@ INCLUDE(cmake/test.cmake)
 INCLUDE(cmake/python.cmake)
 
 SET(PROJECT_ORG humanoid-path-planner)
-SET(PROJECT_NAME hpp-spline)
+SET(PROJECT_NAME curves)
 SET(PROJECT_DESCRIPTION
 	 "template based classes for creating and manipulating spline and bezier curves. Comes with extra options specific to end-effector trajectories in robotics."
  )
@@ -35,7 +35,7 @@ IF(BUILD_PYTHON_INTERFACE)
 ENDIF(BUILD_PYTHON_INTERFACE)
 
 
-ADD_SUBDIRECTORY(include/hpp/spline)
+ADD_SUBDIRECTORY(include/curve)
 ADD_SUBDIRECTORY(tests)
 
 SETUP_PROJECT_FINALIZE()

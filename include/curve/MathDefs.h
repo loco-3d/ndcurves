@@ -21,7 +21,7 @@
 #include <vector>
 #include <utility> 
 
-namespace spline{
+namespace curve{
 	
 //REF: boulic et al An inverse kinematics architecture enforcing an arbitrary number of strict priority levels
 template<typename _Matrix_Type_>
@@ -41,6 +41,6 @@ void PseudoInverse(_Matrix_Type_& pinvmat)
 	pinvmat = (svd.matrixV()*m_sigma_inv*svd.matrixU().transpose());
 }
 
-} // namespace spline
+} // namespace curve
 #endif //_SPLINEMATH
 
