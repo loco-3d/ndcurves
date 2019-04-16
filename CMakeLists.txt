@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 2.6)
-project(spline)
+project(curve)
 INCLUDE(cmake/base.cmake)
 INCLUDE(cmake/test.cmake)
 INCLUDE(cmake/python.cmake)
+INCLUDE(cmake/hpp.cmake)
 
-SET(PROJECT_ORG humanoid-path-planner)
+SET(PROJECT_ORG loco-3d)
 SET(PROJECT_NAME curves)
 SET(PROJECT_DESCRIPTION
-	 "template based classes for creating and manipulating spline and bezier curves. Comes with extra options specific to end-effector trajectories in robotics."
- )
-SET(PROJECT_URL "https://github.com/${PROJECT_ORG}/${PROJECT_NAME}")
+  "template based classes for creating and manipulating spline and bezier curves. Comes with extra options specific to end-effector trajectories in robotics."
+  )
 
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
@@ -18,24 +18,23 @@ SET(CMAKE_VERBOSE_MAKEFILE True)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-SETUP_PROJECT()
+SETUP_HPP_PROJECT()
 
 OPTION (BUILD_PYTHON_INTERFACE "Build the python binding" ON)
 IF(BUILD_PYTHON_INTERFACE)
-# search for python
-	FINDPYTHON(2.7 REQUIRED)
-	find_package( PythonLibs 2.7 REQUIRED )
-	include_directories( ${PYTHON_INCLUDE_DIRS} )
+  # search for python
+  FINDPYTHON(2.7 REQUIRED)
+  find_package( PythonLibs 2.7 REQUIRED )
+  include_directories( ${PYTHON_INCLUDE_DIRS} )
 
-	find_package( Boost COMPONENTS python REQUIRED )
-	include_directories( ${Boost_INCLUDE_DIR} )
+  find_package( Boost COMPONENTS python REQUIRED )
+  include_directories( ${Boost_INCLUDE_DIR} )
 
-	add_subdirectory (python)
-
+  add_subdirectory (python)
 ENDIF(BUILD_PYTHON_INTERFACE)
 
 
 ADD_SUBDIRECTORY(include/curve)
 ADD_SUBDIRECTORY(tests)
 
-SETUP_PROJECT_FINALIZE()
+SETUP_HPP_PROJECT_FINALIZE()

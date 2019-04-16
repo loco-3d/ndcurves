@@ -1,6 +1,9 @@
 Spline
 ===================
 
+[![Pipeline status](https://gepgitlab.laas.fr/humanoid-path-planner/hpp-spline/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/humanoid-path-planner/hpp-spline/commits/master)
+[![Coverage report](https://gepgitlab.laas.fr/humanoid-path-planner/hpp-spline/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/humanoid-path-planner/hpp-spline/master/coverage/)
+
 
 A template-based Library for creating curves of arbitrary order and dimension, eventually subject to derivative constraints. The main use of the library is the creation of end-effector trajectories for legged robots.
 
@@ -12,7 +15,7 @@ To do so, tools are provided to:
 
 The library is template-based, thus generic:  the curves can be of any dimension, and can be implemented in double, float  ...
 
-While a Bezier curve implementation is provided, the main interest 
+While a Bezier curve implementation is provided, the main interest
 of this library is to create spline curves of arbitrary order
 
 ----------
@@ -59,6 +62,9 @@ Please refer to the Main.cpp files to see all the unit tests and possibilities o
 
 Installation
 -------------
+
+This package is available as binary in [robotpkg/wip](http://robotpkg.openrobots.org/robotpkg-wip.html)
+
 ## Dependencies
 * [Eigen (version >= 3.2.2)](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 
@@ -75,14 +81,14 @@ The library is header only, so the build only serves to build the tests and pyth
 
 ```
 	cd $SPLINE_DIR && mkdir build && cd build
-	cmake .. && make 
+	cmake .. && make
 	../bin/tests
 ```
 
 If everything went fine you should obtain the following output:
 ```
-performing tests... 
-no errors found 
+performing tests...
+no errors found
 ```
 ### Optional: Python bindings installation
 To install the Python bindings, in the CMakeLists.txt file, first enable the BUILD_PYTHON_INTERFACE option:
