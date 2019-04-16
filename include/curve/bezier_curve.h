@@ -152,7 +152,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
             if(Safe &! (0 <= t && t <= T_))
                 throw std::out_of_range("can't evaluate bezier curve, out of range"); // TODO
-            return evalHorner(t);
+            if (size_ == 1){
+              return mult_T_*pts_[0];
+            }else{
+              return evalHorner(t);
+            }
 	}
 
     ///  \brief Computes the derivative curve at order N.
