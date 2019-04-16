@@ -76,19 +76,19 @@ Bezier* wrapBezierConstructorConstraintsTemplate(const PointList& array, const C
 }
 
 /*3D constructors */
-bezier3_t* wrapBezierConstructor(const point_list_t& array)
+bezier3_t* wrapBezierConstructor3(const point_list_t& array)
 {
     return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array) ;
 }
-bezier3_t* wrapBezierConstructorBounds(const point_list_t& array, const real ub)
+bezier3_t* wrapBezierConstructorBounds3(const point_list_t& array, const real ub)
 {
     return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array, ub) ;
 }
-bezier3_t* wrapBezierConstructorConstraints(const point_list_t& array, const curve_constraints_t& constraints)
+bezier3_t* wrapBezierConstructor3Constraints(const point_list_t& array, const curve_constraints_t& constraints)
 {
     return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints) ;
 }
-bezier3_t* wrapBezierConstructorBoundsConstraints(const point_list_t& array, const curve_constraints_t& constraints, const real ub)
+bezier3_t* wrapBezierConstructorBounds3Constraints(const point_list_t& array, const curve_constraints_t& constraints, const real ub)
 {
     return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, ub) ;
 }
@@ -238,10 +238,10 @@ BOOST_PYTHON_MODULE(curves)
     /** BEGIN bezier curve**/
     class_<bezier3_t>
         ("bezier3", no_init)
-            .def("__init__", make_constructor(&wrapBezierConstructor))
-            .def("__init__", make_constructor(&wrapBezierConstructorBounds))
-            .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
-            .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
+            .def("__init__", make_constructor(&wrapBezierConstructor3))
+            .def("__init__", make_constructor(&wrapBezierConstructorBounds3))
+            .def("__init__", make_constructor(&wrapBezierConstructor3Constraints))
+            .def("__init__", make_constructor(&wrapBezierConstructorBounds3Constraints))
             .def("min", &bezier3_t::min)
             .def("max", &bezier3_t::max)
             .def("__call__", &bezier3_t::operator())

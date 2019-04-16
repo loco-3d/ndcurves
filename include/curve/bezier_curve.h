@@ -42,8 +42,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /* Constructors - destructors */
 	public:
-	///\brief Constructor
-	///\param PointsBegin, PointsEnd : the points parametering the Bezier curve
+
+    /// \brief Constructor.
+    /// Given the first and last point of a control points set, automatically create the bezier curve
+    /// \param PointsBegin  : an iterator pointing to the first element of a control point container
+    /// \param PointsEnd    : an iterator pointing to the last element of a control point container
     ///
 	template<typename In>
     bezier_curve(In PointsBegin, In PointsEnd)
@@ -61,8 +64,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             pts_.push_back(*it);
     }
 
-    ///\brief Constructor
-    ///\param PointsBegin, PointsEnd : the points parametering the Bezier curve
+    //// \brief Constructor.
+    /// Given the first and last point of a control points set, automatically create the bezier curve
+    /// \param PointsBegin   : an iterator pointing to the first element of a control point container
+    /// \param PointsEnd     : an iterator pointing to the last element of a control point container
+    /// \param T             : upper bound of curve parameter which is between $[0;T]$ (default $[0;1]$)
     ///
     template<typename In>
     bezier_curve(In PointsBegin, In PointsEnd, const time_t T)
@@ -82,8 +88,12 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 
 
-    ///\brief Constructor
-    ///\param PointsBegin, PointsEnd : the points parametering the Bezier curve
+    //// \brief Constructor.
+    /// Given the first and last point of a control points set, automatically create the bezier curve
+    /// \param PointsBegin   : an iterator pointing to the first element of a control point container
+    /// \param PointsEnd     : an iterator pointing to the last element of a control point container
+    /// \param T             : upper bound of curve parameter which is between $[0;T]$ (default $[0;1]$)
+    /// \param mult_T        : 
     ///
     template<typename In>
     bezier_curve(In PointsBegin, In PointsEnd, const time_t T, const time_t mult_T)
