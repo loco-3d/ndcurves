@@ -23,9 +23,9 @@
 
 namespace curve
 {
-/// \class BezierCurve
+/// \class BezierCurve.
 /// \brief Represents a Bezier curve of arbitrary dimension and order.
-/// For degree lesser than 4, the evaluation is analitycal.Otherwise
+/// For degree lesser than 4, the evaluation is analitycal. Otherwise
 /// the bernstein polynoms are used to evaluate the spline at a given location.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
@@ -44,9 +44,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	public:
 
     /// \brief Constructor.
-    /// Given the first and last point of a control points set, automatically create the bezier curve
-    /// \param PointsBegin  : an iterator pointing to the first element of a control point container
-    /// \param PointsEnd    : an iterator pointing to the last element of a control point container
+    /// Given the first and last point of a control points set, automatically create the bezier curve.
+    /// \param PointsBegin  : an iterator pointing to the first element of a control point container.
+    /// \param PointsEnd    : an iterator pointing to the last element of a control point container.
     ///
 	template<typename In>
     bezier_curve(In PointsBegin, In PointsEnd)
@@ -64,11 +64,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             pts_.push_back(*it);
     }
 
-    //// \brief Constructor.
-    /// Given the first and last point of a control points set, automatically create the bezier curve
-    /// \param PointsBegin   : an iterator pointing to the first element of a control point container
-    /// \param PointsEnd     : an iterator pointing to the last element of a control point container
-    /// \param T             : upper bound of curve parameter which is between $[0;T]$ (default $[0;1]$)
+    /// \brief Constructor.
+    /// Given the first and last point of a control points set, automatically create the bezier curve.
+    /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
+    /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
+    /// \param T             : upper bound of curve parameter which is between \f$[0;T]\f$ (default \f$[0;1]\f$).
     ///
     template<typename In>
     bezier_curve(In PointsBegin, In PointsEnd, const time_t T)
@@ -88,11 +88,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 
 
-    //// \brief Constructor.
-    /// Given the first and last point of a control points set, automatically create the bezier curve
-    /// \param PointsBegin   : an iterator pointing to the first element of a control point container
-    /// \param PointsEnd     : an iterator pointing to the last element of a control point container
-    /// \param T             : upper bound of curve parameter which is between $[0;T]$ (default $[0;1]$)
+    /// \brief Constructor.
+    /// Given the first and last point of a control points set, automatically create the bezier curve.
+    /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
+    /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
+    /// \param T             : upper bound of time which is between \f$[0;T]\f$ (default \f$[0;1]\f$).
     /// \param mult_T        : 
     ///
     template<typename In>
@@ -111,11 +111,12 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             pts_.push_back(*it);
     }
 
-    ///\brief Constructor
+    /// \brief Constructor
     /// This constructor will add 4 points (2 after the first one, 2 before the last one)
-    /// to ensure that velocity and acceleration constraints are respected
-    ///\param PointsBegin, PointsEnd : the points parametering the Bezier curve
-    ///\param constraints : constraints applying on start / end velocities and acceleration
+    /// to ensure that velocity and acceleration constraints are respected.
+    /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
+    /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
+    /// \param constraints : constraints applying on start / end velocities and acceleration.
     ///
     template<typename In>
     bezier_curve(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints, const time_t T=1.)
@@ -145,9 +146,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /*Operations*/
 	public:
-	///  \brief Evaluation of the cubic spline at time t.
-	///  \param t : the time when to evaluate the spine
-	///  \param return : the value x(t)
+	///  \brief Evaluation of the bezier curve at time t.
+	///  \param t : time when to evaluate the curve.
+	///  \return Point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const
         {
             if(Safe &! (0 <= t && t <= T_))
@@ -159,9 +160,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             }
 	}
 
-    ///  \brief Computes the derivative curve at order N.
-    ///  \param order : order of the derivative
-    ///  \param return : the value x(t)
+    ///  \brief Compute the derivative curve at order N.
+    ///  Computes the derivative at order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
+    ///  \param order : order of the derivative.
+    ///  \return Derivative \f$\frac{dx(t)}{dt}\f$.
     bezier_curve_t compute_derivate(const std::size_t order) const
     {
         if(order == 0) return *this;
@@ -174,9 +176,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return deriv.compute_derivate(order-1);
     }
 
-    ///  \brief Computes the primitive of the curve at order N.
-    ///  \param constant : value of the primitive at t = 0
-    ///  \param return : the curve x_1(t) such that d/dt(x_1(t)) = x_1(t)
+    ///  \brief Compute the primitive of the curve at order N.
+    ///  Computes the primitive at order N, \f$X(t)\f$ of bezier curve of parametric equation x(t) such as
+    ///  \f$\frac{dX(t)}{dt} = x(t)\f$.
+    ///  \param order : order of the primitive.
+    ///  \return Primitive X(t).
     bezier_curve_t compute_primitive(const std::size_t order) const
     {
         if(order == 0) return *this;
@@ -195,22 +199,23 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return integ.compute_primitive(order-1);
     }
 
-    ///  \brief Evaluates the derivative at order N of the curve.
+    ///  \brief Evaluate the derivative at order N of the curve.
     ///  If the derivative is to be evaluated several times, it is
-    ///  rather recommended to compute the derivative curve using compute_derivate
+    ///  rather recommended to compute the derivative curve using compute_derivate.
     ///  \param order : order of the derivative
-    ///  \param t : the time when to evaluate the spine
-    ///  \param return : the value x(t)
+    ///  \param t : time when to evaluate the curve.
+    ///  \return Point corresponding on derivative curve at time t.
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
         bezier_curve_t deriv =compute_derivate(order);
         return deriv(t);
     }
 
-    ///
-    /// \brief Evaluates all Bernstein polynomes for a certain degree
+    /// \brief Evaluate all Bernstein polynomes for a certain degree.
     /// Warning: the horner scheme is about 100 times faster than this method.
-    /// This method will probably be removed in the future
+    /// This method will probably be removed in the future.
+    /// \param t : unNormalized time
+    /// \return Point corresponding on curve at time t.
     ///
     point_t evalBernstein(const Numeric t) const
     {
@@ -223,9 +228,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return res*mult_T_;
     }
 
-
-    ///
-    /// \brief Evaluates all Bernstein polynomes for a certain degree using horner's scheme
+    /// \brief Evaluate all Bernstein polynomes for a certain degree using horner's scheme.
+    /// \param t : unNormalized time
+    /// \return Point corresponding on curve at time t.
     ///
     point_t evalHorner(const Numeric t) const
     {
@@ -247,12 +252,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     const t_point_t& waypoints() const {return pts_;}
 
-
-    /**
-     * @brief evalDeCasteljau evaluate the curve value at time t using deCasteljau algorithm
-     * @param t unNormalized time
-     * @return the point at time t
-     */
+    /// \brief Evaluate the curve value at time t using deCasteljau algorithm.
+    /// \param t : unNormalized time
+    /// \return Point corresponding on curve at time t.
+    ///
     point_t evalDeCasteljau(const Numeric t) const {
         // normalize time :
         const Numeric u = t/T_;
@@ -267,12 +270,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return deCasteljauReduction(waypoints(),t/T_);
     }
 
-    /**
-     * @brief deCasteljauReduction compute the de Casteljau's reduction of the given list of points at time t
-     * @param pts the original list of points
-     * @param u the NORMALIZED time
-     * @return the reduced list of point (size of pts - 1)
-     */
+    /// \brief Compute de Casteljau's reduction of the given list of points at time t.
+    /// \param pts : list of points.
+    /// \param u   : NORMALIZED time.
+    /// \return Reduced list of point (size of pts - 1).
+    ///
     t_point_t deCasteljauReduction(const t_point_t& pts, const Numeric u) const{
         if(u < 0 || u > 1)
             throw std::out_of_range("In deCasteljau reduction : u is not in [0;1]");
@@ -286,12 +288,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return new_pts;
     }
 
-
-    /**
-     * @brief split split the curve in 2 at time t
-     * @param t
-     * @return
-     */
+    /// \brief Split the bezier curve in 2 at time t.
+    /// \param t : list of points.
+    /// \param u : unNormalized time.
+    /// \return A pair containing the first element of both bezier curve.
+    ///
     std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric t){
         if (t == T_)
             throw std::runtime_error("can't split curve, interval range is equal to original curve");

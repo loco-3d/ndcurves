@@ -21,7 +21,7 @@
 namespace curve
 {
 ///
-/// \brief Computes factorial of a number
+/// \brief Computes factorial of a number.
 ///
 inline unsigned int fact(const unsigned int n)
 {
@@ -32,15 +32,15 @@ inline unsigned int fact(const unsigned int n)
 }
 
 ///
-/// \brief Computes a binomal coefficient
+/// \brief Computes a binomal coefficient.
 ///
 inline unsigned int bin(const unsigned  int n, const unsigned  int k)
 {
     return fact(n) / (fact(k) * fact(n - k));
 }
 
-/// \class Bernstein
-/// \brief Computes a Bernstein polynome
+/// \class Bernstein.
+/// \brief Computes a Bernstein polynome.
 ///
 template <typename Numeric = double>
 struct Bern{
@@ -64,7 +64,7 @@ Numeric bin_m_i_;
 
 
 ///
-/// \brief Computes all Bernstein polynomes for a certain degree
+/// \brief Computes all Bernstein polynomes for a certain degree.
 ///
 template <typename Numeric>
 std::vector<Bern<Numeric> > makeBernstein(const unsigned int n)
