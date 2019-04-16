@@ -151,17 +151,25 @@ void BezierCurveTest(bool& error)
 
 	std::vector<point_t> params;
 	params.push_back(a);
-	params.push_back(b);
+
+  // 1d curve
+  bezier_curve_t cf1(params.begin(), params.end());
+  point_t res1;
+  res1 = cf1(0);
+  point_t x10 = a ;
+    ComparePoints(x10, res1, errMsg + "1(0) ", error);
+  res1 =  cf1(1);
+    ComparePoints(x10, res1, errMsg + "1(1) ", error);
 
 	// 2d curve
-	bezier_curve_t cf(params.begin(), params.end());
-	point_t res1;
-	res1 = cf(0);
+  params.push_back(b);
+  bezier_curve_t cf(params.begin(), params.end());
+  res1 = cf(0);
 	point_t x20 = a ;
     ComparePoints(x20, res1, errMsg + "2(0) ", error);
 
 	point_t x21 = b;
-	res1 = cf(1);
+  res1 = cf(1);
     ComparePoints(x21, res1, errMsg + "2(1) ", error);
 
 	//3d curve
