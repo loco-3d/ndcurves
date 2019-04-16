@@ -1,5 +1,5 @@
-#include "hpp/spline/bezier_curve.h"
-#include "hpp/spline/linear_variable.h"
+#include "curve/bezier_curve.h"
+#include "curve/linear_variable.h"
 
 #include <vector>
 
@@ -7,7 +7,7 @@
 #define _DEFINITION_PYTHON_BINDINGS
 
 
-namespace spline
+namespace curve
 {
 
 typedef double real;
@@ -37,7 +37,7 @@ T_Point vectorFromEigenArray(const PointList& array)
     return res;
 }
 
-} //namespace spline.
+} //namespace curve.
 
 
 #endif //_DEFINITION_PYTHON_BINDINGS

@@ -19,7 +19,7 @@
 #include <Eigen/Core>
 #include <stdexcept>
 
-namespace spline
+namespace curve
 {
 template <int Dim, typename Numeric=double>
 struct linear_variable{
@@ -196,6 +196,6 @@ variables<V> operator/(const variables<V>& w,const double k)
     return res;
 }
 
-} // namespace spline
+} // namespace curve
 #endif //_CLASS_LINEAR_VARIABLE
 

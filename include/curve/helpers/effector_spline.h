@@ -20,9 +20,9 @@
 #ifndef _CLASS_EFFECTORSPLINE
 #define _CLASS_EFFECTORSPLINE
 
-#include "hpp/spline/spline_deriv_constraint.h"
+#include "curve/spline_deriv_constraint.h"
 
-namespace spline
+namespace curve
 {
 namespace helpers
 {
@@ -117,6 +117,6 @@ exact_cubic_t* effector_spline(
     splines.push_back(end_spline);
     return new exact_cubic_t(splines);
 }
-}
-}
+} // namespace helpers
+} // namespace curve
 #endif //_CLASS_EFFECTORSPLINE

@@ -1,5 +1,5 @@
-#include "hpp/spline/bezier_curve.h"
-#include "hpp/spline/linear_variable.h"
+#include "curve/bezier_curve.h"
+#include "curve/linear_variable.h"
 
 #include "python_definitions.h"
 
@@ -9,12 +9,12 @@
 #define _VARIABLES_PYTHON_BINDINGS
 
 
-namespace spline
+namespace curve
 {
 static const int dim = 3;
-typedef spline::linear_variable<dim, real> linear_variable_3_t;
-typedef spline::variables<linear_variable_3_t> variables_3_t;
-typedef spline::bezier_curve  <real, real, dim, true, variables_3_t> bezier_linear_variable_t;
+typedef curve::linear_variable<dim, real> linear_variable_3_t;
+typedef curve::variables<linear_variable_3_t> variables_3_t;
+typedef curve::bezier_curve  <real, real, dim, true, variables_3_t> bezier_linear_variable_t;
 
 
 /*linear variable control points*/
@@ -48,7 +48,7 @@ struct LinearBezierVector
 
 // does not include end time
 LinearBezierVector* split(const bezier_linear_variable_t& self,  const vectorX_t& times);
-} //namespace spline.
+} //namespace curve.
 
 
 #endif //_VARIABLES_PYTHON_BINDINGS

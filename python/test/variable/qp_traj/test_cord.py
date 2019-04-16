@@ -1,4 +1,4 @@
-from hpp_spline import *
+from curves import *
 from numpy import matrix, array, zeros, ones, diag, cross
 from numpy.linalg import norm
 
