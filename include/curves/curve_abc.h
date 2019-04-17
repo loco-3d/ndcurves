@@ -18,9 +18,9 @@
 
 namespace curves
 {
-/// \struct curve_abc
-/// \brief Represents a curve of dimension Dim
-/// is Safe is false, no verification is made on the evaluation of the curve.
+/// \struct curve_abc.
+/// \brief Represents a curve of dimension Dim.
+/// If parameter Safe is false, no verification is made on the evaluation of the curve.
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1> >
 struct  curve_abc : std::unary_function<Time, Point>
@@ -30,25 +30,25 @@ struct  curve_abc : std::unary_function<Time, Point>
 
 /* Constructors - destructors */
 	public:
-	///\brief Constructor
+	/// \brief Constructor.
     curve_abc(){}
 
-	///\brief Destructor
+	/// \brief Destructor.
     virtual ~curve_abc(){}
 /* Constructors - destructors */
 
 /*Operations*/
 	public:
 	///  \brief Evaluation of the cubic spline at time t.
-	///  \param t : the time when to evaluate the spine
-	///  \param return : the value x(t)
+	///  \param t : time when to evaluate the spine
+	///  \return Point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const = 0;
 
 
     ///  \brief Evaluation of the derivative spline at time t.
-    ///  \param t : the time when to evaluate the spline
-    ///  \param order : order of the derivative
-    ///  \param return : the value x(t)
+    ///  \param t : time when to evaluate the spline.
+    ///  \param order : order of the derivative.
+    ///  \return Point corresponding on curve at time t.
     virtual point_t derivate(const time_t t, const std::size_t order) const = 0;
 /*Operations*/
 

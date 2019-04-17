@@ -50,9 +50,9 @@ Polynom from_bezier(const Bezier& curve)
     return Polynom(coefficients,curve.min(),curve.max());
 }
 
-///\brief Converts a polynom to a Bezier curve
-///\param polynom: the polynom to be converted from
-///\return the equivalent Bezier curve
+///\brief Converts a polynom to a Bezier curve.
+///\param polynom: the polynom to convert.
+///\return The equivalent Bezier curve.
 /*template<typename Bezier, typename Polynom>
 Bezier from_polynom(const Polynom& polynom)
 {
