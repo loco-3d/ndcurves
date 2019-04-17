@@ -38,20 +38,19 @@ typedef spline_deriv_constraint_t::exact_cubic_t exact_cubic_t;
 typedef spline_deriv_constraint_t::t_spline_t t_spline_t;
 typedef spline_deriv_constraint_t::spline_t spline_t;
 
+/// \brief Compute time such that the equation from source to offsetpoint is necessarily a line.
 Waypoint compute_offset(const Waypoint& source, const Point& normal, const Numeric offset, const Time time_offset)
 {
-    //compute time such that the equation from source to offsetpoint is necessarily a line
     Numeric norm = normal.norm();
     assert(norm>0.);
     return std::make_pair(source.first + time_offset,(source.second + normal / norm* offset));
 }
 
-
+/// \brief Compute spline from land way point to end point.
+/// Constraints are null velocity and acceleration.
 spline_t make_end_spline(const Point& normal, const Point& from, const Numeric offset,
                          const Time init_time, const Time time_offset)
 {
-    // compute spline from land way point to end point
-    // constraints are null velocity and acceleration
     Numeric norm = normal.norm();
     assert(norm>0.);
     Point n = normal / norm;
@@ -68,9 +67,9 @@ spline_t make_end_spline(const Point& normal, const Point& from, const Numeric o
     return spline_t(points.begin(), points.end(), init_time, init_time+time_offset);
 }
 
+/// \brief Compute end velocity : along landing normal and respecting time.
 spline_constraints_t compute_required_offset_velocity_acceleration(const spline_t& end_spline, const Time /*time_offset*/)
 {
-    //computing end velocity: along landing normal and respecting time
     spline_constraints_t constraints;
     constraints.end_acc = end_spline.derivate(end_spline.min(),2);
     constraints.end_vel = end_spline.derivate(end_spline.min(),1);

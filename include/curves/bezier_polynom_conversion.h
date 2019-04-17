@@ -51,7 +51,7 @@ Polynom from_bezier(const Bezier& curve)
 }
 
 ///\brief Converts a polynom to a Bezier curve.
-///\param polynom: the polynom to convert.
+///\param polynom : the polynom to convert.
 ///\return The equivalent Bezier curve.
 /*template<typename Bezier, typename Polynom>
 Bezier from_polynom(const Polynom& polynom)

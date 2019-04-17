@@ -93,7 +93,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
     /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
     /// \param T             : upper bound of time which is between \f$[0;T]\f$ (default \f$[0;1]\f$).
-    /// \param mult_T        : 
+    /// \param mult_T        : ... (default value is 1.0).
     ///
     template<typename In>
     bezier_curve(In PointsBegin, In PointsEnd, const time_t T, const time_t mult_T)
@@ -180,7 +180,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  Computes the primitive at order N of bezier curve of parametric equation \f$x(t)\f$. At order \f$N=1\f$, 
     ///  the primitve \f$X(t)\f$ of \f$x(t)\f$ is such as \f$\frac{dX(t)}{dt} = x(t)\f$.
     ///  \param order : order of the primitive.
-    ///  \return Primitive of x(t).
+    ///  \return Primitive at order N of x(t).
     bezier_curve_t compute_primitive(const std::size_t order) const
     {
         if(order == 0) return *this;

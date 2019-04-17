@@ -20,7 +20,6 @@
 
 namespace curves
 {
-///
 /// \brief Computes factorial of a number.
 ///
 inline unsigned int fact(const unsigned int n)
@@ -31,7 +30,6 @@ inline unsigned int fact(const unsigned int n)
     return res;
 }
 
-///
 /// \brief Computes a binomal coefficient.
 ///
 inline unsigned int bin(const unsigned  int n, const unsigned  int k)
@@ -62,8 +60,6 @@ Numeric i_;
 Numeric bin_m_i_;
 };
 
-
-///
 /// \brief Computes all Bernstein polynomes for a certain degree.
 ///
 template <typename Numeric>

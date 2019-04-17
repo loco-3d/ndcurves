@@ -80,9 +80,9 @@ class rotation_spline: public curve_abc_quat_t
         throw std::runtime_error("TODO quaternion spline does not implement derivate");
     }
 
+    /// \brief Initialize time reparametrization for spline.
     spline_deriv_constraint_one_dim computeWayPoints() const
     {
-        // initializing time reparametrization for spline
         t_waypoint_one_dim_t waypoints;
         waypoints.push_back(std::make_pair(0,point_one_dim_t::Zero()));
         waypoints.push_back(std::make_pair(1,point_one_dim_t::Ones()));
