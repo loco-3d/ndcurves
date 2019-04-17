@@ -177,10 +177,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     ///  \brief Compute the primitive of the curve at order N.
-    ///  Computes the primitive at order N, \f$X(t)\f$ of bezier curve of parametric equation x(t) such as
-    ///  \f$\frac{dX(t)}{dt} = x(t)\f$.
+    ///  Computes the primitive at order N of bezier curve of parametric equation \f$x(t)\f$. At order \f$N=1\f$, 
+    ///  the primitve \f$X(t)\f$ of \f$x(t)\f$ is such as \f$\frac{dX(t)}{dt} = x(t)\f$.
     ///  \param order : order of the primitive.
-    ///  \return Primitive X(t).
+    ///  \return Primitive of x(t).
     bezier_curve_t compute_primitive(const std::size_t order) const
     {
         if(order == 0) return *this;
