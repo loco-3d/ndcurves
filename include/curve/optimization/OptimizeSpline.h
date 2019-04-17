@@ -37,14 +37,14 @@ typedef SplineOptimizer<time_t, Numeric, Dim, Safe, Point> splineOptimizer_t;
 
 /* Constructors - destructors */
 public:
-	///\brief Initializes optimizer environment
+	///\brief Initializes optimizer environment.
 	SplineOptimizer()
 	{
 		MSKrescodee  r_ = MSK_makeenv(&env_,NULL);
 		assert(r_ == MSK_RES_OK);
 	}
 
-	///\brief Destructor
+	///\brief Destructor.
 	~SplineOptimizer()
 	{
 		MSK_deleteenv(&env_);
@@ -57,9 +57,9 @@ private:
 
 /*Operations*/
 public:
-	/// \brief Starts an optimization loop to create curve
-	///	\param waypoints : a list comprising at least 2 waypoints in ascending time order
-	/// \return An Optimised curve
+	/// \brief Start an optimization loop to create curve.
+	///	\param waypoints : a list containing at least 2 waypoints in ascending time order.
+	/// \return An Optimised curve.
 	template<typename In>
 	exact_cubic_t* GenerateOptimizedCurve(In wayPointsBegin, In wayPointsEnd) const;
 /*Operations*/

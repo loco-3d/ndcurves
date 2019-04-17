@@ -22,6 +22,12 @@ class TestCurve(unittest.TestCase):
 		# - Functions : constructor, min, max, derivate,compute_derivate, compute_primitive
 		# - Variables : degree, nbWayPoints
 		__EPS = 1e-6
+		waypoints = matrix([[1., 2., 3.]]).T
+		a = bezier3(waypoints,2.)
+		t = 0.
+		while t < 2.:
+			self.assertTrue (norm(a(t) - matrix([1., 2., 3.]).T) < __EPS)
+			t += 0.1
 		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
 		waypoints6 = matrix([[1., 2., 3., 7., 5., 5.], [4., 5., 6., 4., 5., 6.]]).transpose()
 		time_waypoints = matrix([0., 1.]).transpose()

@@ -24,15 +24,12 @@
 namespace curve
 {
 /// \brief Provides methods for converting a curve from a bernstein representation
-/// to a polynom representation
-///
-///
+/// to a polynom representation.
 ///
 
-
-///\brief Converts a Bezier curve to a polynom
-///\param bezier: the Bezier curve to be converted from
-///\return the equivalent polynom
+/// \brief Converts a Bezier curve to a polynom.
+/// \param bezier: the Bezier curve to convert.
+/// \return The equivalent polynom.
 template<typename Bezier, typename Polynom>
 Polynom from_bezier(const Bezier& curve)
 {

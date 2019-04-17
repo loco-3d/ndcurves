@@ -104,8 +104,8 @@ class rotation_spline: public curve_abc_quat_t
 typedef exact_cubic<Time, Numeric, 4, false, quat_t, std::vector<quat_t,Eigen::aligned_allocator<quat_t> >, rotation_spline> exact_cubic_quat_t;
 
 
-/// \class effector_spline_rotation
-/// \brief Represents a trajectory for and end effector
+/// \class effector_spline_rotation.
+/// \brief Represents a trajectory for and end effector.
 /// uses the method effector_spline to create a spline trajectory.
 /// Additionally, handles the rotation of the effector as follows:
 /// does not rotate during the take off and landing phase,
@@ -118,18 +118,18 @@ class effector_spline_rotation
     /// \brief Constructor.
     /// Given a set of waypoints, and the normal vector of the start and
     /// ending positions, automatically create the spline such that:
-    /// + init and end velocities / accelerations are 0.
-    /// + the effector lifts and lands exactly in the direction of the specified normals
-    /// \param wayPointsBegin   : an iterator pointing to the first element of a waypoint container
-    /// \param wayPointsEnd     : an iterator pointing to the end           of a waypoint container
-    /// \param to_quat          : 4D vector, quaternion indicating rotation at take off(x, y, z, w)
-    /// \param land_quat        : 4D vector, quaternion indicating rotation at landing (x, y, z, w)
-    /// \param lift_normal      : normal to be followed by end effector at take-off
-    /// \param land_normal      : normal to be followed by end effector at landing
-    /// \param lift_offset      : length of the straight line along normal at take-off
-    /// \param land_offset      : length of the straight line along normal at landing
-    /// \param lift_offset_duration : time travelled along straight line at take-off
-    /// \param land_offset_duration : time travelled along straight line at landing
+    /// + init and end velocities / accelerations are 0
+    /// + the effector lifts and lands exactly in the direction of the specified normals.
+    /// \param wayPointsBegin   : an iterator pointing to the first element of a waypoint container.
+    /// \param wayPointsEnd     : an iterator pointing to the last element of a waypoint container.
+    /// \param to_quat          : 4D vector, quaternion indicating rotation at take off(x, y, z, w).
+    /// \param land_quat        : 4D vector, quaternion indicating rotation at landing (x, y, z, w).
+    /// \param lift_normal      : normal to be followed by end effector at take-off.
+    /// \param land_normal      : normal to be followed by end effector at landing.
+    /// \param lift_offset      : length of the straight line along normal at take-off.
+    /// \param land_offset      : length of the straight line along normal at landing.
+    /// \param lift_offset_duration : time travelled along straight line at take-off.
+    /// \param land_offset_duration : time travelled along straight line at landing.
     ///
     template<typename In>
     effector_spline_rotation(In wayPointsBegin, In wayPointsEnd,
@@ -149,20 +149,20 @@ class effector_spline_rotation
     /// \brief Constructor.
     /// Given a set of waypoints, and the normal vector of the start and
     /// ending positions, automatically create the spline such that:
-    /// + init and end velocities / accelerations are 0.
-    /// + the effector lifts and lands exactly in the direction of the specified normals
-    /// \param wayPointsBegin       : an iterator pointing to the first element of a waypoint container
-    /// \param wayPointsEnd         : an iterator pointing to the end           of a waypoint container
+    /// + init and end velocities / accelerations are 0
+    /// + the effector lifts and lands exactly in the direction of the specified normals.
+    /// \param wayPointsBegin       : an iterator pointing to the first element of a waypoint container.
+    /// \param wayPointsEnd         : an iterator pointing to the last element of a waypoint container.
     /// \param quatWayPointsBegin   : en iterator pointing to the first element of a 4D vector (x, y, z, w) container of
     ///  quaternions indicating rotation at specific time steps.
-    /// \param quatWayPointsEnd     : en iterator pointing to the end           of a 4D vector (x, y, z, w) container of
+    /// \param quatWayPointsEnd     : en iterator pointing to the last element of a 4D vector (x, y, z, w) container of
     ///  quaternions indicating rotation at specific time steps.
-    /// \param lift_normal          : normal to be followed by end effector at take-off
-    /// \param land_normal          : normal to be followed by end effector at landing
-    /// \param lift_offset          : length of the straight line along normal at take-off
-    /// \param land_offset          : length of the straight line along normal at landing
-    /// \param lift_offset_duration : time travelled along straight line at take-off
-    /// \param land_offset_duration : time travelled along straight line at landing
+    /// \param lift_normal          : normal to be followed by end effector at take-off.
+    /// \param land_normal          : normal to be followed by end effector at landing.
+    /// \param lift_offset          : length of the straight line along normal at take-off.
+    /// \param land_offset          : length of the straight line along normal at landing.
+    /// \param lift_offset_duration : time travelled along straight line at take-off.
+    /// \param land_offset_duration : time travelled along straight line at landing.
     ///
     template<typename In, typename InQuat>
     effector_spline_rotation(In wayPointsBegin, In wayPointsEnd,
@@ -191,9 +191,9 @@ class effector_spline_rotation
     /*Operations*/
     public:
     ///  \brief Evaluation of the effector position and rotation at time t.
-    ///  \param t : the time when to evaluate the spline
-    ///  \param return : a 7D vector; The 3 first values are the 3D position, the 4 last the
-    ///  quaternion describing the rotation
+    ///  \param t : the time when to evaluate the spline.
+    ///  \return A 7D vector where the 3 first values are the 3D position and the 4 last are the
+    ///  quaternion describing the rotation.
     ///
     config_t operator()(const Numeric t) const
     {

@@ -83,15 +83,15 @@ spline_constraints_t compute_required_offset_velocity_acceleration(const spline_
 /// Given a set of waypoints, and the normal vector of the start and
 /// ending positions, automatically create the spline such that:
 /// + init and end velocities / accelerations are 0.
-/// + the effector lifts and lands exactly in the direction of the specified normals
-/// \param wayPointsBegin   : an iterator pointing to the first element of a waypoint container
-/// \param wayPointsEnd     : an iterator pointing to the end           of a waypoint container
-/// \param lift_normal      : normal to be followed by end effector at take-off
-/// \param land_normal      : normal to be followed by end effector at landing
-/// \param lift_offset      : length of the straight line along normal at take-off
-/// \param land_offset      : length of the straight line along normal at landing
-/// \param lift_offset_duration : time travelled along straight line at take-off
-/// \param land_offset_duration : time travelled along straight line at landing
+/// + the effector lifts and lands exactly in the direction of the specified normals.
+/// \param wayPointsBegin   : an iterator pointing to the first element of a waypoint container.
+/// \param wayPointsEnd     : an iterator pointing to the last element of a waypoint container.
+/// \param lift_normal      : normal to be followed by end effector at take-off.
+/// \param land_normal      : normal to be followed by end effector at landing.
+/// \param lift_offset      : length of the straight line along normal at take-off.
+/// \param land_offset      : length of the straight line along normal at landing.
+/// \param lift_offset_duration : time travelled along straight line at take-off.
+/// \param land_offset_duration : time travelled along straight line at landing.
 ///
 template<typename In>
 exact_cubic_t* effector_spline(
