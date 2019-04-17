@@ -1,4 +1,4 @@
 ADD_UNIT_TEST(
-  curve_tests Main.cpp
+  curves_tests Main.cpp
   )
-PKG_CONFIG_USE_DEPENDENCY(curve_tests eigen3)
+PKG_CONFIG_USE_DEPENDENCY(curves_tests eigen3)

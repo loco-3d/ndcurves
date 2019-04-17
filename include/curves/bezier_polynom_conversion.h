@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-namespace curve
+namespace curves
 {
 /// \brief Provides methods for converting a curve from a bernstein representation
 /// to a polynom representation.
@@ -64,6 +64,6 @@ Bezier from_polynom(const Polynom& polynom)
     typedef Bezier::cit_point_t    cit_point_t;
     typedef Bezier::bezier_curve_t   bezier_curve_t;
 }*/
-} // namespace curve
+} // namespace curves
 #endif //_BEZIER_POLY_CONVERSION
 

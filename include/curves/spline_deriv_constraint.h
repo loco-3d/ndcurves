@@ -28,7 +28,7 @@
 #include <functional>
 #include <vector>
 
-namespace curve
+namespace curves
 {
 /// \class spline_deriv_constraint.
 /// \brief Represents a set of cubic splines defining a continuous function 
@@ -137,6 +137,6 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
     private:
     /* Constructors - destructors */
 };
-} // namespace curve
+} // namespace curves
 #endif //_CLASS_CUBICZEROVELACC
 

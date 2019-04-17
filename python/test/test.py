@@ -12,7 +12,7 @@ import unittest
 from curves import bezier3, bezier6, curve_constraints, exact_cubic, from_bezier, polynom, spline_deriv_constraint
 
 
-class TestCurve(unittest.TestCase):
+class TestCurves(unittest.TestCase):
 	#def print_str(self, inStr):
 	#	print inStr
 	#	return

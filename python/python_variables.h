@@ -1,5 +1,5 @@
-#include "curve/bezier_curve.h"
-#include "curve/linear_variable.h"
+#include "curves/bezier_curve.h"
+#include "curves/linear_variable.h"
 
 #include "python_definitions.h"
 
@@ -9,12 +9,12 @@
 #define _VARIABLES_PYTHON_BINDINGS
 
 
-namespace curve
+namespace curves
 {
 static const int dim = 3;
-typedef curve::linear_variable<dim, real> linear_variable_3_t;
-typedef curve::variables<linear_variable_3_t> variables_3_t;
-typedef curve::bezier_curve  <real, real, dim, true, variables_3_t> bezier_linear_variable_t;
+typedef curves::linear_variable<dim, real> linear_variable_3_t;
+typedef curves::variables<linear_variable_3_t> variables_3_t;
+typedef curves::bezier_curve  <real, real, dim, true, variables_3_t> bezier_linear_variable_t;
 
 
 /*linear variable control points*/

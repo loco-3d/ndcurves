@@ -1,5 +1,5 @@
-#include "curve/bezier_curve.h"
-#include "curve/linear_variable.h"
+#include "curves/bezier_curve.h"
+#include "curves/linear_variable.h"
 
 #include <vector>
 
@@ -7,7 +7,7 @@
 #define _DEFINITION_PYTHON_BINDINGS
 
 
-namespace curve
+namespace curves
 {
 
 typedef double real;
@@ -37,7 +37,7 @@ T_Point vectorFromEigenArray(const PointList& array)
     return res;
 }
 
-} //namespace curve.
+} //namespace curves
 
 
 #endif //_DEFINITION_PYTHON_BINDINGS

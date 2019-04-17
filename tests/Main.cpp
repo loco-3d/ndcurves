@@ -1,11 +1,11 @@
 
-#include "curve/exact_cubic.h"
-#include "curve/bezier_curve.h"
-#include "curve/polynom.h"
-#include "curve/spline_deriv_constraint.h"
-#include "curve/helpers/effector_spline.h"
-#include "curve/helpers/effector_spline_rotation.h"
-#include "curve/bezier_polynom_conversion.h"
+#include "curves/exact_cubic.h"
+#include "curves/bezier_curve.h"
+#include "curves/polynom.h"
+#include "curves/spline_deriv_constraint.h"
+#include "curves/helpers/effector_spline.h"
+#include "curves/helpers/effector_spline_rotation.h"
+#include "curves/bezier_polynom_conversion.h"
 
 #include <string>
 #include <iostream>
@@ -13,7 +13,7 @@
 
 using namespace std;
 
-namespace curve
+namespace curves
 {
 typedef Eigen::Vector3d point_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
@@ -46,9 +46,9 @@ bool QuasiEqual(const double a, const double b, const float margin)
 
 const double margin = 0.001;
 
-} // namespace curve
+} // namespace curves
 
-using namespace curve;
+using namespace curves;
 
 ostream& operator<<(ostream& os, const point_t& pt)
 {
@@ -464,7 +464,7 @@ void BezierToPolynomConversionTest(bool& error)
 /*Exact Cubic Function tests*/
 void ExactCubicNoErrorTest(bool& error)
 {
-	curve::T_Waypoint waypoints;
+	curves::T_Waypoint waypoints;
 	for(double i = 0; i <= 1; i = i + 0.2)
 	{
 		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
@@ -510,7 +510,7 @@ void ExactCubicNoErrorTest(bool& error)
 /*Exact Cubic Function tests*/
 void ExactCubicTwoPointsTest(bool& error)
 {
-	curve::T_Waypoint waypoints;
+	curves::T_Waypoint waypoints;
 	for(double i = 0; i < 2; ++i)
 	{
 		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
@@ -527,7 +527,7 @@ void ExactCubicTwoPointsTest(bool& error)
 
 void ExactCubicOneDimTest(bool& error)
 {
-	curve::T_WaypointOne waypoints;
+	curves::T_WaypointOne waypoints;
 	point_one zero; zero(0,0) = 9;
 	point_one one; one(0,0) = 14;
 	point_one two; two(0,0) = 25;
@@ -544,7 +544,7 @@ void ExactCubicOneDimTest(bool& error)
 	ComparePoints(one, res1, errmsg, error);
 }
 
-void CheckWayPointConstraint(const std::string& errmsg, const double step, const curve::T_Waypoint& /*wayPoints*/, const exact_cubic_t* curve, bool& error )
+void CheckWayPointConstraint(const std::string& errmsg, const double step, const curves::T_Waypoint& /*wayPoints*/, const exact_cubic_t* curve, bool& error )
 {
     point_t res1;
     for(double i = 0; i <= 1; i = i + step)
@@ -563,7 +563,7 @@ void CheckDerivative(const std::string& errmsg, const double eval_point, const s
 
 void ExactCubicPointsCrossedTest(bool& error)
 {
-	curve::T_Waypoint waypoints;
+	curves::T_Waypoint waypoints;
 	for(double i = 0; i <= 1; i = i + 0.2)
 	{
 		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
@@ -576,7 +576,7 @@ void ExactCubicPointsCrossedTest(bool& error)
 
 void ExactCubicVelocityConstraintsTest(bool& error)
 {
-    curve::T_Waypoint waypoints;
+    curves::T_Waypoint waypoints;
     for(double i = 0; i <= 1; i = i + 0.2)
     {
         waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
@@ -625,7 +625,7 @@ void CheckPointOnline(const std::string& errmsg, const point_t& A, const point_t
 void EffectorTrajectoryTest(bool& error)
 {
     // create arbitrary trajectory
-    curve::T_Waypoint waypoints;
+    curves::T_Waypoint waypoints;
     for(double i = 0; i <= 10; i = i + 2)
     {
         waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
@@ -682,7 +682,7 @@ double GetXRotFromQuat(helpers::quat_ref_const_t q)
 void EffectorSplineRotationNoRotationTest(bool& error)
 {
     // create arbitrary trajectory
-    curve::T_Waypoint waypoints;
+    curves::T_Waypoint waypoints;
     for(double i = 0; i <= 10; i = i + 2)
     {
         waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
@@ -704,7 +704,7 @@ void EffectorSplineRotationNoRotationTest(bool& error)
 void EffectorSplineRotationRotationTest(bool& error)
 {
     // create arbitrary trajectory
-    curve::T_Waypoint waypoints;
+    curves::T_Waypoint waypoints;
     for(double i = 0; i <= 10; i = i + 2)
     {
         waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
@@ -727,7 +727,7 @@ void EffectorSplineRotationRotationTest(bool& error)
 void EffectorSplineRotationWayPointRotationTest(bool& error)
 {
     // create arbitrary trajectory
-    curve::T_Waypoint waypoints;
+    curves::T_Waypoint waypoints;
     for(double i = 0; i <= 10; i = i + 2)
     {
         waypoints.push_back(std::make_pair(i,point_t(i,i,i)));

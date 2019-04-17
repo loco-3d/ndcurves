@@ -20,7 +20,7 @@
 
 #include <stdexcept>
 
-namespace curve
+namespace curves
 {
 /// \brief Creates coefficient vector of a cubic spline defined on the interval
 /// \f$[t_{min}, t_{max}]\f$. It follows the equation : 
@@ -41,6 +41,6 @@ polynom<Time,Numeric,Dim,Safe,Point,T_Point> create_cubic(Point const& a, Point 
     T_Point coeffs = make_cubic_vector<Point, T_Point>(a,b,c,d);
     return polynom<Time,Numeric,Dim,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), t_min, t_max);
 }
-} // namespace curve
+} // namespace curves
 #endif //_STRUCT_CUBICSPLINE
 
