@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 2.6)
-project(curve)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
 INCLUDE(cmake/base.cmake)
+INCLUDE(cmake/boost.cmake)
 INCLUDE(cmake/test.cmake)
 INCLUDE(cmake/python.cmake)
 INCLUDE(cmake/hpp.cmake)
@@ -13,26 +14,28 @@ SET(PROJECT_DESCRIPTION
 
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
-SET(CMAKE_VERBOSE_MAKEFILE True)
-
-find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
 
 SETUP_HPP_PROJECT()
 
+ADD_REQUIRED_DEPENDENCY(eigen3)
+
+SET(BOOST_COMPONENTS unit_test_framework)
+
 OPTION (BUILD_PYTHON_INTERFACE "Build the python binding" ON)
 IF(BUILD_PYTHON_INTERFACE)
-  # search for python
-  FINDPYTHON(2.7 REQUIRED)
-  find_package( PythonLibs 2.7 REQUIRED )
-  include_directories( ${PYTHON_INCLUDE_DIRS} )
+  FINDPYTHON()
+  INCLUDE_DIRECTORIES(SYSTEM ${PYTHON_INCLUDE_DIRS})
 
-  find_package( Boost COMPONENTS python REQUIRED )
-  include_directories( ${Boost_INCLUDE_DIR} )
+  STRING(REGEX REPLACE "-" "_" PY_NAME ${PROJECT_NAME})
 
-  add_subdirectory (python)
+  ADD_REQUIRED_DEPENDENCY("eigenpy")
+  SET(BOOST_COMPONENTS ${BOOST_COMPONENTS} python)
+
+  ADD_SUBDIRECTORY(python)
 ENDIF(BUILD_PYTHON_INTERFACE)
 
+SEARCH_FOR_BOOST()
+INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS})
 
 ADD_SUBDIRECTORY(include/curve)
 ADD_SUBDIRECTORY(tests)
