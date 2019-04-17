@@ -31,9 +31,9 @@
 
 namespace curve
 {
-/// \class ExactCubic
+/// \class ExactCubic.
 /// \brief Represents a set of cubic splines defining a continuous function 
-/// crossing each of the waypoint given in its initialization
+/// crossing each of the waypoint given in its initialization.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >
@@ -53,24 +53,25 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 	/* Constructors - destructors */
 	public:
-	///\brief Constructor
-	///\param wayPointsBegin : an iterator pointing to the first element of a waypoint container
-	///\param wayPointsEns   : an iterator pointing to the end           of a waypoint container
+	/// \brief Constructor.
+	/// \param wayPointsBegin : an iterator pointing to the first element of a waypoint container.
+	/// \param wayPointsEns   : an iterator pointing to the last element of a waypoint container.
+    ///
 	template<typename In>
 	exact_cubic(In wayPointsBegin, In wayPointsEnd)
         : curve_abc_t(), subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd)) {}
 
 
-    ///\brief Constructor
-    ///\param subSplines: vector of subsplines
+    /// \brief Constructor.
+    /// \param subSplines: vector of subsplines.
     exact_cubic(const t_spline_t& subSplines)
         : curve_abc_t(), subSplines_(subSplines) {}
 
-    ///\brief Copy Constructor
+    /// \brief Copy Constructor.
     exact_cubic(const exact_cubic& other)
         : curve_abc_t(), subSplines_(other.subSplines_) {}
 
-	///\brief Destructor
+	/// \brief Destructor.
     virtual ~exact_cubic(){}
 
     private:
@@ -156,8 +157,9 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	/*Operations*/
 	public:
 	///  \brief Evaluation of the cubic spline at time t.
-    ///  \param t : the time when to evaluate the spline
-	///  \param return : the value x(t)
+    ///  \param t : time when to evaluate the spline
+	///  \return Point corresponding on spline at time t.
+    ///
     virtual point_t operator()(const time_t t) const
     {
         if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}
@@ -171,9 +173,10 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     ///  \brief Evaluation of the derivative spline at time t.
-    ///  \param t : the time when to evaluate the spline
-    ///  \param order : order of the derivative
-    ///  \param return : the value x(t)
+    ///  \param t : time when to evaluate the spline.
+    ///  \param order : order of the derivative.
+    ///  \return Point corresponding on derivative spline at time t.
+    ///
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
         if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}

@@ -23,8 +23,8 @@
 namespace curve
 {
 /// \brief Creates coefficient vector of a cubic spline defined on the interval
-/// [tBegin, tEnd]. It follows the equation
-/// x(t) = a + b(t - t_min_) + c(t - t_min_)^2 + d(t - t_min_)^3
+/// \f$[t_{min}, t_{max}]\f$. It follows the equation : 
+/// \f$ x(t) = a + b(t - t_{min}) + c(t - t_{min})^2 + d(t - t_{min})^3 \f$ where \f$ t \in [t_{min}, t_{max}] \f$.
 ///
 template<typename Point, typename T_Point>
 T_Point make_cubic_vector(Point const& a, Point const& b, Point const& c, Point const &d)
@@ -36,10 +36,10 @@ T_Point make_cubic_vector(Point const& a, Point const& b, Point const& c, Point 
 
 template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point, typename T_Point>
 polynom<Time,Numeric,Dim,Safe,Point,T_Point> create_cubic(Point const& a, Point const& b, Point const& c, Point const &d,
-               const Time min, const Time max)
+               const Time t_min, const Time t_max)
 {
     T_Point coeffs = make_cubic_vector<Point, T_Point>(a,b,c,d);
-    return polynom<Time,Numeric,Dim,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), min, max);
+    return polynom<Time,Numeric,Dim,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), t_min, t_max);
 }
 } // namespace curve
 #endif //_STRUCT_CUBICSPLINE

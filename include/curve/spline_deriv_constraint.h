@@ -36,7 +36,6 @@ namespace curve
 /// are used to increase the order of the last spline, to start and finish
 /// trajectory with user defined velocity and acceleration.
 ///
-///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
          typename Point= Eigen::Matrix<Numeric, Dim, 1>,
          typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >,
@@ -58,10 +57,11 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
 
 	/* Constructors - destructors */
 	public:
-	///\brief Constructor
-	///\param wayPointsBegin : an iterator pointing to the first element of a waypoint container
-    ///\param wayPointsEnd   : an iterator pointing to the end           of a waypoint container
-    ///\param constraints    : constraints on the init and end velocity / accelerations of the spline
+	/// \brief Constructor.
+	/// \param wayPointsBegin : an iterator pointing to the first element of a waypoint container.
+    /// \param wayPointsEnd   : an iterator pointing to the last element of a waypoint container.
+    /// \param constraints    : constraints on the init and end velocity / accelerations of the spline.
+    ///
     template<typename In>
     spline_deriv_constraint(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints = spline_constraints())
         : exact_cubic_t(computeWayPoints<In>(wayPointsBegin, wayPointsEnd, constraints)) {}

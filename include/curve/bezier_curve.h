@@ -291,7 +291,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Split the bezier curve in 2 at time t.
     /// \param t : list of points.
     /// \param u : unNormalized time.
-    /// \return A pair containing the first element of both bezier curve.
+    /// \return A pair containing the first element of both bezier curve obtained.
     ///
     std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric t){
         if (t == T_)
