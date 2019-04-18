@@ -148,7 +148,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	public:
 	///  \brief Evaluation of the bezier curve at time t.
 	///  \param t : time when to evaluate the curve.
-	///  \return Point corresponding on curve at time t.
+	///  \return \f$x(t)\f$, point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const
         {
             if(Safe &! (0 <= t && t <= T_))
@@ -162,8 +162,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     ///  \brief Compute the derivative curve at order N.
     ///  Computes the derivative at order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
-    ///  \param order : order of the derivative.
-    ///  \return Derivative \f$\frac{dx(t)}{dt}\f$.
+    ///  \param order : order of derivative.
+    ///  \return Derivative \f$\frac{d^Nx(t)}{dt^N}\f$.
     bezier_curve_t compute_derivate(const std::size_t order) const
     {
         if(order == 0) return *this;
@@ -199,12 +199,12 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return integ.compute_primitive(order-1);
     }
 
-    ///  \brief Evaluate the derivative at order N of the curve.
+    ///  \brief Evaluate the derivative of order N of curve at time t.
     ///  If the derivative is to be evaluated several times, it is
-    ///  rather recommended to compute the derivative curve using compute_derivate.
-    ///  \param order : order of the derivative
+    ///  rather recommended to compute derivative curve using compute_derivate.
+    ///  \param order : order of derivative.
     ///  \param t : time when to evaluate the curve.
-    ///  \return Point corresponding on derivative curve at time t.
+    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
         bezier_curve_t deriv =compute_derivate(order);
@@ -215,7 +215,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// Warning: the horner scheme is about 100 times faster than this method.
     /// This method will probably be removed in the future.
     /// \param t : unNormalized time
-    /// \return Point corresponding on curve at time t.
+    /// \return \f$x(t)\f$, point corresponding on curve at time t.
     ///
     point_t evalBernstein(const Numeric t) const
     {
@@ -230,7 +230,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     /// \brief Evaluate all Bernstein polynomes for a certain degree using horner's scheme.
     /// \param t : unNormalized time
-    /// \return Point corresponding on curve at time t.
+    /// \return \f$x(t)\f$, point corresponding on curve at time t.
     ///
     point_t evalHorner(const Numeric t) const
     {
@@ -254,7 +254,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     /// \brief Evaluate the curve value at time t using deCasteljau algorithm.
     /// \param t : unNormalized time
-    /// \return Point corresponding on curve at time t.
+    /// \return \f$x(t)\f$, point corresponding on curve at time t.
     ///
     point_t evalDeCasteljau(const Numeric t) const {
         // normalize time :
@@ -357,7 +357,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /*Helpers*/
     public:
+    /// \brief Get the minimum time for which the curve is defined
+    /// \return \f$t_{min}\f$, lower bound of time range.
     virtual time_t min() const{return 0.;}
+    /// \brief Get the maximum time for which the curve is defined.
+    /// \return \f$t_{max}\f$, upper bound of time range.
     virtual time_t max() const{return T_;}
 /*Helpers*/
 

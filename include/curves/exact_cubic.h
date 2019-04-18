@@ -158,7 +158,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	public:
 	///  \brief Evaluation of the cubic spline at time t.
     ///  \param t : time when to evaluate the spline
-	///  \return Point corresponding on spline at time t.
+	///  \return \f$x(t)\f$, point corresponding on spline at time t.
     ///
     virtual point_t operator()(const time_t t) const
     {
@@ -172,10 +172,10 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
         throw std::runtime_error("Exact cubic evaluation failed; t is outside bounds");
     }
 
-    ///  \brief Evaluation of the derivative spline at time t.
+    ///  \brief Evaluate the derivative of order N of spline at time t.
     ///  \param t : time when to evaluate the spline.
-    ///  \param order : order of the derivative.
-    ///  \return Point corresponding on derivative spline at time t.
+    ///  \param order : order of derivative.
+    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative spline of order N at time t.
     ///
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
@@ -192,7 +192,11 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 	/*Helpers*/
 	public:
+    /// \brief Get the minimum time for which the curve is defined
+    /// \return \f$t_{min}\f$, lower bound of time range.
     num_t virtual min() const{return subSplines_.front().min();}
+    /// \brief Get the maximum time for which the curve is defined.
+    /// \return \f$t_{max}\f$, upper bound of time range.
     num_t virtual max() const{return subSplines_.back().max();}
 	/*Helpers*/
 

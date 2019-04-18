@@ -41,24 +41,24 @@ struct  curve_abc : std::unary_function<Time, Point>
 	public:
 	///  \brief Evaluation of the cubic spline at time t.
 	///  \param t : time when to evaluate the spine
-	///  \return Point corresponding on curve at time t.
+	///  \return \f$x(t)\f$, point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const = 0;
 
 
-    /// \brief Evaluation of the derivative spline at time t.
+    /// \brief Evaluate the derivative of order N of curve at time t.
     /// \param t : time when to evaluate the spline.
-    /// \param order : order of the derivative.
-    /// \return Point corresponding on curve at time t.
+    /// \param order : order of derivative.
+    /// \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
     virtual point_t derivate(const time_t t, const std::size_t order) const = 0;
 /*Operations*/
 
 /*Helpers*/
 	public:
-	/// \brief Returns the minimum time for wich curve is defined
-	/// \return Lower bound of time range.
+	/// \brief Get the minimum time for which the curve is defined.
+	/// \return \f$t_{min}\f$, lower bound of time range.
 	virtual time_t min() const = 0;
-	/// \brief Returns the maximum time for wich curve is defined
-	/// \return Upper bound of time range.
+	/// \brief Get the maximum time for which the curve is defined.
+	/// \return \f$t_{max}\f$, upper bound of time range.
 	virtual time_t max() const = 0;
 
     std::pair<time_t, time_t> timeRange() {return std::make_pair(min(), max());}
