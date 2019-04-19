@@ -1,5 +1,5 @@
 SET(${PY_NAME}_BINDINGS_SOURCES
-  curve_python.cpp
+  curves_python.cpp
   python_variables.cpp
   python_variables.h
   )
@@ -15,4 +15,4 @@ ENDIF(APPLE)
 
 INSTALL(TARGETS ${PY_NAME} DESTINATION ${PYTHON_SITELIB})
 
-ADD_PYTHON_UNIT_TEST("python-curve" "python/test/test.py" "python")
+ADD_PYTHON_UNIT_TEST("python-curves" "python/test/test.py" "python")

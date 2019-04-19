@@ -16,7 +16,7 @@
 
 #include <functional>
 
-namespace curve
+namespace curves
 {
 /// \struct curve_abc
 /// \brief Represents a curve of dimension Dim
@@ -63,6 +63,6 @@ struct  curve_abc : std::unary_function<Time, Point>
 /*Helpers*/
 
 	};
-} // namespace curve
+} // namespace curves
 #endif //_STRUCT_CURVE_ABC
 

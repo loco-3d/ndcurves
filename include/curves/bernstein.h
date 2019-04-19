@@ -18,7 +18,7 @@
 #include <vector>
 #include <stdexcept>
 
-namespace curve
+namespace curves
 {
 ///
 /// \brief Computes factorial of a number.
@@ -74,6 +74,6 @@ std::vector<Bern<Numeric> > makeBernstein(const unsigned int n)
         res.push_back(Bern<Numeric>(n, i));
     return res;
 }
-} // namespace curve
+} // namespace curves
 #endif //_CLASS_BERNSTEIN
 

@@ -20,7 +20,7 @@
 
 #include <stdexcept>
 
-namespace curve
+namespace curves
 {
 /// \brief Creates coefficient vector of a quintic spline defined on the interval
 /// \f$[t_{min}, t_{max}]\f$. It follows the equation :
@@ -44,6 +44,6 @@ polynom<Time,Numeric,Dim,Safe,Point,T_Point> create_quintic(Point const& a, Poin
     T_Point coeffs = make_quintic_vector<Point, T_Point>(a,b,c,d,e,f);
     return polynom<Time,Numeric,Dim,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), t_min, t_max);
 }
-} // namespace curve
+} // namespace curves
 #endif //_STRUCT_QUINTIC_SPLINE
 

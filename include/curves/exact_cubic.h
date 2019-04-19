@@ -29,7 +29,7 @@
 #include <functional>
 #include <vector>
 
-namespace curve
+namespace curves
 {
 /// \class ExactCubic.
 /// \brief Represents a set of cubic splines defining a continuous function 
@@ -201,6 +201,6 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     t_spline_t subSplines_; // const
 	/*Attributes*/
 };
-} // namespace curve
+} // namespace curves
 #endif //_CLASS_EXACTCUBIC
 

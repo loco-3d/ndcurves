@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-namespace curve
+namespace curves
 {
 /// \class BezierCurve.
 /// \brief Represents a Bezier curve of arbitrary dimension and order.
@@ -54,7 +54,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     , mult_T_(1.)
 	, size_(std::distance(PointsBegin, PointsEnd))
     , degree_(size_-1)
-    , bernstein_(curve::makeBernstein<num_t>((unsigned int)degree_))
+    , bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_))
     {
         assert(bernstein_.size() == size_);
 		In it(PointsBegin);
@@ -76,7 +76,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     , mult_T_(1.)
     , size_(std::distance(PointsBegin, PointsEnd))
     , degree_(size_-1)
-    , bernstein_(curve::makeBernstein<num_t>((unsigned int)degree_))
+    , bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_))
     {
         assert(bernstein_.size() == size_);
         In it(PointsBegin);
@@ -101,7 +101,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     , mult_T_(mult_T)
     , size_(std::distance(PointsBegin, PointsEnd))
     , degree_(size_-1)
-    , bernstein_(curve::makeBernstein<num_t>((unsigned int)degree_))
+    , bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_))
     {
         assert(bernstein_.size() == size_);
         In it(PointsBegin);
@@ -124,7 +124,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     , mult_T_(1.)
     , size_(std::distance(PointsBegin, PointsEnd)+4)
     , degree_(size_-1)
-    , bernstein_(curve::makeBernstein<num_t>((unsigned int)degree_))
+    , bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_))
     {
         if(Safe && (size_<1 || T_ <= 0.))
             throw std::out_of_range("can't create bezier min bound is higher than max bound");

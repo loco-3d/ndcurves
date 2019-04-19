@@ -23,7 +23,7 @@
 #include <functional>
 #include <stdexcept>
 
-namespace curve
+namespace curves
 {
 /// \class polynom
 /// \brief Represents a polynomf arbitrary order defined on the interval
@@ -199,6 +199,6 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return res;
     }
 }; //class polynom
-} // namespace curve
+} // namespace curves
 #endif //_STRUCT_POLYNOM
 

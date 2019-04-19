@@ -12,15 +12,15 @@
 #ifndef _CLASS_SPLINEOPTIMIZER
 #define _CLASS_SPLINEOPTIMIZER
 
-#include "curve/MathDefs.h" 
-#include "curve/exact_cubic.h"
+#include "curves/MathDefs.h" 
+#include "curves/exact_cubic.h"
 
 #include "mosek/mosek.h" 
 #include <Eigen/SparseCore>
 
 #include <utility>
 
-namespace curve
+namespace curves
 {
 /// \class SplineOptimizer
 /// \brief Mosek connection to produce optimized splines
@@ -516,5 +516,5 @@ inline exact_cubic<Time, Numeric, Dim, Safe, Point>*
 	return res;
 }
 
-} // namespace curve
+} // namespace curves
 #endif //_CLASS_SPLINEOPTIMIZER

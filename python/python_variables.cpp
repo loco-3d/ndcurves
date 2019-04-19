@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 
 
-namespace curve
+namespace curves
 {
 
 std::vector<linear_variable_3_t> matrix3DFromEigenArray(const point_list_t& matrices, const point_list_t& vectors)
@@ -101,4 +101,4 @@ LinearBezierVector* split(const bezier_linear_variable_t& self,  const vectorX_t
 }
 
 }
- // namespace curve
+ // namespace curves
