@@ -205,6 +205,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  \param order : order of derivative.
     ///  \param t : time when to evaluate the curve.
     ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
+    ///
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
         bezier_curve_t deriv =compute_derivate(order);
@@ -212,8 +213,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     /// \brief Evaluate all Bernstein polynomes for a certain degree.
+    /// A bezier curve with N control points is represented by : \f$x(t) = \sum_{i=0}^{N} B_i^N(t) P_i\f$
+    /// with \f$ B_i^N(t) = \binom{N}{i}t^i (1-t)^{N-i} \f$.<br/>
     /// Warning: the horner scheme is about 100 times faster than this method.
-    /// This method will probably be removed in the future.
+    /// This method will probably be removed in the future as the computation of bernstein polynomial is very costly.
     /// \param t : unNormalized time
     /// \return \f$x(t)\f$, point corresponding on curve at time t.
     ///
@@ -228,7 +231,14 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return res*mult_T_;
     }
 
-    /// \brief Evaluate all Bernstein polynomes for a certain degree using horner's scheme.
+    /// \brief Evaluate all Bernstein polynomes for a certain degree using Horner's scheme.
+    /// For a polynom of degree N expressed by : \f$x(t) = a_0 + a_1t + a_2t^2 + ... + a_nt^n\f$
+    /// where \f$number of additions = N\f$ / f$number of multiplication = N!\f$
+    /// Using Horner's method, the polynom is transformed into : 
+    /// \f$x(t) = a_0 + t(a_1 + t(a_2+t(...))\f$
+    /// where number of additions = N / number of multiplication = N.
+    /// A bezier curve with N control points is expressed as : \f$x(t) = \sum_{i=0}^{N} B_i^N(t) P_i\f$
+    /// We can apply the Horner's scheme : \f$ x(t) = (1-t)^N(\sum_{i=0}^{N} \binom{N}{i} \frac{1-t}{t}^i P_i) \f$ 
     /// \param t : unNormalized time
     /// \return \f$x(t)\f$, point corresponding on curve at time t.
     ///
