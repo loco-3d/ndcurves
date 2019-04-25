@@ -6,6 +6,7 @@
 #include "curves/helpers/effector_spline.h"
 #include "curves/helpers/effector_spline_rotation.h"
 #include "curves/bezier_polynom_conversion.h"
+#include "curves/cubic_hermite_spline.h"
 
 #include <string>
 #include <iostream>
@@ -16,6 +17,7 @@ using namespace std;
 namespace curves
 {
 typedef Eigen::Vector3d point_t;
+typedef Eigen::Vector3d tangent_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
 typedef polynom  <double, double, 3, true, point_t, t_point_t> polynom_t;
 typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
@@ -31,6 +33,9 @@ typedef polynom<double, double, 1, true, point_one> polynom_one;
 typedef exact_cubic   <double, double, 1, true, point_one> exact_cubic_one;
 typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
+
+typedef cubic_hermite_spline <double, double, 3, true, point_t> cubic_hermite_spline_t;
+typedef std::pair<point_t, tangent_t> Pair_point_tangent;
 
 bool QuasiEqual(const double a, const double b, const float margin)
 {
@@ -66,7 +71,6 @@ void ComparePoints(const Eigen::VectorXd& pt1, const Eigen::VectorXd& pt2, const
 }
 
 /*Cubic Function tests*/
-
 void CubicFunctionTest(bool& error)
 {
     std::string errMsg("In test CubicFunctionTest ; unexpected result for x ");
@@ -140,7 +144,6 @@ void CubicFunctionTest(bool& error)
 }
 
 /*bezier_curve Function tests*/
-
 void BezierCurveTest(bool& error)
 {
 	std::string errMsg("In test BezierCurveTest ; unexpected result for x ");
@@ -240,7 +243,7 @@ void BezierCurveTest(bool& error)
 }
 
 #include <ctime>
-void BezierCurveTestCompareHornerAndBernstein(bool& /*error*/)
+void BezierCurveTestCompareHornerAndBernstein(bool&) // error
 {
     using namespace std;
     std::vector<double> values;
@@ -506,7 +509,6 @@ void ExactCubicNoErrorTest(bool& error)
 	}
 }
 
-
 /*Exact Cubic Function tests*/
 void ExactCubicTwoPointsTest(bool& error)
 {
@@ -544,7 +546,7 @@ void ExactCubicOneDimTest(bool& error)
 	ComparePoints(one, res1, errmsg, error);
 }
 
-void CheckWayPointConstraint(const std::string& errmsg, const double step, const curves::T_Waypoint& /*wayPoints*/, const exact_cubic_t* curve, bool& error )
+void CheckWayPointConstraint(const std::string& errmsg, const double step, const curves::T_Waypoint&, const exact_cubic_t* curve, bool& error )
 {
     point_t res1;
     for(double i = 0; i <= 1; i = i + step)
@@ -794,18 +796,22 @@ void TestReparametrization(bool& error)
     }
 }
 
-point_t randomPoint(const double min, const double max ){
+point_t randomPoint(const double min, const double max )
+{
     point_t p;
     for(size_t i = 0 ; i < 3 ; ++i)
         p[i] =  (rand()/(double)RAND_MAX ) * (max-min) + min;
     return p;
 }
 
-void BezierEvalDeCasteljau(bool& error){
+void BezierEvalDeCasteljau(bool& error)
+{
     using namespace std;
     std::vector<double> values;
     for (int i =0; i < 100000; ++i)
+    {
         values.push_back(rand()/RAND_MAX);
+    }
 
     //first compare regular evaluation (low dim pol)
     point_t a(1,2,3);
@@ -828,7 +834,8 @@ void BezierEvalDeCasteljau(bool& error){
 
     for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
     {
-        if(cf.evalDeCasteljau(*cit) != cf(*cit)){
+        if(cf.evalDeCasteljau(*cit) != cf(*cit))
+        {
             error = true;
             std::cout<<" De Casteljau evaluation did not return the same value as analytical"<<std::endl;
         }
@@ -845,7 +852,8 @@ void BezierEvalDeCasteljau(bool& error){
 
     for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
     {
-        if(cf.evalDeCasteljau(*cit) != cf(*cit)){
+        if(cf.evalDeCasteljau(*cit) != cf(*cit))
+        {
             error = true;
             std::cout<<" De Casteljau evaluation did not return the same value as analytical"<<std::endl;
         }
@@ -853,22 +861,24 @@ void BezierEvalDeCasteljau(bool& error){
 
 }
 
-
 /**
  * @brief BezierSplitCurve test the 'split' method of bezier curve
  * @param error
  */
-void BezierSplitCurve(bool& error){
+void BezierSplitCurve(bool& error)
+{
     // test for degree 5
     int n = 5;
     double t_min = 0.2;
     double t_max = 10;
-    for(size_t i = 0 ; i < 1 ; ++i){
+    for(size_t i = 0 ; i < 1 ; ++i)
+    {
         // build a random curve and split it at random time :
         //std::cout<<"build a random curve"<<std::endl;
         point_t a;
         std::vector<point_t> wps;
-        for(size_t j = 0 ; j <= n ; ++j){
+        for(size_t j = 0 ; j <= n ; ++j)
+        {
             wps.push_back(randomPoint(-10.,10.));
         }
         double t = (rand()/(double)RAND_MAX )*(t_max-t_min) + t_min;
@@ -930,11 +940,69 @@ void BezierSplitCurve(bool& error){
 }
 
 
+/* cubic hermite spline function test */
+void CubicHermiteTwoPairsPositionVelocityTest(bool& error)
+{
+    std::string errmsg1("in Cubic Hermite 2 points, Error While checking that given wayPoints are crossed (expected / obtained) : ");
+    std::string errmsg2("in Cubic Hermite 2 points, Error While checking value of point on curve : ");
+    std::vector< Pair_point_tangent > control_points;
+    point_t res1;
+
+    // 1 Dimension
+    control_points.clear();
+    // first point :  p0(0.,0.,0.) m0(0.,1.,0.)
+    control_points.push_back(Pair_point_tangent(point_t(0.,0.,0.),tangent_t(0.5,0.,0.)));
+    // second point : p1(1.,0.,0.) m1(1.,1.,1.)
+    control_points.push_back(Pair_point_tangent(point_t(1.,0.,0.),tangent_t(0.1,0.,0.)));
+    // Create cubic hermite spline
+    cubic_hermite_spline_t cubic_hermite_spline1D(control_points.begin(), control_points.end());
+    //Check
+    res1 = cubic_hermite_spline1D(0); // t=0
+    ComparePoints(point_t(0.,0.,0.), res1, errmsg1, error);
+    res1 = cubic_hermite_spline1D(1); // t=1
+    ComparePoints(point_t(1.,0.,0.), res1, errmsg1, error);
+    res1 = cubic_hermite_spline1D(0.5); // t=0.5
+    ComparePoints(point_t(0.55,0.,0.0), res1, errmsg2, error);
+
+    // 2 Dimension
+    control_points.clear();
+    // first point :  p0(0.,0.,0.) m0(0.,1.,0.)
+    control_points.push_back(Pair_point_tangent(point_t(0.,0.,0.),tangent_t(0.5,0.5,0.)));
+    // second point : p1(1.,0.,0.) m1(1.,1.,1.)
+    control_points.push_back(Pair_point_tangent(point_t(1.,1.,0.),tangent_t(0.5,0.1,0.)));
+    // Create cubic hermite spline
+    cubic_hermite_spline_t cubic_hermite_spline2D(control_points.begin(), control_points.end());
+    //Check
+    res1 = cubic_hermite_spline2D(0); // t=0
+    ComparePoints(point_t(0.,0.,0.), res1, errmsg1, error);
+    res1 = cubic_hermite_spline2D(1); // t=1
+    ComparePoints(point_t(1.,1.,0.), res1, errmsg1, error);
+    res1 = cubic_hermite_spline2D(0.5); // t=0.5
+    ComparePoints(point_t(0.5,0.55,0.0), res1, errmsg2, error);
+
+    // 2 Dimension
+    control_points.clear();
+    // first point :  p0(0.,0.,0.) m0(0.,1.,0.)
+    control_points.push_back(Pair_point_tangent(point_t(0.,0.,0.),tangent_t(0.5,0.5,0.5)));
+    // second point : p1(1.,0.,0.) m1(1.,1.,1.)
+    control_points.push_back(Pair_point_tangent(point_t(1.,1.,1.),tangent_t(0.1,0.1,-0.5)));
+    // Create cubic hermite spline
+    cubic_hermite_spline_t cubic_hermite_spline3D(control_points.begin(), control_points.end());
+    //Check
+    res1 = cubic_hermite_spline3D(0); // t=0
+    ComparePoints(point_t(0.,0.,0.), res1, errmsg1, error);
+    res1 = cubic_hermite_spline3D(1); // t=1
+    ComparePoints(point_t(1.,1.,1.), res1, errmsg1, error);
+    res1 = cubic_hermite_spline3D(0.5); // t=0.5
+    ComparePoints(point_t(0.55,0.55,0.625), res1, errmsg2, error);
+}
+
 
 int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
     bool error = false;
+    /*
     CubicFunctionTest(error);
     ExactCubicNoErrorTest(error);
     ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
@@ -954,6 +1022,8 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierToPolynomConversionTest(error);
     BezierEvalDeCasteljau(error);
     BezierSplitCurve(error);
+    */
+    CubicHermiteTwoPairsPositionVelocityTest(error);
     if(error)
 	{
         std::cout << "There were some errors\n";
