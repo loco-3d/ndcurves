@@ -39,7 +39,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     Vector_pair control_points_; // Vector of pair < Point, Tangent > , Dim = Size_.
     Vector_time time_control_points_; // Time corresponding to each control point, Dim = Size_.
     Vector_time duration_splines_; // its length should be duration_splines_[0] = t_PO_P1, duration_splines_[1] = t_P1_P2, Dim = Size_-1.
-    /*const*/ Time T_;
+    /*const*/ Time T_min_;
+    /*const*/ Time T_max_;
     /*const*/ std::size_t size_;
     /*Attributes*/
     
@@ -50,7 +51,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
 	template<typename In>
 	cubic_hermite_spline(In PairsBegin, In PairsEnd)
-	: T_(1.)
+	: T_min_(0.)
+    , T_max_(1.)
     , size_(std::distance(PairsBegin, PairsEnd))
 	{
 		// Check size of pairs container.
@@ -75,7 +77,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	public:
 	virtual Point operator()(const Time t) const
     {
-        if(Safe &! (0 <= t && t <= T_))
+        if(Safe &! (T_min_ <= t && t <= T_max_))
         {
 			throw std::out_of_range("can't evaluate bezier curve, out of range");
         }
@@ -103,9 +105,11 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// Set duration of each spline, exemple : time_control_points[0] = duration of first spline, 
     /// time_control_points[0] = duration of second spline (...).
     /// \param time_control_points : Vector containing duration of each spline.
-    void setTimeSplines(const Vector_time & time_control_points) const
+    void setTimeSplines(const Vector_time & time_control_points)
 	{
         time_control_points_ = time_control_points;
+        T_min_ = time_control_points_.front();
+        T_max_ = time_control_points_.back();
 		assert(time_control_points.size() == size());
         compute_duration_splines();
         if (!check_duration_splines())
@@ -120,7 +124,9 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     void setTimeSplinesDefault()
     {
         time_control_points_.clear();
-        Time timestep = T_ / (control_points_.size()-1);
+        T_min_ = 0.;
+        T_max_ = 1.;
+        Time timestep = (T_max_- T_min_) / (control_points_.size()-1);
         Time time = 0.;
         Index i = 0;
         for (i=0; i<size(); i++)
@@ -202,6 +208,13 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         const Time & t0 = time_control_points_[id];
         const Time & t1 = time_control_points_[id+1]; 
 
+        // Polynom for a cubic hermite spline defined on [0., 1.] is : 
+        //      p(t) = h00(t)*p0 + h10(t)*m0 + h01(t)*p1 + h11(t)*m1 with t in [0., 1.]
+        //
+        // For a cubic hermite spline defined on [t0, t1], we define alpha=(t-t0)/(t1-t0) in [0., 1.].
+        // Polynom p(t) defined on [t0, t1] becomes p(alpha) defined on [0., 1.]
+        //      p(alpha) = p((t-t0)/(t1-t0))
+        //
         const Time dt = (t1-t0);
         const Time alpha = (t - t0)/dt;
 
@@ -209,8 +222,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
         Numeric h00, h10, h01, h11;
         evalCoeffs(alpha,h00,h10,h01,h11,order_derivated);
-        //std::cout << "for val t="<<t<<" coef : h00="<<h00<<" h01="<<h01<<" h10="<<h10<<" h11="<<h11<<std::endl;
-        h10 *= dt; h11 *= dt;
+        //std::cout << "for val t="<<t<<" coef : h00="<<h00<<" h10="<<h10<<" h01="<<h01<<" h11="<<h11<<std::endl;
 
         Point p_ = (h00 * Pair0.first + h10 * Pair0.second + h01 * Pair1.first + h11 * Pair1.second);
         return p_;
@@ -245,11 +257,14 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Check if the absicca
     bool check_duration_splines() const
     {
-        if (duration_splines_.size()>0) {
-            return false;
-        }else{
-            return (duration_splines_.array > 0.).all();
+        Index i = 0;
+        bool is_positive = true;
+        while (is_positive && i<duration_splines_.size())
+        {
+            is_positive = (duration_splines_.at(i)>0.);
+            i++;
         }
+        return is_positive;
     }
 
     static void evalCoeffs(const Numeric t, Numeric & h00, Numeric & h10, Numeric & h01, Numeric & h11, std::size_t order_derivated)

@@ -941,60 +941,92 @@ void BezierSplitCurve(bool& error)
 
 
 /* cubic hermite spline function test */
-void CubicHermiteTwoPairsPositionVelocityTest(bool& error)
+void CubicHermitePairsPositionDerivativeTest(bool& error)
 {
-    std::string errmsg1("in Cubic Hermite 2 points, Error While checking that given wayPoints are crossed (expected / obtained) : ");
+    std::string errmsg1("in Cubic Hermite 2 pairs (pos,vel), Error While checking that given wayPoints are crossed (expected / obtained) : ");
     std::string errmsg2("in Cubic Hermite 2 points, Error While checking value of point on curve : ");
+    std::string errmsg3("in Cubic Hermite 2 points, Error While checking value of tangent on curve : ");
     std::vector< Pair_point_tangent > control_points;
     point_t res1;
 
-    // 1 Dimension
-    control_points.clear();
-    // first point :  p0(0.,0.,0.) m0(0.,1.,0.)
-    control_points.push_back(Pair_point_tangent(point_t(0.,0.,0.),tangent_t(0.5,0.,0.)));
-    // second point : p1(1.,0.,0.) m1(1.,1.,1.)
-    control_points.push_back(Pair_point_tangent(point_t(1.,0.,0.),tangent_t(0.1,0.,0.)));
-    // Create cubic hermite spline
-    cubic_hermite_spline_t cubic_hermite_spline1D(control_points.begin(), control_points.end());
-    //Check
-    res1 = cubic_hermite_spline1D(0); // t=0
-    ComparePoints(point_t(0.,0.,0.), res1, errmsg1, error);
-    res1 = cubic_hermite_spline1D(1); // t=1
-    ComparePoints(point_t(1.,0.,0.), res1, errmsg1, error);
-    res1 = cubic_hermite_spline1D(0.5); // t=0.5
-    ComparePoints(point_t(0.55,0.,0.0), res1, errmsg2, error);
+    point_t P0(0.,0.,0.);
+    point_t P1(1.,2.,3.);
+    point_t P2(4.,4.,4.);
 
-    // 2 Dimension
-    control_points.clear();
-    // first point :  p0(0.,0.,0.) m0(0.,1.,0.)
-    control_points.push_back(Pair_point_tangent(point_t(0.,0.,0.),tangent_t(0.5,0.5,0.)));
-    // second point : p1(1.,0.,0.) m1(1.,1.,1.)
-    control_points.push_back(Pair_point_tangent(point_t(1.,1.,0.),tangent_t(0.5,0.1,0.)));
-    // Create cubic hermite spline
-    cubic_hermite_spline_t cubic_hermite_spline2D(control_points.begin(), control_points.end());
-    //Check
-    res1 = cubic_hermite_spline2D(0); // t=0
-    ComparePoints(point_t(0.,0.,0.), res1, errmsg1, error);
-    res1 = cubic_hermite_spline2D(1); // t=1
-    ComparePoints(point_t(1.,1.,0.), res1, errmsg1, error);
-    res1 = cubic_hermite_spline2D(0.5); // t=0.5
-    ComparePoints(point_t(0.5,0.55,0.0), res1, errmsg2, error);
+    tangent_t T0(0.5,0.5,0.5);
+    tangent_t T1(0.1,0.2,-0.5);
+    tangent_t T2(0.1,0.2,0.3);
 
-    // 2 Dimension
+    // Test time control points by default => with N control points : 
+    // Time at P0= 0. | Time at P1= 1.0/(N-1) | Time at P2= 2.0/(N-1) | ... | Time at P_(N-1)= (N-1)/(N-1)= 1.0
+
+    // Two pairs
     control_points.clear();
     // first point :  p0(0.,0.,0.) m0(0.,1.,0.)
-    control_points.push_back(Pair_point_tangent(point_t(0.,0.,0.),tangent_t(0.5,0.5,0.5)));
+    control_points.push_back(Pair_point_tangent(P0,T0));
     // second point : p1(1.,0.,0.) m1(1.,1.,1.)
-    control_points.push_back(Pair_point_tangent(point_t(1.,1.,1.),tangent_t(0.1,0.1,-0.5)));
+    control_points.push_back(Pair_point_tangent(P1,T1));
     // Create cubic hermite spline
-    cubic_hermite_spline_t cubic_hermite_spline3D(control_points.begin(), control_points.end());
+    cubic_hermite_spline_t cubic_hermite_spline_1Pair(control_points.begin(), control_points.end());
     //Check
-    res1 = cubic_hermite_spline3D(0); // t=0
-    ComparePoints(point_t(0.,0.,0.), res1, errmsg1, error);
-    res1 = cubic_hermite_spline3D(1); // t=1
-    ComparePoints(point_t(1.,1.,1.), res1, errmsg1, error);
-    res1 = cubic_hermite_spline3D(0.5); // t=0.5
-    ComparePoints(point_t(0.55,0.55,0.625), res1, errmsg2, error);
+    res1 = cubic_hermite_spline_1Pair(0.); // t=0
+    ComparePoints(P0, res1, errmsg1, error);
+    res1 = cubic_hermite_spline_1Pair(1.); // t=1
+    ComparePoints(P1, res1, errmsg1, error);
+    res1 = cubic_hermite_spline_1Pair(0.5); // t=0.5
+    ComparePoints(point_t(0.55,1.0375,1.625), res1, errmsg2, error);
+    // Test derivative : two pairs, time default
+    res1 = cubic_hermite_spline_1Pair.derivate(0.,1);
+    ComparePoints(T0, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_1Pair.derivate(0.5,1);
+    ComparePoints(point_t(1.35,2.825,4.5), res1, errmsg3, error);
+    res1 = cubic_hermite_spline_1Pair.derivate(1.,1);
+    ComparePoints(T1, res1, errmsg3, error);
+
+    // Three pairs
+    control_points.push_back(Pair_point_tangent(P2,T2));
+    cubic_hermite_spline_t cubic_hermite_spline_2Pairs(control_points.begin(), control_points.end());
+    //Check
+    res1 = cubic_hermite_spline_2Pairs(0.); // t=0
+    ComparePoints(P0, res1, errmsg1, error);
+    res1 = cubic_hermite_spline_2Pairs(1.); // t=1
+    ComparePoints(P2, res1, errmsg1, error);
+    res1 = cubic_hermite_spline_2Pairs(0.5); // t=0.5
+    ComparePoints(P1, res1, errmsg2, error);
+    res1 = cubic_hermite_spline_2Pairs(0.25); // t=0.25 , same than in two pairs at t=0.5
+    ComparePoints(point_t(0.55,1.0375,1.625), res1, errmsg2, error);
+    // Test derivative : three pairs, time default
+    res1 = cubic_hermite_spline_2Pairs.derivate(0.,1);
+    ComparePoints(T0, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_2Pairs.derivate(0.5,1);
+    ComparePoints(T1, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_2Pairs.derivate(1.,1);
+    ComparePoints(T2, res1, errmsg3, error);
+
+
+    // Test setting time control points with 3 points : 
+    // Time at P0= t0 | Time at P1= t1 | Time at P2= t2
+
+    // Three pairs
+    std::vector< double > time_control_points;
+    time_control_points.push_back(5.); // Time at P0
+    time_control_points.push_back(6.); // Time at P1
+    time_control_points.push_back(10.); // Time at P2
+    cubic_hermite_spline_2Pairs.setTimeSplines(time_control_points); // Set time of control points
+    // check
+    res1 = cubic_hermite_spline_2Pairs(5.); // Test time at P0
+    ComparePoints(P0, res1, errmsg1, error);
+    res1 = cubic_hermite_spline_2Pairs(6.); // Test time at P1
+    ComparePoints(P1, res1, errmsg1, error);
+    res1 = cubic_hermite_spline_2Pairs(10.); // Test time at P2
+    ComparePoints(P2, res1, errmsg2, error);
+    // Test derivative : three pairs, time set
+    res1 = cubic_hermite_spline_2Pairs.derivate(5.,1);
+    ComparePoints(T0, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_2Pairs.derivate(6.,1);
+    ComparePoints(T1, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_2Pairs.derivate(10.,1);
+    ComparePoints(T2, res1, errmsg3, error);
 }
 
 
@@ -1002,7 +1034,6 @@ int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
     bool error = false;
-    /*
     CubicFunctionTest(error);
     ExactCubicNoErrorTest(error);
     ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
@@ -1022,8 +1053,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierToPolynomConversionTest(error);
     BezierEvalDeCasteljau(error);
     BezierSplitCurve(error);
-    */
-    CubicHermiteTwoPairsPositionVelocityTest(error);
+    CubicHermitePairsPositionDerivativeTest(error);
     if(error)
 	{
         std::cout << "There were some errors\n";
