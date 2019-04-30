@@ -5,6 +5,7 @@
 #include "curves/curve_constraint.h"
 #include "curves/bezier_polynom_conversion.h"
 #include "curves/bernstein.h"
+#include "curves/cubic_hermite_spline.h"
 
 #include "python_definitions.h"
 #include "python_variables.h"
@@ -20,6 +21,8 @@
 using namespace curves;
 typedef double real;
 typedef Eigen::Vector3d point_t;
+typedef Eigen::Vector3d tangent_t;
+typedef std::pair<point_t, tangent_t> pair_point_tangent_t;
 typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> point6_t;
 typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point_t;
 typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> ret_point6_t;
@@ -32,11 +35,13 @@ typedef std::pair<real, point_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 typedef std::pair<real, point6_t> Waypoint6;
 typedef std::vector<Waypoint6> T_Waypoint6;
+typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
 
 typedef curves::bezier_curve  <real, real, 3, true, point_t> bezier3_t;
 typedef curves::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
 typedef curves::polynom  <real, real, 3, true, point_t, t_point_t> polynom_t;
 typedef curves::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
+typedef curves::cubic_hermite_spline <real, real, 3, true, point_t> cubic_hermite_spline_t;
 typedef polynom_t::coeff_t coeff_t;
 typedef std::pair<real, point_t> waypoint_t;
 typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t;
@@ -54,6 +59,7 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier6_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynom_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(cubic_hermite_spline_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_deriv_constraint_t)
 
@@ -61,6 +67,7 @@ namespace curves
 {
 using namespace boost::python;
 
+/* Template constructor bezier */
 template <typename Bezier, typename PointList, typename T_Point>
 Bezier* wrapBezierConstructorTemplate(const PointList& array, const real ub =1.)
 {
@@ -74,8 +81,9 @@ Bezier* wrapBezierConstructorConstraintsTemplate(const PointList& array, const C
     T_Point asVector = vectorFromEigenArray<PointList, T_Point>(array);
     return new Bezier(asVector.begin(), asVector.end(), constraints, ub);
 }
+/* End Template constructor bezier */
 
-/*3D constructors */
+/*3D constructors bezier */
 bezier3_t* wrapBezierConstructor3(const point_list_t& array)
 {
     return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array) ;
@@ -92,8 +100,8 @@ bezier3_t* wrapBezierConstructorBounds3Constraints(const point_list_t& array, co
 {
     return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, ub) ;
 }
-/*END 3D constructors */
-/*6D constructors */
+/*END 3D constructors bezier */
+/*6D constructors bezier */
 bezier6_t* wrapBezierConstructor6(const point_list6_t& array)
 {
     return wrapBezierConstructorTemplate<bezier6_t, point_list6_t, t_point6_t>(array) ;
@@ -110,19 +118,52 @@ bezier6_t* wrapBezierConstructorBounds6Constraints(const point_list6_t& array, c
 {
     return wrapBezierConstructorConstraintsTemplate<bezier6_t, point_list6_t, t_point6_t, curve_constraints6_t>(array, constraints, ub) ;
 }
-/*END 6D constructors */
+/*END 6D constructors bezier */
 
+/* Wrap Cubic hermite spline */
+t_pair_point_tangent_t getPairsPointTangent(const point_list_t& points, const point_list_t& tangents)
+{
+    t_pair_point_tangent_t res;
+    if (points.size() != tangents.size())
+    {
+        throw std::length_error("size of points and tangents must be the same");
+    }
+    for(int i =0;i<points.cols();++i) 
+    {
+        res.push_back(pair_point_tangent_t(tangents.col(i), tangents.col(i)));
+    }
+    return res;
+}
+
+cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const point_list_t& points, const point_list_t& tangents, const time_waypoints_t& time_pts) 
+{
+    t_pair_point_tangent_t ppt = getPairsPointTangent(points, tangents);
+    cubic_hermite_spline_t* chs = new cubic_hermite_spline_t(ppt.begin(), ppt.end());
+    std::vector<real> time_control_pts;
+    for( int i =0; i<time_pts.size(); ++i)
+    {
+        time_control_pts.push_back(time_pts[i]);
+    }
+    chs->setTimeSplines(time_control_pts);
+    return chs;
+}
+/* End wrap Cubic hermite spline */
+
+/* Wrap polynom */
 polynom_t* wrapSplineConstructor(const coeff_t& array)
 {
     return new polynom_t(array, 0., 1.);
 }
+/* End wrap polynom */
 
-
+/* Wrap exact cubic spline */
 t_waypoint_t getWayPoints(const coeff_t& array, const time_waypoints_t& time_wp)
 {
     t_waypoint_t res;
-    for(int i =0;i<array.cols();++i)
+    for(int i =0;i<array.cols();++i) 
+    {
         res.push_back(std::make_pair(time_wp(i), array.col(i)));
+    }
     return res;
 }
 
@@ -135,7 +176,9 @@ Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> wayPointsToList(const Bezier
     Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> res (dim, wps.size());
     int col = 0;
     for(cit_point cit = wps.begin(); cit != wps.end(); ++cit, ++col)
+    {
         res.block<dim,1>(0,col) = *cit;
+    }
     return res;
 }
 
@@ -144,8 +187,9 @@ exact_cubic_t* wrapExactCubicConstructor(const coeff_t& array, const time_waypoi
     t_waypoint_t wps = getWayPoints(array, time_wp);
     return new exact_cubic_t(wps.begin(), wps.end());
 }
+/* End wrap exact cubic spline */
 
-
+/* Wrap deriv constraint */
 spline_deriv_constraint_t* wrapSplineDerivConstraint(const coeff_t& array, const time_waypoints_t& time_wp, const curve_constraints_t& constraints)
 {
     t_waypoint_t wps = getWayPoints(array, time_wp);
@@ -197,7 +241,7 @@ void set_end_acc(curve_constraints_t& c, const point_t& val)
 {
     c.end_acc = val;
 }
-
+/* End wrap deriv constraint */
 
 
 BOOST_PYTHON_MODULE(curves)
@@ -307,6 +351,18 @@ BOOST_PYTHON_MODULE(curves)
             .def("derivate", &exact_cubic_t::derivate)
         ;
     /** END bezier curve**/
+
+
+    /** BEGIN cubic_hermite_spline **/
+    class_<cubic_hermite_spline_t>
+        ("cubic_hermite_spline", no_init)
+            .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor))
+            .def("min", &cubic_hermite_spline_t::min)
+            .def("max", &cubic_hermite_spline_t::max)
+            .def("__call__", &cubic_hermite_spline_t::operator())
+            .def("derivate", &cubic_hermite_spline_t::derivate)
+        ;
+    /** END cubic_hermite_spline **/
 
 
     /** BEGIN curve constraints**/

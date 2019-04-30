@@ -126,7 +126,10 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         time_control_points_ = time_control_points;
         T_min_ = time_control_points_.front();
         T_max_ = time_control_points_.back();
-		assert(time_control_points.size() == size());
+		if (time_control_points.size() != size())
+        {
+            throw std::length_error("size of time control points should be equal to number of control points");
+        }
         compute_duration_splines();
         if (!check_duration_splines())
         {
