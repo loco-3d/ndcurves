@@ -45,8 +45,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     /// \brief Constructor.
     /// Given the first and last point of a control points set, automatically create the bezier curve.
-    /// \param PointsBegin  : an iterator pointing to the first element of a control point container.
-    /// \param PointsEnd    : an iterator pointing to the last element of a control point container.
+    /// \param PointsBegin  : an iterator pointing to the first element of a control points container.
+    /// \param PointsEnd    : an iterator pointing to the last element of a control points container.
     ///
 	template<typename In>
     bezier_curve(In PointsBegin, In PointsEnd)
@@ -148,7 +148,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	public:
 	///  \brief Evaluation of the bezier curve at time t.
 	///  \param t : time when to evaluate the curve.
-	///  \return \f$x(t)\f$, point corresponding on curve at time t.
+	///  \return \f$x(t)\f$ point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const
         {
             if(Safe &! (0 <= t && t <= T_))
@@ -161,9 +161,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	}
 
     ///  \brief Compute the derivative curve at order N.
-    ///  Computes the derivative at order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
+    ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
     ///  \param order : order of derivative.
-    ///  \return Derivative \f$\frac{d^Nx(t)}{dt^N}\f$.
+    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
     bezier_curve_t compute_derivate(const std::size_t order) const
     {
         if(order == 0) return *this;
@@ -177,10 +177,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     ///  \brief Compute the primitive of the curve at order N.
-    ///  Computes the primitive at order N of bezier curve of parametric equation \f$x(t)\f$. At order \f$N=1\f$, 
-    ///  the primitve \f$X(t)\f$ of \f$x(t)\f$ is such as \f$\frac{dX(t)}{dt} = x(t)\f$.
+    ///  Computes the primitive at order N of bezier curve of parametric equation \f$x(t)\f$. <br>
+    ///  At order \f$N=1\f$, the primitve \f$X(t)\f$ of \f$x(t)\f$ is such as \f$\frac{dX(t)}{dt} = x(t)\f$.
     ///  \param order : order of the primitive.
-    ///  \return Primitive at order N of x(t).
+    ///  \return primitive at order N of x(t).
     bezier_curve_t compute_primitive(const std::size_t order) const
     {
         if(order == 0) return *this;
@@ -199,12 +199,12 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return integ.compute_primitive(order-1);
     }
 
-    ///  \brief Evaluate the derivative of order N of curve at time t.
-    ///  If the derivative is to be evaluated several times, it is
+    ///  \brief Evaluate the derivative order N of curve at time t.
+    ///  If derivative is to be evaluated several times, it is
     ///  rather recommended to compute derivative curve using compute_derivate.
     ///  \param order : order of derivative.
     ///  \param t : time when to evaluate the curve.
-    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
+    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative curve of order N at time t.
     ///
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
@@ -215,9 +215,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Evaluate all Bernstein polynomes for a certain degree.
     /// A bezier curve with N control points is represented by : \f$x(t) = \sum_{i=0}^{N} B_i^N(t) P_i\f$
     /// with \f$ B_i^N(t) = \binom{N}{i}t^i (1-t)^{N-i} \f$.<br/>
-    /// Warning: the horner scheme is about 100 times faster than this method.
+    /// Warning: the horner scheme is about 100 times faster than this method.<br>
     /// This method will probably be removed in the future as the computation of bernstein polynomial is very costly.
-    /// \param t : unNormalized time
+    /// \param t : time when to evaluate the curve.
     /// \return \f$x(t)\f$, point corresponding on curve at time t.
     ///
     point_t evalBernstein(const Numeric t) const
@@ -232,15 +232,15 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     /// \brief Evaluate all Bernstein polynomes for a certain degree using Horner's scheme.
-    /// A bezier curve with N control points is expressed as : \f$x(t) = \sum_{i=0}^{N} B_i^N(t) P_i\f$.
-    /// To evaluate the position on curve at time t,we can apply the Horner's scheme : 
-    /// \f$ x(t) = (1-t)^N(\sum_{i=0}^{N} \binom{N}{i} \frac{1-t}{t}^i P_i) \f$.
-    /// Horner's scheme : for a polynom of degree N expressed by : 
+    /// A bezier curve with N control points is expressed as : \f$x(t) = \sum_{i=0}^{N} B_i^N(t) P_i\f$.<br>
+    /// To evaluate the position on curve at time t,we can apply the Horner's scheme : <br>
+    /// \f$ x(t) = (1-t)^N(\sum_{i=0}^{N} \binom{N}{i} \frac{1-t}{t}^i P_i) \f$.<br>
+    /// Horner's scheme : for a polynom of degree N expressed by : <br>
     /// \f$x(t) = a_0 + a_1t + a_2t^2 + ... + a_nt^n\f$
-    /// where \f$number of additions = N\f$ / f$number of multiplication = N!\f$
-    /// Using Horner's method, the polynom is transformed into : 
+    /// where \f$number of additions = N\f$ / f$number of multiplication = N!\f$<br>
+    /// Using Horner's method, the polynom is transformed into : <br>
     /// \f$x(t) = a_0 + t(a_1 + t(a_2+t(...))\f$ with N additions and multiplications.
-    /// \param t : unNormalized time
+    /// \param t : time when to evaluate the curve.
     /// \return \f$x(t)\f$, point corresponding on curve at time t.
     ///
     point_t evalHorner(const Numeric t) const
@@ -264,7 +264,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     const t_point_t& waypoints() const {return pts_;}
 
     /// \brief Evaluate the curve value at time t using deCasteljau algorithm.
-    /// \param t : unNormalized time
+    /// \param t : time when to evaluate the curve.
     /// \return \f$x(t)\f$, point corresponding on curve at time t.
     ///
     point_t evalDeCasteljau(const Numeric t) const {
@@ -283,7 +283,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     /// \brief Compute de Casteljau's reduction of the given list of points at time t.
     /// \param pts : list of points.
-    /// \param u   : NORMALIZED time.
+    /// \param u   : NORMALIZED time when to evaluate the curve.
     /// \return Reduced list of point (size of pts - 1).
     ///
     t_point_t deCasteljauReduction(const t_point_t& pts, const Numeric u) const{

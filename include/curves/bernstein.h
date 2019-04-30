@@ -21,6 +21,8 @@
 namespace curves
 {
 /// \brief Computes factorial of a number.
+/// \param n : an unsigned integer.
+/// \return \f$n!\f$
 ///
 inline unsigned int fact(const unsigned int n)
 {
@@ -30,7 +32,10 @@ inline unsigned int fact(const unsigned int n)
     return res;
 }
 
-/// \brief Computes a binomal coefficient.
+/// \brief Computes a binomial coefficient.
+/// \param n : an unsigned integer.
+/// \param k : an unsigned integer.
+/// \return \f$\binom{n}{k}f$
 ///
 inline unsigned int bin(const unsigned  int n, const unsigned  int k)
 {
