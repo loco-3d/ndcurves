@@ -218,7 +218,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// Warning: the horner scheme is about 100 times faster than this method.<br>
     /// This method will probably be removed in the future as the computation of bernstein polynomial is very costly.
     /// \param t : time when to evaluate the curve.
-    /// \return \f$x(t)\f$, point corresponding on curve at time t.
+    /// \return \f$x(t)\f$ point corresponding on curve at time t.
     ///
     point_t evalBernstein(const Numeric t) const
     {
@@ -241,7 +241,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// Using Horner's method, the polynom is transformed into : <br>
     /// \f$x(t) = a_0 + t(a_1 + t(a_2+t(...))\f$ with N additions and multiplications.
     /// \param t : time when to evaluate the curve.
-    /// \return \f$x(t)\f$, point corresponding on curve at time t.
+    /// \return \f$x(t)\f$ point corresponding on curve at time t.
     ///
     point_t evalHorner(const Numeric t) const
     {
@@ -264,8 +264,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     const t_point_t& waypoints() const {return pts_;}
 
     /// \brief Evaluate the curve value at time t using deCasteljau algorithm.
+    /// The algorithm will compute the \f$N-1\f$ centroids of parameters \f${t,1-t}\f$ of consecutive \f$N\f$ control points 
+    /// of bezier curve, and perform it iteratively until getting one point in the list which will be the evaluation of bezier
+    /// curve at time \f$t\f$.
     /// \param t : time when to evaluate the curve.
-    /// \return \f$x(t)\f$, point corresponding on curve at time t.
+    /// \return \f$x(t)\f$ point corresponding on curve at time t.
     ///
     point_t evalDeCasteljau(const Numeric t) const {
         // normalize time :
@@ -277,11 +280,16 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return pts[0]*mult_T_;
     }
 
+
     t_point_t deCasteljauReduction(const Numeric t) const{
         return deCasteljauReduction(waypoints(),t/T_);
     }
 
     /// \brief Compute de Casteljau's reduction of the given list of points at time t.
+    /// For the list \f$pts\f$ of N points, compute a new list of points of size N-1 :<br>
+    /// \f$<br>( pts[0]*(1-t)+pts[1], pts[1]*(1-t)+pts[2], ..., pts[0]*(N-2)+pts[N-1] )\f$<br>
+    /// with t the time when to evaluate bezier curve.<br>\
+    /// The new list contains centroid of parameters \f${t,1-t}\f$ of consecutive points in the list.
     /// \param pts : list of points.
     /// \param u   : NORMALIZED time when to evaluate the curve.
     /// \return Reduced list of point (size of pts - 1).
