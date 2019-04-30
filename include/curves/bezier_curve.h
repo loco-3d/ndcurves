@@ -58,10 +58,14 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         assert(bernstein_.size() == size_);
 		In it(PointsBegin);
-        if(Safe && (size_<1 || T_ <= 0.))
+        if(Safe && (size_<1 || T_ <= 0.)) 
+        {
             throw std::out_of_range("can't create bezier min bound is higher than max bound"); // TODO
+        }
         for(; it != PointsEnd; ++it)
+        {
             pts_.push_back(*it);
+        }
     }
 
     /// \brief Constructor.
@@ -81,9 +85,13 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         assert(bernstein_.size() == size_);
         In it(PointsBegin);
         if(Safe && (size_<1 || T_ <= 0.))
+        {
             throw std::out_of_range("can't create bezier min bound is higher than max bound"); // TODO
+        }
         for(; it != PointsEnd; ++it)
+        {
             pts_.push_back(*it);
+        }
     }
 
 
@@ -106,9 +114,13 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         assert(bernstein_.size() == size_);
         In it(PointsBegin);
         if(Safe && (size_<1 || T_ <= 0.))
+        {
             throw std::out_of_range("can't create bezier min bound is higher than max bound"); // TODO
+        }
         for(; it != PointsEnd; ++it)
+        {
             pts_.push_back(*it);
+        }
     }
 
     /// \brief Constructor
@@ -127,10 +139,14 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     , bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_))
     {
         if(Safe && (size_<1 || T_ <= 0.))
+        {
             throw std::out_of_range("can't create bezier min bound is higher than max bound");
+        }
         t_point_t updatedList = add_constraints<In>(PointsBegin, PointsEnd, constraints);
         for(cit_point_t cit = updatedList.begin(); cit != updatedList.end(); ++cit)
+        {
             pts_.push_back(*cit);
+        }
     }
 
 	///\brief Destructor
@@ -152,10 +168,14 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     virtual point_t operator()(const time_t t) const
         {
             if(Safe &! (0 <= t && t <= T_))
+            {
                 throw std::out_of_range("can't evaluate bezier curve, out of range"); // TODO
-            if (size_ == 1){
+            }
+            if (size_ == 1)
+            {
               return mult_T_*pts_[0];
-            }else{
+            }else
+            {
               return evalHorner(t);
             }
 	}
@@ -166,7 +186,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
     bezier_curve_t compute_derivate(const std::size_t order) const
     {
-        if(order == 0) return *this;
+        if(order == 0) 
+        {
+            return *this;
+        }
         t_point_t derived_wp;
         for(typename t_point_t::const_iterator pit =  pts_.begin(); pit != pts_.end()-1; ++pit)
             derived_wp.push_back((num_t)degree_ * (*(pit+1) - (*pit)));
@@ -183,7 +206,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  \return primitive at order N of x(t).
     bezier_curve_t compute_primitive(const std::size_t order) const
     {
-        if(order == 0) return *this;
+        if(order == 0) 
+        {
+            return *this;
+        }
         num_t new_degree = (num_t)(degree_+1);
         t_point_t n_wp;
         point_t current_sum =  point_t::Zero(Dim);
@@ -227,7 +253,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         typename t_point_t::const_iterator pts_it = pts_.begin();
         for(typename std::vector<Bern<Numeric> >::const_iterator cit = bernstein_.begin();
             cit !=bernstein_.end(); ++cit, ++pts_it)
+        {
             res += cit->operator()(u) * (*pts_it);
+        }
         return res*mult_T_;
     }
 
@@ -274,7 +302,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         // normalize time :
         const Numeric u = t/T_;
         t_point_t pts = deCasteljauReduction(waypoints(),u);
-        while(pts.size() > 1){
+        while(pts.size() > 1)
+        {
             pts = deCasteljauReduction(pts,u);
         }
         return pts[0]*mult_T_;
@@ -296,12 +325,17 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     t_point_t deCasteljauReduction(const t_point_t& pts, const Numeric u) const{
         if(u < 0 || u > 1)
+        {
             throw std::out_of_range("In deCasteljau reduction : u is not in [0;1]");
+        }
         if(pts.size() == 1)
+        {
             return pts;
+        }
 
         t_point_t new_pts;
-        for(cit_point_t cit = pts.begin() ; cit != (pts.end() - 1) ; ++cit){
+        for(cit_point_t cit = pts.begin() ; cit != (pts.end() - 1) ; ++cit)
+        {
             new_pts.push_back((1-u) * (*cit) + u*(*(cit+1)));
         }
         return new_pts;
@@ -314,14 +348,17 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric t){
         if (t == T_)
+        {
             throw std::runtime_error("can't split curve, interval range is equal to original curve");
+        }
         t_point_t wps_first(size_),wps_second(size_);
         const double u = t/T_;
         wps_first[0] = pts_.front();
         wps_second[degree_] = pts_.back();
         t_point_t casteljau_pts = waypoints();
         size_t id = 1;
-        while(casteljau_pts.size() > 1){
+        while(casteljau_pts.size() > 1)
+        {
             casteljau_pts = deCasteljauReduction(casteljau_pts,u);
             wps_first[id] = casteljau_pts.front();
             wps_second[degree_-id] = casteljau_pts.back();
@@ -335,13 +372,21 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     bezier_curve_t extract(const Numeric t1, const Numeric t2){
         if(t1 < 0. || t1 > T_ || t2 < 0. || t2 > T_)
+        {
             throw std::out_of_range("In Extract curve : times out of bounds");
+        }
         if(t1 == 0. &&  t2 == T_)
+        {
             return bezier_curve_t(waypoints().begin(), waypoints().end(), T_,mult_T_);
+        }
         if(t1 == 0.)
+        {
             return split(t2).first;
+        }
         if(t2 == T_)
+        {
             return split(t1).second;
+        }
 
         std::pair<bezier_curve_t,bezier_curve_t> c_split = this->split(t1);
         return c_split.second.split(t2-t1).first;
@@ -364,7 +409,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         res.push_back(P2);
 
         for(In it = PointsBegin+1; it != PointsEnd-1; ++it)
+        {
             res.push_back(*it);
+        }
 
         res.push_back(P_n_2);
         res.push_back(P_n_1);

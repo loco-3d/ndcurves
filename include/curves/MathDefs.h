@@ -35,7 +35,9 @@ void PseudoInverse(_Matrix_Type_& pinvmat)
 	for (long i=0; i<m_sigma.rows(); ++i)
 	{
 		if (m_sigma(i) > pinvtoler)
+		{
 			m_sigma_inv(i,i)=1.0/m_sigma(i);
+		}
 	}
 	pinvmat = (svd.matrixV()*m_sigma_inv*svd.matrixU().transpose());
 }

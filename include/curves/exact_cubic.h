@@ -138,11 +138,11 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
                 h2(i+1, i+2) =  6 / dTi_1sqr;
             }
             x.row(i)= (*it).second.transpose();
-            }
+        }
         // adding last x
         x.row(size-1)= (*it).second.transpose();
         // Compute coefficients of polynom.
-        a= x;
+        a = x;
         PseudoInverse(h1);
         b = h1 * h2 * x; //h1 * b = h2 * x => b = (h1)^-1 * h2 * x
         c = h3 * x + h4 * b;
@@ -171,11 +171,16 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     virtual point_t operator()(const time_t t) const
     {
-        if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}
+        if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max()))
+        {
+            throw std::out_of_range("time t to evaluate should be in range [Tmin, Tmax] of the spline");
+        }
         for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
         {
             if( (t >= (it->min()) && t <= (it->max())) || it+1 == subSplines_.end())
+            {
                 return it->operator()(t);
+            }
         }
         // this should not happen
         throw std::runtime_error("Exact cubic evaluation failed; t is outside bounds");
@@ -188,11 +193,16 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
-        if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max())){throw std::out_of_range("TODO");}
+        if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max()))
+        {
+            throw std::out_of_range("time t to evaluate should be in range [Tmin, Tmax] of the spline");
+        }
         for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
         {
             if( (t >= (it->min()) && t <= (it->max())) || it+1 == subSplines_.end())
+            {
                 return it->derivate(t, order);
+            }
         }
         // this should not happen
         throw std::runtime_error("Exact cubic evaluation failed; t is outside bounds");

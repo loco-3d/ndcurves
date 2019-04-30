@@ -146,49 +146,49 @@ void CubicFunctionTest(bool& error)
 /*bezier_curve Function tests*/
 void BezierCurveTest(bool& error)
 {
-	std::string errMsg("In test BezierCurveTest ; unexpected result for x ");
-	point_t a(1,2,3);
-	point_t b(2,3,4);
-	point_t c(3,4,5);
-	point_t d(3,6,7);
+    std::string errMsg("In test BezierCurveTest ; unexpected result for x ");
+    point_t a(1,2,3);
+    point_t b(2,3,4);
+    point_t c(3,4,5);
+    point_t d(3,6,7);
 
-	std::vector<point_t> params;
-	params.push_back(a);
+    std::vector<point_t> params;
+    params.push_back(a);
 
-  // 1d curve
-  bezier_curve_t cf1(params.begin(), params.end());
-  point_t res1;
-  res1 = cf1(0);
-  point_t x10 = a ;
+    // 1d curve
+    bezier_curve_t cf1(params.begin(), params.end());
+    point_t res1;
+    res1 = cf1(0);
+    point_t x10 = a ;
     ComparePoints(x10, res1, errMsg + "1(0) ", error);
-  res1 =  cf1(1);
+    res1 =  cf1(1);
     ComparePoints(x10, res1, errMsg + "1(1) ", error);
 
-	// 2d curve
-  params.push_back(b);
-  bezier_curve_t cf(params.begin(), params.end());
-  res1 = cf(0);
-	point_t x20 = a ;
+    // 2d curve
+    params.push_back(b);
+    bezier_curve_t cf(params.begin(), params.end());
+    res1 = cf(0);
+    point_t x20 = a ;
     ComparePoints(x20, res1, errMsg + "2(0) ", error);
 
-	point_t x21 = b;
-  res1 = cf(1);
+    point_t x21 = b;
+    res1 = cf(1);
     ComparePoints(x21, res1, errMsg + "2(1) ", error);
 
-	//3d curve
-	params.push_back(c);
-	bezier_curve_t cf3(params.begin(), params.end());
-	res1 = cf3(0);
+    //3d curve
+    params.push_back(c);
+    bezier_curve_t cf3(params.begin(), params.end());
+    res1 = cf3(0);
     ComparePoints(a, res1, errMsg + "3(0) ", error);
 
-	res1 = cf3(1);
+    res1 = cf3(1);
     ComparePoints(c, res1, errMsg + "3(1) ", error);
 
-	//4d curve
-	params.push_back(d);
+    //4d curve
+    params.push_back(d);
     bezier_curve_t cf4(params.begin(), params.end(), 2);
 
-	res1 = cf4(2);
+    res1 = cf4(2);
     ComparePoints(d, res1, errMsg + "3(1) ", error);
 
     //testing bernstein polynomes
@@ -203,11 +203,11 @@ void BezierCurveTest(bool& error)
     }
 
     bool error_in(true);
+
 	try
 	{
 		cf(-0.4);
-	}
-	catch(...)
+	} catch(...)
 	{
         error_in = false;
 	}
@@ -217,11 +217,11 @@ void BezierCurveTest(bool& error)
         error = true;
 	}
     error_in = true;
+
 	try
 	{
 		cf(1.1);
-	}
-	catch(...)
+	} catch(...)
 	{
         error_in = false;
 	}
@@ -298,14 +298,12 @@ void BezierCurveTestCompareHornerAndBernstein(bool&) // error
     }
     e3 = clock();
 
-
     std::cout << "time for analytical eval  " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
     std::cout << "time for bernstein eval   "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
     std::cout << "time for horner eval      "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
     std::cout << "time for deCasteljau eval "     <<   double(e3 - s3) / CLOCKS_PER_SEC << std::endl;
 
     std::cout << "now with high order polynom "    << std::endl;
-
 
     params.push_back(d);
     params.push_back(e);
@@ -343,8 +341,6 @@ void BezierCurveTestCompareHornerAndBernstein(bool&) // error
         cf2.evalDeCasteljau(*cit);
     }
     e3 = clock();
-
-
 
     std::cout << "time for analytical eval  " <<   double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
     std::cout << "time for bernstein eval   "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
@@ -800,7 +796,9 @@ point_t randomPoint(const double min, const double max )
 {
     point_t p;
     for(size_t i = 0 ; i < 3 ; ++i)
+    {
         p[i] =  (rand()/(double)RAND_MAX ) * (max-min) + min;
+    }
     return p;
 }
 
@@ -890,47 +888,56 @@ void BezierSplitCurve(bool& error)
 
         // test on splitted curves :
 
-        if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) )){
+        if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) ))
+        {
             error = true;
             std::cout<<" Degree of the splitted curve are not the same as the original curve"<<std::endl;
         }
 
-        if(c.max() != (cs.first.max() + cs.second.max())){
+        if(c.max() != (cs.first.max() + cs.second.max()))
+        {
             error = true;
             std::cout<<"Duration of the splitted curve doesn't correspond to the original"<<std::endl;
         }
 
-        if(c(0) != cs.first(0)){
+        if(c(0) != cs.first(0))
+        {
             error = true;
             std::cout<<"initial point of the splitted curve doesn't correspond to the original"<<std::endl;
         }
 
-        if(c(t) != cs.second(cs.second.max())){
+        if(c(t) != cs.second(cs.second.max()))
+        {
             error = true;
             std::cout<<"final point of the splitted curve doesn't correspond to the original"<<std::endl;
         }
 
-        if(cs.first.max() != ts){
+        if(cs.first.max() != ts)
+        {
             error = true;
             std::cout<<"timing of the splitted curve doesn't correspond to the original"<<std::endl;
         }
 
-        if(cs.first(ts) != cs.second(0.)){
+        if(cs.first(ts) != cs.second(0.))
+        {
             error = true;
             std::cout<<"splitting point of the splitted curve doesn't correspond to the original"<<std::endl;
         }
 
         // check along curve :
         double ti = 0.;
-        while(ti <= ts){
-            if((cs.first(ti) - c(ti)).norm() > 1e-14){
+        while(ti <= ts)
+        {
+            if((cs.first(ti) - c(ti)).norm() > 1e-14)
+            {
                 error = true;
                 std::cout<<"first splitted curve and original curve doesn't correspond, error = "<<cs.first(ti) - c(ti) <<std::endl;
             }
             ti += 0.01;
         }
         while(ti <= t){
-            if((cs.second(ti-ts) - c(ti)).norm() > 1e-14){
+            if((cs.second(ti-ts) - c(ti)).norm() > 1e-14)
+            {
                 error = true;
                 std::cout<<"second splitted curve and original curve doesn't correspond, error = "<<cs.second(ti-ts) - c(ti)<<std::endl;
             }
@@ -1058,8 +1065,7 @@ int main(int /*argc*/, char** /*argv[]*/)
 	{
         std::cout << "There were some errors\n";
 		return -1;
-	}
-	else
+	} else
 	{
 		std::cout << "no errors found \n";
 		return 0;

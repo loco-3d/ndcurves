@@ -69,7 +69,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         std::size_t const size(std::distance(PairsBegin, PairsEnd));
         if(Safe && size < 1)
         {
-            throw std::length_error("can't create cubic_hermite_spline, number of pairs is inferior to 2.");
+            throw std::length_error("can not create cubic_hermite_spline, number of pairs is inferior to 2.");
         }
         // Push all pairs in controlPoints
         In it(PairsBegin);

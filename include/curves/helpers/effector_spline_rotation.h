@@ -223,7 +223,9 @@ class effector_spline_rotation
     exact_cubic_quat_t quat_spline(InQuat quatWayPointsBegin, InQuat quatWayPointsEnd) const
     {
         if(std::distance(quatWayPointsBegin, quatWayPointsEnd) < 1)
+        {
             return simple_quat_spline();
+        }
         exact_cubic_quat_t::t_spline_t splines;
         InQuat it(quatWayPointsBegin);
         Time init = time_lift_offset_;

@@ -106,9 +106,13 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         if(Safe)
         {
             if(t_min_ > t_max_)
-                std::out_of_range("TODO");
+            {
+                std::out_of_range("Tmin should be inferior to Tmax");
+            }
             if(coefficients_.size() != int(order_+1))
+            {
                 std::runtime_error("Spline order and coefficients do not match");
+            }
         }
     }
 
@@ -136,11 +140,16 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  \return \f$x(t)\f$ point corresponding on spline at time t.
     virtual point_t operator()(const time_t t) const
     {
-        if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
+        if((t < t_min_ || t > t_max_) && Safe)
+        { 
+            throw std::out_of_range("time t to evaluate should be in range [Tmin, Tmax] of the curve");
+        }
         time_t const dt (t-t_min_);
         point_t h = coefficients_.col(order_);
         for(int i=(int)(order_-1); i>=0; i--)
+        {
             h = dt*h + coefficients_.col(i);
+        }
         return h;
     }
 
@@ -151,12 +160,17 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
-        if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
+        if((t < t_min_ || t > t_max_) && Safe)
+        { 
+            throw std::out_of_range("TODO");
+        }
         time_t const dt (t-t_min_);
         time_t cdt(1);
         point_t currentPoint_ = point_t::Zero();
-        for(int i = (int)(order); i < (int)(order_+1); ++i, cdt*=dt)
+        for(int i = (int)(order); i < (int)(order_+1); ++i, cdt*=dt) 
+        {
             currentPoint_ += cdt *coefficients_.col(i) * fact(i, order);
+        }
         return currentPoint_;
     }
 
@@ -165,7 +179,9 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         num_t res(1);
         for(std::size_t i = 0; i < order; ++i)
+        {
             res *= (num_t)(n-i);
+        }
         return res;
     }
 
@@ -198,7 +214,9 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         std::size_t size = std::distance(zeroOrderCoefficient, highestOrderCoefficient);
         coeff_t res = coeff_t(Dim, size); int i = 0;
         for(In cit = zeroOrderCoefficient; cit != highestOrderCoefficient; ++cit, ++i)
+        {
             res.col(i) = *cit;
+        }
         return res;
     }
 }; //class polynom

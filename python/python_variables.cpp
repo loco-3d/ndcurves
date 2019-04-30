@@ -12,7 +12,9 @@ std::vector<linear_variable_3_t> matrix3DFromEigenArray(const point_list_t& matr
     assert(vectors.cols() * 3  == matrices.cols() ) ;
     std::vector<linear_variable_3_t> res;
     for(int i =0;i<vectors.cols();++i)
+    {
         res.push_back(linear_variable_3_t(matrices.block<3,3>(0,i*3), vectors.col(i)));
+    }
     return res;
 }
 
@@ -21,10 +23,14 @@ variables_3_t fillWithZeros(const linear_variable_3_t& var, const std::size_t to
     variables_3_t res;
     std::vector<linear_variable_3_t>& vars = res.variables_;
     for (std::size_t idx = 0; idx < i; ++idx)
+    {
         vars.push_back(linear_variable_3_t::Zero());
+    }
     vars.push_back(var);
     for (std::size_t idx = i+1; idx < totalvar; ++idx)
+    {
         vars.push_back(linear_variable_3_t::Zero());
+    }
     return res;
 }
 
@@ -35,7 +41,9 @@ std::vector<variables_3_t> computeLinearControlPoints(const point_list_t& matric
     // now need to fill all this with zeros...
     std::size_t totalvar = variables.size();
     for (std::size_t i = 0; i < totalvar; ++i)
+    {
         res.push_back( fillWithZeros(variables[i],totalvar,i));
+    }
     return res;
 }
 

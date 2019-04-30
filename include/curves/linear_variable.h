@@ -75,13 +75,16 @@ struct variables{
     variables& operator+=(const variables& w1)
     {
         if(variables_.size() == 0)
+        {
             variables_ = w1.variables_;
-        else if (w1.variables_.size() !=0)
+        } else if (w1.variables_.size() !=0)
         {
             assert(variables_.size() == w1.variables_.size());
             CIT_var_t cit = w1.variables_.begin();
             for(IT_var_t it = variables_.begin(); it != variables_.end(); ++it, ++cit)
+            {
                 (*it)+=(*cit);
+            }
         }
         return *this;
     }
@@ -89,13 +92,16 @@ struct variables{
     variables& operator-=(const variables& w1)
     {
         if(variables_.size() == 0)
+        {
             variables_ = w1.variables_;
-        else if (w1.variables_.size() !=0)
+        } else if (w1.variables_.size() !=0)
         {
             assert(variables_.size() == w1.variables_.size());
             CIT_var_t cit = w1.variables_.begin();
             for(IT_var_t it = variables_.begin(); it != variables_.end(); ++it, ++cit)
+            {
                 (*it)-=(*cit);
+            }
         }
         return *this;
     }
@@ -137,14 +143,20 @@ template<typename V>
 variables<V> operator+(const variables<V>& w1, const variables<V>& w2)
 {
     if(w2.variables_.size() == 0)
+    {
         return w1;
+    }
     if(w1.variables_.size() == 0)
+    {
         return w2;
+    }
     variables<V> res;
     assert(w2.variables_.size() == w1.variables_.size());
     typename variables<V>::CIT_var_t cit = w1.variables_.begin();
     for(typename variables<V>::CIT_var_t cit2 = w2.variables_.begin(); cit2 != w2.variables_.end(); ++cit, ++cit2)
+    {
         res.variables_.push_back((*cit)+(*cit2));
+    }
     return res;
 }
 
@@ -152,14 +164,20 @@ template<typename V>
 variables<V> operator-(const variables<V>& w1, const variables<V>& w2)
 {
     if(w2.variables_.size() == 0)
+    {
         return w1;
+    }
     if(w1.variables_.size() == 0)
+    {
         return w2;
+    }
     variables<V> res;
     assert(w2.variables_.size() == w1.variables_.size());
     typename variables<V>::CIT_var_t cit = w1.variables_.begin();
     for(typename variables<V>::CIT_var_t cit2 = w2.variables_.begin(); cit2 != w2.variables_.end(); ++cit, ++cit2)
+    {
         res.variables_.push_back((*cit)-(*cit2));
+    }
     return res;
 }
 
@@ -167,10 +185,14 @@ template<typename V>
 variables<V> operator*(const double k, const variables<V>& w)
 {
     if(w.variables_.size() == 0)
+    {
         return w;
+    }
     variables<V> res;
     for(typename variables<V>::CIT_var_t cit = w.variables_.begin(); cit != w.variables_.end(); ++cit)
+    {
         res.variables_.push_back(k*(*cit));
+    }
     return res;
 }
 
@@ -178,10 +200,14 @@ template<typename V>
 variables<V> operator*(const variables<V>& w,const double k)
 {
     if(w.variables_.size() == 0)
+    {
         return w;
+    }
     variables<V> res;
     for(typename variables<V>::CIT_var_t cit = w.variables_.begin(); cit != w.variables_.end(); ++cit)
+    {
         res.variables_.push_back((*cit)*k);
+    }
     return res;
 }
 
@@ -189,10 +215,14 @@ template<typename V>
 variables<V> operator/(const variables<V>& w,const double k)
 {
     if(w.variables_.size() == 0)
+    {
         return w;
+    }
     variables<V> res;
     for(typename variables<V>::CIT_var_t cit = w.variables_.begin(); cit != w.variables_.end(); ++cit)
+    {
         res.variables_.push_back((*cit)/k);
+    }
     return res;
 }
 

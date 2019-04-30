@@ -125,7 +125,7 @@ inline exact_cubic<Time, Numeric, Dim, Safe, Point>*
 	int const size((int)std::distance(wayPointsBegin, wayPointsEnd));
 	if(Safe && size < 1)
 	{
-		throw; // TODO
+		throw std::length_error("can not generate optimizedCurve, number of waypoints should be superior to one");; // TODO
 	}
 	// refer to the paper to understand all this.
 	MatrixX h1 = MatrixX::Zero(size, size);
@@ -258,7 +258,7 @@ inline exact_cubic<Time, Numeric, Dim, Safe, Point>*
 		for(int j = 0; j<Dim; ++j)
 		{
 			int id = i + j;
-			h3x_h4x.block(id, j*size		   , 1, size) = h3.row(i%3);
+			h3x_h4x.block(id, j*size		  , 1, size) = h3.row(i%3);
 			h3x_h4x.block(id, j*size + ptOff  , 1, size) = h4.row(i%3);
 			h3x_h4x.block(id, j*size + ptptOff, 1, size) = MatrixX::Ones(1, size) * -2;
 		}
@@ -430,56 +430,67 @@ inline exact_cubic<Time, Numeric, Dim, Safe, Point>*
 	/* Append 'numcon' empty constraints.
 		The constraints will initially have no bounds. */
 	if ( r == MSK_RES_OK )
+	{
 		r = MSK_appendcons(task,numcon);
+	}
 
 	/* Append 'numvar' variables.
 		The variables will initially be fixed at zero (x=0). */
 	if ( r == MSK_RES_OK )
+	{
 		r = MSK_appendvars(task,numvar);
+	}
 
 	for(int j=0; j<numvar && r == MSK_RES_OK; ++j)
 	{
-	/* Set the linear term c_j in the objective.*/   
-      if(r == MSK_RES_OK) 
-        r = MSK_putcj(task,j,0); 
-
+		/* Set the linear term c_j in the objective.*/   
+		if(r == MSK_RES_OK) 
+		{
+        	r = MSK_putcj(task,j,0); 
+		}
 		/* Set the bounds on variable j.
 		blx[j] <= x_j <= bux[j] */
 		if(r == MSK_RES_OK)
-		r = MSK_putvarbound(task,
-							j,           /* Index of variable.*/
-							bkx[j],      /* Bound key.*/
-							blx[j],      /* Numerical value of lower bound.*/
-							bux[j]);     /* Numerical value of upper bound.*/
-
+		{
+			r = MSK_putvarbound(task,
+								j,           /* Index of variable.*/
+								bkx[j],      /* Bound key.*/
+								blx[j],      /* Numerical value of lower bound.*/
+								bux[j]);     /* Numerical value of upper bound.*/
+		}
 		/* Input column j of A */   
 		if(r == MSK_RES_OK)
-		r = MSK_putacol(task,
-						j,                 /* Variable (column) index.*/
-						aptre[j]-aptrb[j], /* Number of non-zeros in column j.*/
-						asub+aptrb[j],     /* Pointer to row indexes of column j.*/
-						aval+aptrb[j]);    /* Pointer to Values of column j.*/
+		{
+			r = MSK_putacol(task,
+							j,                 /* Variable (column) index.*/
+							aptre[j]-aptrb[j], /* Number of non-zeros in column j.*/
+							asub+aptrb[j],     /* Pointer to row indexes of column j.*/
+							aval+aptrb[j]);    /* Pointer to Values of column j.*/
+		}
 	}
 
 	/* Set the bounds on constraints.
 		for i=1, ...,numcon : blc[i] <= constraint i <= buc[i] */
 	for(int i=0; i<numcon && r == MSK_RES_OK; ++i)
+	{
 		r = MSK_putconbound(task,
 							i,           /* Index of constraint.*/
 							bkc[i],      /* Bound key.*/
 							blc[i],      /* Numerical value of lower bound.*/
 							buc[i]);     /* Numerical value of upper bound.*/
+	}
 
 	/* Maximize objective function. */
 	if (r == MSK_RES_OK)
+	{
 		r = MSK_putobjsense(task, MSK_OBJECTIVE_SENSE_MINIMIZE);
+	}
 
 
 	if ( r==MSK_RES_OK ) 
     {  
-    /* Input the Q for the objective. */ 
- 
-    r = MSK_putqobj(task,numqz,qsubi,qsubj,qval); 
+	    /* Input the Q for the objective. */ 
+	    r = MSK_putqobj(task,numqz,qsubi,qsubj,qval); 
     } 
 
 	if ( r==MSK_RES_OK )

@@ -123,13 +123,19 @@ struct spline_deriv_constraint : public exact_cubic<Time, Numeric, Dim, Safe, Po
     t_spline_t computeWayPoints(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints) const
     {
         std::size_t const size(std::distance(wayPointsBegin, wayPointsEnd));
-        if(Safe && size < 1) throw; // TODO
-        t_spline_t subSplines; subSplines.reserve(size-1);
+        if(Safe && size < 1) 
+        {
+            throw std::length_error("number of waypoints should be superior to one"); // TODO
+        }
+        t_spline_t subSplines; 
+        subSplines.reserve(size-1);
         spline_constraints cons = constraints;
         In it(wayPointsBegin), next(wayPointsBegin), end(wayPointsEnd-1);
         ++next;
         for(std::size_t i(0); next != end; ++next, ++it, ++i)
+        {
             compute_one_spline<In>(it, next, cons, subSplines);
+        }
         compute_end_spline<In>(it, next,cons, subSplines);
         return subSplines;
     }

@@ -35,7 +35,9 @@ T_Point vectorFromEigenArray(const PointList& array)
 {
     T_Point res;
     for(int i =0;i<array.cols();++i)
+    {
         res.push_back(array.col(i));
+    }
     return res;
 }
 
