@@ -292,7 +292,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// The new list contains centroid of parameters \f${t,1-t}\f$ of consecutive points in the list.
     /// \param pts : list of points.
     /// \param u   : NORMALIZED time when to evaluate the curve.
-    /// \return Reduced list of point (size of pts - 1).
+    /// \return reduced list of point (size of pts - 1).
     ///
     t_point_t deCasteljauReduction(const t_point_t& pts, const Numeric u) const{
         if(u < 0 || u > 1)
@@ -310,7 +310,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Split the bezier curve in 2 at time t.
     /// \param t : list of points.
     /// \param u : unNormalized time.
-    /// \return A pair containing the first element of both bezier curve obtained.
+    /// \return pair containing the first element of both bezier curve obtained.
     ///
     std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric t){
         if (t == T_)

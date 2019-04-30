@@ -28,8 +28,8 @@ namespace curves
 ///
 
 /// \brief Converts a Bezier curve to a polynom.
-/// \param bezier: the Bezier curve to convert.
-/// \return The equivalent polynom.
+/// \param bezier   : the Bezier curve to convert.
+/// \return the equivalent polynom.
 template<typename Bezier, typename Polynom>
 Polynom from_bezier(const Bezier& curve)
 {
@@ -52,7 +52,7 @@ Polynom from_bezier(const Bezier& curve)
 
 ///\brief Converts a polynom to a Bezier curve.
 ///\param polynom : the polynom to convert.
-///\return The equivalent Bezier curve.
+///\return the equivalent Bezier curve.
 /*template<typename Bezier, typename Polynom>
 Bezier from_polynom(const Polynom& polynom)
 {

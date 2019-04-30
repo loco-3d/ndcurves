@@ -23,8 +23,8 @@
 namespace curves
 {
 /// \brief Creates coefficient vector of a quintic spline defined on the interval
-/// \f$[t_{min}, t_{max}]\f$. It follows the equation :
-/// \f$ x(t) = a + b(t - t_{min}) + c(t - t_{min})^2 + d(t - t_{min})^3 + e(t - t_{min})^4  + f(t - t_{min})^5 \f$ 
+/// \f$[t_{min}, t_{max}]\f$. It follows the equation :<br>
+/// \f$ x(t) = a + b(t - t_{min}) + c(t - t_{min})^2 + d(t - t_{min})^3 + e(t - t_{min})^4  + f(t - t_{min})^5 \f$ <br>
 /// where \f$ t \in [t_{min}, t_{max}] \f$.
 ///
 template<typename Point, typename T_Point>
