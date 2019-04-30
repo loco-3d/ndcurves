@@ -23,7 +23,7 @@
 namespace curves
 {
 /// \brief Creates coefficient vector of a cubic spline defined on the interval
-/// \f$[t_{min}, t_{max}]\f$. It follows the equation : 
+/// \f$[t_{min}, t_{max}]\f$. It follows the equation : <br>
 /// \f$ x(t) = a + b(t - t_{min}) + c(t - t_{min})^2 + d(t - t_{min})^3 \f$ where \f$ t \in [t_{min}, t_{max}] \f$
 /// with a, b, c and d the control points.
 ///

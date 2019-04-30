@@ -27,8 +27,8 @@ namespace curves
 {
 /// \class polynom.
 /// \brief Represents a polynom of an arbitrary order defined on the interval
-/// \f$[t_{min}, t_{max}]\f$. It follows the equation :
-/// \f$ x(t) = a + b(t - t_{min}) + ... + d(t - t_{min})^N \f$, 
+/// \f$[t_{min}, t_{max}]\f$. It follows the equation :<br>
+/// \f$ x(t) = a + b(t - t_{min}) + ... + d(t - t_{min})^N \f$<br> 
 /// where N is the order and \f$ t \in [t_{min}, t_{max}] \f$.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
@@ -49,8 +49,8 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \param coefficients : a reference to an Eigen matrix where each column is a coefficient,
     /// from the zero order coefficient, up to the highest order. Spline order is given
     /// by the number of the columns -1.
-    /// \param min: LOWER bound on interval definition of the curve.
-    /// \param max: UPPER bound on interval definition of the curve.
+    /// \param min  : LOWER bound on interval definition of the curve.
+    /// \param max  : UPPER bound on interval definition of the curve.
     polynom(const coeff_t& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(coefficients), dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
@@ -62,8 +62,8 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \param coefficients : a container containing all coefficients of the spline, starting
     ///  with the zero order coefficient, up to the highest order. Spline order is given
     ///  by the size of the coefficients.
-    /// \param min: LOWER bound on interval definition of the spline.
-    /// \param max: UPPER bound on interval definition of the spline.
+    /// \param min  : LOWER bound on interval definition of the spline.
+    /// \param max  : UPPER bound on interval definition of the spline.
     polynom(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
@@ -133,7 +133,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     ///  \brief Evaluation of the cubic spline at time t using horner's scheme.
     ///  \param t : time when to evaluate the spline.
-    ///  \return \f$x(t)\f$, point corresponding on spline at time t.
+    ///  \return \f$x(t)\f$ point corresponding on spline at time t.
     virtual point_t operator()(const time_t t) const
     {
         if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
@@ -148,7 +148,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  \brief Evaluation of the derivative of order N of spline at time t.
     ///  \param t : the time when to evaluate the spline.
     ///  \param order : order of derivative.
-    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative spline at time t.
+    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
         if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
@@ -174,10 +174,10 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
 /*Helpers*/
     public:
     /// \brief Get the minimum time for which the curve is defined
-    /// \return \f$t_{min}\f$, lower bound of time range.
+    /// \return \f$t_{min}\f$ lower bound of time range.
     num_t virtual min() const {return t_min_;}
     /// \brief Get the maximum time for which the curve is defined.
-    /// \return \f$t_{max}\f$, upper bound of time range.
+    /// \return \f$t_{max}\f$ upper bound of time range.
     num_t virtual max() const {return t_max_;}
 /*Helpers*/
 

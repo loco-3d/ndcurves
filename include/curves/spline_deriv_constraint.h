@@ -32,8 +32,8 @@ namespace curves
 {
 /// \class spline_deriv_constraint.
 /// \brief Represents a set of cubic splines defining a continuous function 
-/// crossing each of the waypoint given in its initialization. Additional constraints
-/// are used to increase the order of the last spline, to start and finish
+/// crossing each of the waypoint given in its initialization. <br>
+/// Additional constraints +are used to increase the order of the last spline, to start and finish
 /// trajectory with user defined velocity and acceleration.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,

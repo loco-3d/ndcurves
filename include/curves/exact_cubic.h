@@ -75,13 +75,19 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     virtual ~exact_cubic(){}
 
     private:
+    /// \brief Compute polynom of exact cubic spline from waypoints.
+    /// Compute the coefficients of polynom as in paper : "Task-Space Trajectories via Cubic Spline Optimization".<br>
+    /// \f$x_i(t)=a_i+b_i(t-t_i)+c_i(t-t_i)^2\f$<br>
+    /// with \f$a=x\f$, \f$H_1b=H_2x\f$, \f$c=H_3x+H_4b\f$, \f$d=H_5x+H_6b\f$.<br>
+    /// The matrices \f$H\f$ are defined as in the paper in Appendix A.
+    ///
     template<typename In>
     t_spline_t computeWayPoints(In wayPointsBegin, In wayPointsEnd) const
     {
         std::size_t const size(std::distance(wayPointsBegin, wayPointsEnd));
         if(Safe && size < 1)
         {
-            throw; // TODO
+            throw std::length_error("size of waypoints must be superior to 0") ; // TODO
         }
         t_spline_t subSplines; subSplines.reserve(size);
 
@@ -103,6 +109,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
         In it(wayPointsBegin), next(wayPointsBegin);
         ++next;
 
+        // Fill the matrices H as specified in the paper.
         for(std::size_t i(0); next != wayPointsEnd; ++next, ++it, ++i)
         {
             num_t const dTi((*next).first  - (*it).first);
@@ -134,11 +141,13 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
             }
         // adding last x
         x.row(size-1)= (*it).second.transpose();
+        // Compute coefficients of polynom.
         a= x;
         PseudoInverse(h1);
         b = h1 * h2 * x; //h1 * b = h2 * x => b = (h1)^-1 * h2 * x
         c = h3 * x + h4 * b;
         d = h5 * x + h6 * b;
+        // create splines along waypoints.
         it= wayPointsBegin, next=wayPointsBegin; ++ next;
         for(int i=0; next != wayPointsEnd; ++i, ++it, ++next)
         {
@@ -158,7 +167,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	public:
 	///  \brief Evaluation of the cubic spline at time t.
     ///  \param t : time when to evaluate the spline
-	///  \return \f$x(t)\f$, point corresponding on spline at time t.
+	///  \return \f$x(t)\f$ point corresponding on spline at time t.
     ///
     virtual point_t operator()(const time_t t) const
     {
@@ -175,7 +184,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  \brief Evaluate the derivative of order N of spline at time t.
     ///  \param t : time when to evaluate the spline.
     ///  \param order : order of derivative.
-    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative spline of order N at time t.
+    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline of order N at time t.
     ///
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
@@ -193,10 +202,10 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	/*Helpers*/
 	public:
     /// \brief Get the minimum time for which the curve is defined
-    /// \return \f$t_{min}\f$, lower bound of time range.
+    /// \return \f$t_{min}\f$ lower bound of time range.
     num_t virtual min() const{return subSplines_.front().min();}
     /// \brief Get the maximum time for which the curve is defined.
-    /// \return \f$t_{max}\f$, upper bound of time range.
+    /// \return \f$t_{max}\f$ upper bound of time range.
     num_t virtual max() const{return subSplines_.back().max();}
 	/*Helpers*/
 

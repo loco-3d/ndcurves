@@ -140,7 +140,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Set duration by default of each spline (called in constructor).
     /// Set a linear time from 0 to 1 for each control point with a \f$step=1.0/N\f$ 
     /// where \f$N\f$ is the number of control points.<br>
-    /// Exemple for 5 control points : vector time_control_points_ will contain \f$(0., 0.25, 0.5, 0.75, 1.0)\f$.
+    /// Exemple for 5 control points : vector time_control_points_ will contain \f$(0., 0.25, 0.5, 0.75, 1.0)\f$
+    /// corresponding to time for \f$P_0\f$, \f$P_1\f$, \f$P_2\f$, \f$P_3\f$ and \f$P_4\f$ respectively.
     ///
     void setTimeSplinesDefault()
     {
@@ -160,12 +161,12 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     /// \brief Get number of control points contained in the trajectory.
-    /// \return Number of control points.
+    /// \return number of control points.
     ///
     Index size() const { return size_; }
 
     /// \brief Get number of intervals (subsplines) contained in the trajectory.
-    /// \return Number of intervals (subsplines).
+    /// \return number of intervals (subsplines).
     ///
     Index numIntervals() const { return size()-1; }
 
