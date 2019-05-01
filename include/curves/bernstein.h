@@ -20,18 +20,6 @@
 
 namespace curves
 {
-/// \brief Computes factorial of a number.
-/// \param n : an unsigned integer.
-/// \return \f$n!\f$
-///
-inline unsigned int fact(const unsigned int n)
-{
-    unsigned int res = 1;
-    for (unsigned int i=2 ; i <= n ; ++i)
-       res *= i;
-    return res;
-}
-
 /// \brief Computes a binomial coefficient.
 /// \param n : an unsigned integer.
 /// \param k : an unsigned integer.
@@ -39,7 +27,13 @@ inline unsigned int fact(const unsigned int n)
 ///
 inline unsigned int bin(const unsigned  int n, const unsigned  int k)
 {
-    return fact(n) / (fact(k) * fact(n - k));
+    if(k >  n)
+        throw std::runtime_error("binomial coefficient higher than degree");
+    if(k == 0)
+        return 1;
+    if(k > n/2)
+        return bin(n,n-k);
+    return n * bin(n-1,k-1) / k;
 }
 
 /// \class Bernstein.
