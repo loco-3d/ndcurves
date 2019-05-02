@@ -1,11 +1,11 @@
 
 #include "curves/exact_cubic.h"
 #include "curves/bezier_curve.h"
-#include "curves/polynom.h"
+#include "curves/polynomial.h"
 #include "curves/spline_deriv_constraint.h"
 #include "curves/helpers/effector_spline.h"
 #include "curves/helpers/effector_spline_rotation.h"
-#include "curves/bezier_polynom_conversion.h"
+#include "curves/bezier_polynomial_conversion.h"
 #include "curves/cubic_hermite_spline.h"
 
 #include <string>
@@ -19,7 +19,7 @@ namespace curves
 typedef Eigen::Vector3d point_t;
 typedef Eigen::Vector3d tangent_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
-typedef polynom  <double, double, 3, true, point_t, t_point_t> polynom_t;
+typedef polynomial  <double, double, 3, true, point_t, t_point_t> polynomial_t;
 typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
 typedef spline_deriv_constraint <double, double, 3, true, point_t> spline_deriv_constraint_t;
 typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
@@ -29,7 +29,7 @@ typedef std::vector<Waypoint> T_Waypoint;
 
 
 typedef Eigen::Matrix<double,1,1> point_one;
-typedef polynom<double, double, 1, true, point_one> polynom_one;
+typedef polynomial<double, double, 1, true, point_one> polynom_one;
 typedef exact_cubic   <double, double, 1, true, point_one> exact_cubic_one;
 typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
@@ -83,7 +83,7 @@ void CubicFunctionTest(bool& error)
     vec.push_back(b);
     vec.push_back(c);
     vec.push_back(d);
-    polynom_t cf(vec.begin(), vec.end(), 0, 1);
+    polynomial_t cf(vec.begin(), vec.end(), 0, 1);
     point_t res1;
     res1 =cf(0);
     point_t x0(1,2,3);
@@ -102,7 +102,7 @@ void CubicFunctionTest(bool& error)
     vec.push_back(b);
     vec.push_back(c);
     vec.push_back(d);
-    polynom_t cf2(vec, 0.5, 1);
+    polynomial_t cf2(vec, 0.5, 1);
     res1 = cf2(0.5);
     ComparePoints(x0, res1, errMsg + "x3 ", error);
     error = true;
@@ -191,9 +191,9 @@ void BezierCurveTest(bool& error)
     res1 = cf4(2);
     ComparePoints(d, res1, errMsg + "3(1) ", error);
 
-    //testing bernstein polynomes
+    //testing bernstein polynomials
     bezier_curve_t cf5(params.begin(), params.end(),2.);
-    std::string errMsg2("In test BezierCurveTest ; Bernstein polynoms do not evaluate as analytical evaluation");
+    std::string errMsg2("In test BezierCurveTest ; Bernstein polynomials do not evaluate as analytical evaluation");
     for(double d = 0.; d <2.; d+=0.1)
     {
         ComparePoints( cf5.evalBernstein(d) , cf5 (d), errMsg2, error);
@@ -303,7 +303,7 @@ void BezierCurveTestCompareHornerAndBernstein(bool&) // error
     std::cout << "time for horner eval      "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
     std::cout << "time for deCasteljau eval "     <<   double(e3 - s3) / CLOCKS_PER_SEC << std::endl;
 
-    std::cout << "now with high order polynom "    << std::endl;
+    std::cout << "now with high order polynomial "    << std::endl;
 
     params.push_back(d);
     params.push_back(e);
@@ -427,9 +427,9 @@ void BezierDerivativeCurveConstraintTest(bool& error)
 }
 
 
-void BezierToPolynomConversionTest(bool& error)
+void BezierToPolynomialConversionTest(bool& error)
 {
-    std::string errMsg("In test BezierToPolynomConversionTest ; unexpected result for x ");
+    std::string errMsg("In test BezierToPolynomialConversionTest ; unexpected result for x ");
     point_t a(1,2,3);
     point_t b(2,3,4);
     point_t c(3,4,5);
@@ -452,7 +452,7 @@ void BezierToPolynomConversionTest(bool& error)
     params.push_back(i);
 
     bezier_curve_t cf(params.begin(), params.end());
-    polynom_t pol =from_bezier<bezier_curve_t, polynom_t>(cf);
+    polynomial_t pol =from_bezier<bezier_curve_t, polynomial_t>(cf);
     for(double i =0.; i<1.; i+=0.01)
     {
         ComparePoints(cf(i),pol(i),errMsg, error, true);
@@ -1052,7 +1052,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierDerivativeCurveConstraintTest(error);
     BezierCurveTestCompareHornerAndBernstein(error);
     BezierDerivativeCurveTimeReparametrizationTest(error);
-    BezierToPolynomConversionTest(error);
+    BezierToPolynomialConversionTest(error);
     BezierEvalDeCasteljau(error);
     BezierSplitCurve(error);
     CubicHermitePairsPositionDerivativeTest(error);

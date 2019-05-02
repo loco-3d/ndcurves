@@ -9,7 +9,7 @@ from numpy.linalg import norm
 
 import unittest
 
-from curves import bezier3, bezier6, curve_constraints, exact_cubic, cubic_hermite_spline, from_bezier, polynom, spline_deriv_constraint
+from curves import bezier3, bezier6, curve_constraints, exact_cubic, cubic_hermite_spline, from_bezier, polynomial, spline_deriv_constraint
 
 
 class TestCurves(unittest.TestCase):
@@ -82,12 +82,12 @@ class TestCurves(unittest.TestCase):
 		self.assertTrue (norm(a.derivate(1, 2) - c.end_acc) < 1e-10)
 		return
 
-	def test_polynom(self):
+	def test_polynomial(self):
 		# To test :
 		# - Functions : constructor, min, max, derivate
 		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-		a = polynom(waypoints)
-		a = polynom(waypoints, -1., 3.)
+		a = polynomial(waypoints)
+		a = polynomial(waypoints, -1., 3.)
 		a.min()
 		a.max()
 		a(0.4)
@@ -127,7 +127,7 @@ class TestCurves(unittest.TestCase):
 		return
 
 	def test_from_bezier(self):
-		# converting bezier to polynom
+		# converting bezier to polynomial
 		__EPS = 1e-6
 		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
 		a = bezier3(waypoints)

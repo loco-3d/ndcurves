@@ -37,7 +37,7 @@ namespace curves
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >
-, typename SplineBase=polynom<Time, Numeric, Dim, Safe, Point, T_Point> >
+, typename SplineBase=polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
 struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
 	typedef Point 	point_t;

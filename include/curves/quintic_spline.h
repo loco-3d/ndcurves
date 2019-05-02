@@ -16,7 +16,7 @@
 
 #include "MathDefs.h"
 
-#include "polynom.h"
+#include "polynomial.h"
 
 #include <stdexcept>
 
@@ -38,11 +38,11 @@ T_Point make_quintic_vector(Point const& a, Point const& b, Point const& c,
 }
 
 template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point, typename T_Point>
-polynom<Time,Numeric,Dim,Safe,Point,T_Point> create_quintic(Point const& a, Point const& b, Point const& c, Point const &d, Point const &e, Point const &f,
+polynomial<Time,Numeric,Dim,Safe,Point,T_Point> create_quintic(Point const& a, Point const& b, Point const& c, Point const &d, Point const &e, Point const &f,
                const Time t_min, const Time t_max)
 {
     T_Point coeffs = make_quintic_vector<Point, T_Point>(a,b,c,d,e,f);
-    return polynom<Time,Numeric,Dim,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), t_min, t_max);
+    return polynomial<Time,Numeric,Dim,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), t_min, t_max);
 }
 } // namespace curves
 #endif //_STRUCT_QUINTIC_SPLINE

@@ -1,10 +1,10 @@
 SET(${PROJECT_NAME}_HEADERS
   bernstein.h
-  bezier_polynom_conversion.h
+  bezier_polynomial_conversion.h
   curve_abc.h
   exact_cubic.h
   MathDefs.h
-  polynom.h
+  polynomial.h
   spline_deriv_constraint.h
   bezier_curve.h
   cubic_spline.h

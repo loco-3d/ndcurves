@@ -1,18 +1,18 @@
 /**
-* \file polynom.h
+* \file polynomial.h
 * \brief Definition of a cubic spline.
 * \author Steve T.
 * \version 0.1
 * \date 06/17/2013
 *
-* This file contains definitions for the polynom struct.
+* This file contains definitions for the polynomial struct.
 * It allows the creation and evaluation of natural
 * smooth splines of arbitrary dimension and order
 */
 
 
-#ifndef _STRUCT_POLYNOM
-#define _STRUCT_POLYNOM
+#ifndef _STRUCT_POLYNOMIAL
+#define _STRUCT_POLYNOMIAL
 
 #include "MathDefs.h"
 
@@ -25,15 +25,15 @@
 
 namespace curves
 {
-/// \class polynom.
-/// \brief Represents a polynom of an arbitrary order defined on the interval
+/// \class polynomial.
+/// \brief Represents a polynomial of an arbitrary order defined on the interval
 /// \f$[t_{min}, t_{max}]\f$. It follows the equation :<br>
 /// \f$ x(t) = a + b(t - t_{min}) + ... + d(t - t_{min})^N \f$<br> 
 /// where N is the order and \f$ t \in [t_{min}, t_{max}] \f$.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
          typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
-struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
+struct polynomial : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
     typedef Point 	point_t;
     typedef T_Point t_point_t;
@@ -51,7 +51,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// by the number of the columns -1.
     /// \param min  : LOWER bound on interval definition of the curve.
     /// \param max  : UPPER bound on interval definition of the curve.
-    polynom(const coeff_t& coefficients, const time_t min, const time_t max)
+    polynomial(const coeff_t& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(coefficients), dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
@@ -64,7 +64,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///  by the size of the coefficients.
     /// \param min  : LOWER bound on interval definition of the spline.
     /// \param max  : UPPER bound on interval definition of the spline.
-    polynom(const T_Point& coefficients, const time_t min, const time_t max)
+    polynomial(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
           dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
@@ -79,7 +79,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \param min   : LOWER bound on interval definition of the spline.
     /// \param max   : UPPER bound on interval definition of the spline.
     template<typename In>
-    polynom(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
+    polynomial(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
         :coefficients_(init_coeffs(zeroOrderCoefficient, out)),
           dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
@@ -87,18 +87,18 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     /// \brief Destructor
-    ~polynom()
+    ~polynomial()
     {
         // NOTHING
     }
 
 
-    polynom(const polynom& other)
+    polynomial(const polynomial& other)
         : coefficients_(other.coefficients_),
           dim_(other.dim_), order_(other.order_), t_min_(other.t_min_), t_max_(other.t_max_){}
 
 
-    //polynom& operator=(const polynom& other);
+    //polynomial& operator=(const polynomial& other);
 
     private:
     void safe_check()
@@ -219,7 +219,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
         return res;
     }
-}; //class polynom
+}; //class polynomial
 } // namespace curves
-#endif //_STRUCT_POLYNOM
+#endif //_STRUCT_POLYNOMIAL
 
