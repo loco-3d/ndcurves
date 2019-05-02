@@ -24,14 +24,14 @@ namespace curves
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1>
+, typename Tangent= Eigen::Matrix<Numeric, Dim, 1>
 >
 struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
-    typedef Point Tangent;
-    typedef std::pair<Point, Tangent> Pair_point_tangent;
+    typedef std::pair<Point, Tangent> Pair_point_tangent; 
     typedef std::vector< Pair_point_tangent ,Eigen::aligned_allocator<Point> > Vector_pair;
-    typedef int Index;
     typedef std::vector<Time> Vector_time;
+    typedef int Index;
 
     /*Attributes*/
     public:
@@ -40,6 +40,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// Vector of Time corresponding to time of each N control points : time at \f$P_0, P_1, P_2, ..., P_N\f$.
     /// Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.
     Vector_time time_control_points_;
+
     private:
     /// Vector of Time corresponding to time duration of each subspline.<br>
     /// For N control points with time \f$T_{P_0}, T_{P_1}, T_{P_2}, ..., T_{P_N}\f$ respectively,
@@ -56,17 +57,15 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     
     public:
 	/// \brief Constructor.
-	/// \param wayPointsBegin : an iterator pointing to the first element of a waypoint pair(position, derivative) container.
-	/// \param wayPointsEns   : an iterator pointing to the last element of a waypoint pair(position, derivative) container.
+	/// \param wayPointsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
+	/// \param wayPointsEns   : an iterator pointing to the last  element of a pair(position, derivative) container.
     ///
 	template<typename In>
-	cubic_hermite_spline(In PairsBegin, In PairsEnd)
-	: T_min_(0.)
-    , T_max_(1.)
-    , size_(std::distance(PairsBegin, PairsEnd))
+	cubic_hermite_spline(In PairsBegin, In PairsEnd, const Vector_time & time_control_points)
 	{
 		// Check size of pairs container.
         std::size_t const size(std::distance(PairsBegin, PairsEnd));
+        size_ = size;
         if(Safe && size < 1)
         {
             throw std::length_error("can not create cubic_hermite_spline, number of pairs is inferior to 2.");
@@ -77,7 +76,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
             control_points_.push_back(*it);
         }
-        setTimeSplinesDefault();
+        setTimeSplines(time_control_points);
 	}
 
 	/// \brief Destructor.
@@ -118,26 +117,25 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Set time of each control point of cubic hermite spline.
     /// Set duration of each spline, Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with 
     /// values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.<br>
-    /// If not set, time of control points is set by default. See setTimeSplinesDefault().
     /// \param time_control_points : Vector containing time for each control point.
     ///
     void setTimeSplines(const Vector_time & time_control_points)
-	{
+    {
         time_control_points_ = time_control_points;
         T_min_ = time_control_points_.front();
         T_max_ = time_control_points_.back();
-		if (time_control_points.size() != size())
+        if (time_control_points.size() != size())
         {
             throw std::length_error("size of time control points should be equal to number of control points");
         }
-        compute_duration_splines();
-        if (!check_duration_splines())
+        computeDurationSplines();
+        if (!checkDurationSplines())
         {
             throw std::logic_error("time_splines not monotonous, all spline duration should be superior to 0");
         }
-	}
+    }
 
-    /// \brief Set duration by default of each spline (called in constructor).
+    /// \brief Set duration by default of each spline.
     /// Set a linear time from 0 to 1 for each control point with a \f$step=1.0/N\f$ 
     /// where \f$N\f$ is the number of control points.<br>
     /// Exemple for 5 control points : vector time_control_points_ will contain \f$(0., 0.25, 0.5, 0.75, 1.0)\f$
@@ -157,7 +155,23 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
             time_control_points_.push_back(time);
             time += timestep;
         }
-        compute_duration_splines();
+        computeDurationSplines();
+    }
+
+    /// \brief Get vector of pair (positition, derivative) corresponding to control points.
+    /// \return vector containing control points.
+    ///
+    Vector_pair getControlPoints()
+    {
+        return control_points_;
+    }
+
+    /// \brief Get vector of Time corresponding to Time for each control point.
+    /// \return vector containing time of each control point.
+    ///
+    Vector_time getTimeSplines()
+    {
+        return time_control_points_;
     }
 
     /// \brief Get number of control points contained in the trajectory.
@@ -322,7 +336,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// For N control points with time \f$T_{P_0}, T_{P_1}, T_{P_2}, ..., T_{P_N}\f$ respectively,
     /// Duration of each subspline is : ( T_{P_1}-T_{P_0}, T_{P_2}-T_{P_1}, ..., T_{P_N}-T_{P_{N-1} ).
     ///
-    void compute_duration_splines() {
+    void computeDurationSplines() {
         duration_splines_.clear();
         Time actual_time;
         Time prev_time = *(time_control_points_.begin());
@@ -338,7 +352,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Check if duration of each subspline is strictly positive.
     /// \return true if all duration of strictly positive, false otherwise.
     ///
-    bool check_duration_splines() const
+    bool checkDurationSplines() const
     {
         Index i = 0;
         bool is_positive = true;

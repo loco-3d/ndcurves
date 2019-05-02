@@ -138,14 +138,12 @@ t_pair_point_tangent_t getPairsPointTangent(const point_list_t& points, const po
 cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const point_list_t& points, const point_list_t& tangents, const time_waypoints_t& time_pts) 
 {
     t_pair_point_tangent_t ppt = getPairsPointTangent(points, tangents);
-    cubic_hermite_spline_t* chs = new cubic_hermite_spline_t(ppt.begin(), ppt.end());
     std::vector<real> time_control_pts;
     for( int i =0; i<time_pts.size(); ++i)
     {
         time_control_pts.push_back(time_pts[i]);
     }
-    chs->setTimeSplines(time_control_pts);
-    return chs;
+    return new cubic_hermite_spline_t(ppt.begin(), ppt.end(), time_control_pts);
 }
 /* End wrap Cubic hermite spline */
 
