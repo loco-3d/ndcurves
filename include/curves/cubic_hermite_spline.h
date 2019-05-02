@@ -24,12 +24,12 @@ namespace curves
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Dim, 1>
-, typename Tangent= Eigen::Matrix<Numeric, Dim, 1>
-, typename Pair_point_tangent= std::pair<Point, Tangent>
-, typename Vector_pair= std::vector< Pair_point_tangent ,Eigen::aligned_allocator<Point> > 
 >
 struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
+    typedef Point Tangent;
+    typedef std::pair<Point, Tangent> Pair_point_tangent;
+    typedef std::vector< Pair_point_tangent ,Eigen::aligned_allocator<Point> > Vector_pair;
     typedef int Index;
     typedef std::vector<Time> Vector_time;
 
