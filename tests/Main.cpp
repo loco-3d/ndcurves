@@ -188,9 +188,6 @@ void BezierCurveTest(bool& error)
     params.push_back(d);
     bezier_curve_t cf4(params.begin(), params.end(), 2);
 
-    res1 = cf4(2);
-    ComparePoints(d, res1, errMsg + "3(1) ", error);
-
     //testing bernstein polynomials
     bezier_curve_t cf5(params.begin(), params.end(),2.);
     std::string errMsg2("In test BezierCurveTest ; Bernstein polynomials do not evaluate as analytical evaluation");
@@ -233,12 +230,12 @@ void BezierCurveTest(bool& error)
 	if(cf.max() != 1)
 	{
 		error = true;
-		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
+		std::cout << "Evaluation of bezier cf error, MaxBound should be equal to 1\n";
 	}
 	if(cf.min() != 0)
 	{
 		error = true;
-		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
+		std::cout << "Evaluation of bezier cf error, MinBound should be equal to 1\n";
 	}
 }
 

@@ -44,7 +44,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	public:
 
     /// \brief Constructor.
-    /// Given the first and last point of a control points set, automatically create the bezier curve.
+    /// Given the first and last point of a control points set, create the bezier curve.
     /// \param PointsBegin  : an iterator pointing to the first element of a control points container.
     /// \param PointsEnd    : an iterator pointing to the last element of a control points container.
     ///
@@ -69,7 +69,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     /// \brief Constructor.
-    /// Given the first and last point of a control points set, automatically create the bezier curve.
+    /// Given the first and last point of a control points set, create the bezier curve.
     /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
     /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
     /// \param T             : upper bound of curve parameter which is between \f$[0;T]\f$ (default \f$[0;1]\f$).
@@ -97,7 +97,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 
     /// \brief Constructor.
-    /// Given the first and last point of a control points set, automatically create the bezier curve.
+    /// Given the first and last point of a control points set, create the bezier curve.
     /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
     /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
     /// \param T             : upper bound of time which is between \f$[0;T]\f$ (default \f$[0;1]\f$).
