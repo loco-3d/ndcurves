@@ -180,7 +180,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             }
 	}
 
-    ///  \brief Compute the derivative curve at order N.
+    ///  \brief Compute the derived curve at order N.
     ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
     ///  \param order : order of derivative.
     ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
@@ -227,10 +227,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     ///  \brief Evaluate the derivative order N of curve at time t.
     ///  If derivative is to be evaluated several times, it is
-    ///  rather recommended to compute derivative curve using compute_derivate.
+    ///  rather recommended to compute derived curve using compute_derivate.
     ///  \param order : order of derivative.
     ///  \param t : time when to evaluate the curve.
-    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative curve of order N at time t.
+    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derived curve of order N at time t.
     ///
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
