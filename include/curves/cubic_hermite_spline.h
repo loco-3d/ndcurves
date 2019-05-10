@@ -59,6 +59,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	/// \brief Constructor.
 	/// \param wayPointsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
 	/// \param wayPointsEns   : an iterator pointing to the last  element of a pair(position, derivative) container.
+    /// \param time_control_points : vector containing time for each waypoint.
     ///
 	template<typename In>
 	cubic_hermite_spline(In PairsBegin, In PairsEnd, const Vector_time & time_control_points)
