@@ -369,9 +369,10 @@ BOOST_PYTHON_MODULE(curves)
         ;
     /** END bernstein polynomial**/
 
-    /** BEGIN Bezier to polynomial conversion**/
+    /** BEGIN curves conversion**/
     def("polynom_from_bezier", polynom_from_bezier<bezier3_t,polynomial_t>);
-    /** END Bezier to polynomial conversion**/
+    def("bezier_from_hermite", bezier_from_hermite<cubic_hermite_spline_t,bezier3_t>);
+    /** END curves conversion**/
 
 
 }

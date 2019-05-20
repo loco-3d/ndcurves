@@ -9,7 +9,7 @@ from numpy.linalg import norm
 
 import unittest
 
-from curves import bezier3, bezier6, curve_constraints, exact_cubic, cubic_hermite_spline, polynom_from_bezier, polynomial
+from curves import bezier3, bezier6, curve_constraints, exact_cubic, cubic_hermite_spline, polynom_from_bezier, bezier_from_hermite, polynomial
 
 
 class TestCurves(unittest.TestCase):
@@ -133,6 +133,18 @@ class TestCurves(unittest.TestCase):
 		a = bezier3(waypoints)
 		a_pol = polynom_from_bezier(a)
 		self.assertTrue (norm(a(0.3) - a_pol(0.3)) < __EPS)
+		return
+
+	def test_bezier_from_cubic_hermite(self):
+		# converting cubic hermite to cubic bezier
+		__EPS = 1e-6
+		points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+		tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+		time_points = matrix([0., 1.]).transpose()
+		a_hermite = cubic_hermite_spline(points, tangents, time_points)
+
+		a_bezier = bezier_from_hermite(a_hermite)
+		self.assertTrue (norm(a_hermite(0.3) - a_bezier(0.3)) < __EPS)
 		return
 
 	def test_cubic_hermite_spline(self):
