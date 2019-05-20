@@ -9,7 +9,7 @@ from numpy.linalg import norm
 
 import unittest
 
-from curves import bezier3, bezier6, curve_constraints, exact_cubic, cubic_hermite_spline, from_bezier, polynomial, spline_deriv_constraint
+from curves import bezier3, bezier6, curve_constraints, exact_cubic, cubic_hermite_spline, polynom_from_bezier, polynomial
 
 
 class TestCurves(unittest.TestCase):
@@ -108,7 +108,7 @@ class TestCurves(unittest.TestCase):
 		a.derivate(0.4, 2)
 		return
 
-	def test_spline_deriv_constraint(self):
+	def test_exact_cubic_constraint(self):
 		# To test :
 		# - Functions : constructor, min, max, derivate
 		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
@@ -122,16 +122,16 @@ class TestCurves(unittest.TestCase):
 		c.end_vel = matrix([0., 1., 1.]).transpose()
 		c.init_acc = matrix([0., 1., 1.]).transpose()
 		c.end_acc = matrix([0., 1., 1.]).transpose()
-		a = spline_deriv_constraint(waypoints, time_waypoints)
-		a = spline_deriv_constraint(waypoints, time_waypoints, c)
+		a = exact_cubic(waypoints, time_waypoints)
+		a = exact_cubic(waypoints, time_waypoints, c)
 		return
 
-	def test_from_bezier(self):
+	def test_polynom_from_bezier(self):
 		# converting bezier to polynomial
 		__EPS = 1e-6
 		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
 		a = bezier3(waypoints)
-		a_pol = from_bezier(a)
+		a_pol = polynom_from_bezier(a)
 		self.assertTrue (norm(a(0.3) - a_pol(0.3)) < __EPS)
 		return
 

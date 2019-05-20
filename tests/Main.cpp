@@ -2,10 +2,9 @@
 #include "curves/exact_cubic.h"
 #include "curves/bezier_curve.h"
 #include "curves/polynomial.h"
-#include "curves/spline_deriv_constraint.h"
 #include "curves/helpers/effector_spline.h"
 #include "curves/helpers/effector_spline_rotation.h"
-#include "curves/bezier_polynomial_conversion.h"
+#include "curves/curve_conversion.h"
 #include "curves/cubic_hermite_spline.h"
 
 #include <string>
@@ -21,9 +20,8 @@ typedef Eigen::Vector3d tangent_t;
 typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
 typedef polynomial  <double, double, 3, true, point_t, t_point_t> polynomial_t;
 typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
-typedef spline_deriv_constraint <double, double, 3, true, point_t> spline_deriv_constraint_t;
 typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
-typedef spline_deriv_constraint_t::spline_constraints spline_constraints_t;
+typedef exact_cubic_t::spline_constraints spline_constraints_t;
 typedef std::pair<double, point_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 
@@ -35,7 +33,8 @@ typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
 
 typedef cubic_hermite_spline <double, double, 3, true, point_t> cubic_hermite_spline_t;
-typedef std::pair<point_t, tangent_t> Pair_point_tangent;
+typedef std::pair<point_t, tangent_t> pair_point_tangent_t;
+typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
 
 bool QuasiEqual(const double a, const double b, const float margin)
 {
@@ -343,7 +342,6 @@ void BezierCurveTestCompareHornerAndBernstein(bool&) // error
     std::cout << "time for bernstein eval   "  <<   double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
     std::cout << "time for horner eval      "     <<   double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
     std::cout << "time for deCasteljau eval "     <<   double(e3 - s3) / CLOCKS_PER_SEC << std::endl;
-
 }
 
 void BezierDerivativeCurveTest(bool& error)
@@ -426,7 +424,7 @@ void BezierDerivativeCurveConstraintTest(bool& error)
 
 void BezierToPolynomialConversionTest(bool& error)
 {
-    std::string errMsg("In test BezierToPolynomialConversionTest ; unexpected result for x ");
+    std::string errMsg("In test BezierToPolynomialConversionTest ; unexpected result for x => ");
     point_t a(1,2,3);
     point_t b(2,3,4);
     point_t c(3,4,5);
@@ -437,23 +435,56 @@ void BezierToPolynomialConversionTest(bool& error)
     point_t h(43,6,7);
     point_t i(3,6,77);
 
-    std::vector<point_t> params;
-    params.push_back(a);
-    params.push_back(b);
-    params.push_back(c);
-    params.push_back(d);
-    params.push_back(e);
-    params.push_back(f);
-    params.push_back(g);
-    params.push_back(h);
-    params.push_back(i);
+    std::vector<point_t> control_points;
+    control_points.push_back(a);
+    control_points.push_back(b);
+    control_points.push_back(c);
+    control_points.push_back(d);
+    control_points.push_back(e);
+    control_points.push_back(f);
+    control_points.push_back(g);
+    control_points.push_back(h);
+    control_points.push_back(i);
 
-    bezier_curve_t cf(params.begin(), params.end());
-    polynomial_t pol =from_bezier<bezier_curve_t, polynomial_t>(cf);
+    bezier_curve_t cf(control_points.begin(), control_points.end());
+    polynomial_t pol =polynom_from_bezier<bezier_curve_t, polynomial_t>(cf);
     for(double i =0.; i<1.; i+=0.01)
     {
         ComparePoints(cf(i),pol(i),errMsg, error, true);
         ComparePoints(cf(i),pol(i),errMsg, error, false);
+    }
+}
+
+void CubicHermiteToCubicBezierConversionTest(bool& error)
+{
+    std::string errMsg("In test CubicHermiteToCubicBezierConversionTest ; unexpected result for x => ");
+    point_t p0(1,2,3);
+    point_t m0(2,3,4);
+    point_t p1(3,4,5);
+    point_t m1(3,6,7);
+
+    std::vector< double > time_control_points;
+    time_control_points.push_back(0.);
+    time_control_points.push_back(1.);
+
+    pair_point_tangent_t pair0(p0,m0);
+    pair_point_tangent_t pair1(p1,m1);
+
+    t_pair_point_tangent_t control_points;
+    control_points.push_back(pair0);
+    control_points.push_back(pair1);
+
+    cubic_hermite_spline_t ch(control_points.begin(), control_points.end(), time_control_points);
+    bezier_curve_t bc = bezier_from_hermite<cubic_hermite_spline_t, bezier_curve_t>(ch);
+
+    // Test derivative in t=0 and t=1
+    ComparePoints(ch.derivate(0.,1),bc.derivate(0.,1),errMsg, error, true);
+    ComparePoints(ch.derivate(1.,1),bc.derivate(1.,1),errMsg, error, true);
+
+    for(double i =0.; i<1.; i+=0.01)
+    {
+        ComparePoints(ch(i),bc(i),errMsg, error, true);
+        ComparePoints(ch(i),bc(i),errMsg, error, false);
     }
 }
 
@@ -578,7 +609,11 @@ void ExactCubicVelocityConstraintsTest(bool& error)
     }
     std::string errmsg("Error in ExactCubicVelocityConstraintsTest (1); while checking that given wayPoints are crossed (expected / obtained)");
     spline_constraints_t constraints;
-    spline_deriv_constraint_t exactCubic(waypoints.begin(), waypoints.end());
+    constraints.end_vel = point_t(0,0,0);
+    constraints.init_vel = point_t(0,0,0);
+    constraints.end_acc = point_t(0,0,0);
+    constraints.init_acc = point_t(0,0,0);
+    exact_cubic_t exactCubic(waypoints.begin(), waypoints.end(), constraints);
     // now check that init and end velocity are 0
     CheckWayPointConstraint(errmsg, 0.2, waypoints, &exactCubic, error);
     std::string errmsg3("Error in ExactCubicVelocityConstraintsTest (2); while checking derivative (expected / obtained)");
@@ -593,7 +628,7 @@ void ExactCubicVelocityConstraintsTest(bool& error)
     constraints.end_acc = point_t(4,5,6);
     constraints.init_acc = point_t(-4,-4,-6);
     std::string errmsg2("Error in ExactCubicVelocityConstraintsTest (3); while checking that given wayPoints are crossed (expected / obtained)");
-    spline_deriv_constraint_t exactCubic2(waypoints.begin(), waypoints.end(),constraints);
+    exact_cubic_t exactCubic2(waypoints.begin(), waypoints.end(),constraints);
     CheckWayPointConstraint(errmsg2, 0.2, waypoints, &exactCubic2, error);
 
     std::string errmsg4("Error in ExactCubicVelocityConstraintsTest (4); while checking derivative (expected / obtained)");
@@ -950,7 +985,7 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     std::string errmsg1("in Cubic Hermite 2 pairs (pos,vel), Error While checking that given wayPoints are crossed (expected / obtained) : ");
     std::string errmsg2("in Cubic Hermite 2 points, Error While checking value of point on curve : ");
     std::string errmsg3("in Cubic Hermite 2 points, Error While checking value of tangent on curve : ");
-    std::vector< Pair_point_tangent > control_points;
+    std::vector< pair_point_tangent_t > control_points;
     point_t res1;
 
     point_t P0(0.,0.,0.);
@@ -965,9 +1000,9 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
 
     // Two pairs
     control_points.clear();
-    control_points.push_back(Pair_point_tangent(P0,T0));
+    control_points.push_back(pair_point_tangent_t(P0,T0));
     time_control_points.push_back(0.);  // Time at P0
-    control_points.push_back(Pair_point_tangent(P1,T1));
+    control_points.push_back(pair_point_tangent_t(P1,T1));
     time_control_points.push_back(1.);  // Time at P1
     // Create cubic hermite spline
     cubic_hermite_spline_t cubic_hermite_spline_1Pair(control_points.begin(), control_points.end(), time_control_points);
@@ -988,7 +1023,7 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     ComparePoints(T1, res1, errmsg3, error);
 
     // Three pairs
-    control_points.push_back(Pair_point_tangent(P2,T2));
+    control_points.push_back(pair_point_tangent_t(P2,T2));
     time_control_points.clear();
     time_control_points.push_back(0.);  // Time at P0
     time_control_points.push_back(2.);  // Time at P1
@@ -1050,6 +1085,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierCurveTestCompareHornerAndBernstein(error);
     BezierDerivativeCurveTimeReparametrizationTest(error);
     BezierToPolynomialConversionTest(error);
+    CubicHermiteToCubicBezierConversionTest(error);
     BezierEvalDeCasteljau(error);
     BezierSplitCurve(error);
     CubicHermitePairsPositionDerivativeTest(error);

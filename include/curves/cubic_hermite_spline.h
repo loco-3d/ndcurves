@@ -1,3 +1,10 @@
+/**
+* \file cubic_hermite_spline.h
+* \brief class allowing to create a cubic hermite spline of any dimension.
+* \author Justin Carpentier <jcarpent@laas.fr> modified by Jason Chemin <jchemin@laas.fr>
+* \date 05/2019
+*/
+
 #ifndef _CLASS_CUBICHERMITESPLINE
 #define _CLASS_CUBICHERMITESPLINE
 
@@ -28,25 +35,25 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
 >
 struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
-    typedef std::pair<Point, Tangent> Pair_point_tangent; 
-    typedef std::vector< Pair_point_tangent ,Eigen::aligned_allocator<Point> > Vector_pair;
-    typedef std::vector<Time> Vector_time;
+    typedef std::pair<Point, Tangent> pair_point_tangent_t; 
+    typedef std::vector< pair_point_tangent_t ,Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
+    typedef std::vector<Time> vector_time_t;
     typedef int Index;
 
     /*Attributes*/
     public:
     /// Vector of pair < Point, Tangent >.
-    Vector_pair control_points_;
+    t_pair_point_tangent_t control_points_;
     /// Vector of Time corresponding to time of each N control points : time at \f$P_0, P_1, P_2, ..., P_N\f$.
     /// Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.
-    Vector_time time_control_points_;
+    vector_time_t time_control_points_;
 
     private:
     /// Vector of Time corresponding to time duration of each subspline.<br>
     /// For N control points with time \f$T_{P_0}, T_{P_1}, T_{P_2}, ..., T_{P_N}\f$ respectively,
     /// duration of each subspline is : ( T_{P_1}-T_{P_0}, T_{P_2}-T_{P_1}, ..., T_{P_N}-T_{P_{N-1} )<br>
     /// It contains \f$N-1\f$ durations. 
-    Vector_time duration_splines_;
+    vector_time_t duration_splines_;
     /// Starting time of cubic hermite spline : T_min_ is equal to first time of control points.
     Time T_min_;
     /// Ending time of cubic hermite spline : T_max_ is equal to last time of control points.
@@ -62,7 +69,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \param time_control_points : vector containing time for each waypoint.
     ///
 	template<typename In>
-	cubic_hermite_spline(In PairsBegin, In PairsEnd, const Vector_time & time_control_points)
+	cubic_hermite_spline(In PairsBegin, In PairsEnd, const vector_time_t & time_control_points)
 	{
 		// Check size of pairs container.
         std::size_t const size(std::distance(PairsBegin, PairsEnd));
@@ -120,7 +127,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.<br>
     /// \param time_control_points : Vector containing time for each control point.
     ///
-    void setTimeSplines(const Vector_time & time_control_points)
+    void setTimeSplines(const vector_time_t & time_control_points)
     {
         time_control_points_ = time_control_points;
         T_min_ = time_control_points_.front();
@@ -162,7 +169,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Get vector of pair (positition, derivative) corresponding to control points.
     /// \return vector containing control points.
     ///
-    Vector_pair getControlPoints()
+    t_pair_point_tangent_t getControlPoints()
     {
         return control_points_;
     }
@@ -170,7 +177,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Get vector of Time corresponding to Time for each control point.
     /// \return vector containing time of each control point.
     ///
-    Vector_time getTimeSplines()
+    vector_time_t getTimeSplines()
     {
         return time_control_points_;
     }
@@ -217,8 +224,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
                 return control_points_.back().first*0.; // To modify, create a new Tangent ininitialized with 0.
             }
         }
-        const Pair_point_tangent Pair0 = control_points_.at(id);
-        const Pair_point_tangent Pair1 = control_points_.at(id+1);
+        const pair_point_tangent_t Pair0 = control_points_.at(id);
+        const pair_point_tangent_t Pair1 = control_points_.at(id+1);
         const Time & t0 = time_control_points_[id];
         const Time & t1 = time_control_points_[id+1]; 
         // Polynom for a cubic hermite spline defined on [0., 1.] is : 

@@ -50,10 +50,11 @@ Polynomial from_bezier(const Bezier& curve)
     return Polynomial(coefficients,curve.min(),curve.max());
 }
 
-///\brief Converts a polynomial to a Bezier curve.
-///\param polynomial : the polynomial to convert.
-///\return the equivalent Bezier curve.
-/*template<typename Bezier, typename Polynomial>
+/*
+/// \brief Converts a polynomial to a Bezier curve.
+/// \param polynomial : the polynomial to convert.
+/// \return the equivalent Bezier curve.
+template<typename Bezier, typename Polynomial>
 Bezier from_polynomial(const Polynomial& polynomial)
 {
     typedef Bezier::point_t 	point_t;
@@ -63,7 +64,8 @@ Bezier from_polynomial(const Polynomial& polynomial)
     typedef Bezier::t_point_t    t_point_t;
     typedef Bezier::cit_point_t    cit_point_t;
     typedef Bezier::bezier_curve_t   bezier_curve_t;
-}*/
+}
+*/
 } // namespace curves
 #endif //_BEZIER_POLY_CONVERSION
 

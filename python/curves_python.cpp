@@ -1,9 +1,8 @@
 #include "curves/bezier_curve.h"
 #include "curves/polynomial.h"
 #include "curves/exact_cubic.h"
-#include "curves/spline_deriv_constraint.h"
 #include "curves/curve_constraint.h"
-#include "curves/bezier_polynomial_conversion.h"
+#include "curves/curve_conversion.h"
 #include "curves/bernstein.h"
 #include "curves/cubic_hermite_spline.h"
 
@@ -48,8 +47,6 @@ typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t
 
 typedef curves::Bern<double> bernstein_t;
 
-
-typedef curves::spline_deriv_constraint  <real, real, 3, true, point_t, t_point_t> spline_deriv_constraint_t;
 typedef curves::curve_constraints<point_t> curve_constraints_t;
 typedef curves::curve_constraints<point6_t> curve_constraints6_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
@@ -61,7 +58,6 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynomial_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(cubic_hermite_spline_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_deriv_constraint_t)
 
 namespace curves
 {
@@ -185,19 +181,11 @@ exact_cubic_t* wrapExactCubicConstructor(const coeff_t& array, const time_waypoi
     t_waypoint_t wps = getWayPoints(array, time_wp);
     return new exact_cubic_t(wps.begin(), wps.end());
 }
-/* End wrap exact cubic spline */
 
-/* Wrap deriv constraint */
-spline_deriv_constraint_t* wrapSplineDerivConstraint(const coeff_t& array, const time_waypoints_t& time_wp, const curve_constraints_t& constraints)
+exact_cubic_t* wrapExactCubicConstructorConstraint(const coeff_t& array, const time_waypoints_t& time_wp, const curve_constraints_t& constraints)
 {
     t_waypoint_t wps = getWayPoints(array, time_wp);
-    return new spline_deriv_constraint_t(wps.begin(), wps.end(),constraints);
-}
-
-spline_deriv_constraint_t* wrapSplineDerivConstraintNoConstraints(const coeff_t& array, const time_waypoints_t& time_wp)
-{
-    t_waypoint_t wps = getWayPoints(array, time_wp);
-    return new spline_deriv_constraint_t(wps.begin(), wps.end());
+    return new exact_cubic_t(wps.begin(), wps.end(), constraints);
 }
 
 point_t get_init_vel(const curve_constraints_t& c)
@@ -239,7 +227,7 @@ void set_end_acc(curve_constraints_t& c, const point_t& val)
 {
     c.end_acc = val;
 }
-/* End wrap deriv constraint */
+/* End wrap exact cubic spline */
 
 
 BOOST_PYTHON_MODULE(curves)
@@ -343,6 +331,7 @@ BOOST_PYTHON_MODULE(curves)
     class_<exact_cubic_t>
         ("exact_cubic", no_init)
             .def("__init__", make_constructor(&wrapExactCubicConstructor))
+            .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
             .def("min", &exact_cubic_t::min)
             .def("max", &exact_cubic_t::max)
             .def("__call__", &exact_cubic_t::operator())
@@ -373,19 +362,6 @@ BOOST_PYTHON_MODULE(curves)
         ;
     /** END curve constraints**/
 
-
-    /** BEGIN spline_deriv_constraints**/
-    class_<spline_deriv_constraint_t>
-        ("spline_deriv_constraint", no_init)
-            .def("__init__", make_constructor(&wrapSplineDerivConstraint))
-            .def("__init__", make_constructor(&wrapSplineDerivConstraintNoConstraints))
-            .def("min", &exact_cubic_t::min)
-            .def("max", &exact_cubic_t::max)
-            .def("__call__", &exact_cubic_t::operator())
-            .def("derivate", &exact_cubic_t::derivate)
-        ;
-    /** END spline_deriv_constraints**/
-
     /** BEGIN bernstein polynomial**/
     class_<bernstein_t>
         ("bernstein", init<const unsigned int, const unsigned int>())
@@ -394,7 +370,7 @@ BOOST_PYTHON_MODULE(curves)
     /** END bernstein polynomial**/
 
     /** BEGIN Bezier to polynomial conversion**/
-    def("from_bezier", from_bezier<bezier3_t,polynomial_t>);
+    def("polynom_from_bezier", polynom_from_bezier<bezier3_t,polynomial_t>);
     /** END Bezier to polynomial conversion**/
 
 
