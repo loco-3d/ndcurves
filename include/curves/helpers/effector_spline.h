@@ -20,7 +20,7 @@
 #ifndef _CLASS_EFFECTORSPLINE
 #define _CLASS_EFFECTORSPLINE
 
-#include "curves/spline_deriv_constraint.h"
+#include "curves/exact_cubic.h"
 
 namespace curves
 {
@@ -32,11 +32,10 @@ typedef Eigen::Matrix<Numeric, 3, 1> Point;
 typedef std::vector<Point,Eigen::aligned_allocator<Point> > T_Point;
 typedef std::pair<double, Point> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
-typedef spline_deriv_constraint<Time, Numeric, 3, true, Point, T_Point> spline_deriv_constraint_t;
-typedef spline_deriv_constraint_t::spline_constraints spline_constraints_t;
-typedef spline_deriv_constraint_t::exact_cubic_t exact_cubic_t;
-typedef spline_deriv_constraint_t::t_spline_t t_spline_t;
-typedef spline_deriv_constraint_t::spline_t spline_t;
+typedef exact_cubic<Time, Numeric, 3, true, Point, T_Point> exact_cubic_t;
+typedef exact_cubic_t::spline_constraints spline_constraints_t;
+typedef exact_cubic_t::t_spline_t t_spline_t;
+typedef exact_cubic_t::spline_t spline_t;
 
 /// \brief Compute time such that the equation from source to offsetpoint is necessarily a line.
 Waypoint compute_offset(const Waypoint& source, const Point& normal, const Numeric offset, const Time time_offset)
@@ -111,7 +110,7 @@ exact_cubic_t* effector_spline(
     //specifying end velocity constraint such that landing will be in straight line
     spline_t end_spline=make_end_spline(land_normal,landWaypoint.second,land_offset,landWaypoint.first,land_offset_duration);
     spline_constraints_t constraints = compute_required_offset_velocity_acceleration(end_spline,land_offset_duration);
-    spline_deriv_constraint_t all_but_end(waypoints.begin(), waypoints.end(),constraints);
+    exact_cubic_t all_but_end(waypoints.begin(), waypoints.end(),constraints);
     t_spline_t splines = all_but_end.subSplines_;
     splines.push_back(end_spline);
     return new exact_cubic_t(splines);

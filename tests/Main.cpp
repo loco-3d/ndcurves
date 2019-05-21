@@ -793,7 +793,7 @@ void EffectorSplineRotationWayPointRotationTest(bool& error)
 void TestReparametrization(bool& error)
 {
     helpers::rotation_spline s;
-    const helpers::spline_deriv_constraint_one_dim& sp = s.time_reparam_;
+    const helpers::exact_cubic_constraint_one_dim& sp = s.time_reparam_;
     if(sp.min() != 0)
     {
         std::cout << "in TestReparametrization; min value is not 0, got " << sp.min() << std::endl;

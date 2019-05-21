@@ -37,7 +37,7 @@ typedef curve_abc<Time, Numeric, 4, false, quat_t> curve_abc_quat_t;
 typedef std::pair<Numeric, quat_t > waypoint_quat_t;
 typedef std::vector<waypoint_quat_t> t_waypoint_quat_t;
 typedef Eigen::Matrix<Numeric, 1, 1> point_one_dim_t;
-typedef spline_deriv_constraint <Numeric, Numeric, 1, false, point_one_dim_t> spline_deriv_constraint_one_dim;
+typedef exact_cubic <Numeric, Numeric, 1, false, point_one_dim_t> exact_cubic_constraint_one_dim;
 typedef std::pair<Numeric, point_one_dim_t > waypoint_one_dim_t;
 typedef std::vector<waypoint_one_dim_t> t_waypoint_one_dim_t;
 
@@ -60,7 +60,7 @@ class rotation_spline: public curve_abc_quat_t
         quat_from_ = from.quat_from_;
         quat_to_ = from.quat_to_;
         min_ =from.min_; max_ = from.max_;
-        time_reparam_ = spline_deriv_constraint_one_dim(from.time_reparam_);
+        time_reparam_ = exact_cubic_constraint_one_dim(from.time_reparam_);
         return *this;
     }
     /* Copy Constructors / operator=*/
@@ -81,12 +81,12 @@ class rotation_spline: public curve_abc_quat_t
     }
 
     /// \brief Initialize time reparametrization for spline.
-    spline_deriv_constraint_one_dim computeWayPoints() const
+    exact_cubic_constraint_one_dim computeWayPoints() const
     {
         t_waypoint_one_dim_t waypoints;
         waypoints.push_back(std::make_pair(0,point_one_dim_t::Zero()));
         waypoints.push_back(std::make_pair(1,point_one_dim_t::Ones()));
-        return spline_deriv_constraint_one_dim(waypoints.begin(), waypoints.end());
+        return exact_cubic_constraint_one_dim(waypoints.begin(), waypoints.end());
     }
 
     virtual time_t min() const{return min_;}
@@ -97,7 +97,7 @@ class rotation_spline: public curve_abc_quat_t
     Eigen::Quaterniond quat_to_;   //const
     double min_;                   //const
     double max_;                   //const
-    spline_deriv_constraint_one_dim time_reparam_; //const
+    exact_cubic_constraint_one_dim time_reparam_; //const
 };
 
 

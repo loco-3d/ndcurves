@@ -66,7 +66,7 @@ Bezier bezier_from_hermite(const Hermite& curve)
     // Convert to bezier control points
     // for t in [0,1] : x'(0)=3(b_p1-b_p0) and x'(1)=3(b_p3-b_p2)
     // so : h_m0=3(b_p1-b_p0) and h_m1=3(b_p3-b_p2)
-    // <=> b_p1=(h_m0/3)+b_p0 and b_p2=(h_m1/3)+b_p3
+    // <=> b_p1=(h_m0/3)+b_p0 and b_p2=-(h_m1/3)+b_p3
     point_t b_p0 = h_p0;
     point_t b_p3 = h_p1;
     point_t b_p1 = (h_m0/3)+b_p0;
