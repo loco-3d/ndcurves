@@ -60,7 +60,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 		In it(PointsBegin);
         if(Safe && (size_<1 || T_ <= 0.)) 
         {
-            throw std::out_of_range("can't create bezier min bound is higher than max bound"); // TODO
+            throw std::out_of_range("can't create bezier min bound is higher than max bound");
         }
         for(; it != PointsEnd; ++it)
         {
