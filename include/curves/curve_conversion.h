@@ -38,6 +38,25 @@ Polynomial polynom_from_bezier(const Bezier& curve)
     return Polynomial(coefficients,curve.min(),curve.max());
 }
 
+template<typename Hermite, typename Polynomial>
+Polynomial polynom_from_hermite(const Hermite& curve)
+{
+    typedef typename Polynomial::t_point_t    t_point_t;
+    typedef typename Polynomial::num_t    num_t;
+    assert (curve.min() == 0.);
+    assert (curve.max() == 1.);
+    t_point_t coefficients;
+    Hermite current (curve);
+    coefficients.push_back(curve(0.));
+    num_t fact = 1;
+    for(std::size_t i = 1; i<= 3; ++i)
+    {
+        fact *= (num_t)i;
+        coefficients.push_back(current.derivate(0.,i)/fact);
+    }
+    return Polynomial(coefficients,curve.min(),curve.max());
+}
+
 /// \brief Converts a Cubic Hermite curve to a cubic bezier.
 /// \param curve   : the cubic hermite curve defined between [0,1] to convert.
 /// \return the equivalent cubic bezier curve.

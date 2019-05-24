@@ -290,7 +290,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
             h00 =  12.;
             h10 =  6.;  
             h01 = -12.;
-            h11 =  0.;
+            h11 =  6.;
         }
         else 
         {

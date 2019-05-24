@@ -51,18 +51,17 @@ std::vector<variables_3_t> computeLinearControlPoints(const point_list_t& matric
 bezier_linear_variable_t* wrapBezierLinearConstructor(const point_list_t& matrices, const point_list_t& vectors)
 {
     std::vector<variables_3_t> asVector = computeLinearControlPoints(matrices, vectors);
-    return new bezier_linear_variable_t(asVector.begin(), asVector.end(), 1.) ;
+    return new bezier_linear_variable_t(asVector.begin(), asVector.end(), 0., 1.) ;
 }
 
-bezier_linear_variable_t* wrapBezierLinearConstructorBounds(const point_list_t& matrices, const point_list_t& vectors, const real ub)
+bezier_linear_variable_t* wrapBezierLinearConstructorBounds(const point_list_t& matrices, const point_list_t& vectors, const real T_min, const real T_max)
 {
     std::vector<variables_3_t> asVector = computeLinearControlPoints(matrices, vectors);
-    return new bezier_linear_variable_t(asVector.begin(), asVector.end(), ub) ;
+    return new bezier_linear_variable_t(asVector.begin(), asVector.end(), T_min, T_max) ;
 }
 
 
-LinearControlPointsHolder*
-        wayPointsToLists(const bezier_linear_variable_t& self)
+LinearControlPointsHolder* wayPointsToLists(const bezier_linear_variable_t& self)
 {
     typedef typename bezier_linear_variable_t::t_point_t t_point;
     typedef typename bezier_linear_variable_t::t_point_t::const_iterator cit_point;
