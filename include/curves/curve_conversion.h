@@ -23,17 +23,15 @@ Polynomial polynom_from_bezier(const Bezier& curve)
 {
     typedef typename Polynomial::t_point_t    t_point_t;
     typedef typename Polynomial::num_t    num_t;
-    assert (curve.min() == 0.);
-    assert (curve.max() == 1.);
     t_point_t coefficients;
     Bezier current (curve);
-    coefficients.push_back(curve(0.));
+    coefficients.push_back(curve(curve.min()));
     num_t fact = 1;
     for(std::size_t i = 1; i<= curve.degree_; ++i)
     {
         current = current.compute_derivate(1);
         fact *= (num_t)i;
-        coefficients.push_back(current(0.)/fact);
+        coefficients.push_back(current(current.min())/fact);
     }
     return Polynomial(coefficients,curve.min(),curve.max());
 }
@@ -43,16 +41,14 @@ Polynomial polynom_from_hermite(const Hermite& curve)
 {
     typedef typename Polynomial::t_point_t    t_point_t;
     typedef typename Polynomial::num_t    num_t;
-    assert (curve.min() == 0.);
-    assert (curve.max() == 1.);
     t_point_t coefficients;
     Hermite current (curve);
-    coefficients.push_back(curve(0.));
+    coefficients.push_back(curve(curve.min()));
     num_t fact = 1;
     for(std::size_t i = 1; i<= 3; ++i)
     {
         fact *= (num_t)i;
-        coefficients.push_back(current.derivate(0.,i)/fact);
+        coefficients.push_back(current.derivate(current.min(),i)/fact);
     }
     return Polynomial(coefficients,curve.min(),curve.max());
 }
@@ -67,8 +63,6 @@ Bezier bezier_from_hermite(const Hermite& curve)
 	typedef typename Bezier::point_t point_t;
 	typedef typename Bezier::t_point_t t_point_t;
     typedef typename Bezier::num_t num_t;
-    assert (curve.min() == 0.);
-    assert (curve.max() == 1.);
 
     Hermite current (curve);
     assert(current.control_points_.size() >= 2);

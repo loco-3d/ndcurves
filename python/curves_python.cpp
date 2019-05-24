@@ -374,6 +374,7 @@ BOOST_PYTHON_MODULE(curves)
     /** BEGIN curves conversion**/
     def("polynom_from_bezier", polynom_from_bezier<bezier3_t,polynomial_t>);
     def("bezier_from_hermite", bezier_from_hermite<cubic_hermite_spline_t,bezier3_t>);
+    def("polynom_from_hermite", polynom_from_hermite<cubic_hermite_spline_t,polynomial_t>);
     /** END curves conversion**/
 
 

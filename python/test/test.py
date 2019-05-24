@@ -9,7 +9,9 @@ from numpy.linalg import norm
 
 import unittest
 
-from curves import bezier3, bezier6, curve_constraints, exact_cubic, cubic_hermite_spline, polynom_from_bezier, bezier_from_hermite, polynomial
+from curves import bezier3 
+from curves import bezier6
+from curves import curve_constraints, polynomial, exact_cubic, cubic_hermite_spline, polynom_from_bezier, bezier_from_hermite, polynom_from_hermite
 
 
 class TestCurves(unittest.TestCase):
@@ -23,7 +25,7 @@ class TestCurves(unittest.TestCase):
 		# - Variables : degree, nbWayPoints
 		__EPS = 1e-6
 		waypoints = matrix([[1., 2., 3.]]).T
-		a = bezier3(waypoints,2.)
+		a = bezier3(waypoints,0.,2.)
 		t = 0.
 		while t < 2.:
 			self.assertTrue (norm(a(t) - matrix([1., 2., 3.]).T) < __EPS)
@@ -33,7 +35,7 @@ class TestCurves(unittest.TestCase):
 		time_waypoints = matrix([0., 1.]).transpose()
 		# Create bezier6 and bezier3
 		a = bezier6(waypoints6)
-		a = bezier3(waypoints, 3.)
+		a = bezier3(waypoints, 0., 3.)
 		# Test : Degree, min, max, derivate
 		#self.print_str(("test 1")
 		self.assertEqual (a.degree, a.nbWaypoints - 1)
@@ -58,7 +60,7 @@ class TestCurves(unittest.TestCase):
 		# Create new bezier3 curve
 		waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
 		a0 = bezier3(waypoints)
-		a1 = bezier3(waypoints, 3.)
+		a1 = bezier3(waypoints, 0., 3.)
 		prim0 = a0.compute_primitive(1)
 		prim1 = a1.compute_primitive(1)
 		# Check change in argument time_t of bezier3
@@ -145,6 +147,18 @@ class TestCurves(unittest.TestCase):
 
 		a_bezier = bezier_from_hermite(a_hermite)
 		self.assertTrue (norm(a_hermite(0.3) - a_bezier(0.3)) < __EPS)
+		return
+
+	def test_polynom_from_cubic_hermite(self):
+		# converting cubic hermite to polynom
+		__EPS = 1e-6
+		points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+		tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+		time_points = matrix([0., 1.]).transpose()
+		a_hermite = cubic_hermite_spline(points, tangents, time_points)
+
+		a_pol = polynom_from_hermite(a_hermite)
+		self.assertTrue (norm(a_hermite(0.3) - a_pol(0.3)) < __EPS)
 		return
 
 	def test_cubic_hermite_spline(self):

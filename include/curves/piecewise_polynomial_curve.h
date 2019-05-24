@@ -99,7 +99,7 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
     		else
     		{
 				value_end = current.derivate(current.max(),order);
-				value_start = next.derivate(current.min(),order);
+				value_start = next.derivate(next.min(),order);
 			}
 
     		if ((value_end-value_start).norm() > margin)

@@ -452,9 +452,11 @@ void BezierToPolynomialConversionTest(bool& error)
     control_points.push_back(h);
     control_points.push_back(i);
 
-    bezier_curve_t cf(control_points.begin(), control_points.end());
+    double T_min = 1.0;
+    double T_max = 2.0;
+    bezier_curve_t cf(control_points.begin(), control_points.end(),T_min, T_max);
     polynomial_t pol =polynom_from_bezier<bezier_curve_t, polynomial_t>(cf);
-    for(double i =0.; i<1.; i+=0.01)
+    for(double i =T_min; i<T_max; i+=0.01)
     {
         ComparePoints(cf(i),pol(i),errMsg, error, true);
         ComparePoints(cf(i),pol(i),errMsg, error, false);
@@ -1010,13 +1012,10 @@ void BezierSplitCurve(bool& error)
             std::cout<<"splitting point of the splitted curve doesn't correspond to the original"<<std::endl;
         }
 
-        std::cout<<"4"<<std::endl;
-
         // check along curve :
         double ti = t0;
         while(ti <= ts)
         {
-            std::cout<<"a "<<ti<<std::endl;
             if((cs.first(ti) - c(ti)).norm() > 1e-14)
             {
                 error = true;
@@ -1024,8 +1023,8 @@ void BezierSplitCurve(bool& error)
             }
             ti += 0.01;
         }
-        while(ti <= t1){
-            std::cout<<"b "<<ti<<std::endl;
+        while(ti <= t1)
+        {
             if((cs.second(ti) - c(ti)).norm() > 1e-14)
             {
                 error = true;
@@ -1034,7 +1033,6 @@ void BezierSplitCurve(bool& error)
             ti += 0.01;
         }
 
-        std::cout<<"5"<<std::endl;
     }
 }
 
@@ -1176,8 +1174,6 @@ void piecewisePolynomialCurveTest(bool& error)
     res = ppc_C0(1.5);
     ComparePoints(point_t(1.5,1.5,1.5),res,errmsg1,error);
 
-    std::cout<<"here"<<std::endl;
-
     // piecewise curve C1 from Hermite
     point_t p0(0.,0.,0.);
     point_t p1(1.,2.,3.);
@@ -1191,35 +1187,81 @@ void piecewisePolynomialCurveTest(bool& error)
     std::vector< pair_point_tangent_t > control_points_1;
     control_points_1.push_back(pair_point_tangent_t(p1,t1));
     control_points_1.push_back(pair_point_tangent_t(p2,t2)); // control_points_1 = 2nd piece of curve
-    std::vector< double > time_control_points;
-    time_control_points.push_back(0.);
-    time_control_points.push_back(1.); // For both curves, time will be between [0,1]
-    cubic_hermite_spline_t chs0(control_points_0.begin(), control_points_0.end(), time_control_points);
-    cubic_hermite_spline_t chs1(control_points_1.begin(), control_points_1.end(), time_control_points);
+    std::vector< double > time_control_points0, time_control_points1;
+    time_control_points0.push_back(0.);
+    time_control_points0.push_back(1.); // hermite 0 between [0,1]
+    time_control_points1.push_back(1.);
+    time_control_points1.push_back(3.); // hermite 1 between [1,3]
+    cubic_hermite_spline_t chs0(control_points_0.begin(), control_points_0.end(), time_control_points0);
+    cubic_hermite_spline_t chs1(control_points_1.begin(), control_points_1.end(), time_control_points1);
     // Convert to polynomial
     polynomial_t pol_chs0 = polynom_from_hermite<cubic_hermite_spline_t, polynomial_t>(chs0);
     polynomial_t pol_chs1 = polynom_from_hermite<cubic_hermite_spline_t, polynomial_t>(chs1);
     piecewise_polynomial_curve_t ppc_C1(pol_chs0);
     ppc_C1.add_polynomial_curve(pol_chs1);
 
+    // piecewise curve C2
+    point_t a0(0,0,0);
+    point_t b0(1,1,1);
+    t_point_t veca, vecb;
+    // in [0,1[
+    veca.push_back(a0);
+    veca.push_back(b0); // x=t, y=t, z=t 
+    // in [1,2]
+    vecb.push_back(b0);
+    vecb.push_back(b0); // x=(t-1)+1, y=(t-1)+1, z=(t-1)+1
+    polynomial_t pola(veca.begin(), veca.end(), 0, 1);
+    polynomial_t polb(vecb.begin(), vecb.end(), 1, 2);
+    piecewise_polynomial_curve_t ppc_C2(pola);
+    ppc_C2.add_polynomial_curve(polb);
+
 
     // check C0 continuity
-    std::string errmsg2("in piecewise polynomial curve test, Error while checking continuity C0 ");
-    // Test 1 : not C0
+    std::string errmsg2("in piecewise polynomial curve test, Error while checking continuity C0 on ");
+    std::string errmsg3("in piecewise polynomial curve test, Error while checking continuity C1 on ");
+    std::string errmsg4("in piecewise polynomial curve test, Error while checking continuity C2 on ");
+    // not C0
     bool isC0 = ppc.isContinuous(0);
     if (isC0)
     {
         std::cout << errmsg2 << " ppc " << std::endl;
         error = true;
     }
-    // Test 1 : C0
+    // C0
     isC0 = ppc_C0.isContinuous(0);
     if (not isC0)
     {
         std::cout << errmsg2 << " ppc_C0 " << std::endl;
         error = true;
     }
-
+    // not C1
+    bool isC1 = ppc_C0.isContinuous(1);
+    if (isC1)
+    {
+        std::cout << errmsg3 << " ppc_C0 " << std::endl;
+        error = true;
+    }
+    // C1
+    isC1 = ppc_C1.isContinuous(1);
+    if (not isC1)
+    {
+        std::cout << errmsg3 << " ppc_C1 " << std::endl;
+        error = true;
+    }
+    // not C2
+    bool isC2 = ppc_C1.isContinuous(2);
+    if (isC2)
+    {
+        std::cout << errmsg4 << " ppc_C1 " << std::endl;
+        error = true;
+    }
+    // C2
+    isC2 = ppc_C2.isContinuous(2);
+    if (not isC2)
+    {
+        std::cout << errmsg4 << " ppc_C2 " << std::endl;
+        error = true;
+    }
 }
 
 
@@ -1244,13 +1286,9 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierDerivativeCurveConstraintTest(error);
     BezierCurveTestCompareHornerAndBernstein(error);
     BezierDerivativeCurveTimeReparametrizationTest(error);
-    std::cout<<"here 1"<<std::endl;
     BezierEvalDeCasteljau(error);
-    std::cout<<"here 2"<<std::endl;
     BezierSplitCurve(error);
-    std::cout<<"here 3"<<std::endl;
     CubicHermitePairsPositionDerivativeTest(error);
-    std::cout<<"here 4"<<std::endl;
     
     BezierToPolynomialConversionTest(error);
     CubicHermiteToCubicBezierConversionTest(error);

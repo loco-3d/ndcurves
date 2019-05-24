@@ -359,7 +359,6 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
         t_point_t wps_first(size_),wps_second(size_);
         const Numeric u = (t-T_min_)/(T_max_-T_min_);
-        std::cout<<T_min_<<" and "<<T_max_<<" t="<<t<<" u="<<u<<std::endl;
         wps_first[0] = pts_.front();
         wps_second[degree_] = pts_.back();
         t_point_t casteljau_pts = waypoints();
