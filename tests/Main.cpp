@@ -1221,42 +1221,42 @@ void piecewisePolynomialCurveTest(bool& error)
     std::string errmsg3("in piecewise polynomial curve test, Error while checking continuity C1 on ");
     std::string errmsg4("in piecewise polynomial curve test, Error while checking continuity C2 on ");
     // not C0
-    bool isC0 = ppc.isContinuous(0);
+    bool isC0 = ppc.is_continuous(0);
     if (isC0)
     {
         std::cout << errmsg2 << " ppc " << std::endl;
         error = true;
     }
     // C0
-    isC0 = ppc_C0.isContinuous(0);
+    isC0 = ppc_C0.is_continuous(0);
     if (not isC0)
     {
         std::cout << errmsg2 << " ppc_C0 " << std::endl;
         error = true;
     }
     // not C1
-    bool isC1 = ppc_C0.isContinuous(1);
+    bool isC1 = ppc_C0.is_continuous(1);
     if (isC1)
     {
         std::cout << errmsg3 << " ppc_C0 " << std::endl;
         error = true;
     }
     // C1
-    isC1 = ppc_C1.isContinuous(1);
+    isC1 = ppc_C1.is_continuous(1);
     if (not isC1)
     {
         std::cout << errmsg3 << " ppc_C1 " << std::endl;
         error = true;
     }
     // not C2
-    bool isC2 = ppc_C1.isContinuous(2);
+    bool isC2 = ppc_C1.is_continuous(2);
     if (isC2)
     {
         std::cout << errmsg4 << " ppc_C1 " << std::endl;
         error = true;
     }
     // C2
-    isC2 = ppc_C2.isContinuous(2);
+    isC2 = ppc_C2.is_continuous(2);
     if (not isC2)
     {
         std::cout << errmsg4 << " ppc_C2 " << std::endl;

@@ -5,6 +5,7 @@
 #include "curves/curve_conversion.h"
 #include "curves/bernstein.h"
 #include "curves/cubic_hermite_spline.h"
+#include "curves/piecewise_polynomial_curve.h"
 
 #include "python_definitions.h"
 #include "python_variables.h"
@@ -39,6 +40,7 @@ typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tan
 typedef curves::bezier_curve  <real, real, 3, true, point_t> bezier3_t;
 typedef curves::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
 typedef curves::polynomial  <real, real, 3, true, point_t, t_point_t> polynomial_t;
+typedef curves::piecewise_polynomial_curve <real, real, 3, true, point_t, t_point_t> piecewise_polynomial_curve_t;
 typedef curves::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
 typedef curves::cubic_hermite_spline <real, real, 3, true, point_t> cubic_hermite_spline_t;
 typedef polynomial_t::coeff_t coeff_t;
@@ -151,6 +153,13 @@ polynomial_t* wrapSplineConstructor(const coeff_t& array)
     return new polynomial_t(array, 0., 1.);
 }
 /* End wrap polynomial */
+
+/* Wrap piecewise polynomial curve */
+piecewise_polynomial_curve_t* wrapPiecewisePolynomialCurveConstructor(const polynomial_t& pol)
+{
+    return new piecewise_polynomial_curve_t(pol);
+}
+/* end wrap piecewise polynomial curve */
 
 /* Wrap exact cubic spline */
 t_waypoint_t getWayPoints(const coeff_t& array, const time_waypoints_t& time_wp)
@@ -318,7 +327,7 @@ BOOST_PYTHON_MODULE(curves)
     /** END variable points bezier curve**/
 
 
-    /** BEGIN spline curve function**/
+    /** BEGIN polynomial curve function**/
     class_<polynomial_t>("polynomial",  init<const polynomial_t::coeff_t, const real, const real >())
             .def("__init__", make_constructor(&wrapSplineConstructor))
             .def("min", &polynomial_t::min)
@@ -326,7 +335,20 @@ BOOST_PYTHON_MODULE(curves)
             .def("__call__", &polynomial_t::operator())
             .def("derivate", &polynomial_t::derivate)
         ;
-    /** END cubic function**/
+    /** END polynomial function**/
+
+    /** BEGIN piecewise polynomial curve function **/
+    class_<piecewise_polynomial_curve_t>
+        ("piecewise_polynomial_curve", no_init)
+            .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor))
+            .def("min", &piecewise_polynomial_curve_t::min)
+            .def("max", &piecewise_polynomial_curve_t::max)
+            .def("__call__", &piecewise_polynomial_curve_t::operator())
+            .def("derivate", &piecewise_polynomial_curve_t::derivate)
+            .def("add_polynomial_curve", &piecewise_polynomial_curve_t::add_polynomial_curve)
+            .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous)
+        ;
+    /** END piecewise polynomial curve function **/
 
 
     /** BEGIN exact_cubic curve**/

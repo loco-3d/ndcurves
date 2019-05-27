@@ -9,10 +9,9 @@ from numpy.linalg import norm
 
 import unittest
 
-from curves import bezier3 
-from curves import bezier6
-from curves import curve_constraints, polynomial, exact_cubic, cubic_hermite_spline, polynom_from_bezier, bezier_from_hermite, polynom_from_hermite
-
+from curves import bezier3, bezier6
+from curves import curve_constraints, polynomial, piecewise_polynomial_curve, exact_cubic, cubic_hermite_spline
+from curves import polynom_from_bezier, bezier_from_hermite, polynom_from_hermite
 
 class TestCurves(unittest.TestCase):
 	#def print_str(self, inStr):
@@ -88,13 +87,31 @@ class TestCurves(unittest.TestCase):
 		# To test :
 		# - Functions : constructor, min, max, derivate
 		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-		a = polynomial(waypoints)
-		a = polynomial(waypoints, -1., 3.)
+		a = polynomial(waypoints) # Defined on [0.,1.]
+		a = polynomial(waypoints, -1., 3.) # Defined on [-1.,3.]
 		a.min()
 		a.max()
 		a(0.4)
 		self.assertTrue ((a.derivate(0.4, 0) == a(0.4)).all())
 		a.derivate(0.4, 2)
+		return
+
+	def test_piecewise_polynomial_curve(self):
+		# To test :
+		# - Functions : constructor, min, max, derivate, add_polynomial_curve, is_continuous
+		waypoints1 = matrix([[1., 1., 1.]]).transpose()
+		waypoints2 = matrix([[1., 1., 1.], [1., 1., 1.]]).transpose()
+		a = polynomial(waypoints1, 0.,1.)
+		b = polynomial(waypoints2, 1., 3.)
+		ppc = piecewise_polynomial_curve(a)
+		ppc.add_polynomial_curve(b)
+		ppc.min()
+		ppc.max()
+		ppc(0.4)
+		self.assertTrue ((ppc.derivate(0.4, 0) == ppc(0.4)).all())
+		ppc.derivate(0.4, 2)
+		ppc.is_continuous(0)
+		ppc.is_continuous(1)
 		return
 
 	def test_exact_cubic(self):

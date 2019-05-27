@@ -51,7 +51,7 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
         {
 			throw std::out_of_range("can't evaluate piecewise curve, out of range");
         }
-        return polynomial_curves_.at(findInterval(t))(t);
+        return polynomial_curves_.at(find_interval(t))(t);
     }
 
     ///  \brief Evaluate the derivative of order N of curve at time t.
@@ -65,7 +65,7 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
         {
 			throw std::out_of_range("can't evaluate piecewise curve, out of range");
         }
-        return (polynomial_curves_.at(findInterval(t))).derivate(t, order);
+        return (polynomial_curves_.at(find_interval(t))).derivate(t, order);
     }
 
 	void add_polynomial_curve(polynomial_t pol)
@@ -81,9 +81,9 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
 		time_polynomial_curves_.push_back(T_max_);
 	}
 
-	bool isContinuous(const std::size_t order)
+	bool is_continuous(const std::size_t order)
 	{
-		bool isContinuous =true;
+		bool isContinuous = true;
     	Index i=0;
     	point_t value_end, value_start;
     	while (isContinuous && i<(size_-1))
@@ -117,7 +117,7 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
     /// \param t : time where to look for interval.
     /// \return Index of interval for time t.
     ///
-    Index findInterval(const Numeric t) const
+    Index find_interval(const Numeric t) const
     {	
         // time before first control point time.
         if(t < time_polynomial_curves_[0])
