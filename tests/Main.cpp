@@ -975,7 +975,6 @@ void BezierSplitCurve(bool& error)
         //std::cout<<"split curve of duration "<<t<<" at "<<ts<<std::endl;
 
         // test on splitted curves :
-
         if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) ))
         {
             error = true;

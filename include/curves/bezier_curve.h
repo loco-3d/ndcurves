@@ -45,68 +45,13 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     /// \brief Constructor.
     /// Given the first and last point of a control points set, create the bezier curve.
-    /// \param PointsBegin  : an iterator pointing to the first element of a control points container.
-    /// \param PointsEnd    : an iterator pointing to the last element of a control points container.
-    ///
-	template<typename In>
-    bezier_curve(In PointsBegin, In PointsEnd)
-    : T_min_(0.)
-    , T_max_(1.)
-    , mult_T_(1.)
-	, size_(std::distance(PointsBegin, PointsEnd))
-    , degree_(size_-1)
-    , bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_))
-    {
-        assert(bernstein_.size() == size_);
-		In it(PointsBegin);
-        if(Safe && (size_<1 || T_max_ <= T_min_)) 
-        {
-            throw std::out_of_range("can't create bezier min bound is higher than max bound");
-        }
-        for(; it != PointsEnd; ++it)
-        {
-            pts_.push_back(*it);
-        }
-    }
-
-    /// \brief Constructor.
-    /// Given the first and last point of a control points set, create the bezier curve.
-    /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
-    /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
-    /// \param T             : upper bound of curve parameter which is between \f$[0;T]\f$ (default \f$[0;1]\f$).
-    ///
-    template<typename In>
-    bezier_curve(In PointsBegin, In PointsEnd, const time_t T_min, const time_t T_max)
-    : T_min_(T_min)
-    , T_max_(T_max)
-    , mult_T_(1.)
-    , size_(std::distance(PointsBegin, PointsEnd))
-    , degree_(size_-1)
-    , bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_))
-    {
-        assert(bernstein_.size() == size_);
-        In it(PointsBegin);
-        if(Safe && (size_<1 || T_max_ <= T_min_))
-        {
-            throw std::out_of_range("can't create bezier min bound is higher than max bound"); // TODO
-        }
-        for(; it != PointsEnd; ++it)
-        {
-            pts_.push_back(*it);
-        }
-    }
-
-
-
-    /// \brief Constructor.
-    /// Given the first and last point of a control points set, create the bezier curve.
     /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
     /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
     /// \param T             : upper bound of time which is between \f$[0;T]\f$ (default \f$[0;1]\f$).
     /// \param mult_T        : ... (default value is 1.0).
     ///
     template<typename In>
-    bezier_curve(In PointsBegin, In PointsEnd, const time_t T_min, const time_t T_max, const time_t mult_T)
+    bezier_curve(In PointsBegin, In PointsEnd, const time_t T_min=0., const time_t T_max=1., const time_t mult_T=1.)
     : T_min_(T_min)
     , T_max_(T_max)
     , mult_T_(mult_T)
@@ -135,10 +80,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     template<typename In>
     bezier_curve(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints, 
-                const time_t T_min=0., const time_t T_max=1.)
+                const time_t T_min=0., const time_t T_max=1., const time_t mult_T=1.)
     : T_min_(T_min)
     , T_max_(T_max)
-    , mult_T_(1.)
+    , mult_T_(mult_T)
     , size_(std::distance(PointsBegin, PointsEnd)+4)
     , degree_(size_-1)
     , bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_))
