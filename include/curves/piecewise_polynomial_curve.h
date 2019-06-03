@@ -45,7 +45,8 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
 	{
 		size_ = 0;
 		add_polynomial_curve(pol);
-		//coefficients_storage = ppc_protobuf_t.piecewise_polynomial_curve_protobuf.New();
+        time_polynomial_curves_.push_back(pol.min());
+        T_min_ = pol.min();
 	}
 
 	virtual ~piecewise_polynomial_curve(){}
@@ -76,12 +77,6 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
 
 	void add_polynomial_curve(polynomial_t pol)
 	{
-		// Set the minimum time of curve
-		if (size_==0)
-		{
-			time_polynomial_curves_.push_back(pol.min());
-			T_min_ = pol.min();
-		}
 		// Check time continuity : Begin time of pol must be equal to T_max_ of actual piecewise curve.
 		if (size_!=0 && pol.min()!=T_max_)
 		{
@@ -162,19 +157,6 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
         }
         return left_id-1;
     }
-
-    /*
-    double set_coefficient_to_protobuf(Numeric value, Index id_curve_segment, Index row, Index col)
-    {
-    	coefficients_storage.list_matrices(id_curve_segment).set_coefficients(col*coefficients_storage.cols()+row, value);
-    }
-
-    double get_coefficient_from_protobuf(Index id_curve_segment, Index row, Index col)
-    {
-    	// To access the data in proto, use data[i*cols+j]
-    	return coefficients_storage.list_matrices(id_curve_segment).coefficients(col*coefficients_storage.cols()+row);
-    }
-    */
 
     /*Helpers*/
 	public:

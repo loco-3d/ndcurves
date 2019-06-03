@@ -6,10 +6,6 @@ INCLUDE(cmake/test.cmake)
 INCLUDE(cmake/python.cmake)
 INCLUDE(cmake/hpp.cmake)
 
-IF(UNIX OR APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -std=c++11")
-ENDIF()
-
 SET(PROJECT_ORG loco-3d)
 SET(PROJECT_NAME curves)
 SET(PROJECT_DESCRIPTION
