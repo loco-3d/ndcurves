@@ -1,10 +1,16 @@
+/**
+* \file piecewise_polynomial_curve.h
+* \brief class allowing to create a piecewise polynomial curve.
+* \author Jason C.
+* \date 05/2019
+*/
+
 #ifndef _CLASS_PIECEWISE_CURVE
 #define _CLASS_PIECEWISE_CURVE
 
 #include "curve_abc.h"
 #include "polynomial.h"
 #include "curve_conversion.h"
-
 
 namespace curves
 {
@@ -38,9 +44,8 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
 	piecewise_polynomial_curve(const polynomial_t& pol)
 	{
 		size_ = 0;
-		T_min_ = pol.min();
-		time_polynomial_curves_.push_back(T_min_);
 		add_polynomial_curve(pol);
+		//coefficients_storage = ppc_protobuf_t.piecewise_polynomial_curve_protobuf.New();
 	}
 
 	virtual ~piecewise_polynomial_curve(){}
@@ -49,6 +54,7 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
     {
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
+        	//std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
 			throw std::out_of_range("can't evaluate piecewise curve, out of range");
         }
         return polynomial_curves_.at(find_interval(t))(t);
@@ -70,6 +76,12 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
 
 	void add_polynomial_curve(polynomial_t pol)
 	{
+		// Set the minimum time of curve
+		if (size_==0)
+		{
+			time_polynomial_curves_.push_back(pol.min());
+			T_min_ = pol.min();
+		}
 		// Check time continuity : Begin time of pol must be equal to T_max_ of actual piecewise curve.
 		if (size_!=0 && pol.min()!=T_max_)
 		{
@@ -151,6 +163,19 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
         return left_id-1;
     }
 
+    /*
+    double set_coefficient_to_protobuf(Numeric value, Index id_curve_segment, Index row, Index col)
+    {
+    	coefficients_storage.list_matrices(id_curve_segment).set_coefficients(col*coefficients_storage.cols()+row, value);
+    }
+
+    double get_coefficient_from_protobuf(Index id_curve_segment, Index row, Index col)
+    {
+    	// To access the data in proto, use data[i*cols+j]
+    	return coefficients_storage.list_matrices(id_curve_segment).coefficients(col*coefficients_storage.cols()+row);
+    }
+    */
+
     /*Helpers*/
 	public:
     /// \brief Get the minimum time for which the curve is defined
@@ -164,7 +189,7 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
     /* Variables */
 	t_polynomial_t polynomial_curves_; // for curves 0/1/2 : [ curve0, curve1, curve2 ]
 	t_vector_time_t time_polynomial_curves_; // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
-	Numeric size_; // Number of segments in piecewise curve
+	Numeric size_; // Number of segments in piecewise curve = size of polynomial_curves_
 	Time T_min_, T_max_;
 	const double margin = 0.001;
 };
