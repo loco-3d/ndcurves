@@ -15,7 +15,14 @@
 namespace curves
 {
 /// \class PiecewiseCurve.
-/// 
+/// \brief Represent a piecewise polynomial curve. We can add some new polynomials to the curve,
+///        but the starting time of the polynomial to add should be equal to the ending time of the 
+///        piecewise_polynomial_curve.\n
+///        Example : A piecewise polynomial curve composed of three polynomials pol_0, pol_1 and pol_2
+///        where pol_0 is defined between \f$[T0_{min},T0_{max}]\f$, pol_1 between \f$[T0_{max},T1_{max}]\f$
+///        and pol_2 between \f$[T1_{max},T2_{max}]\f$.
+///        On the piecewise polynomial curve, pol_0 is located between \f$[T0_{min},T0_{max}[\f$,
+///        pol_1 between \f$[T0_{max},T1_{max}[\f$ and pol_2 between \f$[T1_{max},T2_{max}]\f$.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
      typename Point= Eigen::Matrix<Numeric, Dim, 1>, 
@@ -75,9 +82,13 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
         return (polynomial_curves_.at(find_interval(t))).derivate(t, order);
     }
 
+    ///  \brief Add a new polynomial to piecewise curve, which should be defined in \f$[T_{min},T_{max}]\f$ where \f$T_{min}\f$
+    ///         is equal to \f$T_{max}\f$ of the actual piecewise curve.
+    ///  \param pol : polynomial to add.
+    ///
 	void add_polynomial_curve(polynomial_t pol)
 	{
-		// Check time continuity : Begin time of pol must be equal to T_max_ of actual piecewise curve.
+		// Check time continuity : Beginning time of pol must be equal to T_max_ of actual piecewise curve.
 		if (size_!=0 && pol.min()!=T_max_)
 		{
 			throw std::out_of_range("Can not add new Polynom to PiecewiseCurve : time discontinuity between T_max_ and pol.min()");
@@ -88,6 +99,10 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
 		time_polynomial_curves_.push_back(T_max_);
 	}
 
+    ///  \brief Check if the curve is continuous of order given.
+    ///  \param order : order of continuity we want to check.
+    ///  \return True if the curve is continuous of order given.
+    ///
 	bool is_continuous(const std::size_t order)
 	{
 		bool isContinuous = true;

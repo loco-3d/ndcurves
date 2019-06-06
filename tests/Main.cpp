@@ -1120,7 +1120,6 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     ComparePoints(t2, res1, errmsg3, error);
 }
 
-/*
 
 void piecewisePolynomialCurveTest(bool& error)
 {
@@ -1133,6 +1132,7 @@ void piecewisePolynomialCurveTest(bool& error)
     vec1.push_back(a); // x=1, y=1, z=1
     vec2.push_back(b); // x=2, y=1, z=1
     vec3.push_back(c); // x=3, y=1, z=1
+    // Create three polynomials of constant value in the interval of definition
     polynomial_t pol1(vec1.begin(), vec1.end(), 0, 1);
     polynomial_t pol2(vec2.begin(), vec2.end(), 1, 2);
     polynomial_t pol3(vec3.begin(), vec3.end(), 2, 3);
@@ -1147,20 +1147,23 @@ void piecewisePolynomialCurveTest(bool& error)
     ppc.add_polynomial_curve(pol3);
 
     // Check values on piecewise curve
+    // t in [0,1[ -> res=a
     res = ppc(0.);
     ComparePoints(a,res,errmsg1,error);
     res = ppc(0.5);
     ComparePoints(a,res,errmsg1,error);
+    // t in [1,2[ -> res=b
     res = ppc(1.0);
     ComparePoints(b,res,errmsg1,error);
     res = ppc(1.5);
     ComparePoints(b,res,errmsg1,error);
-    res = ppc(2.5);
+    // t in [2,3] -> res=c
+    res = ppc(2.0);
     ComparePoints(c,res,errmsg1,error);
     res = ppc(3.0);
     ComparePoints(c,res,errmsg1,error);
 
-    // piecewise curve C0
+    // Create piecewise curve C0
     point_t a1(1,1,1);
     t_point_t vec_C0;
     vec_C0.push_back(a);
@@ -1174,7 +1177,7 @@ void piecewisePolynomialCurveTest(bool& error)
     res = ppc_C0(1.5);
     ComparePoints(point_t(1.5,1.5,1.5),res,errmsg1,error);
 
-    // piecewise curve C1 from Hermite
+    // Create piecewise curve C1 from Hermite
     point_t p0(0.,0.,0.);
     point_t p1(1.,2.,3.);
     point_t p2(4.,4.,4.);
@@ -1200,7 +1203,7 @@ void piecewisePolynomialCurveTest(bool& error)
     piecewise_polynomial_curve_t ppc_C1(pol_chs0);
     ppc_C1.add_polynomial_curve(pol_chs1);
 
-    // piecewise curve C2
+    // Create piecewise curve C2
     point_t a0(0,0,0);
     point_t b0(1,1,1);
     t_point_t veca, vecb;
@@ -1263,7 +1266,6 @@ void piecewisePolynomialCurveTest(bool& error)
         error = true;
     }
 }
-*/
 
 int main(int /*argc*/, char** /*argv[]*/)
 {
@@ -1289,14 +1291,9 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierEvalDeCasteljau(error);
     BezierSplitCurve(error);
     CubicHermitePairsPositionDerivativeTest(error);
-
-    //piecewisePolynomialCurveTest(error);
-    
-    //toPolynomialConversionTest(error);
-    
+    piecewisePolynomialCurveTest(error);
+    toPolynomialConversionTest(error);
     cubicConversionTest(error);
-    
-    
 
     if(error)
 	{
