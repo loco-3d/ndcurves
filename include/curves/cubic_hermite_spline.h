@@ -39,7 +39,6 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     typedef std::vector< pair_point_tangent_t ,Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
     typedef std::vector<Time> vector_time_t;
     typedef Numeric num_t;
-    typedef int Index;
 
     /*Attributes*/
     public:
@@ -61,7 +60,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// Number of control points (pairs).
     std::size_t size_;
     /// Degree (Cubic so degree 3)
-    const std::size_t degree_ = 3;
+    static const std::size_t degree_ = 3;
     /*Attributes*/
     
     public:
@@ -164,12 +163,12 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Get number of control points contained in the trajectory.
     /// \return number of control points.
     ///
-    Index size() const { return size_; }
+    std::size_t size() const { return size_; }
 
     /// \brief Get number of intervals (subsplines) contained in the trajectory.
     /// \return number of intervals (subsplines).
     ///
-    Index numIntervals() const { return size()-1; }
+    std::size_t numIntervals() const { return size()-1; }
 
 
     /// \brief Evaluate value of cubic hermite spline or its derivate at specified order at time \f$t\f$.
@@ -186,7 +185,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     Point evalCubicHermiteSpline(const Numeric t, std::size_t order_derivative) const
     {
-        const Index id = findInterval(t);
+        const std::size_t id = findInterval(t);
         // ID is on the last control point
         if(id == size_-1)
         {
@@ -222,7 +221,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         //std::cout << "for val t="<<t<<" alpha="<<alpha<<" coef : h00="<<h00<<" h10="<<h10<<" h01="<<h01<<" h11="<<h11<<std::endl;
         Point p_ = (h00 * Pair0.first + h10 * dt * Pair0.second + h01 * Pair1.first + h11 * dt * Pair1.second);
         // if derivative, divide by dt^order_derivative
-        for (int i=0; i<order_derivative; i++)
+        for (std::size_t i=0; i<order_derivative; i++)
         {
             p_ /= dt;
         }
@@ -290,7 +289,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \param t : time where to look for interval.
     /// \return Index of interval for time t.
     ///
-    Index findInterval(const Numeric t) const
+    std::size_t findInterval(const Numeric t) const
     {
         // time before first control point time.
         if(t < time_control_points_[0])
@@ -303,11 +302,11 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
             return size_-1;
         }
 
-        Index left_id = 0;
-        Index right_id = size_-1;
+        std::size_t left_id = 0;
+        std::size_t right_id = size_-1;
         while(left_id <= right_id)
         {
-            const Index middle_id = left_id + (right_id - left_id)/2;
+            const std::size_t middle_id = left_id + (right_id - left_id)/2;
             if(time_control_points_.at(middle_id) < t)
             {
                 left_id = middle_id+1;
@@ -332,7 +331,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         duration_splines_.clear();
         Time actual_time;
         Time prev_time = *(time_control_points_.begin());
-        Index i = 0;
+        std::size_t i = 0;
         for (i=0; i<size()-1; i++)
         {
             actual_time = time_control_points_.at(i+1);
@@ -346,7 +345,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     bool checkDurationSplines() const
     {
-        Index i = 0;
+        std::size_t i = 0;
         bool is_positive = true;
         while (is_positive && i<duration_splines_.size())
         {

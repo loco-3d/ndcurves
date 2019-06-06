@@ -484,6 +484,7 @@ void toPolynomialConversionTest(bool& error)
     double T_max = 3.0;
     bezier_curve_t bc(control_points.begin(), control_points.end(),T_min, T_max);
     polynomial_t pol = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc);
+    compareCurves<polynomial_t, bezier_curve_t>(pol, bc, errMsg, error);
 }
 
 void cubicConversionTest(bool& error)
@@ -956,7 +957,7 @@ void BezierEvalDeCasteljau(bool& error)
 void BezierSplitCurve(bool& error)
 {
     // test for degree 5
-    int n = 5;
+    size_t n = 5;
     double t_min = 0.2;
     double t_max = 10;
     for(size_t i = 0 ; i < 1 ; ++i)

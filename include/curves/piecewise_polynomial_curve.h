@@ -17,10 +17,9 @@ namespace curves
 /// \class PiecewiseCurve.
 /// \brief Represent a piecewise polynomial curve. We can add some new polynomials to the curve,
 ///        but the starting time of the polynomial to add should be equal to the ending time of the 
-///        piecewise_polynomial_curve.\n
-///        Example : A piecewise polynomial curve composed of three polynomials pol_0, pol_1 and pol_2
-///        where pol_0 is defined between \f$[T0_{min},T0_{max}]\f$, pol_1 between \f$[T0_{max},T1_{max}]\f$
-///        and pol_2 between \f$[T1_{max},T2_{max}]\f$.
+///        piecewise_polynomial_curve.<br>\ Example : A piecewise polynomial curve composed of three polynomials pol_0, 
+///        pol_1 and pol_2 where pol_0 is defined between \f$[T0_{min},T0_{max}]\f$, pol_1 between 
+///        \f$[T0_{max},T1_{max}]\f$ and pol_2 between \f$[T1_{max},T2_{max}]\f$.
 ///        On the piecewise polynomial curve, pol_0 is located between \f$[T0_{min},T0_{max}[\f$,
 ///        pol_1 between \f$[T0_{max},T1_{max}[\f$ and pol_2 between \f$[T1_{max},T2_{max}]\f$.
 ///
@@ -35,7 +34,6 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
 	typedef T_Point t_point_t;
 	typedef Time 	time_t;
     typedef Numeric	num_t;
-    typedef int Index;
 
     //typedef polynomial  <double, double, 3, true, point_t, t_point_t> polynomial_t;
     typedef polynomial  <double, double, 3, true, point_t, t_point_t> polynomial_t;
@@ -105,8 +103,9 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
     ///
 	bool is_continuous(const std::size_t order)
 	{
+        double margin = 0.001;
 		bool isContinuous = true;
-    	Index i=0;
+    	std::size_t i=0;
     	point_t value_end, value_start;
     	while (isContinuous && i<(size_-1))
     	{
@@ -139,7 +138,7 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
     /// \param t : time where to look for interval.
     /// \return Index of interval for time t.
     ///
-    Index find_interval(const Numeric t) const
+    std::size_t find_interval(const Numeric t) const
     {	
         // time before first control point time.
         if(t < time_polynomial_curves_[0])
@@ -152,11 +151,11 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
             return size_-1;
         }
 
-        Index left_id = 0;
-        Index right_id = size_-1;
+        std::size_t left_id = 0;
+        std::size_t right_id = size_-1;
         while(left_id <= right_id)
         {
-            const Index middle_id = left_id + (right_id - left_id)/2;
+            const std::size_t middle_id = left_id + (right_id - left_id)/2;
             if(time_polynomial_curves_.at(middle_id) < t)
             {
                 left_id = middle_id+1;
@@ -186,9 +185,8 @@ struct piecewise_polynomial_curve : public curve_abc<Time, Numeric, Dim, Safe, P
     /* Variables */
 	t_polynomial_t polynomial_curves_; // for curves 0/1/2 : [ curve0, curve1, curve2 ]
 	t_vector_time_t time_polynomial_curves_; // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
-	Numeric size_; // Number of segments in piecewise curve = size of polynomial_curves_
+	std::size_t size_; // Number of segments in piecewise curve = size of polynomial_curves_
 	Time T_min_, T_max_;
-	const double margin = 0.001;
 };
 
 } // end namespace

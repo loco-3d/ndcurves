@@ -268,8 +268,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Compute de Casteljau's reduction of the given list of points at time t.
     /// For the list \f$pts\f$ of N points, compute a new list of points of size N-1 :<br>
     /// \f$<br>( pts[0]*(1-t)+pts[1], pts[1]*(1-t)+pts[2], ..., pts[0]*(N-2)+pts[N-1] )\f$<br>
-    /// with t the time when to evaluate bezier curve.<br>\
-    /// The new list contains centroid of parameters \f${t,1-t}\f$ of consecutive points in the list.
+    /// with t the time when to evaluate bezier curve.<br>\ The new list contains centroid of 
+    /// parameters \f${t,1-t}\f$ of consecutive points in the list.
     /// \param pts : list of points.
     /// \param u   : NORMALIZED time when to evaluate the curve.
     /// \return reduced list of point (size of pts - 1).
