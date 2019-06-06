@@ -15,37 +15,21 @@
 namespace curves
 {
 
-/// \brief Converts a Bezier curve to a polynomial.
-/// \param curve   : the Bezier curve defined between [0,1] to convert.
+/// \brief Converts a cubic hermite spline or a bezier curve to a polynomial.
+/// \param curve   : the bezier curve/cubic hermite spline defined between [Tmin,Tmax] to convert.
 /// \return the equivalent polynomial.
-template<typename Bezier, typename Polynomial>
-Polynomial polynom_from_bezier(const Bezier& curve)
+template<typename Polynomial, typename curveTypeToConvert>
+Polynomial polynomial_from_curve(const curveTypeToConvert& curve)
 {
     typedef typename Polynomial::t_point_t    t_point_t;
     typedef typename Polynomial::num_t    num_t;
     t_point_t coefficients;
-    Bezier current (curve);
+    curveTypeToConvert current (curve);
     coefficients.push_back(curve(curve.min()));
+    num_t T = curve.max()-curve.min();
+    num_t T_div = 1.0;
     num_t fact = 1;
     for(std::size_t i = 1; i<= curve.degree_; ++i)
-    {
-        current = current.compute_derivate(1);
-        fact *= (num_t)i;
-        coefficients.push_back(current(current.min())/fact);
-    }
-    return Polynomial(coefficients,curve.min(),curve.max());
-}
-
-template<typename Hermite, typename Polynomial>
-Polynomial polynom_from_hermite(const Hermite& curve)
-{
-    typedef typename Polynomial::t_point_t    t_point_t;
-    typedef typename Polynomial::num_t    num_t;
-    t_point_t coefficients;
-    Hermite current (curve);
-    coefficients.push_back(curve(curve.min()));
-    num_t fact = 1;
-    for(std::size_t i = 1; i<= 3; ++i)
     {
         fact *= (num_t)i;
         coefficients.push_back(current.derivate(current.min(),i)/fact);
@@ -53,44 +37,83 @@ Polynomial polynom_from_hermite(const Hermite& curve)
     return Polynomial(coefficients,curve.min(),curve.max());
 }
 
-/// \brief Converts a Cubic Hermite curve to a cubic bezier.
-/// \param curve   : the cubic hermite curve defined between [0,1] to convert.
+
+/// \brief Converts a cubic hermite spline or polynomial to a cubic bezier curve.
+/// \param curve   : the polynomial of order 3 or less/cubic hermite spline defined between [Tmin,Tmax] to convert.
 /// \return the equivalent cubic bezier curve.
-template<typename Hermite, typename Bezier>
-Bezier bezier_from_hermite(const Hermite& curve)
+template<typename Bezier, typename curveTypeToConvert>
+Bezier bezier_from_curve(const curveTypeToConvert& curve)
 {
-	typedef typename Hermite::pair_point_tangent_t pair_point_tangent_t;
-	typedef typename Bezier::point_t point_t;
-	typedef typename Bezier::t_point_t t_point_t;
-    typedef typename Bezier::num_t num_t;
-
-    Hermite current (curve);
-    assert(current.control_points_.size() >= 2);
+    typedef typename Bezier::point_t point_t;
+    typedef typename Bezier::t_point_t t_point_t;
+    typedef typename Bezier::num_t    num_t;
+    curveTypeToConvert current (curve);
+    assert(current.order_>0);
     
-    pair_point_tangent_t pair0 = current.control_points_.at(0);
-    pair_point_tangent_t pair1 = current.control_points_.at(1);
+    num_t T_min = current.min();
+    num_t T_max = current.max();
+    num_t T = T_max-T_min;
 
-    // Positions/Velocities of hermite curve
-    point_t h_p0 = pair0.first;
-    point_t h_m0 = pair0.second;
-    point_t h_p1 = pair1.first;
-    point_t h_m1 = pair1.second;
+    // Positions and derivatives
+    point_t p0 = current(T_min);
+    point_t p1 = current(T_max);
+    point_t m0 = current.derivate(T_min,1);
+    point_t m1 = current.derivate(T_max,1);
 
     // Convert to bezier control points
-    // for t in [0,1] : x'(0)=3(b_p1-b_p0) and x'(1)=3(b_p3-b_p2)
-    // so : h_m0=3(b_p1-b_p0) and h_m1=3(b_p3-b_p2)
-    // <=> b_p1=(h_m0/3)+b_p0 and b_p2=-(h_m1/3)+b_p3
-    point_t b_p0 = h_p0;
-    point_t b_p3 = h_p1;
-    point_t b_p1 = (h_m0/3)+b_p0;
-    point_t b_p2 = -(h_m1/3)+b_p3;
+    // for t in [Tmin,Tmax] and T=Tmax-Tmin : x'(0)=3(b_p1-b_p0)/T and x'(1)=3(b_p3-b_p2)/T
+    // so : m0=3(b_p1-b_p0)/T and m1=3(b_p3-b_p2)/T
+    // <=> b_p1=T(m0/3)+b_p0 and b_p2=-T(m1/3)+b_p3
+    point_t b_p0 = p0;
+    point_t b_p3 = p1;
+    point_t b_p1 = T*m0/3+b_p0;
+    point_t b_p2 = -T*m1/3+b_p3;
+
 
     t_point_t control_points;
     control_points.push_back(b_p0);
     control_points.push_back(b_p1);
     control_points.push_back(b_p2);
     control_points.push_back(b_p3);
-    return Bezier(control_points.begin(), control_points.end());
+
+    return Bezier(control_points.begin(), control_points.end(), current.min(), current.max());
+}
+
+/// \brief Converts a polynomial of order 3 or less/cubic bezier curve to a cubic hermite spline.
+/// \param curve   : the polynomial of order 3 or less/cubic bezier curve defined between [Tmin,Tmax] to convert.
+/// \return the equivalent cubic hermite spline.
+template<typename Hermite, typename curveTypeToConvert>
+Hermite hermite_from_curve(const curveTypeToConvert& curve)
+{
+    typedef typename Hermite::pair_point_tangent_t pair_point_tangent_t;
+    typedef typename Hermite::t_pair_point_tangent_t t_pair_point_tangent_t;
+    typedef typename Hermite::point_t point_t;
+    typedef typename Hermite::num_t    num_t;
+    curveTypeToConvert current (curve);
+
+    assert(current.order_>0);
+
+    num_t T_min = current.min();
+    num_t T_max = current.max();
+    num_t T = T_max-T_min;
+
+    // Positions and derivatives
+    point_t p0 = current(T_min);
+    point_t p1 = current(T_max);
+    point_t m0 = current.derivate(T_min,1);
+    point_t m1 = current.derivate(T_max,1);
+
+    pair_point_tangent_t pair0(p0,m0);
+    pair_point_tangent_t pair1(p1,m1);
+    t_pair_point_tangent_t control_points;
+    control_points.push_back(pair0);
+    control_points.push_back(pair1);
+
+    std::vector< double > time_control_points;
+    time_control_points.push_back(T_min);
+    time_control_points.push_back(T_max);
+
+    return Hermite(control_points.begin(), control_points.end(), time_control_points);
 }
 
 } // namespace curve

@@ -67,7 +67,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
         for(; it != PointsEnd; ++it)
         {
-            pts_.push_back(*it);
+            control_points_.push_back(*it);
         }
     }
 
@@ -95,7 +95,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         t_point_t updatedList = add_constraints<In>(PointsBegin, PointsEnd, constraints);
         for(cit_point_t cit = updatedList.begin(); cit != updatedList.end(); ++cit)
         {
-            pts_.push_back(*cit);
+            control_points_.push_back(*cit);
         }
     }
 
@@ -123,7 +123,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
         if (size_ == 1)
         {
-          return mult_T_*pts_[0];
+          return mult_T_*control_points_[0];
         }else
         {
           return evalHorner(t);
@@ -141,7 +141,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
             return *this;
         }
         t_point_t derived_wp;
-        for(typename t_point_t::const_iterator pit =  pts_.begin(); pit != pts_.end()-1; ++pit)
+        for(typename t_point_t::const_iterator pit =  control_points_.begin(); pit != control_points_.end()-1; ++pit)
             derived_wp.push_back((num_t)degree_ * (*(pit+1) - (*pit)));
         if(derived_wp.empty())
             derived_wp.push_back(point_t::Zero(Dim));
@@ -166,7 +166,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         // recomputing waypoints q_i from derivative waypoints p_i. q_0 is the given constant.
         // then q_i = (sum( j = 0 -> j = i-1) p_j) /n+1
         n_wp.push_back(current_sum);
-        for(typename t_point_t::const_iterator pit =  pts_.begin(); pit != pts_.end(); ++pit)
+        for(typename t_point_t::const_iterator pit =  control_points_.begin(); pit != control_points_.end(); ++pit)
         {
             current_sum += *pit;
             n_wp.push_back(current_sum / new_degree);
@@ -184,7 +184,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
-        bezier_curve_t deriv =compute_derivate(order);
+        bezier_curve_t deriv = compute_derivate(order);
         return deriv(t);
     }
 
@@ -200,11 +200,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         const Numeric u = (t-T_min_)/(T_max_-T_min_);
         point_t res = point_t::Zero(Dim);
-        typename t_point_t::const_iterator pts_it = pts_.begin();
+        typename t_point_t::const_iterator control_points_it = control_points_.begin();
         for(typename std::vector<Bern<Numeric> >::const_iterator cit = bernstein_.begin();
-            cit !=bernstein_.end(); ++cit, ++pts_it)
+            cit !=bernstein_.end(); ++cit, ++control_points_it)
         {
-            res += cit->operator()(u) * (*pts_it);
+            res += cit->operator()(u) * (*control_points_it);
         }
         return res*mult_T_;
     }
@@ -224,22 +224,22 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     point_t evalHorner(const Numeric t) const
     {
         const Numeric u = (t-T_min_)/(T_max_-T_min_);
-        typename t_point_t::const_iterator pts_it = pts_.begin();
+        typename t_point_t::const_iterator control_points_it = control_points_.begin();
         Numeric u_op, bc, tn;
         u_op = 1.0 - u;
         bc = 1;
         tn = 1;
-        point_t tmp =(*pts_it)*u_op; ++pts_it;
-        for(unsigned int i=1; i<degree_; i++, ++pts_it)
+        point_t tmp =(*control_points_it)*u_op; ++control_points_it;
+        for(unsigned int i=1; i<degree_; i++, ++control_points_it)
         {
             tn = tn*u;
             bc = bc*((num_t)(degree_-i+1))/i;
-            tmp = (tmp + tn*bc*(*pts_it))*u_op;
+            tmp = (tmp + tn*bc*(*control_points_it))*u_op;
         }
-        return (tmp + tn*u*(*pts_it))*mult_T_;
+        return (tmp + tn*u*(*control_points_it))*mult_T_;
     }
 
-    const t_point_t& waypoints() const {return pts_;}
+    const t_point_t& waypoints() const {return control_points_;}
 
     /// \brief Evaluate the curve value at time t using deCasteljau algorithm.
     /// The algorithm will compute the \f$N-1\f$ centroids of parameters \f${t,1-t}\f$ of consecutive \f$N\f$ control points 
@@ -304,8 +304,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
         t_point_t wps_first(size_),wps_second(size_);
         const Numeric u = (t-T_min_)/(T_max_-T_min_);
-        wps_first[0] = pts_.front();
-        wps_second[degree_] = pts_.back();
+        wps_first[0] = control_points_.front();
+        wps_second[degree_] = control_points_.back();
         t_point_t casteljau_pts = waypoints();
         size_t id = 1;
         while(casteljau_pts.size() > 1)
@@ -391,9 +391,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /*const*/ std::size_t size_;
     /*const*/ std::size_t degree_;
     /*const*/ std::vector<Bern<Numeric> > bernstein_;
-	
-    private:
-    t_point_t  pts_;
+    /*const*/ t_point_t  control_points_;
 
     public:
     static bezier_curve_t zero(const time_t T=1.)

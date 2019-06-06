@@ -38,6 +38,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     typedef std::pair<Point, Tangent> pair_point_tangent_t; 
     typedef std::vector< pair_point_tangent_t ,Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
     typedef std::vector<Time> vector_time_t;
+    typedef Numeric num_t;
     typedef int Index;
 
     /*Attributes*/
@@ -48,18 +49,19 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.
     vector_time_t time_control_points_;
 
-    private:
     /// Vector of Time corresponding to time duration of each subspline.<br>
     /// For N control points with time \f$T_{P_0}, T_{P_1}, T_{P_2}, ..., T_{P_N}\f$ respectively,
     /// duration of each subspline is : ( T_{P_1}-T_{P_0}, T_{P_2}-T_{P_1}, ..., T_{P_N}-T_{P_{N-1} )<br>
     /// It contains \f$N-1\f$ durations. 
     vector_time_t duration_splines_;
     /// Starting time of cubic hermite spline : T_min_ is equal to first time of control points.
-    Time T_min_;
+    /*const*/ Time T_min_;
     /// Ending time of cubic hermite spline : T_max_ is equal to last time of control points.
-    Time T_max_;
-    /// Number of control points.
+    /*const*/ Time T_max_;
+    /// Number of control points (pairs).
     std::size_t size_;
+    /// Degree (Cubic so degree 3)
+    const std::size_t degree_ = 3;
     /*Attributes*/
     
     public:
@@ -143,29 +145,6 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
     }
 
-    /// \brief Set duration by default of each spline.
-    /// Set a linear time from 0 to 1 for each control point with a \f$step=1.0/N\f$ 
-    /// where \f$N\f$ is the number of control points.<br>
-    /// Exemple for 5 control points : vector time_control_points_ will contain \f$(0., 0.25, 0.5, 0.75, 1.0)\f$
-    /// corresponding to time for \f$P_0\f$, \f$P_1\f$, \f$P_2\f$, \f$P_3\f$ and \f$P_4\f$ respectively.
-    ///
-    void setTimeSplinesDefault()
-    {
-        time_control_points_.clear();
-        T_min_ = 0.;
-        T_max_ = 1.;
-        Time timestep = (T_max_- T_min_) / (control_points_.size()-1);
-        Time time = 0.;
-        Index i = 0;
-        for (i=0; i<size(); i++)
-        {
-            //time_control_points_.push_back(time);
-            time_control_points_.push_back(time);
-            time += timestep;
-        }
-        computeDurationSplines();
-    }
-
     /// \brief Get vector of pair (positition, derivative) corresponding to control points.
     /// \return vector containing control points.
     ///
@@ -240,8 +219,13 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         assert(0. <= alpha <= 1. && "alpha must be in [0,1]");
         Numeric h00, h10, h01, h11;
         evalCoeffs(alpha,h00,h10,h01,h11,order_derivative);
-        //std::cout << "for val t="<<t<<" coef : h00="<<h00<<" h10="<<h10<<" h01="<<h01<<" h11="<<h11<<std::endl;
-        Point p_ = (h00 * Pair0.first + h10 * Pair0.second + h01 * Pair1.first + h11 * Pair1.second);
+        //std::cout << "for val t="<<t<<" alpha="<<alpha<<" coef : h00="<<h00<<" h10="<<h10<<" h01="<<h01<<" h11="<<h11<<std::endl;
+        Point p_ = (h00 * Pair0.first + h10 * dt * Pair0.second + h01 * Pair1.first + h11 * dt * Pair1.second);
+        // if derivative, divide by dt^order_derivative
+        for (int i=0; i<order_derivative; i++)
+        {
+            p_ /= dt;
+        }
         return p_;
     }
 

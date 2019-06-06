@@ -11,7 +11,9 @@ import unittest
 
 from curves import bezier3, bezier6
 from curves import curve_constraints, polynomial, piecewise_polynomial_curve, exact_cubic, cubic_hermite_spline
-from curves import polynom_from_bezier, bezier_from_hermite, polynom_from_hermite
+from curves import polynomial_from_bezier, polynomial_from_hermite
+from curves import bezier_from_hermite, bezier_from_polynomial
+from curves import hermite_from_bezier, hermite_from_polynomial
 
 class TestCurves(unittest.TestCase):
 	#def print_str(self, inStr):
@@ -145,39 +147,6 @@ class TestCurves(unittest.TestCase):
 		a = exact_cubic(waypoints, time_waypoints, c)
 		return
 
-	def test_polynom_from_bezier(self):
-		# converting bezier to polynomial
-		__EPS = 1e-6
-		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-		a = bezier3(waypoints)
-		a_pol = polynom_from_bezier(a)
-		self.assertTrue (norm(a(0.3) - a_pol(0.3)) < __EPS)
-		return
-
-	def test_bezier_from_cubic_hermite(self):
-		# converting cubic hermite to cubic bezier
-		__EPS = 1e-6
-		points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-		tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-		time_points = matrix([0., 1.]).transpose()
-		a_hermite = cubic_hermite_spline(points, tangents, time_points)
-
-		a_bezier = bezier_from_hermite(a_hermite)
-		self.assertTrue (norm(a_hermite(0.3) - a_bezier(0.3)) < __EPS)
-		return
-
-	def test_polynom_from_cubic_hermite(self):
-		# converting cubic hermite to polynom
-		__EPS = 1e-6
-		points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-		tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-		time_points = matrix([0., 1.]).transpose()
-		a_hermite = cubic_hermite_spline(points, tangents, time_points)
-
-		a_pol = polynom_from_hermite(a_hermite)
-		self.assertTrue (norm(a_hermite(0.3) - a_pol(0.3)) < __EPS)
-		return
-
 	def test_cubic_hermite_spline(self):
 		points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
 		tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
@@ -188,6 +157,32 @@ class TestCurves(unittest.TestCase):
 		a(0.4)
 		self.assertTrue ((a.derivate(0.4, 0) == a(0.4)).all())
 		a.derivate(0.4, 2)
+		return
+
+	def test_conversion_curves(self):
+		__EPS = 1e-6
+		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+		a = bezier3(waypoints)
+		# converting bezier to polynomial
+		a_pol = polynomial_from_bezier(a)
+		self.assertTrue (norm(a(0.3) - a_pol(0.3)) < __EPS)
+		# converting polynomial to hermite
+		a_chs = hermite_from_polynomial(a_pol);
+		self.assertTrue (norm(a_chs(0.3) - a_pol(0.3)) < __EPS)
+		# converting hermite to bezier
+		a_bc = bezier_from_hermite(a_chs);
+		self.assertTrue (norm(a_chs(0.3) - a_bc(0.3)) < __EPS)
+		self.assertTrue (norm(a(0.3) - a_bc(0.3)) < __EPS)
+		# converting bezier to hermite
+		a_chs = hermite_from_bezier(a);
+		self.assertTrue (norm(a(0.3) - a_chs(0.3)) < __EPS)
+		# converting hermite to polynomial
+		a_pol = polynomial_from_hermite(a_chs)
+		self.assertTrue (norm(a_pol(0.3) - a_chs(0.3)) < __EPS)
+		# converting polynomial to bezier
+		a_bc = bezier_from_polynomial(a_pol)
+		self.assertTrue (norm(a_bc(0.3) - a_pol(0.3)) < __EPS)
+		self.assertTrue (norm(a(0.3) - a_bc(0.3)) < __EPS)
 		return
 
 if __name__ == '__main__':
