@@ -968,23 +968,19 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     control_points.push_back(Pair_point_tangent(P0,T0));
     time_control_points.push_back(0.);  // Time at P0
     control_points.push_back(Pair_point_tangent(P1,T1));
-    time_control_points.push_back(1.);  // Time at P1
+    time_control_points.push_back(2.);  // Time at P1
     // Create cubic hermite spline
     cubic_hermite_spline_t cubic_hermite_spline_1Pair(control_points.begin(), control_points.end(), time_control_points);
-    cubic_hermite_spline_1Pair.setTimeSplinesDefault();
+    cubic_hermite_spline_1Pair.setTime(time_control_points);
     //Check
     res1 = cubic_hermite_spline_1Pair(0.);   // t=0
     ComparePoints(P0, res1, errmsg1, error);
-    res1 = cubic_hermite_spline_1Pair(1.);   // t=1
+    res1 = cubic_hermite_spline_1Pair(2.);   // t=1
     ComparePoints(P1, res1, errmsg1, error);
-    res1 = cubic_hermite_spline_1Pair(0.5);  // t=0.5
-    ComparePoints(point_t(0.55,1.0375,1.625), res1, errmsg2, error);
     // Test derivative : two pairs
     res1 = cubic_hermite_spline_1Pair.derivate(0.,1);
     ComparePoints(T0, res1, errmsg3, error);
-    res1 = cubic_hermite_spline_1Pair.derivate(0.5,1);
-    ComparePoints(point_t(1.35,2.825,4.5), res1, errmsg3, error);
-    res1 = cubic_hermite_spline_1Pair.derivate(1.,1);
+    res1 = cubic_hermite_spline_1Pair.derivate(2.,1);
     ComparePoints(T1, res1, errmsg3, error);
 
     // Three pairs
@@ -1001,8 +997,6 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     ComparePoints(P1, res1, errmsg2, error);
     res1 = cubic_hermite_spline_2Pairs(5.);  // t=5
     ComparePoints(P2, res1, errmsg1, error);
-    res1 = cubic_hermite_spline_2Pairs(1.);  // t=1.0 , same than in two pairs at t=0.5
-    ComparePoints(point_t(0.55,1.0375,1.625), res1, errmsg2, error);
     // Test derivative : three pairs
     res1 = cubic_hermite_spline_2Pairs.derivate(0.,1);
     ComparePoints(T0, res1, errmsg3, error);
@@ -1012,7 +1006,11 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     ComparePoints(T2, res1, errmsg3, error);
     // Test time control points by default => with N control points : 
     // Time at P0= 0. | Time at P1= 1.0/(N-1) | Time at P2= 2.0/(N-1) | ... | Time at P_(N-1)= (N-1)/(N-1)= 1.0
-    cubic_hermite_spline_2Pairs.setTimeSplinesDefault();
+    time_control_points.clear();
+    time_control_points.push_back(0.);  // Time at P0
+    time_control_points.push_back(0.5);  // Time at P1
+    time_control_points.push_back(1.);  // Time at P2
+    cubic_hermite_spline_2Pairs.setTime(time_control_points);
     res1 = cubic_hermite_spline_2Pairs(0.);  // t=0
     ComparePoints(P0, res1, errmsg1, error);
     res1 = cubic_hermite_spline_2Pairs(0.5); // t=0.5

@@ -2,7 +2,6 @@
 #define _CLASS_CUBICHERMITESPLINE
 
 #include "curve_abc.h"
-#include "bernstein.h"
 #include "curve_constraint.h"
 
 #include "MathDefs.h"
@@ -77,7 +76,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
             control_points_.push_back(*it);
         }
-        setTimeSplines(time_control_points);
+        setTime(time_control_points);
 	}
 
 	/// \brief Destructor.
@@ -120,7 +119,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.<br>
     /// \param time_control_points : Vector containing time for each control point.
     ///
-    void setTimeSplines(const Vector_time & time_control_points)
+    void setTime(const Vector_time & time_control_points)
     {
         time_control_points_ = time_control_points;
         T_min_ = time_control_points_.front();
@@ -136,29 +135,6 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
     }
 
-    /// \brief Set duration by default of each spline.
-    /// Set a linear time from 0 to 1 for each control point with a \f$step=1.0/N\f$ 
-    /// where \f$N\f$ is the number of control points.<br>
-    /// Exemple for 5 control points : vector time_control_points_ will contain \f$(0., 0.25, 0.5, 0.75, 1.0)\f$
-    /// corresponding to time for \f$P_0\f$, \f$P_1\f$, \f$P_2\f$, \f$P_3\f$ and \f$P_4\f$ respectively.
-    ///
-    void setTimeSplinesDefault()
-    {
-        time_control_points_.clear();
-        T_min_ = 0.;
-        T_max_ = 1.;
-        Time timestep = (T_max_- T_min_) / (control_points_.size()-1);
-        Time time = 0.;
-        Index i = 0;
-        for (i=0; i<size(); i++)
-        {
-            //time_control_points_.push_back(time);
-            time_control_points_.push_back(time);
-            time += timestep;
-        }
-        computeDurationSplines();
-    }
-
     /// \brief Get vector of pair (positition, derivative) corresponding to control points.
     /// \return vector containing control points.
     ///
@@ -170,7 +146,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Get vector of Time corresponding to Time for each control point.
     /// \return vector containing time of each control point.
     ///
-    Vector_time getTimeSplines()
+    Vector_time getTime()
     {
         return time_control_points_;
     }
@@ -234,7 +210,11 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         Numeric h00, h10, h01, h11;
         evalCoeffs(alpha,h00,h10,h01,h11,order_derivative);
         //std::cout << "for val t="<<t<<" coef : h00="<<h00<<" h10="<<h10<<" h01="<<h01<<" h11="<<h11<<std::endl;
-        Point p_ = (h00 * Pair0.first + h10 * Pair0.second + h01 * Pair1.first + h11 * Pair1.second);
+        Point p_ = (h00 * Pair0.first + h10 * Pair0.second * dt + h01 * Pair1.first + h11 * Pair1.second * dt);
+        for (std::size_t i=0; i<order_derivative; i++)
+        {
+            p_ /= dt;
+        }
         return p_;
     }
 
