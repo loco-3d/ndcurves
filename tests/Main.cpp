@@ -966,21 +966,21 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     // Two pairs
     control_points.clear();
     control_points.push_back(Pair_point_tangent(P0,T0));
-    time_control_points.push_back(0.);  // Time at P0
+    time_control_points.push_back(1.);  // Time at P0
     control_points.push_back(Pair_point_tangent(P1,T1));
-    time_control_points.push_back(2.);  // Time at P1
+    time_control_points.push_back(3.);  // Time at P1
     // Create cubic hermite spline
     cubic_hermite_spline_t cubic_hermite_spline_1Pair(control_points.begin(), control_points.end(), time_control_points);
     cubic_hermite_spline_1Pair.setTime(time_control_points);
     //Check
-    res1 = cubic_hermite_spline_1Pair(0.);   // t=0
+    res1 = cubic_hermite_spline_1Pair(1.);   // t=1
     ComparePoints(P0, res1, errmsg1, error);
-    res1 = cubic_hermite_spline_1Pair(2.);   // t=1
+    res1 = cubic_hermite_spline_1Pair(3.);   // t=3
     ComparePoints(P1, res1, errmsg1, error);
     // Test derivative : two pairs
-    res1 = cubic_hermite_spline_1Pair.derivate(0.,1);
+    res1 = cubic_hermite_spline_1Pair.derivate(1.,1);
     ComparePoints(T0, res1, errmsg3, error);
-    res1 = cubic_hermite_spline_1Pair.derivate(2.,1);
+    res1 = cubic_hermite_spline_1Pair.derivate(3.,1);
     ComparePoints(T1, res1, errmsg3, error);
 
     // Three pairs
