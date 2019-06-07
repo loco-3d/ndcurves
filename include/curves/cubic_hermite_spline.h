@@ -9,7 +9,6 @@
 #define _CLASS_CUBICHERMITESPLINE
 
 #include "curve_abc.h"
-#include "bernstein.h"
 #include "curve_constraint.h"
 
 #include "MathDefs.h"
@@ -85,7 +84,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
             control_points_.push_back(*it);
         }
-        setTimeSplines(time_control_points);
+        setTime(time_control_points);
 	}
 
 	/// \brief Destructor.
@@ -128,7 +127,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.<br>
     /// \param time_control_points : Vector containing time for each control point.
     ///
-    void setTimeSplines(const vector_time_t & time_control_points)
+    void setTime(const vector_time_t & time_control_points)
     {
         time_control_points_ = time_control_points;
         T_min_ = time_control_points_.front();
@@ -155,7 +154,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \brief Get vector of Time corresponding to Time for each control point.
     /// \return vector containing time of each control point.
     ///
-    vector_time_t getTimeSplines()
+    vector_time_t getTime()
     {
         return time_control_points_;
     }

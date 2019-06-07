@@ -1105,7 +1105,7 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     time_control_points_test.push_back(0.);  // Time at P0
     time_control_points_test.push_back(0.5);  // Time at P1
     time_control_points_test.push_back(1.0);  // Time at P2
-    cubic_hermite_spline_2Pairs.setTimeSplines(time_control_points_test);
+    cubic_hermite_spline_2Pairs.setTime(time_control_points_test);
     res1 = cubic_hermite_spline_2Pairs(0.);  // t=0
     ComparePoints(p0, res1, errmsg1, error);
     res1 = cubic_hermite_spline_2Pairs(0.5); // t=0.5
