@@ -348,12 +348,14 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     t_point_t add_constraints(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints)
     {
         t_point_t res;
+        num_t T = T_max_ - T_min_;
+        num_t T_square = T*T;
         point_t P0, P1, P2, P_n_2, P_n_1, PN;
         P0 = *PointsBegin; PN = *(PointsEnd-1);
-        P1    = P0+ constraints.init_vel / (num_t)degree_;
-        P_n_1 = PN -constraints.end_vel  / (num_t)degree_;
-        P2    = constraints.init_acc / (num_t)(degree_ * (degree_-1)) + 2* P1    - P0;
-        P_n_2 = constraints.end_acc  / (num_t)(degree_ * (degree_-1)) + 2* P_n_1 - PN;
+        P1    = P0+ constraints.init_vel * T / (num_t)degree_;
+        P_n_1 = PN- constraints.end_vel * T / (num_t)degree_;
+        P2    = constraints.init_acc * T_square / (num_t)(degree_ * (degree_-1)) + 2* P1    - P0;
+        P_n_2 = constraints.end_acc * T_square / (num_t)(degree_ * (degree_-1)) + 2* P_n_1 - PN;
 
         res.push_back(P0);
         res.push_back(P1);

@@ -438,20 +438,22 @@ void BezierDerivativeCurveConstraintTest(bool& error)
     std::vector<point_t> params;
     params.push_back(a);
     params.push_back(b);
-
     params.push_back(c);
-    bezier_curve_t cf3(params.begin(), params.end(), constraints);
 
-    assert(cf3.degree_ == params.size() + 3);
-    assert(cf3.size_   == params.size() + 4);
+    bezier_curve_t::num_t T_min = 1.0;
+    bezier_curve_t::num_t T_max = 3.0;
+    bezier_curve_t cf(params.begin(), params.end(), constraints, T_min, T_max);
 
-    ComparePoints(a, cf3(0), errMsg, error);
-    ComparePoints(c, cf3(1), errMsg, error);
-    ComparePoints(constraints.init_vel, cf3.derivate(0.,1), errMsg, error);
-    ComparePoints(constraints.end_vel , cf3.derivate(1.,1), errMsg, error);
-    ComparePoints(constraints.init_acc, cf3.derivate(0.,2), errMsg, error);
-    ComparePoints(constraints.end_vel, cf3.derivate(1.,1), errMsg, error);
-    ComparePoints(constraints.end_acc, cf3.derivate(1.,2), errMsg, error);
+    assert(cf.degree_ == params.size() + 3);
+    assert(cf.size_   == params.size() + 4);
+
+    ComparePoints(a, cf(T_min), errMsg, error);
+    ComparePoints(c, cf(T_max), errMsg, error);
+    ComparePoints(constraints.init_vel, cf.derivate(T_min,1), errMsg, error);
+    ComparePoints(constraints.end_vel , cf.derivate(T_max,1), errMsg, error);
+    ComparePoints(constraints.init_acc, cf.derivate(T_min,2), errMsg, error);
+    ComparePoints(constraints.end_vel, cf.derivate(T_max,1), errMsg, error);
+    ComparePoints(constraints.end_acc, cf.derivate(T_max,2), errMsg, error);
 }
 
 
@@ -480,8 +482,8 @@ void toPolynomialConversionTest(bool& error)
     control_points.push_back(h);
     control_points.push_back(i);
 
-    double T_min = 1.0;
-    double T_max = 3.0;
+    bezier_curve_t::num_t T_min = 1.0;
+    bezier_curve_t::num_t T_max = 3.0;
     bezier_curve_t bc(control_points.begin(), control_points.end(),T_min, T_max);
     polynomial_t pol = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc);
     compareCurves<polynomial_t, bezier_curve_t>(pol, bc, errMsg, error);
