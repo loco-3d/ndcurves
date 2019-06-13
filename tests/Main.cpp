@@ -1136,6 +1136,19 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     ComparePoints(p1, res1, errmsg2, error);
     res1 = cubic_hermite_spline_2Pairs(1.);  // t=1
     ComparePoints(p2, res1, errmsg1, error);
+    // Test getTime
+    try
+    {
+        cubic_hermite_spline_2Pairs.getTime();
+    }
+    catch(...)
+    {
+        error = false;
+    }
+    if(error)
+    {
+        std::cout << "Cubic hermite spline test, Error when calling getTime\n";
+    }
     // Test derivative : three pairs, time default
     res1 = cubic_hermite_spline_2Pairs.derivate(0.,1);
     ComparePoints(t0, res1, errmsg3, error);
