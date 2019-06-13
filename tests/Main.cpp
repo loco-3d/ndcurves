@@ -162,12 +162,12 @@ void CubicFunctionTest(bool& error)
     if(cf.max() != 1)
     {
         error = true;
-        std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
+        std::cout << "Evaluation of cubic cf error, MaxBound should be equal to 1\n";
     }
     if(cf.min() != 0)
     {
         error = true;
-        std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
+        std::cout << "Evaluation of cubic cf error, MinBound should be equal to 1\n";
     }
 }
 
@@ -552,27 +552,39 @@ void cubicConversionTest(bool& error)
 /*Exact Cubic Function tests*/
 void ExactCubicNoErrorTest(bool& error)
 {
+    // Create an exact cubic spline with 7 waypoints => 6 polynomials defined in [0.0,3.0]
 	curves::T_Waypoint waypoints;
-	for(double i = 0; i <= 1; i = i + 0.2)
+	for(double i = 0.0; i <= 3.0; i = i + 0.5)
 	{
 		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
 	}
 	exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
-	point_t res1;
+
+    // Test number of polynomials in exact cubic
+    std::size_t numberSegments = exactCubic.getNumberSplines();
+    assert(numberSegments == 6);
+
+    // Test getSplineAt function
+    for (std::size_t i=0; i<numberSegments; i++)
+    {
+        exactCubic.getSplineAt(i);
+    }
+
+    // Other tests
 	try
 	{
-		exactCubic(0);
-		exactCubic(1);
+		exactCubic(0.0);
+		exactCubic(3.0);
 	}
 	catch(...)
 	{
 		error = true;
-		std::cout << "Evaluation of ExactCubicNoErrorTest error\n";
+		std::cout << "Evaluation of ExactCubicNoErrorTest error when testing value on bounds\n";
 	}
 	error = true;
 	try
 	{
-		exactCubic(1.2);
+		exactCubic(3.2);
 	}
 	catch(...)
 	{
@@ -580,25 +592,27 @@ void ExactCubicNoErrorTest(bool& error)
 	}
 	if(error)
 	{
-		std::cout << "Evaluation of exactCubic cf error, 1.2 should be an out of range value\n";
+		std::cout << "Evaluation of exactCubic cf error, 3.2 should be an out of range value\n";
 	}
-	if(exactCubic.max() != 1)
+
+	if(exactCubic.max() != 3.)
 	{
 		error = true;
-		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
+		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 3\n";
 	}
-	if(exactCubic.min() != 0)
+	if(exactCubic.min() != 0.)
 	{
 		error = true;
-		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
+		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 0\n";
 	}
 }
 
 /*Exact Cubic Function tests*/
 void ExactCubicTwoPointsTest(bool& error)
 {
+    // Create an exact cubic spline with 2 waypoints => 1 polynomial defined in [0.0,1.0]
 	curves::T_Waypoint waypoints;
-	for(double i = 0; i < 2; ++i)
+	for(double i = 0.0; i < 2.0; ++i)
 	{
 		waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
 	}
@@ -610,6 +624,14 @@ void ExactCubicTwoPointsTest(bool& error)
 
 	res1 = exactCubic(1);
 	ComparePoints(point_t(1,1,1), res1, errmsg, error);
+
+    // Test number of polynomials in exact cubic
+    std::size_t numberSegments = exactCubic.getNumberSplines();
+    assert(numberSegments == 1);
+
+    // Test getSplineAt
+    assert(exactCubic(0.5) == (exactCubic.getSplineAt(0))(0.5));
+
 }
 
 void ExactCubicOneDimTest(bool& error)

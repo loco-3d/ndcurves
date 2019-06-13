@@ -360,8 +360,10 @@ BOOST_PYTHON_MODULE(curves)
             .def("max", &exact_cubic_t::max)
             .def("__call__", &exact_cubic_t::operator())
             .def("derivate", &exact_cubic_t::derivate)
+            .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
+            .def("getSplineAt", &exact_cubic_t::getSplineAt)
         ;
-    /** END bezier curve**/
+    /** END exact_cubic curve**/
 
 
     /** BEGIN cubic_hermite_spline **/

@@ -118,7 +118,7 @@ class TestCurves(unittest.TestCase):
 
 	def test_exact_cubic(self):
 		# To test :
-		# - Functions : constructor, min, max, derivate
+		# - Functions : constructor, min, max, derivate, getNumberSplines, getSplineAt
 		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
 		time_waypoints = matrix([0., 1.]).transpose()
 		a = exact_cubic(waypoints, time_waypoints)
@@ -127,6 +127,8 @@ class TestCurves(unittest.TestCase):
 		a(0.4)
 		self.assertTrue ((a.derivate(0.4, 0) == a(0.4)).all())
 		a.derivate(0.4, 2)
+		a.getNumberSplines()
+		a.getSplineAt(0)
 		return
 
 	def test_exact_cubic_constraint(self):

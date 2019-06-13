@@ -48,7 +48,6 @@ Bezier bezier_from_curve(const curveTypeToConvert& curve)
     typedef typename Bezier::t_point_t t_point_t;
     typedef typename Bezier::num_t    num_t;
     curveTypeToConvert current (curve);
-    assert(current.order_>0);
     
     num_t T_min = current.min();
     num_t T_max = current.max();
@@ -90,8 +89,6 @@ Hermite hermite_from_curve(const curveTypeToConvert& curve)
     typedef typename Hermite::point_t point_t;
     typedef typename Hermite::num_t    num_t;
     curveTypeToConvert current (curve);
-
-    assert(current.order_>0);
 
     num_t T_min = current.min();
     num_t T_max = current.max();

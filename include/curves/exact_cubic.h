@@ -85,6 +85,16 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 	/// \brief Destructor.
     virtual ~exact_cubic(){}
 
+    std::size_t getNumberSplines()
+    {
+        return subSplines_.size();
+    }
+
+    spline_t getSplineAt(std::size_t index)
+    {
+        return subSplines_.at(index);
+    }
+
     private:
     /// \brief Compute polynom of exact cubic spline from waypoints.
     /// Compute the coefficients of polynom as in paper : "Task-Space Trajectories via Cubic Spline Optimization".<br>
@@ -165,8 +175,10 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
             subSplines.push_back(
                 create_cubic<Time,Numeric,Dim,Safe,Point,T_Point>(a.row(i), b.row(i), c.row(i), d.row(i),(*it).first, (*next).first));
         }
+        /*
         subSplines.push_back(
                 create_cubic<Time,Numeric,Dim,Safe,Point,T_Point>(a.row(size-1), b.row(size-1), c.row(size-1), d.row(size-1), (*it).first, (*it).first));
+        */
         return subSplines;
     }
 
