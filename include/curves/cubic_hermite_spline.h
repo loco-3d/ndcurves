@@ -100,7 +100,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
-			throw std::out_of_range("can't evaluate cubic hermite spline, out of range");
+			throw std::invalid_argument("can't evaluate cubic hermite spline, out of range");
         }
         if (size_ == 1)
         {
@@ -139,7 +139,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         computeDurationSplines();
         if (!checkDurationSplines())
         {
-            throw std::logic_error("time_splines not monotonous, all spline duration should be superior to 0");
+            throw std::invalid_argument("time_splines not monotonous, all spline duration should be superior to 0");
         }
     }
 

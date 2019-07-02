@@ -10,7 +10,8 @@ from numpy.linalg import norm
 import unittest
 
 from curves import bezier3, bezier6
-from curves import curve_constraints, polynomial, piecewise_polynomial_curve, exact_cubic, cubic_hermite_spline
+from curves import curve_constraints, polynomial, exact_cubic, cubic_hermite_spline
+from curves import piecewise_polynomial_curve, piecewise_bezier3_curve, piecewise_bezier6_curve, piecewise_cubic_hermite_curve
 from curves import polynomial_from_bezier, polynomial_from_hermite
 from curves import bezier_from_hermite, bezier_from_polynomial
 from curves import hermite_from_bezier, hermite_from_polynomial
@@ -100,13 +101,67 @@ class TestCurves(unittest.TestCase):
 
 	def test_piecewise_polynomial_curve(self):
 		# To test :
-		# - Functions : constructor, min, max, derivate, add_polynomial_curve, is_continuous
+		# - Functions : constructor, min, max, derivate, add_curve, is_continuous
 		waypoints1 = matrix([[1., 1., 1.]]).transpose()
 		waypoints2 = matrix([[1., 1., 1.], [1., 1., 1.]]).transpose()
 		a = polynomial(waypoints1, 0.,1.)
 		b = polynomial(waypoints2, 1., 3.)
 		ppc = piecewise_polynomial_curve(a)
-		ppc.add_polynomial_curve(b)
+		ppc.add_curve(b)
+		ppc.min()
+		ppc.max()
+		ppc(0.4)
+		self.assertTrue ((ppc.derivate(0.4, 0) == ppc(0.4)).all())
+		ppc.derivate(0.4, 2)
+		ppc.is_continuous(0)
+		ppc.is_continuous(1)
+		return
+
+	def test_piecewise_bezier3_curve(self):
+		# To test :
+		# - Functions : constructor, min, max, derivate, add_curve, is_continuous
+		waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+		a = bezier3(waypoints, 0., 1.)
+		b = bezier3(waypoints, 1., 2.)
+		ppc = piecewise_bezier3_curve(a)
+		ppc.add_curve(b)
+		ppc.min()
+		ppc.max()
+		ppc(0.4)
+		self.assertTrue ((ppc.derivate(0.4, 0) == ppc(0.4)).all())
+		ppc.derivate(0.4, 2)
+		ppc.is_continuous(0)
+		ppc.is_continuous(1)
+		return
+
+	def test_piecewise_bezier6_curve(self):
+		# To test :
+		# - Functions : constructor, min, max, derivate, add_curve, is_continuous
+		waypoints = matrix([[1., 2., 3., 7., 5., 5.], [4., 5., 6., 4., 5., 6.]]).transpose()
+		a = bezier6(waypoints, 0., 1.)
+		b = bezier6(waypoints, 1., 2.)
+		ppc = piecewise_bezier6_curve(a)
+		ppc.add_curve(b)
+		ppc.min()
+		ppc.max()
+		ppc(0.4)
+		self.assertTrue ((ppc.derivate(0.4, 0) == ppc(0.4)).all())
+		ppc.derivate(0.4, 2)
+		ppc.is_continuous(0)
+		ppc.is_continuous(1)
+		return
+
+	def test_piecewise_cubic_hermite_curve(self):
+		# To test :
+		# - Functions : constructor, min, max, derivate, add_curve, is_continuous
+		points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+		tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+		time_points0 = matrix([0., 1.]).transpose()
+		time_points1 = matrix([1., 2.]).transpose()
+		a = cubic_hermite_spline(points, tangents, time_points0)
+		b = cubic_hermite_spline(points, tangents, time_points1)
+		ppc = piecewise_cubic_hermite_curve(a)
+		ppc.add_curve(b)
 		ppc.min()
 		ppc.max()
 		ppc(0.4)

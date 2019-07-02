@@ -107,7 +107,7 @@ struct polynomial : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
             if(t_min_ > t_max_)
             {
-                std::out_of_range("Tmin should be inferior to Tmax");
+                std::invalid_argument("Tmin should be inferior to Tmax");
             }
             if(coefficients_.size() != int(order_+1))
             {
@@ -142,7 +142,7 @@ struct polynomial : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         if((t < t_min_ || t > t_max_) && Safe)
         { 
-            throw std::out_of_range("error in polynomial : time t to evaluate should be in range [Tmin, Tmax] of the curve");
+            throw std::invalid_argument("error in polynomial : time t to evaluate should be in range [Tmin, Tmax] of the curve");
         }
         time_t const dt (t-t_min_);
         point_t h = coefficients_.col(order_);
@@ -162,7 +162,7 @@ struct polynomial : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         if((t < t_min_ || t > t_max_) && Safe)
         { 
-            throw std::out_of_range("error in polynomial : time t to evaluate derivative should be in range [Tmin, Tmax] of the curve");
+            throw std::invalid_argument("error in polynomial : time t to evaluate derivative should be in range [Tmin, Tmax] of the curve");
         }
         time_t const dt (t-t_min_);
         time_t cdt(1);
