@@ -1,10 +1,11 @@
 #include "curves/bezier_curve.h"
-#include "curves/polynom.h"
+#include "curves/polynomial.h"
 #include "curves/exact_cubic.h"
-#include "curves/spline_deriv_constraint.h"
 #include "curves/curve_constraint.h"
-#include "curves/bezier_polynom_conversion.h"
+#include "curves/curve_conversion.h"
 #include "curves/bernstein.h"
+#include "curves/cubic_hermite_spline.h"
+#include "curves/piecewise_polynomial_curve.h"
 
 #include "python_definitions.h"
 #include "python_variables.h"
@@ -20,6 +21,8 @@
 using namespace curves;
 typedef double real;
 typedef Eigen::Vector3d point_t;
+typedef Eigen::Vector3d tangent_t;
+typedef std::pair<point_t, tangent_t> pair_point_tangent_t;
 typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> point6_t;
 typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point_t;
 typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> ret_point6_t;
@@ -32,19 +35,20 @@ typedef std::pair<real, point_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 typedef std::pair<real, point6_t> Waypoint6;
 typedef std::vector<Waypoint6> T_Waypoint6;
+typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
 
 typedef curves::bezier_curve  <real, real, 3, true, point_t> bezier3_t;
 typedef curves::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
-typedef curves::polynom  <real, real, 3, true, point_t, t_point_t> polynom_t;
+typedef curves::polynomial  <real, real, 3, true, point_t, t_point_t> polynomial_t;
+typedef curves::piecewise_polynomial_curve <real, real, 3, true, point_t, t_point_t> piecewise_polynomial_curve_t;
 typedef curves::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
-typedef polynom_t::coeff_t coeff_t;
+typedef curves::cubic_hermite_spline <real, real, 3, true, point_t> cubic_hermite_spline_t;
+typedef polynomial_t::coeff_t coeff_t;
 typedef std::pair<real, point_t> waypoint_t;
 typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t;
 
 typedef curves::Bern<double> bernstein_t;
 
-
-typedef curves::spline_deriv_constraint  <real, real, 3, true, point_t, t_point_t> spline_deriv_constraint_t;
 typedef curves::curve_constraints<point_t> curve_constraints_t;
 typedef curves::curve_constraints<point6_t> curve_constraints6_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
@@ -52,77 +56,119 @@ typedef curves::curve_constraints<point6_t> curve_constraints6_t;
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier6_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynom_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynomial_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(cubic_hermite_spline_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(spline_deriv_constraint_t)
 
 namespace curves
 {
 using namespace boost::python;
 
+/* Template constructor bezier */
 template <typename Bezier, typename PointList, typename T_Point>
-Bezier* wrapBezierConstructorTemplate(const PointList& array, const real ub =1.)
+Bezier* wrapBezierConstructorTemplate(const PointList& array, const real T_min =0., const real T_max =1.)
 {
     T_Point asVector = vectorFromEigenArray<PointList, T_Point>(array);
-    return new Bezier(asVector.begin(), asVector.end(), ub);
+    return new Bezier(asVector.begin(), asVector.end(), T_min, T_max);
 }
 
 template <typename Bezier, typename PointList, typename T_Point, typename CurveConstraints>
-Bezier* wrapBezierConstructorConstraintsTemplate(const PointList& array, const CurveConstraints& constraints, const real ub =1.)
+Bezier* wrapBezierConstructorConstraintsTemplate(const PointList& array, const CurveConstraints& constraints, 
+                                                 const real T_min =0., const real T_max =1.)
 {
     T_Point asVector = vectorFromEigenArray<PointList, T_Point>(array);
-    return new Bezier(asVector.begin(), asVector.end(), constraints, ub);
+    return new Bezier(asVector.begin(), asVector.end(), constraints, T_min, T_max);
 }
+/* End Template constructor bezier */
 
-/*3D constructors */
+/*3D constructors bezier */
 bezier3_t* wrapBezierConstructor3(const point_list_t& array)
 {
     return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array) ;
 }
-bezier3_t* wrapBezierConstructorBounds3(const point_list_t& array, const real ub)
+bezier3_t* wrapBezierConstructorBounds3(const point_list_t& array, const real T_min, const real T_max)
 {
-    return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array, ub) ;
+    return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array, T_min, T_max) ;
 }
 bezier3_t* wrapBezierConstructor3Constraints(const point_list_t& array, const curve_constraints_t& constraints)
 {
     return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints) ;
 }
-bezier3_t* wrapBezierConstructorBounds3Constraints(const point_list_t& array, const curve_constraints_t& constraints, const real ub)
+bezier3_t* wrapBezierConstructorBounds3Constraints(const point_list_t& array, const curve_constraints_t& constraints,
+                                                   const real T_min, const real T_max)
 {
-    return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, ub) ;
+    return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, T_min, T_max) ;
 }
-/*END 3D constructors */
-/*6D constructors */
+/*END 3D constructors bezier */
+/*6D constructors bezier */
 bezier6_t* wrapBezierConstructor6(const point_list6_t& array)
 {
     return wrapBezierConstructorTemplate<bezier6_t, point_list6_t, t_point6_t>(array) ;
 }
-bezier6_t* wrapBezierConstructorBounds6(const point_list6_t& array, const real ub)
+bezier6_t* wrapBezierConstructorBounds6(const point_list6_t& array, const real T_min, const real T_max)
 {
-    return wrapBezierConstructorTemplate<bezier6_t, point_list6_t, t_point6_t>(array, ub) ;
+    return wrapBezierConstructorTemplate<bezier6_t, point_list6_t, t_point6_t>(array, T_min, T_max) ;
 }
 bezier6_t* wrapBezierConstructor6Constraints(const point_list6_t& array, const curve_constraints6_t& constraints)
 {
     return wrapBezierConstructorConstraintsTemplate<bezier6_t, point_list6_t, t_point6_t, curve_constraints6_t>(array, constraints) ;
 }
-bezier6_t* wrapBezierConstructorBounds6Constraints(const point_list6_t& array, const curve_constraints6_t& constraints, const real ub)
+bezier6_t* wrapBezierConstructorBounds6Constraints(const point_list6_t& array, const curve_constraints6_t& constraints, const real T_min, const real T_max)
 {
-    return wrapBezierConstructorConstraintsTemplate<bezier6_t, point_list6_t, t_point6_t, curve_constraints6_t>(array, constraints, ub) ;
+    return wrapBezierConstructorConstraintsTemplate<bezier6_t, point_list6_t, t_point6_t, curve_constraints6_t>(array, constraints, T_min, T_max) ;
 }
-/*END 6D constructors */
+/*END 6D constructors bezier */
 
-polynom_t* wrapSplineConstructor(const coeff_t& array)
+/* Wrap Cubic hermite spline */
+t_pair_point_tangent_t getPairsPointTangent(const point_list_t& points, const point_list_t& tangents)
 {
-    return new polynom_t(array, 0., 1.);
+    t_pair_point_tangent_t res;
+    if (points.size() != tangents.size())
+    {
+        throw std::length_error("size of points and tangents must be the same");
+    }
+    for(int i =0;i<points.cols();++i) 
+    {
+        res.push_back(pair_point_tangent_t(tangents.col(i), tangents.col(i)));
+    }
+    return res;
 }
 
+cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const point_list_t& points, const point_list_t& tangents, const time_waypoints_t& time_pts) 
+{
+    t_pair_point_tangent_t ppt = getPairsPointTangent(points, tangents);
+    std::vector<real> time_control_pts;
+    for( int i =0; i<time_pts.size(); ++i)
+    {
+        time_control_pts.push_back(time_pts[i]);
+    }
+    return new cubic_hermite_spline_t(ppt.begin(), ppt.end(), time_control_pts);
+}
+/* End wrap Cubic hermite spline */
 
+/* Wrap polynomial */
+polynomial_t* wrapSplineConstructor(const coeff_t& array)
+{
+    return new polynomial_t(array, 0., 1.);
+}
+/* End wrap polynomial */
+
+/* Wrap piecewise polynomial curve */
+piecewise_polynomial_curve_t* wrapPiecewisePolynomialCurveConstructor(const polynomial_t& pol)
+{
+    return new piecewise_polynomial_curve_t(pol);
+}
+/* end wrap piecewise polynomial curve */
+
+/* Wrap exact cubic spline */
 t_waypoint_t getWayPoints(const coeff_t& array, const time_waypoints_t& time_wp)
 {
     t_waypoint_t res;
-    for(int i =0;i<array.cols();++i)
+    for(int i =0;i<array.cols();++i) 
+    {
         res.push_back(std::make_pair(time_wp(i), array.col(i)));
+    }
     return res;
 }
 
@@ -135,7 +181,9 @@ Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> wayPointsToList(const Bezier
     Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> res (dim, wps.size());
     int col = 0;
     for(cit_point cit = wps.begin(); cit != wps.end(); ++cit, ++col)
+    {
         res.block<dim,1>(0,col) = *cit;
+    }
     return res;
 }
 
@@ -145,17 +193,10 @@ exact_cubic_t* wrapExactCubicConstructor(const coeff_t& array, const time_waypoi
     return new exact_cubic_t(wps.begin(), wps.end());
 }
 
-
-spline_deriv_constraint_t* wrapSplineDerivConstraint(const coeff_t& array, const time_waypoints_t& time_wp, const curve_constraints_t& constraints)
+exact_cubic_t* wrapExactCubicConstructorConstraint(const coeff_t& array, const time_waypoints_t& time_wp, const curve_constraints_t& constraints)
 {
     t_waypoint_t wps = getWayPoints(array, time_wp);
-    return new spline_deriv_constraint_t(wps.begin(), wps.end(),constraints);
-}
-
-spline_deriv_constraint_t* wrapSplineDerivConstraintNoConstraints(const coeff_t& array, const time_waypoints_t& time_wp)
-{
-    t_waypoint_t wps = getWayPoints(array, time_wp);
-    return new spline_deriv_constraint_t(wps.begin(), wps.end());
+    return new exact_cubic_t(wps.begin(), wps.end(), constraints);
 }
 
 point_t get_init_vel(const curve_constraints_t& c)
@@ -197,7 +238,7 @@ void set_end_acc(curve_constraints_t& c, const point_t& val)
 {
     c.end_acc = val;
 }
-
+/* End wrap exact cubic spline */
 
 
 BOOST_PYTHON_MODULE(curves)
@@ -286,27 +327,55 @@ BOOST_PYTHON_MODULE(curves)
     /** END variable points bezier curve**/
 
 
-    /** BEGIN spline curve function**/
-    class_<polynom_t>("polynom",  init<const polynom_t::coeff_t, const real, const real >())
+    /** BEGIN polynomial curve function**/
+    class_<polynomial_t>("polynomial",  init<const polynomial_t::coeff_t, const real, const real >())
             .def("__init__", make_constructor(&wrapSplineConstructor))
-            .def("min", &polynom_t::min)
-            .def("max", &polynom_t::max)
-            .def("__call__", &polynom_t::operator())
-            .def("derivate", &polynom_t::derivate)
+            .def("min", &polynomial_t::min)
+            .def("max", &polynomial_t::max)
+            .def("__call__", &polynomial_t::operator())
+            .def("derivate", &polynomial_t::derivate)
         ;
-    /** END cubic function**/
+    /** END polynomial function**/
+
+    /** BEGIN piecewise polynomial curve function **/
+    class_<piecewise_polynomial_curve_t>
+        ("piecewise_polynomial_curve", no_init)
+            .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor))
+            .def("min", &piecewise_polynomial_curve_t::min)
+            .def("max", &piecewise_polynomial_curve_t::max)
+            .def("__call__", &piecewise_polynomial_curve_t::operator())
+            .def("derivate", &piecewise_polynomial_curve_t::derivate)
+            .def("add_polynomial_curve", &piecewise_polynomial_curve_t::add_polynomial_curve)
+            .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous)
+        ;
+    /** END piecewise polynomial curve function **/
 
 
     /** BEGIN exact_cubic curve**/
     class_<exact_cubic_t>
         ("exact_cubic", no_init)
             .def("__init__", make_constructor(&wrapExactCubicConstructor))
+            .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
             .def("min", &exact_cubic_t::min)
             .def("max", &exact_cubic_t::max)
             .def("__call__", &exact_cubic_t::operator())
             .def("derivate", &exact_cubic_t::derivate)
+            .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
+            .def("getSplineAt", &exact_cubic_t::getSplineAt)
         ;
-    /** END bezier curve**/
+    /** END exact_cubic curve**/
+
+
+    /** BEGIN cubic_hermite_spline **/
+    class_<cubic_hermite_spline_t>
+        ("cubic_hermite_spline", no_init)
+            .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor))
+            .def("min", &cubic_hermite_spline_t::min)
+            .def("max", &cubic_hermite_spline_t::max)
+            .def("__call__", &cubic_hermite_spline_t::operator())
+            .def("derivate", &cubic_hermite_spline_t::derivate)
+        ;
+    /** END cubic_hermite_spline **/
 
 
     /** BEGIN curve constraints**/
@@ -319,29 +388,21 @@ BOOST_PYTHON_MODULE(curves)
         ;
     /** END curve constraints**/
 
-
-    /** BEGIN spline_deriv_constraints**/
-    class_<spline_deriv_constraint_t>
-        ("spline_deriv_constraint", no_init)
-            .def("__init__", make_constructor(&wrapSplineDerivConstraint))
-            .def("__init__", make_constructor(&wrapSplineDerivConstraintNoConstraints))
-            .def("min", &exact_cubic_t::min)
-            .def("max", &exact_cubic_t::max)
-            .def("__call__", &exact_cubic_t::operator())
-            .def("derivate", &exact_cubic_t::derivate)
-        ;
-    /** END spline_deriv_constraints**/
-
-    /** BEGIN bernstein polynom**/
+    /** BEGIN bernstein polynomial**/
     class_<bernstein_t>
         ("bernstein", init<const unsigned int, const unsigned int>())
             .def("__call__", &bernstein_t::operator())
         ;
-    /** END bernstein polynom**/
+    /** END bernstein polynomial**/
 
-    /** BEGIN Bezier to polynom conversion**/
-    def("from_bezier", from_bezier<bezier3_t,polynom_t>);
-    /** END Bezier to polynom conversion**/
+    /** BEGIN curves conversion**/
+    def("polynomial_from_bezier", polynomial_from_curve<polynomial_t,bezier3_t>);
+    def("polynomial_from_hermite", polynomial_from_curve<polynomial_t,cubic_hermite_spline_t>);
+    def("bezier_from_hermite", bezier_from_curve<bezier3_t,cubic_hermite_spline_t>);
+    def("bezier_from_polynomial", bezier_from_curve<bezier3_t,polynomial_t>);
+    def("hermite_from_bezier", hermite_from_curve<cubic_hermite_spline_t, bezier3_t>);
+    def("hermite_from_polynomial", hermite_from_curve<cubic_hermite_spline_t, polynomial_t>);
+    /** END curves conversion**/
 
 
 }

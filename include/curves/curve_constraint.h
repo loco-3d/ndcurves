@@ -26,11 +26,12 @@ struct curve_constraints
     curve_constraints():
         init_vel(point_t::Zero()),init_acc(init_vel),end_vel(init_vel),end_acc(init_vel){}
 
-   ~curve_constraints(){}
-    point_t init_vel;
-    point_t init_acc;
-    point_t end_vel;
-    point_t end_acc;
+	~curve_constraints(){}
+
+	point_t init_vel;
+	point_t init_acc;
+	point_t end_vel;
+	point_t end_acc;
 };
 } // namespace curves
 #endif //_CLASS_CUBICZEROVELACC

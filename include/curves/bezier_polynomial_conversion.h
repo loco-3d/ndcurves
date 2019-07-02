@@ -24,17 +24,17 @@
 namespace curves
 {
 /// \brief Provides methods for converting a curve from a bernstein representation
-/// to a polynom representation.
+/// to a polynomial representation.
 ///
 
-/// \brief Converts a Bezier curve to a polynom.
-/// \param bezier: the Bezier curve to convert.
-/// \return The equivalent polynom.
-template<typename Bezier, typename Polynom>
-Polynom from_bezier(const Bezier& curve)
+/// \brief Converts a Bezier curve to a polynomial.
+/// \param bezier   : the Bezier curve to convert.
+/// \return the equivalent polynomial.
+template<typename Bezier, typename Polynomial>
+Polynomial from_bezier(const Bezier& curve)
 {
-    typedef typename Polynom::t_point_t    t_point_t;
-    typedef typename Polynom::num_t    num_t;
+    typedef typename Polynomial::t_point_t    t_point_t;
+    typedef typename Polynomial::num_t    num_t;
     assert (curve.min() == 0.);
     assert (curve.max() == 1.);
     t_point_t coefficients;
@@ -47,14 +47,15 @@ Polynom from_bezier(const Bezier& curve)
         fact *= (num_t)i;
         coefficients.push_back(current(0.)/fact);
     }
-    return Polynom(coefficients,curve.min(),curve.max());
+    return Polynomial(coefficients,curve.min(),curve.max());
 }
 
-///\brief Converts a polynom to a Bezier curve
-///\param polynom: the polynom to be converted from
-///\return the equivalent Bezier curve
-/*template<typename Bezier, typename Polynom>
-Bezier from_polynom(const Polynom& polynom)
+/*
+/// \brief Converts a polynomial to a Bezier curve.
+/// \param polynomial : the polynomial to convert.
+/// \return the equivalent Bezier curve.
+template<typename Bezier, typename Polynomial>
+Bezier from_polynomial(const Polynomial& polynomial)
 {
     typedef Bezier::point_t 	point_t;
     typedef Bezier::time_t 	time_t;
@@ -63,7 +64,8 @@ Bezier from_polynom(const Polynom& polynom)
     typedef Bezier::t_point_t    t_point_t;
     typedef Bezier::cit_point_t    cit_point_t;
     typedef Bezier::bezier_curve_t   bezier_curve_t;
-}*/
+}
+*/
 } // namespace curves
 #endif //_BEZIER_POLY_CONVERSION
 

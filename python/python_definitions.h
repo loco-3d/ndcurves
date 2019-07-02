@@ -12,7 +12,9 @@ namespace curves
 
 typedef double real;
 typedef Eigen::Vector3d point_t;
+typedef Eigen::Vector3d tangent_t;
 typedef Eigen::VectorXd vectorX_t;
+typedef std::pair<point_t, tangent_t> pair_point_tangent_t;
 typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> point6_t;
 typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point_t;
 typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> ret_point6_t;
@@ -33,7 +35,9 @@ T_Point vectorFromEigenArray(const PointList& array)
 {
     T_Point res;
     for(int i =0;i<array.cols();++i)
+    {
         res.push_back(array.col(i));
+    }
     return res;
 }
 

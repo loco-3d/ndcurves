@@ -21,7 +21,7 @@ typedef curves::bezier_curve  <real, real, dim, true, variables_3_t> bezier_line
 bezier_linear_variable_t* wrapBezierLinearConstructor(const point_list_t& matrices, const point_list_t& vectors);
 
 bezier_linear_variable_t* wrapBezierLinearConstructorBounds
-    (const point_list_t& matrices, const point_list_t& vectors, const real ub);
+    (const point_list_t& matrices, const point_list_t& vectors, const real T_min, const real T_max);
 
 typedef std::pair<Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic>,
                   Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> > linear_points_t;

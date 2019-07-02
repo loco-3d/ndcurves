@@ -1,18 +1,18 @@
 /**
-* \file polynom.h
+* \file polynomial.h
 * \brief Definition of a cubic spline.
 * \author Steve T.
 * \version 0.1
 * \date 06/17/2013
 *
-* This file contains definitions for the polynom struct.
+* This file contains definitions for the polynomial struct.
 * It allows the creation and evaluation of natural
 * smooth splines of arbitrary dimension and order
 */
 
 
-#ifndef _STRUCT_POLYNOM
-#define _STRUCT_POLYNOM
+#ifndef _STRUCT_POLYNOMIAL
+#define _STRUCT_POLYNOMIAL
 
 #include "MathDefs.h"
 
@@ -25,14 +25,15 @@
 
 namespace curves
 {
-/// \class polynom
-/// \brief Represents a polynomf arbitrary order defined on the interval
-/// [tBegin, tEnd]. It follows the equation
-/// x(t) = a + b(t - t_min_) + ... + d(t - t_min_)^N, where N is the order
+/// \class polynomial.
+/// \brief Represents a polynomial of an arbitrary order defined on the interval
+/// \f$[t_{min}, t_{max}]\f$. It follows the equation :<br>
+/// \f$ x(t) = a + b(t - t_{min}) + ... + d(t - t_{min})^N \f$<br> 
+/// where N is the order and \f$ t \in [t_{min}, t_{max}] \f$.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
          typename Point= Eigen::Matrix<Numeric, Dim, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
-struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
+struct polynomial : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
     typedef Point 	point_t;
     typedef T_Point t_point_t;
@@ -44,26 +45,26 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /* Constructors - destructors */
     public:
-    ///\brief Constructor
-    ///\param coefficients : a reference to an Eigen matrix where each column is a coefficient,
+    /// \brief Constructor.
+    /// \param coefficients : a reference to an Eigen matrix where each column is a coefficient,
     /// from the zero order coefficient, up to the highest order. Spline order is given
     /// by the number of the columns -1.
-    ///\param min: LOWER bound on interval definition of the spline
-    ///\param max: UPPER bound on interval definition of the spline
-    polynom(const coeff_t& coefficients, const time_t min, const time_t max)
+    /// \param min  : LOWER bound on interval definition of the curve.
+    /// \param max  : UPPER bound on interval definition of the curve.
+    polynomial(const coeff_t& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(coefficients), dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
         safe_check();
     }
 
-    ///\brief Constructor
-    ///\param coefficients : a container containing all coefficients of the spline, starting
-    /// with the zero order coefficient, up to the highest order. Spline order is given
-    /// by the size of the coefficients
-    ///\param min: LOWER bound on interval definition of the spline
-    ///\param max: UPPER bound on interval definition of the spline
-    polynom(const T_Point& coefficients, const time_t min, const time_t max)
+    /// \brief Constructor
+    /// \param coefficients : a container containing all coefficients of the spline, starting
+    ///  with the zero order coefficient, up to the highest order. Spline order is given
+    ///  by the size of the coefficients.
+    /// \param min  : LOWER bound on interval definition of the spline.
+    /// \param max  : UPPER bound on interval definition of the spline.
+    polynomial(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
           dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
@@ -71,33 +72,33 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         safe_check();
     }
 
-    ///\brief Constructor
-    ///\param zeroOrderCoefficient : an iterator pointing to the first element of a structure containing the coefficients
-    /// it corresponds to the zero degree coefficient
-    ///\param out   : an iterator pointing to the last element of a structure ofcoefficients
-    ///\param min: LOWER bound on interval definition of the spline
-    ///\param max: UPPER bound on interval definition of the spline
+    /// \brief Constructor.
+    /// \param zeroOrderCoefficient : an iterator pointing to the first element of a structure containing the coefficients
+    ///  it corresponds to the zero degree coefficient.
+    /// \param out   : an iterator pointing to the last element of a structure ofcoefficients.
+    /// \param min   : LOWER bound on interval definition of the spline.
+    /// \param max   : UPPER bound on interval definition of the spline.
     template<typename In>
-    polynom(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
+    polynomial(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
         :coefficients_(init_coeffs(zeroOrderCoefficient, out)),
           dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
         safe_check();
     }
 
-    ///\brief Destructor
-    ~polynom()
+    /// \brief Destructor
+    ~polynomial()
     {
         // NOTHING
     }
 
 
-    polynom(const polynom& other)
+    polynomial(const polynomial& other)
         : coefficients_(other.coefficients_),
           dim_(other.dim_), order_(other.order_), t_min_(other.t_min_), t_max_(other.t_max_){}
 
 
-    //polynom& operator=(const polynom& other);
+    //polynomial& operator=(const polynomial& other);
 
     private:
     void safe_check()
@@ -105,9 +106,13 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         if(Safe)
         {
             if(t_min_ > t_max_)
-                std::out_of_range("TODO");
+            {
+                std::out_of_range("Tmin should be inferior to Tmax");
+            }
             if(coefficients_.size() != int(order_+1))
+            {
                 std::runtime_error("Spline order and coefficients do not match");
+            }
         }
     }
 
@@ -117,7 +122,7 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     public:
     /*///  \brief Evaluation of the cubic spline at time t.
     ///  \param t : the time when to evaluate the spine
-    ///  \param return : the value x(t)
+    ///  \param return \f$x(t)\f$, point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const
     {
         if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
@@ -131,31 +136,41 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 
     ///  \brief Evaluation of the cubic spline at time t using horner's scheme.
-    ///  \param t : the time when to evaluate the spine
-    ///  \param return : the value x(t)
+    ///  \param t : time when to evaluate the spline.
+    ///  \return \f$x(t)\f$ point corresponding on spline at time t.
     virtual point_t operator()(const time_t t) const
     {
-        if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
+        if((t < t_min_ || t > t_max_) && Safe)
+        { 
+            throw std::out_of_range("error in polynomial : time t to evaluate should be in range [Tmin, Tmax] of the curve");
+        }
         time_t const dt (t-t_min_);
         point_t h = coefficients_.col(order_);
         for(int i=(int)(order_-1); i>=0; i--)
+        {
             h = dt*h + coefficients_.col(i);
+        }
         return h;
     }
 
 
-    ///  \brief Evaluation of the derivative spline at time t.
-    ///  \param t : the time when to evaluate the spline
-    ///  \param order : order of the derivative
-    ///  \param return : the value x(t)
+    ///  \brief Evaluation of the derivative of order N of spline at time t.
+    ///  \param t : the time when to evaluate the spline.
+    ///  \param order : order of derivative.
+    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
-        if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
+        if((t < t_min_ || t > t_max_) && Safe)
+        { 
+            throw std::out_of_range("error in polynomial : time t to evaluate derivative should be in range [Tmin, Tmax] of the curve");
+        }
         time_t const dt (t-t_min_);
         time_t cdt(1);
         point_t currentPoint_ = point_t::Zero();
-        for(int i = (int)(order); i < (int)(order_+1); ++i, cdt*=dt)
+        for(int i = (int)(order); i < (int)(order_+1); ++i, cdt*=dt) 
+        {
             currentPoint_ += cdt *coefficients_.col(i) * fact(i, order);
+        }
         return currentPoint_;
     }
 
@@ -164,7 +179,9 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         num_t res(1);
         for(std::size_t i = 0; i < order; ++i)
+        {
             res *= (num_t)(n-i);
+        }
         return res;
     }
 
@@ -172,9 +189,11 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
 /*Helpers*/
     public:
-    ///  \brief Returns the minimum time for wich curve is defined
+    /// \brief Get the minimum time for which the curve is defined
+    /// \return \f$t_{min}\f$ lower bound of time range.
     num_t virtual min() const {return t_min_;}
-    ///  \brief Returns the maximum time for wich curve is defined
+    /// \brief Get the maximum time for which the curve is defined.
+    /// \return \f$t_{max}\f$ upper bound of time range.
     num_t virtual max() const {return t_max_;}
 /*Helpers*/
 
@@ -195,10 +214,12 @@ struct polynom : public curve_abc<Time, Numeric, Dim, Safe, Point>
         std::size_t size = std::distance(zeroOrderCoefficient, highestOrderCoefficient);
         coeff_t res = coeff_t(Dim, size); int i = 0;
         for(In cit = zeroOrderCoefficient; cit != highestOrderCoefficient; ++cit, ++i)
+        {
             res.col(i) = *cit;
+        }
         return res;
     }
-}; //class polynom
+}; //class polynomial
 } // namespace curves
-#endif //_STRUCT_POLYNOM
+#endif //_STRUCT_POLYNOMIAL
 
