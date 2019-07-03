@@ -41,20 +41,12 @@ typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, polynomial
 typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
 typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
 
+const double margin = 1e-9;
 
-bool QuasiEqual(const double a, const double b, const float margin)
+bool QuasiEqual(const double a, const double b)
 {
-	if ((a <= 0 && b <= 0) || (a >= 0 && b>= 0))
-	{
-        return (abs(a-b)) <= margin;
-	}
-	else
-	{
-		return abs(a) + abs(b) <= margin;
-	}
+    return std::fabs(a-b)<margin;
 }
-
-const double margin = 0.001;
 
 } // namespace curves
 
@@ -68,7 +60,7 @@ ostream& operator<<(ostream& os, const point_t& pt)
 
 void ComparePoints(const Eigen::VectorXd& pt1, const Eigen::VectorXd& pt2, const std::string& errmsg, bool& error, bool notequal = false)
 {
-    if((pt1-pt2).norm() > margin && !notequal)
+    if(!QuasiEqual((pt1-pt2).norm(), 0.0)  && !notequal)
 	{
 		error = true;
         std::cout << errmsg << pt1.transpose() << " ; " << pt2.transpose() << std::endl;
@@ -76,13 +68,13 @@ void ComparePoints(const Eigen::VectorXd& pt1, const Eigen::VectorXd& pt2, const
 }
 
 template<typename curve1, typename curve2>
-void compareCurves(curve1 c1, curve2 c2, const std::string& errMsg, bool& error)
+void CompareCurves(curve1 c1, curve2 c2, const std::string& errMsg, bool& error)
 {
     double T_min = c1.min();
     double T_max = c1.max();
-    if (T_min!=c2.min() || T_max!=c2.max())
+    if (!QuasiEqual(T_min, c2.min()) || !QuasiEqual(T_max, c2.max()))
     {
-        std::cout << "compareCurves, time min and max of curves does not match ["<<T_min<<","<<T_max<<"] " 
+        std::cout << "CompareCurves, ERROR, time min and max of curves do not match ["<<T_min<<","<<T_max<<"] " 
                 << " and ["<<c2.min()<<","<<c2.max()<<"] "<<std::endl;
         error = true;
     }
@@ -161,12 +153,12 @@ void CubicFunctionTest(bool& error)
     {
         std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
     }
-    if(cf.max() != 1)
+    if (!QuasiEqual(cf.max(), 1.0))
     {
         error = true;
         std::cout << "Evaluation of cubic cf error, MaxBound should be equal to 1\n";
     }
-    if(cf.min() != 0)
+    if (!QuasiEqual(cf.min(), 0.0))
     {
         error = true;
         std::cout << "Evaluation of cubic cf error, MinBound should be equal to 1\n";
@@ -257,12 +249,12 @@ void BezierCurveTest(bool& error)
 		std::cout << "Evaluation of bezier cf error, 1.1 should be an out of range value\n";
         error = true;
 	}
-	if(cf.max() != 1)
+    if (!QuasiEqual(cf.max(),1.0))
 	{
 		error = true;
 		std::cout << "Evaluation of bezier cf error, MaxBound should be equal to 1\n";
 	}
-	if(cf.min() != 0)
+    if (!QuasiEqual(cf.min(),0.0))
 	{
 		error = true;
 		std::cout << "Evaluation of bezier cf error, MinBound should be equal to 1\n";
@@ -426,7 +418,7 @@ void BezierDerivativeCurveTimeReparametrizationTest(bool& error)
 
 void BezierDerivativeCurveConstraintTest(bool& error)
 {
-    std::string errMsg("In test BezierDerivativeCurveConstraintTest, Error While checking value of point on curve : ");
+    std::string errMsg0("In test BezierDerivativeCurveConstraintTest, Error While checking value of point on curve : ");
     point_t a(1,2,3);
     point_t b(2,3,4);
     point_t c(3,4,5);
@@ -446,16 +438,26 @@ void BezierDerivativeCurveConstraintTest(bool& error)
     bezier_curve_t::num_t T_max = 3.0;
     bezier_curve_t cf(params.begin(), params.end(), constraints, T_min, T_max);
 
-    assert(cf.degree_ == params.size() + 3);
-    assert(cf.size_   == params.size() + 4);
+    ComparePoints(a, cf(T_min), errMsg0, error);
+    ComparePoints(c, cf(T_max), errMsg0, error);
+    ComparePoints(constraints.init_vel, cf.derivate(T_min,1), errMsg0, error);
+    ComparePoints(constraints.end_vel , cf.derivate(T_max,1), errMsg0, error);
+    ComparePoints(constraints.init_acc, cf.derivate(T_min,2), errMsg0, error);
+    ComparePoints(constraints.end_vel, cf.derivate(T_max,1), errMsg0, error);
+    ComparePoints(constraints.end_acc, cf.derivate(T_max,2), errMsg0, error);
 
-    ComparePoints(a, cf(T_min), errMsg, error);
-    ComparePoints(c, cf(T_max), errMsg, error);
-    ComparePoints(constraints.init_vel, cf.derivate(T_min,1), errMsg, error);
-    ComparePoints(constraints.end_vel , cf.derivate(T_max,1), errMsg, error);
-    ComparePoints(constraints.init_acc, cf.derivate(T_min,2), errMsg, error);
-    ComparePoints(constraints.end_vel, cf.derivate(T_max,1), errMsg, error);
-    ComparePoints(constraints.end_acc, cf.derivate(T_max,2), errMsg, error);
+    std::string errMsg1("In test BezierDerivativeCurveConstraintTest, Error While checking checking degree of bezier curve :");
+    std::string errMsg2("In test BezierDerivativeCurveConstraintTest, Error While checking checking size of bezier curve :");
+    if (cf.degree_ != params.size() + 3)
+    {
+        error = true;
+        std::cout << errMsg1 << cf.degree_ << " ; " << params.size()+3 << std::endl;
+    }
+    if (cf.size_   != params.size() + 4)
+    {
+        error = true;
+        std::cout << errMsg2 << cf.size_ << " ; " << params.size()+4 << std::endl;
+    }
 }
 
 
@@ -488,7 +490,7 @@ void toPolynomialConversionTest(bool& error)
     bezier_curve_t::num_t T_max = 3.0;
     bezier_curve_t bc(control_points.begin(), control_points.end(),T_min, T_max);
     polynomial_t pol = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc);
-    compareCurves<polynomial_t, bezier_curve_t>(pol, bc, errMsg, error);
+    CompareCurves<polynomial_t, bezier_curve_t>(pol, bc, errMsg, error);
 }
 
 void cubicConversionTest(bool& error)
@@ -518,37 +520,37 @@ void cubicConversionTest(bool& error)
     //std::cout<<"======================= \n";
     //std::cout<<"hermite to bezier \n";
     bezier_curve_t bc0 = bezier_from_curve<bezier_curve_t, cubic_hermite_spline_t>(chs0);
-    compareCurves<cubic_hermite_spline_t, bezier_curve_t>(chs0, bc0, errMsg0, error);
+    CompareCurves<cubic_hermite_spline_t, bezier_curve_t>(chs0, bc0, errMsg0, error);
 
     // hermite to pol
     //std::cout<<"======================= \n";
     //std::cout<<"hermite to polynomial \n";
     polynomial_t pol0 = polynomial_from_curve<polynomial_t, cubic_hermite_spline_t>(chs0);
-    compareCurves<cubic_hermite_spline_t, polynomial_t>(chs0, pol0, errMsg0, error);
+    CompareCurves<cubic_hermite_spline_t, polynomial_t>(chs0, pol0, errMsg0, error);
 
     // pol to hermite
     //std::cout<<"======================= \n";
     //std::cout<<"polynomial to hermite \n";
     cubic_hermite_spline_t chs1 = hermite_from_curve<cubic_hermite_spline_t, polynomial_t>(pol0);
-    compareCurves<polynomial_t, cubic_hermite_spline_t>(pol0,chs1,errMsg2,error);
+    CompareCurves<polynomial_t, cubic_hermite_spline_t>(pol0,chs1,errMsg2,error);
 
     // pol to bezier
     //std::cout<<"======================= \n";
     //std::cout<<"polynomial to bezier \n";
     bezier_curve_t bc1 = bezier_from_curve<bezier_curve_t, polynomial_t>(pol0);
-    compareCurves<bezier_curve_t, polynomial_t>(bc1, pol0, errMsg2, error);
+    CompareCurves<bezier_curve_t, polynomial_t>(bc1, pol0, errMsg2, error);
 
     // Bezier to pol
     //std::cout<<"======================= \n";
     //std::cout<<"bezier to polynomial \n";
     polynomial_t pol1 = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc0);
-    compareCurves<bezier_curve_t, polynomial_t>(bc0, pol1, errMsg1, error);
+    CompareCurves<bezier_curve_t, polynomial_t>(bc0, pol1, errMsg1, error);
 
     // bezier => hermite
     //std::cout<<"======================= \n";
     //std::cout<<"bezier to hermite \n";
     cubic_hermite_spline_t chs2 = hermite_from_curve<cubic_hermite_spline_t, bezier_curve_t>(bc0);
-    compareCurves<bezier_curve_t, cubic_hermite_spline_t>(bc0, chs2, errMsg1, error);
+    CompareCurves<bezier_curve_t, cubic_hermite_spline_t>(bc0, chs2, errMsg1, error);
 }
 
 /*Exact Cubic Function tests*/
@@ -564,7 +566,12 @@ void ExactCubicNoErrorTest(bool& error)
 
     // Test number of polynomials in exact cubic
     std::size_t numberSegments = exactCubic.getNumberSplines();
-    assert(numberSegments == 6);
+    if (numberSegments != 6)
+    {
+        error = true;
+        std::cout << "In ExactCubicNoErrorTest, Error While checking number of splines" << 
+                    numberSegments << " ; " << 6 << std::endl;
+    }
 
     // Test getSplineAt function
     for (std::size_t i=0; i<numberSegments; i++)
@@ -597,12 +604,12 @@ void ExactCubicNoErrorTest(bool& error)
 		std::cout << "Evaluation of exactCubic cf error, 3.2 should be an out of range value\n";
 	}
 
-	if(exactCubic.max() != 3.)
+    if (!QuasiEqual(exactCubic.max(),3.0))
 	{
 		error = true;
 		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 3\n";
 	}
-	if(exactCubic.min() != 0.)
+    if (!QuasiEqual(exactCubic.min(),0.0))
 	{
 		error = true;
 		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 0\n";
@@ -621,19 +628,24 @@ void ExactCubicTwoPointsTest(bool& error)
 	exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
 
 	point_t res1 = exactCubic(0);
-	std::string errmsg("in ExactCubic 2 points Error While checking that given wayPoints  are crossed (expected / obtained)");
-	ComparePoints(point_t(0,0,0), res1, errmsg, error);
+	std::string errmsg0("in ExactCubicTwoPointsTest, Error While checking that given wayPoints  are crossed (expected / obtained)");
+	ComparePoints(point_t(0,0,0), res1, errmsg0, error);
 
 	res1 = exactCubic(1);
-	ComparePoints(point_t(1,1,1), res1, errmsg, error);
+	ComparePoints(point_t(1,1,1), res1, errmsg0, error);
 
     // Test number of polynomials in exact cubic
     std::size_t numberSegments = exactCubic.getNumberSplines();
-    assert(numberSegments == 1);
+    if (numberSegments != 1)
+    {
+        error = true;
+        std::cout << "In ExactCubicTwoPointsTest, Error While checking number of splines" << 
+                    numberSegments << " ; " << 1 << std::endl;
+    }
 
     // Test getSplineAt
-    assert(exactCubic(0.5) == (exactCubic.getSplineAt(0))(0.5));
-
+    std::string errmsg1("in ExactCubicTwoPointsTest, Error While checking value on curve");
+    ComparePoints(exactCubic(0.5), (exactCubic.getSplineAt(0))(0.5), errmsg1, error);
 }
 
 void ExactCubicOneDimTest(bool& error)
@@ -879,22 +891,22 @@ void TestReparametrization(bool& error)
 {
     helpers::rotation_spline s;
     const helpers::exact_cubic_constraint_one_dim& sp = s.time_reparam_;
-    if(sp.min() != 0)
+    if (!QuasiEqual(sp.min(),0.0))
     {
         std::cout << "in TestReparametrization; min value is not 0, got " << sp.min() << std::endl;
         error = true;
     }
-    if(sp.max() != 1)
+    if (!QuasiEqual(sp.max(),1.0))
     {
         std::cout << "in TestReparametrization; max value is not 1, got " << sp.max() << std::endl;
         error = true;
     }
-    if(sp(1)[0] != 1.)
+    if (!QuasiEqual(sp(1)[0],1.0))
     {
         std::cout << "in TestReparametrization; end value is not 1, got " << sp(1)[0] << std::endl;
         error = true;
     }
-    if(sp(0)[0] != 0.)
+    if (!QuasiEqual(sp(0)[0],0.0))
     {
         std::cout << "in TestReparametrization; init value is not 0, got " << sp(0)[0] << std::endl;
         error = true;
@@ -947,13 +959,10 @@ void BezierEvalDeCasteljau(bool& error)
     // 3d curve
     bezier_curve_t cf(params.begin(), params.end());
 
+    std::string errmsg("Error in BezierEvalDeCasteljau; while comparing actual bezier evaluation and de Casteljau : ");
     for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
     {
-        if(cf.evalDeCasteljau(*cit) != cf(*cit))
-        {
-            error = true;
-            std::cout<<" De Casteljau evaluation did not return the same value as analytical"<<std::endl;
-        }
+        ComparePoints(cf.evalDeCasteljau(*cit), cf(*cit), errmsg, error);
     }
 
     params.push_back(d);
@@ -967,11 +976,7 @@ void BezierEvalDeCasteljau(bool& error)
 
     for(std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit)
     {
-        if(cf.evalDeCasteljau(*cit) != cf(*cit))
-        {
-            error = true;
-            std::cout<<" De Casteljau evaluation did not return the same value as analytical"<<std::endl;
-        }
+        ComparePoints(cf.evalDeCasteljau(*cit), cf(*cit), errmsg, error);
     }
 
 }
@@ -986,6 +991,7 @@ void BezierSplitCurve(bool& error)
     size_t n = 5;
     double t_min = 0.2;
     double t_max = 10;
+    double aux0, aux1;
     for(size_t i = 0 ; i < 1 ; ++i)
     {
         // build a random curve and split it at random time :
@@ -1002,66 +1008,47 @@ void BezierSplitCurve(bool& error)
 
         bezier_curve_t c(wps.begin(), wps.end(),t0, t1);
         std::pair<bezier_curve_t,bezier_curve_t> cs = c.split(ts);
-        //std::cout<<"split curve of duration "<<t<<" at "<<ts<<std::endl;
 
         // test on splitted curves :
         if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) ))
         {
             error = true;
-            std::cout<<" Degree of the splitted curve are not the same as the original curve"<<std::endl;
+            std::cout<<"BezierSplitCurve, ERROR Degree of the splitted curve are not the same as the original curve"<<std::endl;
         }
-
-        if(c.max()-c.min() != (cs.first.max()-cs.first.min() + cs.second.max()-cs.second.min()))
+        aux0 = c.max()-c.min();
+        aux1 = (cs.first.max()-cs.first.min() + cs.second.max()-cs.second.min());
+        if(!QuasiEqual(aux0, aux1))
         {
             error = true;
-            std::cout<<"Duration of the splitted curve doesn't correspond to the original"<<std::endl;
+            std::cout<<"BezierSplitCurve, ERROR duration of the splitted curve doesn't correspond to the original"<<std::endl;
         }
-
-        if(c(t0) != cs.first(t0))
+        if(!QuasiEqual(cs.first.max(), ts))
         {
             error = true;
-            std::cout<<"initial point of the splitted curve doesn't correspond to the original"<<std::endl;
+            std::cout<<"BezierSplitCurve, ERROR timing of the splitted curve doesn't correspond to the original"<<std::endl;
         }
 
-        if(c(t1) != cs.second(cs.second.max()))
-        {
-            error = true;
-            std::cout<<"final point of the splitted curve doesn't correspond to the original"<<std::endl;
-        }
 
-        if(cs.first.max() != ts)
-        {
-            error = true;
-            std::cout<<"timing of the splitted curve doesn't correspond to the original"<<std::endl;
-        }
-
-        if(cs.first(ts) != cs.second(ts))
-        {
-            error = true;
-            std::cout<<"splitting point of the splitted curve doesn't correspond to the original"<<std::endl;
-        }
+        std::string errmsg("BezierSplitCurve, ERROR initial point of the splitted curve doesn't correspond to the original");
+        ComparePoints(c(t0), cs.first(t0), errmsg, error);
+        errmsg = "BezierSplitCurve, ERROR splitting point of the splitted curve doesn't correspond to the original";
+        ComparePoints(cs.first(ts), cs.second(ts), errmsg, error);
+        errmsg = "BezierSplitCurve, ERROR final point of the splitted curve doesn't correspond to the original";
+        ComparePoints(c(t1), cs.second(cs.second.max()), errmsg, error);
 
         // check along curve :
         double ti = t0;
+        errmsg = "BezierSplitCurve, ERROR while checking value on curve and curves splitted";
         while(ti <= ts)
         {
-            if((cs.first(ti) - c(ti)).norm() > 1e-14)
-            {
-                error = true;
-                std::cout<<"first splitted curve and original curve doesn't correspond, error = "<<cs.first(ti) - c(ti) <<std::endl;
-            }
+            ComparePoints(cs.first(ti), c(ti), errmsg, error);
             ti += 0.01;
         }
         while(ti <= t1)
         {
-            if((cs.second(ti) - c(ti)).norm() > 1e-14)
-            {
-                error = true;
-                std::cout<<"second splitted curve and original curve doesn't correspond, error = "<<cs.second(ti-ts) - c(ti)<<std::endl;
-            }
+            ComparePoints(cs.second(ti), c(ti), errmsg, error);
             ti += 0.01;
         }
-
     }
 }
 

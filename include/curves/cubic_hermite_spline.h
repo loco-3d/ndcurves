@@ -214,7 +214,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         //
         const Time dt = (t1-t0);
         const Time alpha = (t - t0)/dt;
-        assert(0. <= alpha <= 1. && "alpha must be in [0,1]");
+        assert(0. <= alpha && alpha <= 1. && "alpha must be in [0,1]");
         Numeric h00, h10, h01, h11;
         evalCoeffs(alpha,h00,h10,h01,h11,order_derivative);
         //std::cout << "for val t="<<t<<" alpha="<<alpha<<" coef : h00="<<h00<<" h10="<<h10<<" h01="<<h01<<" h11="<<h11<<std::endl;
