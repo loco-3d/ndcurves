@@ -32,16 +32,16 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
 , typename Point= Eigen::Matrix<Numeric, Dim, 1> >
 struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
-	typedef Point 	point_t;
-	typedef Time 	time_t;
-    typedef Numeric	num_t;
+    typedef Point   point_t;
+    typedef Time    time_t;
+    typedef Numeric num_t;
     typedef curve_constraints<point_t> curve_constraints_t;
     typedef std::vector<point_t,Eigen::aligned_allocator<point_t> > t_point_t;
     typedef typename t_point_t::const_iterator cit_point_t;
     typedef bezier_curve<Time, Numeric, Dim, Safe, Point > bezier_curve_t;
 
 /* Constructors - destructors */
-	public:
+    public:
 
     /// \brief Constructor.
     /// Given the first and last point of a control points set, create the bezier curve.
@@ -99,22 +99,22 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
     }
 
-	///\brief Destructor
-	~bezier_curve()
-	{
-		// NOTHING
-	}
+    ///\brief Destructor
+    ~bezier_curve()
+    {
+        // NOTHING
+    }
 
-	private:
-//	bezier_curve(const bezier_curve&);
+    private:
+//  bezier_curve(const bezier_curve&);
 //  bezier_curve& operator=(const bezier_curve&);
 /* Constructors - destructors */
 
 /*Operations*/
-	public:
-	///  \brief Evaluation of the bezier curve at time t.
-	///  \param t : time when to evaluate the curve.
-	///  \return \f$x(t)\f$ point corresponding on curve at time t.
+    public:
+    ///  \brief Evaluation of the bezier curve at time t.
+    ///  \param t : time when to evaluate the curve.
+    ///  \return \f$x(t)\f$ point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const
     {
         if(Safe &! (T_min_ <= t && t <= T_max_))
@@ -128,7 +128,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
           return evalHorner(t);
         }
-	}
+    }
 
     ///  \brief Compute the derived curve at order N.
     ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
@@ -384,7 +384,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     virtual time_t max() const{return T_max_;}
 /*Helpers*/
 
-	public:
+    public:
     /// Starting time of cubic hermite spline : T_min_ is equal to first time of control points.
     /*const*/ time_t T_min_;
     /// Ending time of cubic hermite spline : T_max_ is equal to last time of control points.

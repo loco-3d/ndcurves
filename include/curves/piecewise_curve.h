@@ -31,36 +31,36 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
      >
 struct piecewise_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
-	typedef Point 	point_t;
-	typedef T_Point t_point_t;
-	typedef Time 	time_t;
-    typedef Numeric	num_t;
+    typedef Point   point_t;
+    typedef T_Point t_point_t;
+    typedef Time    time_t;
+    typedef Numeric num_t;
     typedef Curve curve_t;
     typedef typename std::vector < curve_t > t_curve_t;
     typedef typename std::vector< Time > t_time_t;
 
-	public:
+    public:
 
-	/// \brief Constructor.
+    /// \brief Constructor.
     /// Initialize a piecewise curve by giving the first curve.
     /// \param pol   : a polynomial curve.
     ///
-	piecewise_curve(const curve_t& cf)
-	{
-		size_ = 0;
-		add_curve(cf);
+    piecewise_curve(const curve_t& cf)
+    {
+        size_ = 0;
+        add_curve(cf);
         time_curves_.push_back(cf.min());
         T_min_ = cf.min();
-	}
+    }
 
-	virtual ~piecewise_curve(){}
+    virtual ~piecewise_curve(){}
 
-	virtual Point operator()(const Time t) const
+    virtual Point operator()(const Time t) const
     {
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
-        	//std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
-			throw std::out_of_range("can't evaluate piecewise curve, out of range");
+            //std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
+            throw std::out_of_range("can't evaluate piecewise curve, out of range");
         }
         return curves_.at(find_interval(t))(t);
     }
@@ -74,7 +74,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {   
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
-			throw std::invalid_argument("can't evaluate piecewise curve, out of range");
+            throw std::invalid_argument("can't evaluate piecewise curve, out of range");
         }
         return (curves_.at(find_interval(t))).derivate(t, order);
     }
@@ -83,66 +83,66 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///         is equal to \f$T_{max}\f$ of the actual piecewise curve.
     ///  \param cf : curve to add.
     ///
-	void add_curve(const curve_t& cf)
-	{
-		// Check time continuity : Beginning time of pol must be equal to T_max_ of actual piecewise curve.
-		if (size_!=0)
-		{
+    void add_curve(const curve_t& cf)
+    {
+        // Check time continuity : Beginning time of pol must be equal to T_max_ of actual piecewise curve.
+        if (size_!=0)
+        {
             if (!(fabs(cf.min()-T_max_)<std::numeric_limits<Time>::epsilon()))
             {
                 throw std::invalid_argument("Can not add new Polynom to PiecewiseCurve : time discontinuity between T_max_ and pol.min()");
             }
-		}
-		curves_.push_back(cf);
-		size_ = curves_.size();
-		T_max_ = cf.max();
-		time_curves_.push_back(T_max_);
-	}
+        }
+        curves_.push_back(cf);
+        size_ = curves_.size();
+        T_max_ = cf.max();
+        time_curves_.push_back(T_max_);
+    }
 
     ///  \brief Check if the curve is continuous of order given.
     ///  \param order : order of continuity we want to check.
     ///  \return True if the curve is continuous of order given.
     ///
-	bool is_continuous(const std::size_t order)
-	{
+    bool is_continuous(const std::size_t order)
+    {
         double margin = 0.001;
-		bool isContinuous = true;
-    	std::size_t i=0;
-    	point_t value_end, value_start;
-    	while (isContinuous && i<(size_-1))
-    	{
-    		curve_t current = curves_.at(i);
-    		curve_t next = curves_.at(i+1);
+        bool isContinuous = true;
+        std::size_t i=0;
+        point_t value_end, value_start;
+        while (isContinuous && i<(size_-1))
+        {
+            curve_t current = curves_.at(i);
+            curve_t next = curves_.at(i+1);
 
-    		if (order == 0)
-    		{
-    			value_end = current(current.max());
-				value_start = next(next.min());
-    		}
-    		else
-    		{
-				value_end = current.derivate(current.max(),order);
-				value_start = next.derivate(next.min(),order);
-			}
+            if (order == 0)
+            {
+                value_end = current(current.max());
+                value_start = next(next.min());
+            }
+            else
+            {
+                value_end = current.derivate(current.max(),order);
+                value_start = next.derivate(next.min(),order);
+            }
 
-    		if ((value_end-value_start).norm() > margin)
-    		{
-    			isContinuous = false;
-    		}
-    		i++;
-    	}
-    	return isContinuous;
-	}
+            if ((value_end-value_start).norm() > margin)
+            {
+                isContinuous = false;
+            }
+            i++;
+        }
+        return isContinuous;
+    }
 
 
-	private:
+    private:
 
-	/// \brief Get index of the interval corresponding to time t for the interpolation.
+    /// \brief Get index of the interval corresponding to time t for the interpolation.
     /// \param t : time where to look for interval.
     /// \return Index of interval for time t.
     ///
     std::size_t find_interval(const Numeric t) const
-    {	
+    {   
         // time before first control point time.
         if(t < time_curves_[0])
         {
@@ -176,20 +176,20 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     }
 
     /*Helpers*/
-	public:
+    public:
     /// \brief Get the minimum time for which the curve is defined
     /// \return \f$t_{min}\f$, lower bound of time range.
     Time virtual min() const{return T_min_;}
     /// \brief Get the maximum time for which the curve is defined.
     /// \return \f$t_{max}\f$, upper bound of time range.
     Time virtual max() const{return T_max_;}
-	/*Helpers*/
+    /*Helpers*/
 
     /* Variables */
-	t_curve_t curves_; // for curves 0/1/2 : [ curve0, curve1, curve2 ]
-	t_time_t time_curves_; // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
-	std::size_t size_; // Number of segments in piecewise curve = size of curves_
-	Time T_min_, T_max_;
+    t_curve_t curves_; // for curves 0/1/2 : [ curve0, curve1, curve2 ]
+    t_time_t time_curves_; // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
+    std::size_t size_; // Number of segments in piecewise curve = size of curves_
+    Time T_min_, T_max_;
 };
 
 } // end namespace

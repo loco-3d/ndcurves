@@ -41,12 +41,12 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
 , typename SplineBase=polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
 struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
-	typedef Point 	point_t;
+    typedef Point   point_t;
     typedef T_Point t_point_t;
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
     typedef Eigen::Matrix<Numeric, 3, 3> Matrix3;
-	typedef Time 	time_t;
-	typedef Numeric	num_t;
+    typedef Time    time_t;
+    typedef Numeric num_t;
     typedef SplineBase spline_t;
     typedef typename std::vector<spline_t> t_spline_t;
     typedef typename t_spline_t::iterator it_spline_t;
@@ -54,14 +54,14 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     typedef curve_abc<Time, Numeric, Dim, Safe, Point> curve_abc_t;
     typedef curve_constraints<point_t> spline_constraints;
 
-	/* Constructors - destructors */
-	public:
-	/// \brief Constructor.
-	/// \param wayPointsBegin : an iterator pointing to the first element of a waypoint container.
-	/// \param wayPointsEns   : an iterator pointing to the last element of a waypoint container.
+    /* Constructors - destructors */
+    public:
+    /// \brief Constructor.
+    /// \param wayPointsBegin : an iterator pointing to the first element of a waypoint container.
+    /// \param wayPointsEns   : an iterator pointing to the last element of a waypoint container.
     ///
-	template<typename In>
-	exact_cubic(In wayPointsBegin, In wayPointsEnd)
+    template<typename In>
+    exact_cubic(In wayPointsBegin, In wayPointsEnd)
         : curve_abc_t(), subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd)) {}
 
     /// \brief Constructor.
@@ -82,7 +82,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     exact_cubic(const exact_cubic& other)
         : curve_abc_t(), subSplines_(other.subSplines_) {}
 
-	/// \brief Destructor.
+    /// \brief Destructor.
     virtual ~exact_cubic(){}
 
     std::size_t getNumberSplines()
@@ -249,13 +249,13 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
 
     private:
     //exact_cubic& operator=(const exact_cubic&);
-	/* Constructors - destructors */
+    /* Constructors - destructors */
 
-	/*Operations*/
-	public:
-	///  \brief Evaluation of the cubic spline at time t.
+    /*Operations*/
+    public:
+    ///  \brief Evaluation of the cubic spline at time t.
     ///  \param t : time when to evaluate the spline
-	///  \return \f$x(t)\f$ point corresponding on spline at time t.
+    ///  \return \f$x(t)\f$ point corresponding on spline at time t.
     ///
     virtual point_t operator()(const time_t t) const
     {
@@ -295,22 +295,22 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
         // this should not happen
         throw std::runtime_error("Exact cubic evaluation failed; t is outside bounds");
     }
-	/*Operations*/
+    /*Operations*/
 
-	/*Helpers*/
-	public:
+    /*Helpers*/
+    public:
     /// \brief Get the minimum time for which the curve is defined
     /// \return \f$t_{min}\f$ lower bound of time range.
     num_t virtual min() const{return subSplines_.front().min();}
     /// \brief Get the maximum time for which the curve is defined.
     /// \return \f$t_{max}\f$ upper bound of time range.
     num_t virtual max() const{return subSplines_.back().max();}
-	/*Helpers*/
+    /*Helpers*/
 
-	/*Attributes*/
+    /*Attributes*/
     public:
     t_spline_t subSplines_; // const
-	/*Attributes*/
+    /*Attributes*/
 };
 } // namespace curves
 #endif //_CLASS_EXACTCUBIC
