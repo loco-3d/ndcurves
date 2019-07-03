@@ -85,13 +85,11 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     void add_curve(const curve_t& cf)
     {
+        const double margin = 1e-9;
         // Check time continuity : Beginning time of pol must be equal to T_max_ of actual piecewise curve.
-        if (size_!=0)
+        if (size_!=0 && !(fabs(cf.min()-T_max_)<margin))
         {
-            if (!(fabs(cf.min()-T_max_)<std::numeric_limits<Time>::epsilon()))
-            {
-                throw std::invalid_argument("Can not add new Polynom to PiecewiseCurve : time discontinuity between T_max_ and pol.min()");
-            }
+            throw std::invalid_argument("Can not add new Polynom to PiecewiseCurve : time discontinuity between T_max_ and pol.min()");
         }
         curves_.push_back(cf);
         size_ = curves_.size();
@@ -105,7 +103,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     ///
     bool is_continuous(const std::size_t order)
     {
-        double margin = 0.001;
+        const double margin = 1e-9;
         bool isContinuous = true;
         std::size_t i=0;
         point_t value_end, value_start;
