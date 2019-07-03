@@ -41,7 +41,7 @@ typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, polynomial
 typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
 typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
 
-const double margin = 1e-9;
+const double margin = 1e-3;
 
 bool QuasiEqual(const double a, const double b)
 {
