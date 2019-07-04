@@ -8,8 +8,6 @@
 #ifndef _CLASS_PIECEWISE_CURVE
 #define _CLASS_PIECEWISE_CURVE
 
-#define MARGIN 1e-3
-
 #include "curve_abc.h"
 #include "curve_conversion.h"
 
@@ -188,7 +186,11 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     t_time_t time_curves_; // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
     std::size_t size_; // Number of segments in piecewise curve = size of curves_
     Time T_min_, T_max_;
+    static const double MARGIN;
 };
+
+template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point, typename T_Point, typename Curve>
+const double piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Curve>::MARGIN(0.001);
 
 } // end namespace
 
