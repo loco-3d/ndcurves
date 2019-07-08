@@ -95,7 +95,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
 
     polynomial(const polynomial& other)
         : coefficients_(other.coefficients_),
-          dim_(other.dim_), order_(other.order_), t_min_(other.t_min_), t_max_(other.t_max_){}
+          dim_(other.dim_), order_(other.order_), t_min_(other.t_min_), t_max_(other.t_max_)
+          {}
 
 
     //polynomial& operator=(const polynomial& other);

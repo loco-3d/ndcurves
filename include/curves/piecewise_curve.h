@@ -11,8 +11,6 @@
 #include "curve_abc.h"
 #include "curve_conversion.h"
 
-#include <typeinfo>
-
 namespace curves
 {
 /// \class PiecewiseCurve.
@@ -80,7 +78,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
     }
 
     ///  \brief Add a new curve to piecewise curve, which should be defined in \f$[T_{min},T_{max}]\f$ where \f$T_{min}\f$
-    ///         is equal to \f$T_{max}\f$ of the actual piecewise curve.
+    ///         is equal to \f$T_{max}\f$ of the actual piecewise curve. The curve added should be of type Curve as defined
+    ///         in the template.
     ///  \param cf : curve to add.
     ///
     void add_curve(const curve_t& cf)
@@ -130,6 +129,56 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
         return isContinuous;
     }
 
+    template<typename Bezier>
+    piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Bezier> convert_piecewise_curve_to_bezier()
+    {
+        typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Bezier> piecewise_curve_out_t;
+        // Get first curve (segment)
+        curve_t first_curve = curves_.at(0);
+        Bezier first_curve_output = bezier_from_curve<Bezier, curve_t>(first_curve);
+        // Create piecewise curve
+        piecewise_curve_out_t pc_res(first_curve_output);
+        // Convert and add all other curves (segments)
+        for (std::size_t i=1; i<size_; i++)
+        {
+            pc_res.add_curve(bezier_from_curve<Bezier, curve_t>(curves_.at(i)));
+        }
+        return pc_res;
+    }
+
+    template<typename Hermite>
+    piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Hermite> convert_piecewise_curve_to_cubic_hermite()
+    {
+        typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Hermite> piecewise_curve_out_t;
+        // Get first curve (segment)
+        curve_t first_curve = curves_.at(0);
+        Hermite first_curve_output = hermite_from_curve<Hermite, curve_t>(first_curve);
+        // Create piecewise curve
+        piecewise_curve_out_t pc_res(first_curve_output);
+        // Convert and add all other curves (segments)
+        for (std::size_t i=1; i<size_; i++)
+        {
+            pc_res.add_curve(hermite_from_curve<Hermite, curve_t>(curves_.at(i)));
+        }
+        return pc_res;
+    }
+
+    template<typename Polynomial>
+    piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> convert_piecewise_curve_to_polynomial()
+    {
+        typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> piecewise_curve_out_t;
+        // Get first curve (segment)
+        curve_t first_curve = curves_.at(0);
+        Polynomial first_curve_output = polynomial_from_curve<Polynomial, curve_t>(first_curve);
+        // Create piecewise curve
+        piecewise_curve_out_t pc_res(first_curve_output);
+        // Convert and add all other curves (segments)
+        for (std::size_t i=1; i<size_; i++)
+        {
+            pc_res.add_curve(polynomial_from_curve<Polynomial, curve_t>(curves_.at(i)));
+        }
+        return pc_res;
+    }
 
     private:
 

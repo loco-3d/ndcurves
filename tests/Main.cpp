@@ -448,10 +448,10 @@ void BezierDerivativeCurveConstraintTest(bool& error)
 
     std::string errMsg1("In test BezierDerivativeCurveConstraintTest, Error While checking checking degree of bezier curve :");
     std::string errMsg2("In test BezierDerivativeCurveConstraintTest, Error While checking checking size of bezier curve :");
-    if (cf.degree_ != params.size() + 3)
+    if (cf.order_ != params.size() + 3)
     {
         error = true;
-        std::cout << errMsg1 << cf.degree_ << " ; " << params.size()+3 << std::endl;
+        std::cout << errMsg1 << cf.order_ << " ; " << params.size()+3 << std::endl;
     }
     if (cf.size_   != params.size() + 4)
     {
@@ -1010,7 +1010,7 @@ void BezierSplitCurve(bool& error)
         std::pair<bezier_curve_t,bezier_curve_t> cs = c.split(ts);
 
         // test on splitted curves :
-        if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) ))
+        if(! ((c.order_ == cs.first.order_) && (c.order_ == cs.second.order_) ))
         {
             error = true;
             std::cout<<"BezierSplitCurve, ERROR Degree of the splitted curve are not the same as the original curve"<<std::endl;
@@ -1305,7 +1305,13 @@ void piecewiseCurveTest(bool& error)
     }
 
     // CONVERT PIECEWISE POLYNOMIAL CURVES TO BEZIER AND HERMITE
-
+    std::string errmsg5("in piecewise polynomial curve test, Error while checking piecewise curve conversion");
+    piecewise_bezier_curve_t pc_bezier = pc.convert_piecewise_curve_to_bezier<bezier_curve_t>();
+    CompareCurves<piecewise_polynomial_curve_t, piecewise_bezier_curve_t>(pc, pc_bezier, errmsg5, error);
+    piecewise_cubic_hermite_curve_t pc_hermite = pc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    CompareCurves<piecewise_polynomial_curve_t, piecewise_cubic_hermite_curve_t>(pc, pc_hermite, errmsg5, error);
+    piecewise_polynomial_curve_t pc_polynomial_same = pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
+    CompareCurves<piecewise_polynomial_curve_t, piecewise_polynomial_curve_t>(pc, pc_polynomial_same, errmsg5, error);
 }
 
 void curveAbcDimDynamicTest(bool& error)

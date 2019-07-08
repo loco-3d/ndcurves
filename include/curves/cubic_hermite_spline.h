@@ -38,29 +38,6 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     typedef std::vector< pair_point_tangent_t ,Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
     typedef std::vector<Time> vector_time_t;
     typedef Numeric num_t;
-
-    /*Attributes*/
-    public:
-    /// Vector of pair < Point, Tangent >.
-    t_pair_point_tangent_t control_points_;
-    /// Vector of Time corresponding to time of each N control points : time at \f$P_0, P_1, P_2, ..., P_N\f$.
-    /// Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.
-    vector_time_t time_control_points_;
-
-    /// Vector of Time corresponding to time duration of each subspline.<br>
-    /// For N control points with time \f$T_{P_0}, T_{P_1}, T_{P_2}, ..., T_{P_N}\f$ respectively,
-    /// duration of each subspline is : ( T_{P_1}-T_{P_0}, T_{P_2}-T_{P_1}, ..., T_{P_N}-T_{P_{N-1} )<br>
-    /// It contains \f$N-1\f$ durations. 
-    vector_time_t duration_splines_;
-    /// Starting time of cubic hermite spline : T_min_ is equal to first time of control points.
-    /*const*/ Time T_min_;
-    /// Ending time of cubic hermite spline : T_max_ is equal to last time of control points.
-    /*const*/ Time T_max_;
-    /// Number of control points (pairs).
-    std::size_t size_;
-    /// Degree (Cubic so degree 3)
-    static const std::size_t degree_ = 3;
-    /*Attributes*/
     
     public:
     /// \brief Constructor.
@@ -70,6 +47,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     ///
     template<typename In>
     cubic_hermite_spline(In PairsBegin, In PairsEnd, const vector_time_t & time_control_points)
+    : order_(3)
     {
         // Check size of pairs container.
         std::size_t const size(std::distance(PairsBegin, PairsEnd));
@@ -87,6 +65,12 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
         setTime(time_control_points);
     }
 
+    cubic_hermite_spline(const cubic_hermite_spline& other)
+        : t_min_(other.t_min_), t_max_(other.t_max_), size_(other.size_), order_(other.order_), 
+          control_points_(other.control_points_), time_control_points_(other.time_control_points_),
+          duration_splines_(other.duration_splines_)
+          {}
+
     /// \brief Destructor.
     virtual ~cubic_hermite_spline(){}
 
@@ -98,7 +82,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     ///
     virtual Point operator()(const Time t) const
     {
-        if(Safe &! (T_min_ <= t && t <= T_max_))
+        if(Safe &! (t_min_ <= t && t <= t_max_))
         {
             throw std::invalid_argument("can't evaluate cubic hermite spline, out of range");
         }
@@ -130,8 +114,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     void setTime(const vector_time_t & time_control_points)
     {
         time_control_points_ = time_control_points;
-        T_min_ = time_control_points_.front();
-        T_max_ = time_control_points_.back();
+        t_min_ = time_control_points_.front();
+        t_max_ = time_control_points_.back();
         if (time_control_points.size() != size())
         {
             throw std::length_error("size of time control points should be equal to number of control points");
@@ -364,6 +348,28 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     /// \return \f$t_{max}\f$, upper bound of time range.
     Time virtual max() const{return time_control_points_.back();}
     /*Helpers*/
+
+    /*Attributes*/
+    /// Vector of pair < Point, Tangent >.
+    t_pair_point_tangent_t control_points_;
+    /// Vector of Time corresponding to time of each N control points : time at \f$P_0, P_1, P_2, ..., P_N\f$.
+    /// Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.
+    vector_time_t time_control_points_;
+
+    /// Vector of Time corresponding to time duration of each subspline.<br>
+    /// For N control points with time \f$T_{P_0}, T_{P_1}, T_{P_2}, ..., T_{P_N}\f$ respectively,
+    /// duration of each subspline is : ( T_{P_1}-T_{P_0}, T_{P_2}-T_{P_1}, ..., T_{P_N}-T_{P_{N-1} )<br>
+    /// It contains \f$N-1\f$ durations. 
+    vector_time_t duration_splines_;
+    /// Starting time of cubic hermite spline : t_min_ is equal to first time of control points.
+    /*const*/ Time t_min_;
+    /// Ending time of cubic hermite spline : t_max_ is equal to last time of control points.
+    /*const*/ Time t_max_;
+    /// Number of control points (pairs).
+    std::size_t size_;
+    /// Degree (Cubic so degree 3)
+    std::size_t order_;
+    /*Attributes*/
 
 };
 

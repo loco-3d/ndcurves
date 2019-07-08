@@ -99,6 +99,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>
         }
     }
 
+    bezier_curve(const bezier_curve& other)
+        : t_min_(other.t_min_), t_max_(other.t_max_), mult_T_(other.mult_T_), size_(other.size_),
+          order_(other.order_), bernstein_(other.bernstein_), control_points_(other.control_points_)
+          {}
+
     ///\brief Destructor
     ~bezier_curve()
     {
