@@ -448,10 +448,10 @@ void BezierDerivativeCurveConstraintTest(bool& error)
 
     std::string errMsg1("In test BezierDerivativeCurveConstraintTest, Error While checking checking degree of bezier curve :");
     std::string errMsg2("In test BezierDerivativeCurveConstraintTest, Error While checking checking size of bezier curve :");
-    if (cf.order_ != params.size() + 3)
+    if (cf.degree_ != params.size() + 3)
     {
         error = true;
-        std::cout << errMsg1 << cf.order_ << " ; " << params.size()+3 << std::endl;
+        std::cout << errMsg1 << cf.degree_ << " ; " << params.size()+3 << std::endl;
     }
     if (cf.size_   != params.size() + 4)
     {
@@ -1010,7 +1010,7 @@ void BezierSplitCurve(bool& error)
         std::pair<bezier_curve_t,bezier_curve_t> cs = c.split(ts);
 
         // test on splitted curves :
-        if(! ((c.order_ == cs.first.order_) && (c.order_ == cs.second.order_) ))
+        if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) ))
         {
             error = true;
             std::cout<<"BezierSplitCurve, ERROR Degree of the splitted curve are not the same as the original curve"<<std::endl;

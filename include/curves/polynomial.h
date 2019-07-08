@@ -53,7 +53,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     /// \param max  : UPPER bound on interval definition of the curve.
     polynomial(const coeff_t& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
-          coefficients_(coefficients), dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
+          coefficients_(coefficients), dim_(Dim), degree_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
         safe_check();
     }
@@ -67,7 +67,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     polynomial(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
-          dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
+          dim_(Dim), degree_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
         safe_check();
     }
@@ -81,7 +81,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     template<typename In>
     polynomial(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
         :coefficients_(init_coeffs(zeroOrderCoefficient, out)),
-          dim_(Dim), order_(coefficients_.cols()-1), t_min_(min), t_max_(max)
+          dim_(Dim), degree_(coefficients_.cols()-1), t_min_(min), t_max_(max)
     {
         safe_check();
     }
@@ -95,7 +95,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
 
     polynomial(const polynomial& other)
         : coefficients_(other.coefficients_),
-          dim_(other.dim_), order_(other.order_), t_min_(other.t_min_), t_max_(other.t_max_)
+          dim_(other.dim_), degree_(other.degree_), t_min_(other.t_min_), t_max_(other.t_max_)
           {}
 
 
@@ -130,7 +130,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
         time_t const dt (t-t_min_);
         time_t cdt(1);
         point_t currentPoint_ = point_t::Zero();
-        for(int i = 0; i < order_+1; ++i, cdt*=dt)
+        for(int i = 0; i < degree_+1; ++i, cdt*=dt)
             currentPoint_ += cdt *coefficients_.col(i);
         return currentPoint_;
     }*/
@@ -146,8 +146,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
             throw std::invalid_argument("error in polynomial : time t to evaluate should be in range [Tmin, Tmax] of the curve");
         }
         time_t const dt (t-t_min_);
-        point_t h = coefficients_.col(order_);
-        for(int i=(int)(order_-1); i>=0; i--)
+        point_t h = coefficients_.col(degree_);
+        for(int i=(int)(degree_-1); i>=0; i--)
         {
             h = dt*h + coefficients_.col(i);
         }
@@ -167,8 +167,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
         }
         time_t const dt (t-t_min_);
         time_t cdt(1);
-        point_t currentPoint_ = point_t::Zero(dim_);
-        for(int i = (int)(order); i < (int)(order_+1); ++i, cdt*=dt) 
+        point_t currentPoint_ = point_t::Zero();
+        for(int i = (int)(order); i < (int)(degree_+1); ++i, cdt*=dt) 
         {
             currentPoint_ += cdt *coefficients_.col(i) * fact(i, order);
         }
@@ -202,7 +202,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     public:
     coeff_t coefficients_; //const
     std::size_t dim_; //const
-    std::size_t order_; //const
+    std::size_t degree_; //const
 
     private:
     time_t t_min_, t_max_;

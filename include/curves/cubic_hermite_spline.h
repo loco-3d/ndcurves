@@ -47,7 +47,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     ///
     template<typename In>
     cubic_hermite_spline(In PairsBegin, In PairsEnd, const vector_time_t & time_control_points)
-    : order_(3)
+    : degree_(3)
     {
         // Check size of pairs container.
         std::size_t const size(std::distance(PairsBegin, PairsEnd));
@@ -66,7 +66,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     }
 
     cubic_hermite_spline(const cubic_hermite_spline& other)
-        : t_min_(other.t_min_), t_max_(other.t_max_), size_(other.size_), order_(other.order_), 
+        : t_min_(other.t_min_), t_max_(other.t_max_), size_(other.size_), degree_(other.degree_), 
           control_points_(other.control_points_), time_control_points_(other.time_control_points_),
           duration_splines_(other.duration_splines_)
           {}
@@ -163,20 +163,20 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     /// Polynom \f$p(t) \in [t_0, t_1]\f$ becomes \f$p(\alpha) \in [0, 1]\f$
     /// and \f$p(\alpha) = p((t-t_0)/(t_1-t_0))\f$.
     /// \param t : time when to evaluate the curve.
-    /// \param order_derivative : Order of derivate of cubic hermite spline (set value to 0 if you do not want derivate)
+    /// \param degree_derivative : Order of derivate of cubic hermite spline (set value to 0 if you do not want derivate)
     /// \return point corresponding \f$p(t)\f$ on spline at time t or its derivate order N \f$\frac{d^Np(t)}{dt^N}\f$.
     ///
-    Point evalCubicHermiteSpline(const Numeric t, std::size_t order_derivative) const
+    Point evalCubicHermiteSpline(const Numeric t, std::size_t degree_derivative) const
     {
         const std::size_t id = findInterval(t);
         // ID is on the last control point
         if(id == size_-1)
         {
-            if (order_derivative==0)
+            if (degree_derivative==0)
             {
                 return control_points_.back().first;
             }
-            else if (order_derivative==1)
+            else if (degree_derivative==1)
             {
                 return control_points_.back().second;
             }
@@ -200,11 +200,11 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
         const Time alpha = (t - t0)/dt;
         assert(0. <= alpha && alpha <= 1. && "alpha must be in [0,1]");
         Numeric h00, h10, h01, h11;
-        evalCoeffs(alpha,h00,h10,h01,h11,order_derivative);
+        evalCoeffs(alpha,h00,h10,h01,h11,degree_derivative);
         //std::cout << "for val t="<<t<<" alpha="<<alpha<<" coef : h00="<<h00<<" h10="<<h10<<" h01="<<h01<<" h11="<<h11<<std::endl;
         Point p_ = (h00 * Pair0.first + h10 * dt * Pair0.second + h01 * Pair1.first + h11 * dt * Pair1.second);
-        // if derivative, divide by dt^order_derivative
-        for (std::size_t i=0; i<order_derivative; i++)
+        // if derivative, divide by dt^degree_derivative
+        for (std::size_t i=0; i<degree_derivative; i++)
         {
             p_ /= dt;
         }
@@ -224,34 +224,34 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     /// \param h10 : variable to store value of coefficient.
     /// \param h01 : variable to store value of coefficient.
     /// \param h11 : variable to store value of coefficient.
-    /// \param order_derivative : order of derivative.
+    /// \param degree_derivative : order of derivative.
     ///
-    static void evalCoeffs(const Numeric t, Numeric & h00, Numeric & h10, Numeric & h01, Numeric & h11, std::size_t order_derivative)
+    static void evalCoeffs(const Numeric t, Numeric & h00, Numeric & h10, Numeric & h01, Numeric & h11, std::size_t degree_derivative)
     {
         Numeric t_square = t*t;
         Numeric t_cube = t_square*t;
-        if (order_derivative==0)
+        if (degree_derivative==0)
         {
             h00 =  2*t_cube     -3*t_square     +1.;
             h10 =  t_cube       -2*t_square     +t;
             h01 = -2*t_cube     +3*t_square;
             h11 =  t_cube       -t_square;
         }
-        else if (order_derivative==1)
+        else if (degree_derivative==1)
         {
             h00 =  6*t_square   -6*t;
             h10 =  3*t_square   -4*t    +1.;
             h01 = -6*t_square   +6*t;
             h11 =  3*t_square   -2*t;
         }
-        else if (order_derivative==2)
+        else if (degree_derivative==2)
         {
             h00 =  12*t     -6.;
             h10 =  6*t      -4.;  
             h01 = -12*t     +6.;
             h11 =  6*t      -2.;
         }
-        else if (order_derivative==3)
+        else if (degree_derivative==3)
         {
             h00 =  12.;
             h10 =  6.;  
@@ -368,7 +368,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     /// Number of control points (pairs).
     std::size_t size_;
     /// Degree (Cubic so degree 3)
-    std::size_t order_;
+    std::size_t degree_;
     /*Attributes*/
 
 };
