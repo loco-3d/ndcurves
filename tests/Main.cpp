@@ -37,7 +37,9 @@ typedef std::vector<WaypointOne> T_WaypointOne;
 typedef cubic_hermite_spline <double, double, 3, true, point_t> cubic_hermite_spline_t;
 typedef std::pair<point_t, tangent_t> Pair_point_tangent;
 
-bool QuasiEqual(const double a, const double b, const float margin)
+const double margin = 0.001;
+
+bool QuasiEqual(const double a, const double b)
 {
 	if ((a <= 0 && b <= 0) || (a >= 0 && b>= 0))
 	{
@@ -48,8 +50,6 @@ bool QuasiEqual(const double a, const double b, const float margin)
 		return abs(a) + abs(b) <= margin;
 	}
 }
-
-const double margin = 0.001;
 
 } // namespace curves
 
@@ -131,15 +131,15 @@ void CubicFunctionTest(bool& error)
     {
         std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
     }
-    if(cf.max() != 1)
+    if(not QuasiEqual(cf.max(), 1.0))
     {
         error = true;
         std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
     }
-    if(cf.min() != 0)
+    if(not QuasiEqual(cf.min(), 0.0))
     {
         error = true;
-        std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
+        std::cout << "Evaluation of exactCubic error, MinBound should be equal to 0\n";
     }
 }
 
@@ -227,12 +227,12 @@ void BezierCurveTest(bool& error)
 		std::cout << "Evaluation of bezier cf error, 1.1 should be an out of range value\n";
         error = true;
 	}
-	if(cf.max() != 1)
+	if(not QuasiEqual(cf.max(), 1))
 	{
 		error = true;
 		std::cout << "Evaluation of bezier cf error, MaxBound should be equal to 1\n";
 	}
-	if(cf.min() != 0)
+	if(not QuasiEqual(cf.min(), 0))
 	{
 		error = true;
 		std::cout << "Evaluation of bezier cf error, MinBound should be equal to 1\n";
@@ -491,15 +491,15 @@ void ExactCubicNoErrorTest(bool& error)
 	{
 		std::cout << "Evaluation of exactCubic cf error, 1.2 should be an out of range value\n";
 	}
-	if(exactCubic.max() != 1)
+	if(not QuasiEqual(exactCubic.max(), 1.0))
 	{
 		error = true;
 		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 1\n";
 	}
-	if(exactCubic.min() != 0)
+	if(not QuasiEqual(exactCubic.min(), 0.0))
 	{
 		error = true;
-		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 1\n";
+		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 0\n";
 	}
 }
 
@@ -760,22 +760,22 @@ void TestReparametrization(bool& error)
 {
     helpers::rotation_spline s;
     const helpers::spline_deriv_constraint_one_dim& sp = s.time_reparam_;
-    if(sp.min() != 0)
+    if(not QuasiEqual(sp.min(), 0.0))
     {
         std::cout << "in TestReparametrization; min value is not 0, got " << sp.min() << std::endl;
         error = true;
     }
-    if(sp.max() != 1)
+    if(not QuasiEqual(sp.max(), 1.0))
     {
         std::cout << "in TestReparametrization; max value is not 1, got " << sp.max() << std::endl;
         error = true;
     }
-    if(sp(1)[0] != 1.)
+    if(not QuasiEqual(sp(1)[0], 1.))
     {
         std::cout << "in TestReparametrization; end value is not 1, got " << sp(1)[0] << std::endl;
         error = true;
     }
-    if(sp(0)[0] != 0.)
+    if(not QuasiEqual(sp(0)[0], 0.))
     {
         std::cout << "in TestReparametrization; init value is not 0, got " << sp(0)[0] << std::endl;
         error = true;
@@ -892,7 +892,7 @@ void BezierSplitCurve(bool& error)
             std::cout<<" Degree of the splitted curve are not the same as the original curve"<<std::endl;
         }
 
-        if(c.max() != (cs.first.max() + cs.second.max()))
+        if(not QuasiEqual(c.max(), (cs.first.max() + cs.second.max())))
         {
             error = true;
             std::cout<<"Duration of the splitted curve doesn't correspond to the original"<<std::endl;
@@ -910,7 +910,7 @@ void BezierSplitCurve(bool& error)
             std::cout<<"final point of the splitted curve doesn't correspond to the original"<<std::endl;
         }
 
-        if(cs.first.max() != ts)
+        if(not QuasiEqual(cs.first.max(), ts))
         {
             error = true;
             std::cout<<"timing of the splitted curve doesn't correspond to the original"<<std::endl;
