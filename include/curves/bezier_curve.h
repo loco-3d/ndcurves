@@ -298,7 +298,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \return pair containing the first element of both bezier curve obtained.
     ///
     std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric t){
-        if (t == T_max_)
+        if (fabs(t-T_max_)<MARGIN)
         {
             throw std::runtime_error("can't split curve, interval range is equal to original curve");
         }
@@ -326,15 +326,15 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
             throw std::out_of_range("In Extract curve : times out of bounds");
         }
-        if(t1 == T_min_ &&  t2 == T_max_)
+        if (fabs(t1-T_min_)<MARGIN && fabs(t2-T_max_)<MARGIN)
         {
             return bezier_curve_t(waypoints().begin(), waypoints().end(), T_min_, T_max_, mult_T_);
         }
-        if(t1 == T_min_)
+        if (fabs(t1-T_min_)<MARGIN)
         {
             return split(t2).first;
         }
-        if(t2 == T_max_)
+        if (fabs(t2-T_max_))
         {
             return split(t1).second;
         }
@@ -394,6 +394,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /*const*/ std::size_t degree_;
     /*const*/ std::vector<Bern<Numeric> > bernstein_;
     /*const*/ t_point_t  control_points_;
+    static const double MARGIN;
 
     public:
     static bezier_curve_t zero(const time_t T=1.)
@@ -403,6 +404,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return bezier_curve_t(ts.begin(), ts.end(),0.,T);
     }
 };
+
+template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point>
+const double bezier_curve<Time, Numeric, Dim, Safe, Point>::MARGIN(0.001);
+
 } // namespace curve
 #endif //_CLASS_BEZIERCURVE
 
