@@ -334,7 +334,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
             return split(t2).first;
         }
-        if (fabs(t2-T_max_))
+        if (fabs(t2-T_max_)<MARGIN)
         {
             return split(t1).second;
         }
