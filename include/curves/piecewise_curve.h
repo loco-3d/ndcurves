@@ -25,7 +25,7 @@ namespace curves
 ///        cf1 between \f$[T0_{max},T1_{max}[\f$ and cf2 between \f$[T1_{max},T2_{max}]\f$.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
-     typename Point= Eigen::Matrix<Numeric, Dim, 1>, 
+     typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, 
      typename T_Point= std::vector<Point,Eigen::aligned_allocator<Point> >,
      typename Curve= curve_abc<Time, Numeric, Dim, Safe, Point>
      >

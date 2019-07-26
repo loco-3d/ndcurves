@@ -29,8 +29,8 @@ namespace curves
 /// - has its derivatives on \f$P_i\f$ and \f$P_{i+1}\f$ are \f$p'(t_{P_i}) = m_i\f$ and \f$p'(t_{P_{i+1}}) = m_{i+1}\f$.
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
-, typename Point= Eigen::Matrix<Numeric, Dim, 1>
-, typename Tangent= Eigen::Matrix<Numeric, Dim, 1>
+, typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>
+, typename Tangent= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>
 >
 struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
