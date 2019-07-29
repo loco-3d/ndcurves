@@ -39,7 +39,7 @@ namespace curves
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >
 , typename SplineBase=polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
-struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
+struct exact_cubic : public curve_abc<Time, Numeric, Safe, Point>
 {
     typedef Point   point_t;
     typedef T_Point t_point_t;
@@ -51,7 +51,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Dim, Safe, Point>
     typedef typename std::vector<spline_t> t_spline_t;
     typedef typename t_spline_t::iterator it_spline_t;
     typedef typename t_spline_t::const_iterator cit_spline_t;
-    typedef curve_abc<Time, Numeric, Dim, Safe, Point> curve_abc_t;
+    typedef curve_abc<Time, Numeric, Safe, Point> curve_abc_t;
     typedef curve_constraints<point_t> spline_constraints;
 
     /* Constructors - destructors */

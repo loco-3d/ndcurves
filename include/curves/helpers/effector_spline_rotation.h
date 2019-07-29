@@ -33,7 +33,7 @@ typedef Eigen::Matrix<Numeric, 4, 1> quat_t;
 typedef Eigen::Ref<quat_t> quat_ref_t;
 typedef const Eigen::Ref<const quat_t> quat_ref_const_t;
 typedef Eigen::Matrix<Numeric, 7, 1> config_t;
-typedef curve_abc<Time, Numeric, 4, false, quat_t> curve_abc_quat_t;
+typedef curve_abc<Time, Numeric, false, quat_t> curve_abc_quat_t;
 typedef std::pair<Numeric, quat_t > waypoint_quat_t;
 typedef std::vector<waypoint_quat_t> t_waypoint_quat_t;
 typedef Eigen::Matrix<Numeric, 1, 1> point_one_dim_t;

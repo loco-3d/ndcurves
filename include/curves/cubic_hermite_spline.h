@@ -32,7 +32,7 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
 , typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>
 , typename Tangent= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>
 >
-struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
+struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
 {
     typedef std::pair<Point, Tangent> pair_point_tangent_t; 
     typedef std::vector< pair_point_tangent_t ,Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;

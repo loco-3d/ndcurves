@@ -27,9 +27,9 @@ namespace curves
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
      typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, 
      typename T_Point= std::vector<Point,Eigen::aligned_allocator<Point> >,
-     typename Curve= curve_abc<Time, Numeric, Dim, Safe, Point>
+     typename Curve= curve_abc<Time, Numeric, Safe, Point>
      >
-struct piecewise_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
+struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
 {
     typedef Point   point_t;
     typedef T_Point t_point_t;

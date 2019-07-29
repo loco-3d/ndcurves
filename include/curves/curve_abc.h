@@ -21,7 +21,7 @@ namespace curves
 /// \struct curve_abc.
 /// \brief Represents a curve of dimension Dim.
 /// If value of parameter Safe is false, no verification is made on the evaluation of the curve.
-template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
+template<typename Time= double, typename Numeric=Time, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
 struct  curve_abc : std::unary_function<Time, Point>
 {
