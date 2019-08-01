@@ -1392,6 +1392,35 @@ void curveAbcDimDynamicTest(bool& error)
     
 }
 
+void piecewiseCurveConversionFromDiscretePointsTest(bool& error)
+{
+    std::string errMsg("piecewiseCurveConversionFromDiscretePointsTest, Error, value on curve is wrong : ");
+    point_t p0(0.,0.,0.);
+    point_t p1(1.,2.,3.);
+    point_t p2(4.,4.,4.);
+    point_t p3(10.,10.,10.);
+    point_t p_test_0_5 = (p0+p1)/2.0;
+    t_point_t points;
+    points.push_back(p0);
+    points.push_back(p1);
+    points.push_back(p2);
+    points.push_back(p3);
+    double T_min = 1.0;
+    double T_max = 3.0;
+    double timestep = (T_max-T_min)/(points.size()-1);
+    piecewise_polynomial_curve_t ppc =  piecewise_polynomial_curve_t::
+                                        convert_discrete_points_to_polynomial<polynomial_t>(points,T_min,T_max);
+    if (!ppc.is_continuous(0))
+    {
+        std::cout<<"piecewiseCurveConversionFromDiscretePointsTest, Error, piecewise curve is not C0"<<std::endl;
+        error = true;
+    }
+    ComparePoints(p0, ppc(T_min), errMsg, error);
+    ComparePoints(p_test_0_5, ppc(T_min+timestep/2.0), errMsg, error);
+    ComparePoints(p1, ppc(T_min+timestep), errMsg, error);
+    ComparePoints(p2, ppc(T_min+2*timestep), errMsg, error);
+    ComparePoints(p3, ppc(T_max), errMsg, error);
+
 int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
@@ -1417,6 +1446,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     BezierSplitCurve(error);
     CubicHermitePairsPositionDerivativeTest(error);
     piecewiseCurveTest(error);
+    piecewiseCurveConversionFromDiscretePointsTest(error);
     toPolynomialConversionTest(error);
     cubicConversionTest(error);
     curveAbcDimDynamicTest(error);
