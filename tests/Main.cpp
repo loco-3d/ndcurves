@@ -1407,7 +1407,7 @@ void piecewiseCurveConversionFromDiscretePointsTest(bool& error)
     points.push_back(p3);
     double T_min = 1.0;
     double T_max = 3.0;
-    double timestep = (T_max-T_min)/(points.size()-1);
+    double timestep = (T_max-T_min)/double(points.size()-1);
     piecewise_polynomial_curve_t ppc =  piecewise_polynomial_curve_t::
                                         convert_discrete_points_to_polynomial<polynomial_t>(points,T_min,T_max);
     if (!ppc.is_continuous(0))

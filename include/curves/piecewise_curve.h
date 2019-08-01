@@ -190,7 +190,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
             throw std::invalid_argument("piecewise_curve -> convert_discrete_points_to_polynomial, Error, less than 2 discrete points");
         }
         typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> piecewise_curve_out_t;
-        Time discretization_step = (T_max-T_min)/(points.size()-1);
+        Time discretization_step = (T_max-T_min)/Time(points.size()-1);
         Time time_actual = T_min;
         // Initialization at first points
         point_t actual_point = points[0];
@@ -204,7 +204,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
         piecewise_curve_out_t ppc(pol);
         time_actual += discretization_step;
         // Other points
-        for (int i=1; i<points.size()-2; i++)
+        for (std::size_t i=1; i<points.size()-2; i++)
         {
             coeffs.clear();
             actual_point = points[i];

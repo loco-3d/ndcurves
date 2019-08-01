@@ -47,12 +47,10 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     ///
     template<typename In>
     cubic_hermite_spline(In PairsBegin, In PairsEnd, const vector_time_t & time_control_points)
-    : degree_(3)
+    : size_(std::distance(PairsBegin, PairsEnd)), degree_(3)
     {
         // Check size of pairs container.
-        std::size_t const size(std::distance(PairsBegin, PairsEnd));
-        size_ = size;
-        if(Safe && size < 1)
+        if(Safe && size_ < 1)
         {
             throw std::length_error("can not create cubic_hermite_spline, number of pairs is inferior to 2.");
         }
@@ -65,11 +63,13 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
         setTime(time_control_points);
     }
 
+    
     cubic_hermite_spline(const cubic_hermite_spline& other)
-        : t_min_(other.t_min_), t_max_(other.t_max_), size_(other.size_), degree_(other.degree_), 
-          control_points_(other.control_points_), time_control_points_(other.time_control_points_),
-          duration_splines_(other.duration_splines_)
+        : control_points_(other.control_points_), time_control_points_(other.time_control_points_),
+          duration_splines_(other.duration_splines_), t_min_(other.t_min_), t_max_(other.t_max_), 
+          size_(other.size_), degree_(other.degree_)
           {}
+    
 
     /// \brief Destructor.
     virtual ~cubic_hermite_spline(){}
