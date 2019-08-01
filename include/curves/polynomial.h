@@ -166,7 +166,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
         }
         time_t const dt (t-t_min_);
         time_t cdt(1);
-        point_t currentPoint_ = point_t::Zero();
+        point_t currentPoint_ = point_t::Zero(dim_);
         for(int i = (int)(order); i < (int)(order_+1); ++i, cdt*=dt) 
         {
             currentPoint_ += cdt *coefficients_.col(i) * fact(i, order);

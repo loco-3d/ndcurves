@@ -1308,6 +1308,84 @@ void piecewiseCurveTest(bool& error)
 
 }
 
+void curveAbcDimDynamicTest(bool& error)
+{
+    typedef curve_abc<double,double,true> curve_abc_test_t;
+    typedef polynomial  <double, double, 3, true> polynomial_test_t;
+    //typedef exact_cubic <double, double, 3, true, Eigen::Matrix<double, Eigen::Dynamic, 1> > exact_cubic_test_t;
+    typedef bezier_curve  <double, double, 3, true> bezier_curve_test_t;
+    typedef cubic_hermite_spline <double, double, 3, true> cubic_hermite_spline_test_t;
+    curve_abc_test_t * pt_curve_abc;
+    // POLYNOMIAL
+    point_t a(1,1,1);
+    point_t b(2,2,2);
+    t_point_t vec;
+    vec.push_back(a);
+    vec.push_back(b);
+    polynomial_test_t pol(vec.begin(), vec.end(), 0, 1);
+    try
+    {
+        std::cout<<"pol : "<<pol(0).transpose()<<" / "<<pol(1).transpose()<<std::endl;
+    }
+    catch(...)
+    {
+        error = false;
+    }
+    // BEZIER
+    bezier_curve_test_t bc = bezier_from_curve<bezier_curve_test_t, polynomial_test_t>(pol);
+    try
+    {
+        std::cout<<"bc : "<<bc(0).transpose()<<" / "<<bc(1).transpose()<<std::endl;
+    }
+    catch(...)
+    {
+        error = false;
+    }
+    // CUBIC HERMITE
+    cubic_hermite_spline_test_t chs = hermite_from_curve<cubic_hermite_spline_test_t, polynomial_test_t>(pol);
+    try
+    {
+        std::cout<<"chs : "<<chs(0).transpose()<<" / "<<chs(1).transpose()<<std::endl;
+    }
+    catch(...)
+    {
+        error = false;
+    }
+    // EXACT CUBIC : NOT SUPPORTED, problem to fix later
+    /*
+    curves::T_Waypoint waypoints;
+    for(double i = 0; i <= 1; i = i + 0.2)
+    {
+        waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
+    }
+    std::string errmsg("Error in ExactCubicVelocityConstraintsTest (1); while checking that given wayPoints are crossed (expected / obtained)");
+    spline_constraints_t constraints;
+    constraints.end_vel = point_t(0,0,0);
+    constraints.init_vel = point_t(0,0,0);
+    constraints.end_acc = point_t(0,0,0);
+    constraints.init_acc = point_t(0,0,0);
+    exact_cubic_test_t ec(waypoints.begin(), waypoints.end(), constraints);
+    //std::cout<<"ec : "<<ec(0).transpose()<<" / "<<ec(1).transpose()<<std::endl;
+    */
+    // Test with pointer to curve_abc type
+    try
+    {
+        pt_curve_abc = &pol;
+        std::cout<<"curve_abc - pol : "<<(*pt_curve_abc)(0).transpose()<<" / "<<(*pt_curve_abc)(1).transpose()<<std::endl;
+        pt_curve_abc = &bc;
+        std::cout<<"curve_abc - bc : "<<(*pt_curve_abc)(0).transpose()<<" / "<<(*pt_curve_abc)(1).transpose()<<std::endl;
+        pt_curve_abc = &chs;
+        std::cout<<"curve_abc - chs : "<<(*pt_curve_abc)(0).transpose()<<" / "<<(*pt_curve_abc)(1).transpose()<<std::endl;
+        //pt_curve_abc = &ec;
+        //std::cout<<"curve_abc - ec : "<<(*pt_curve_abc)(0).transpose()<<" / "<<(*pt_curve_abc)(1).transpose()<<std::endl;
+    }
+    catch(...)
+    {
+        error = false;
+    }
+    
+}
+
 int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
@@ -1335,6 +1413,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     piecewiseCurveTest(error);
     toPolynomialConversionTest(error);
     cubicConversionTest(error);
+    curveAbcDimDynamicTest(error);
 
     if(error)
     {
