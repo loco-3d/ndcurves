@@ -100,7 +100,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>
     }
 
     bezier_curve(const bezier_curve& other)
-        : t_min_(other.t_min_), t_max_(other.t_max_), mult_T_(other.mult_T_), size_(other.size_),
+        : T_min_(other.T_min_), T_max_(other.T_max_), mult_T_(other.mult_T_), size_(other.size_),
           degree_(other.degree_), bernstein_(other.bernstein_), control_points_(other.control_points_)
           {}
 
