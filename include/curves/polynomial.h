@@ -110,7 +110,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
             {
                 std::invalid_argument("Tmin should be inferior to Tmax");
             }
-            if(coefficients_.size() != int(order_+1))
+            if(coefficients_.size() != int(degree_+1))
             {
                 std::runtime_error("Spline order and coefficients do not match");
             }
@@ -167,7 +167,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
         }
         time_t const dt (t-t_min_);
         time_t cdt(1);
-        point_t currentPoint_ = point_t::Zero();
+        point_t currentPoint_ = point_t::Zero(dim_);
         for(int i = (int)(order); i < (int)(degree_+1); ++i, cdt*=dt) 
         {
             currentPoint_ += cdt *coefficients_.col(i) * fact(i, order);

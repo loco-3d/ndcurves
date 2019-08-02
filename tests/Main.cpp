@@ -1420,6 +1420,7 @@ void piecewiseCurveConversionFromDiscretePointsTest(bool& error)
     ComparePoints(p1, ppc(T_min+timestep), errMsg, error);
     ComparePoints(p2, ppc(T_min+2*timestep), errMsg, error);
     ComparePoints(p3, ppc(T_max), errMsg, error);
+}
 
 int main(int /*argc*/, char** /*argv[]*/)
 {
