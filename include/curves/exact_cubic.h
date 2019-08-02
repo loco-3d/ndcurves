@@ -51,8 +51,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Safe, Point>
     typedef typename std::vector<spline_t> t_spline_t;
     typedef typename t_spline_t::iterator it_spline_t;
     typedef typename t_spline_t::const_iterator cit_spline_t;
-    typedef curve_abc<Time, Numeric, Safe, Point> curve_abc_t;
-    typedef curve_constraints<point_t> spline_constraints;
+    typedef curve_constraints<Point, Dim> spline_constraints;
 
     /* Constructors - destructors */
     public:
@@ -62,7 +61,7 @@ struct exact_cubic : public curve_abc<Time, Numeric, Safe, Point>
     ///
     template<typename In>
     exact_cubic(In wayPointsBegin, In wayPointsEnd)
-        : curve_abc_t(), subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd)) {}
+        : subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd)) {}
 
     /// \brief Constructor.
     /// \param wayPointsBegin : an iterator pointing to the first element of a waypoint container.
@@ -71,16 +70,16 @@ struct exact_cubic : public curve_abc<Time, Numeric, Safe, Point>
     ///
     template<typename In>
     exact_cubic(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints)
-        : curve_abc_t(), subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd, constraints)) {}
+        : subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd, constraints)) {}
 
     /// \brief Constructor.
     /// \param subSplines: vector of subsplines.
     exact_cubic(const t_spline_t& subSplines)
-        : curve_abc_t(), subSplines_(subSplines) {}
+        : subSplines_(subSplines) {}
 
     /// \brief Copy Constructor.
     exact_cubic(const exact_cubic& other)
-        : curve_abc_t(), subSplines_(other.subSplines_) {}
+        : subSplines_(other.subSplines_) {}
 
     /// \brief Destructor.
     virtual ~exact_cubic(){}
