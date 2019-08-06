@@ -19,7 +19,7 @@ SETUP_HPP_PROJECT()
 
 ADD_REQUIRED_DEPENDENCY(eigen3)
 
-SET(BOOST_COMPONENTS unit_test_framework)
+SET(BOOST_COMPONENTS unit_test_framework serialization)
 
 OPTION (BUILD_PYTHON_INTERFACE "Build the python binding" ON)
 IF(BUILD_PYTHON_INTERFACE)
