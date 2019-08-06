@@ -13,6 +13,8 @@
 #define _STRUCT_CURVE_ABC
 
 #include "MathDefs.h"
+#include "serialization/archive.hpp"
+#include "serialization/eigen-matrix.hpp"
 
 #include <functional>
 

@@ -12,6 +12,7 @@ SET(${PROJECT_NAME}_HEADERS
   linear_variable.h
   cubic_hermite_spline.h
   piecewise_curve.h
+  serialize_test_class.h
   )
 
 INSTALL(FILES
@@ -20,3 +21,4 @@ INSTALL(FILES
   )
 
 ADD_SUBDIRECTORY(helpers)
+ADD_SUBDIRECTORY(serialization)

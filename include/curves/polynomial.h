@@ -23,6 +23,10 @@
 #include <functional>
 #include <stdexcept>
 
+#include "serialization/archive.hpp"
+#include "serialization/eigen-matrix.hpp"
+#include <boost/serialization/vector.hpp>
+
 namespace curves
 {
 /// \class polynomial.
@@ -45,6 +49,9 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
 
 /* Constructors - destructors */
     public:
+
+    polynomial() {}
+
     /// \brief Constructor.
     /// \param coefficients : a reference to an Eigen matrix where each column is a coefficient,
     /// from the zero order coefficient, up to the highest order. Spline order is given
@@ -53,7 +60,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     /// \param max  : UPPER bound on interval definition of the curve.
     polynomial(const coeff_t& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
-          coefficients_(coefficients), dim_(Dim), degree_(coefficients_.cols()-1), t_min_(min), t_max_(max)
+          coefficients_(coefficients), dim_(Dim), degree_(coefficients_.cols()-1), T_min_(min), T_max_(max)
     {
         safe_check();
     }
@@ -67,7 +74,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     polynomial(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
-          dim_(Dim), degree_(coefficients_.cols()-1), t_min_(min), t_max_(max)
+          dim_(Dim), degree_(coefficients_.cols()-1), T_min_(min), T_max_(max)
     {
         safe_check();
     }
@@ -81,7 +88,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     template<typename In>
     polynomial(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
         :coefficients_(init_coeffs(zeroOrderCoefficient, out)),
-          dim_(Dim), degree_(coefficients_.cols()-1), t_min_(min), t_max_(max)
+          dim_(Dim), degree_(coefficients_.cols()-1), T_min_(min), T_max_(max)
     {
         safe_check();
     }
@@ -95,7 +102,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
 
     polynomial(const polynomial& other)
         : coefficients_(other.coefficients_),
-          dim_(other.dim_), degree_(other.degree_), t_min_(other.t_min_), t_max_(other.t_max_)
+          dim_(other.dim_), degree_(other.degree_), T_min_(other.T_min_), T_max_(other.T_max_)
           {}
 
 
@@ -106,7 +113,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     {
         if(Safe)
         {
-            if(t_min_ > t_max_)
+            if(T_min_ > T_max_)
             {
                 std::invalid_argument("Tmin should be inferior to Tmax");
             }
@@ -126,8 +133,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     ///  \param return \f$x(t)\f$, point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const
     {
-        if((t < t_min_ || t > t_max_) && Safe){ throw std::out_of_range("TODO");}
-        time_t const dt (t-t_min_);
+        if((t < T_min_ || t > T_max_) && Safe){ throw std::out_of_range("TODO");}
+        time_t const dt (t-T_min_);
         time_t cdt(1);
         point_t currentPoint_ = point_t::Zero();
         for(int i = 0; i < degree_+1; ++i, cdt*=dt)
@@ -141,11 +148,11 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     ///  \return \f$x(t)\f$ point corresponding on spline at time t.
     virtual point_t operator()(const time_t t) const
     {
-        if((t < t_min_ || t > t_max_) && Safe)
+        if((t < T_min_ || t > T_max_) && Safe)
         { 
             throw std::invalid_argument("error in polynomial : time t to evaluate should be in range [Tmin, Tmax] of the curve");
         }
-        time_t const dt (t-t_min_);
+        time_t const dt (t-T_min_);
         point_t h = coefficients_.col(degree_);
         for(int i=(int)(degree_-1); i>=0; i--)
         {
@@ -161,11 +168,11 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
     virtual point_t derivate(const time_t t, const std::size_t order) const
     {
-        if((t < t_min_ || t > t_max_) && Safe)
+        if((t < T_min_ || t > T_max_) && Safe)
         { 
             throw std::invalid_argument("error in polynomial : time t to evaluate derivative should be in range [Tmin, Tmax] of the curve");
         }
-        time_t const dt (t-t_min_);
+        time_t const dt (t-T_min_);
         time_t cdt(1);
         point_t currentPoint_ = point_t::Zero(dim_);
         for(int i = (int)(order); i < (int)(degree_+1); ++i, cdt*=dt) 
@@ -192,10 +199,10 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     public:
     /// \brief Get the minimum time for which the curve is defined
     /// \return \f$t_{min}\f$ lower bound of time range.
-    num_t virtual min() const {return t_min_;}
+    num_t virtual min() const {return T_min_;}
     /// \brief Get the maximum time for which the curve is defined.
     /// \return \f$t_{max}\f$ upper bound of time range.
-    num_t virtual max() const {return t_max_;}
+    num_t virtual max() const {return T_max_;}
 /*Helpers*/
 
 /*Attributes*/
@@ -205,10 +212,11 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     std::size_t degree_; //const
 
     private:
-    time_t t_min_, t_max_;
+    time_t T_min_, T_max_;
 /*Attributes*/
 
     private:
+
     template<typename In>
     coeff_t init_coeffs(In zeroOrderCoefficient, In highestOrderCoefficient)
     {
@@ -220,6 +228,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
         }
         return res;
     }
+
 }; //class polynomial
 } // namespace curves
 #endif //_STRUCT_POLYNOMIAL

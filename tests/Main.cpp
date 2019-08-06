@@ -8,6 +8,8 @@
 #include "curves/cubic_hermite_spline.h"
 #include "curves/piecewise_curve.h"
 
+#include "curves/serialize_test_class.h"
+
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -1435,6 +1437,45 @@ void piecewiseCurveConversionFromDiscretePointsTest(bool& error)
     ComparePoints(p1, ppc(T_min+timestep), errMsg, error);
     ComparePoints(p2, ppc(T_min+2*timestep), errMsg, error);
     ComparePoints(p3, ppc(T_max), errMsg, error);
+}
+
+void serializationPiecewisePolynomialCurveTest(bool& error)
+{
+    std::string errmsg1("in serializationPiecewisePolynomialCurveTest, Error While serializing : ");
+    point_t a(1,1,1); // in [0,1[
+    point_t b(2,1,1); // in [1,2[
+    point_t c(3,1,1); // in [2,3]
+    point_t res;
+    t_point_t vec1, vec2, vec3;
+    vec1.push_back(a); // x=1, y=1, z=1
+    vec2.push_back(b); // x=2, y=1, z=1
+    vec3.push_back(c); // x=3, y=1, z=1
+    polynomial_t pol1(vec1.begin(), vec1.end(), 0, 1);
+    polynomial_t pol2(vec2.begin(), vec2.end(), 1, 2);
+    polynomial_t pol3(vec3.begin(), vec3.end(), 2, 3);
+    piecewise_polynomial_curve_t pc(pol1);
+    piecewise_polynomial_curve_t pc_test = pc;
+    pc.add_curve(pol2);
+    pc.add_curve(pol3);
+    // Test serialization
+    std::string fileName("./testSerialization/fileTest");
+    //piecewise_polynomial_curve_t::serializeToFile<piecewise_polynomial_curve_t, polynomial_t>(pc, fileName);
+    //pc.saveAsText(fileName);
+    // Test deserialization
+    /*
+    piecewise_polynomial_curve_t pc_deserialized = piecewise_polynomial_curve_t
+                                                   ::deserializeFromFile<piecewise_polynomial_curve_t, polynomial_t>(fileName);
+    */
+    //pc_test.loadFromText(fileName);
+    //pol1.saveAsText(fileName);
+
+    serialize_test_class stc(10);
+    stc.serialize_to_file(fileName);
+
+    serialize_test_class stc2(0);
+    stc2.deserialize_from_file(fileName);
+
+    std::cout<<"Test ok : "<<stc2.a_<<std::endl;
 }
 
 int main(int /*argc*/, char** /*argv[]*/)

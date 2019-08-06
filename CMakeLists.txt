@@ -34,6 +34,9 @@ IF(BUILD_PYTHON_INTERFACE)
   ADD_SUBDIRECTORY(python)
 ENDIF(BUILD_PYTHON_INTERFACE)
 
+#find_package(Boost 1.58 REQUIRED unit_test_framework system serialization)
+#SET(BOOST_COMPONENTS unit_test_framework serialization)
+
 SEARCH_FOR_BOOST()
 INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS})
 
