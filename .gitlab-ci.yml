@@ -1,1 +1,1 @@
-include: http://rainboard.laas.fr/project/hpp-spline/.gitlab-ci.yml
+include: http://rainboard.laas.fr/project/curves/.gitlab-ci.yml
