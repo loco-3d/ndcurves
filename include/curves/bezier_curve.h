@@ -16,6 +16,9 @@
 
 #include "MathDefs.h"
 
+#include "serialization/archive.hpp"
+#include "serialization/eigen-matrix.hpp"
+
 #include <vector>
 #include <stdexcept>
 
@@ -30,7 +33,8 @@ namespace curves
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
-struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>
+struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>,
+                      public serialization::Serializable< bezier_curve<Time, Numeric, Dim, Safe, Point> >
 {
     typedef Point   point_t;
     typedef Time    time_t;
@@ -42,6 +46,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>
 
 /* Constructors - destructors */
     public:
+
+    bezier_curve(){}
 
     /// \brief Constructor.
     /// Given the first and last point of a control points set, create the bezier curve.
@@ -401,13 +407,27 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>
     /*const*/ t_point_t  control_points_;
     static const double MARGIN;
 
-    public:
     static bezier_curve_t zero(const time_t T=1.)
     {
         std::vector<point_t> ts;
         ts.push_back(point_t::Zero(Dim));
         return bezier_curve_t(ts.begin(), ts.end(),0.,T);
     }
+
+    // Serialization of the class
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version){
+        ar & boost::serialization::make_nvp("T_min", T_min_);
+        ar & boost::serialization::make_nvp("T_max", T_max_);
+        ar & boost::serialization::make_nvp("mult_T", mult_T_);
+        ar & boost::serialization::make_nvp("size", size_);
+        ar & boost::serialization::make_nvp("degree", degree_);
+        ar & boost::serialization::make_nvp("bernstein", bernstein_);
+        ar & boost::serialization::make_nvp("control_points", control_points_);
+    }
+
 };
 
 template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point>

@@ -9,6 +9,7 @@ SET_TARGET_PROPERTIES(${PY_NAME} PROPERTIES PREFIX "")
 PKG_CONFIG_USE_DEPENDENCY(${PY_NAME} eigenpy)
 
 TARGET_LINK_LIBRARIES(${PY_NAME} ${Boost_LIBRARIES})
+MESSAGE(WARNING "Boost libraries are : ${Boost_LIBRARIES}")
 
 IF(APPLE)
   # We need to change the extension for python bindings

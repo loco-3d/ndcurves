@@ -14,6 +14,8 @@
 
 #include "MathDefs.h"
 
+#include "serialization/archive.hpp"
+
 #include <math.h>
 #include <vector>
 #include <stdexcept>
@@ -40,7 +42,10 @@ inline unsigned int bin(const unsigned  int n, const unsigned  int k)
 /// \brief Computes a Bernstein polynome.
 ///
 template <typename Numeric = double>
-struct Bern{
+struct Bern : public serialization::Serializable< Bern<Numeric> > {
+
+Bern(){}
+
 Bern(const unsigned int m, const unsigned int i)
     :m_minus_i(m - i)
     ,i_(i)
@@ -57,6 +62,16 @@ Numeric operator()(const Numeric u) const
 Numeric m_minus_i;
 Numeric i_;
 Numeric bin_m_i_;
+
+// Serialization of the class
+friend class boost::serialization::access;
+
+template<class Archive>
+void serialize(Archive& ar, const unsigned int version){
+    ar & boost::serialization::make_nvp("m_minus_i", m_minus_i);
+    ar & boost::serialization::make_nvp("i", i_);
+    ar & boost::serialization::make_nvp("bin_m_i", bin_m_i_);
+}
 };
 
 /// \brief Computes all Bernstein polynomes for a certain degree.

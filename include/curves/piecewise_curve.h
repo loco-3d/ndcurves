@@ -11,6 +11,8 @@
 #include "curve_abc.h"
 #include "curve_conversion.h"
 
+#include "serialization/archive.hpp"
+#include "serialization/eigen-matrix.hpp"
 
 namespace curves
 {

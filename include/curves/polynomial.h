@@ -50,7 +50,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>,
 /* Constructors - destructors */
     public:
 
-    polynomial() {}
+    polynomial(){}
 
     /// \brief Constructor.
     /// \param coefficients : a reference to an Eigen matrix where each column is a coefficient,

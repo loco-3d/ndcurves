@@ -28,11 +28,13 @@ class TestCurves(unittest.TestCase):
         while t < 2.:
             self.assertTrue(norm(a(t) - matrix([1., 2., 3.]).T) < __EPS)
             t += 0.1
+        waypoints_0 = matrix([[0,0,0], [0,0,0]]).transpose()
+        waypoints6_0 = matrix([[0,0,0,0,0,0], [0,0,0,0,0,0]]).transpose()
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         waypoints6 = matrix([[1., 2., 3., 7., 5., 5.], [4., 5., 6., 4., 5., 6.]]).transpose()
         time_waypoints = matrix([0., 1.]).transpose()
         # Create bezier6 and bezier3
-        a = bezier6(waypoints6)
+        a6 = bezier6(waypoints6)
         a = bezier3(waypoints, 0., 3.)
         # Test : Degree, min, max, derivate
         #self.print_str(("test 1")
@@ -80,6 +82,18 @@ class TestCurves(unittest.TestCase):
         a = bezier3(waypoints, c)
         self.assertTrue(norm(a.derivate(0, 1) - c.init_vel) < 1e-10)
         self.assertTrue(norm(a.derivate(1, 2) - c.end_acc) < 1e-10)
+        # Test serialization : Bezier 6
+        a6.saveAsText("serialization_bezier6.test")
+        #waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        b6 = bezier6(waypoints6_0)
+        b6.loadFromText("serialization_bezier6.test")
+        self.assertTrue((a6(0.4) == b6(0.4)).all())
+        # Test serialization : bezier 3
+        a.saveAsText("serialization_bezier3.test")
+        #waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        b = bezier3(waypoints_0)
+        b.loadFromText("serialization_bezier3.test")
+        self.assertTrue((a(0.4) == b(0.4)).all())
         return
 
     def test_polynomial(self):
@@ -94,11 +108,11 @@ class TestCurves(unittest.TestCase):
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         # Test serialization
-        #a.saveAsText("serialiation_polynomial.test")
+        a.saveAsText("serialiation_polynomial.test")
         #waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
-        #b = polynomial(waypoints)
-        #b.loadFromText("serialiation_polynomial.test")
-        #self.assertTrue((a(0.4) == b(0.4)).all())
+        b = polynomial(waypoints)
+        b.loadFromText("serialiation_polynomial.test")
+        self.assertTrue((a(0.4) == b(0.4)).all())
         return
 
     def test_piecewise_polynomial_curve(self):
@@ -118,9 +132,7 @@ class TestCurves(unittest.TestCase):
         ppc.is_continuous(0)
         ppc.is_continuous(1)
         # Test serialization
-        #serialize_piecewise_polynomial_curve("serialize_ppc.test",ppc);
-        #ppc2 = deserialize_piecewise_polynomial_curve("serialize_ppc.test");
-        #self.assertTrue((ppc(0.4) == ppc2(0.4)).all())
+        
         return
 
     def test_piecewise_bezier3_curve(self):

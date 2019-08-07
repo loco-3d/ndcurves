@@ -1439,8 +1439,10 @@ void piecewiseCurveConversionFromDiscretePointsTest(bool& error)
 
 void serializationCurvesTest(bool& error)
 {
-    std::string errMsg1("in serializationPiecewisePolynomialCurveTest, Error While serializing Polynomials : ");
-    std::string errMsg2("in serializationPiecewisePolynomialCurveTest, Error While serializing Piecewise curves : ");
+    std::string errMsg1("in serializationCurveTest, Error While serializing Polynomial : ");
+    std::string errMsg2("in serializationCurveTest, Error While serializing Bezier : ");
+    std::string errMsg3("in serializationCurveTest, Error While serializing Cubic Hermite : ");
+    std::string errMsg4("in serializationCurveTest, Error While serializing Piecewise curves : ");
     point_t a(1,1,1); // in [0,1[
     point_t b(2,1,1); // in [1,2[
     point_t c(3,1,1); // in [2,3]
@@ -1452,36 +1454,52 @@ void serializationCurvesTest(bool& error)
     polynomial_t pol1(vec1.begin(), vec1.end(), 0, 1);
     polynomial_t pol2(vec2.begin(), vec2.end(), 1, 2);
     polynomial_t pol3(vec3.begin(), vec3.end(), 2, 3);
-    piecewise_polynomial_curve_t pc(pol1);
-    piecewise_polynomial_curve_t pc_test = pc;
-    pc.add_curve(pol2);
-    pc.add_curve(pol3);
+    piecewise_polynomial_curve_t ppc(pol1);
+    ppc.add_curve(pol2);
+    ppc.add_curve(pol3);
     std::string fileName("fileTest.test");
     
     // Test serialization on Polynomial
-    std::cout<<"Serialize test : Polynomial => ";
     pol1.saveAsText(fileName);
-    // Test deserialization
     polynomial_t pol_test;
     pol_test.loadFromText(fileName);
     CompareCurves<polynomial_t, polynomial_t>(pol1, pol_test, errMsg1, error);
-    std::cout<<"OK"<<std::endl;
+    // Test serialization on Bezier
+    bezier_curve_t bc = bezier_from_curve<bezier_curve_t, polynomial_t>(pol1);
+    bc.saveAsText(fileName);
+    bezier_curve_t bc_test;
+    bc_test.loadFromText(fileName);
+    CompareCurves<polynomial_t, bezier_curve_t>(pol1, bc_test, errMsg2, error);
+    // Test serialization on Cubic Hermite
+    cubic_hermite_spline_t chs = hermite_from_curve<cubic_hermite_spline_t, polynomial_t>(pol1);
+    chs.saveAsText(fileName);
+    cubic_hermite_spline_t chs_test;
+    chs_test.loadFromText(fileName);
+    CompareCurves<polynomial_t, cubic_hermite_spline_t>(pol1, chs_test, errMsg3, error);
 
-    // Test serialization on Piecewise curves
-    std::cout<<"Serialize test : Piecewise polynomial curve => ";
-    pc.saveAsText(fileName);
-    // Test deserialization
-    piecewise_polynomial_curve_t ppc_deserialized;
-    ppc_deserialized.loadFromText(fileName);
-    CompareCurves<piecewise_polynomial_curve_t,piecewise_polynomial_curve_t>(pc, ppc_deserialized, errMsg2, error);
-    std::cout<<"OK"<<std::endl;
+    // Test serialization on Piecewise Polynomial curve
+    ppc.saveAsText(fileName);
+    piecewise_polynomial_curve_t ppc_test;
+    ppc_test.loadFromText(fileName);
+    CompareCurves<piecewise_polynomial_curve_t,piecewise_polynomial_curve_t>(ppc, ppc_test, errMsg4, error);
+    // Test serialization on Piecewise Bezier curve
+    piecewise_bezier_curve_t pbc = ppc.convert_piecewise_curve_to_bezier<bezier_curve_t>();
+    pbc.saveAsText(fileName);
+    piecewise_bezier_curve_t pbc_test;
+    pbc_test.loadFromText(fileName);
+    CompareCurves<piecewise_polynomial_curve_t,piecewise_bezier_curve_t>(ppc, pbc_test, errMsg4, error);
+    // Test serialization on Piecewise Cubic Hermite curve
+    piecewise_cubic_hermite_curve_t pchc = ppc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    pchc.saveAsText(fileName);
+    piecewise_cubic_hermite_curve_t pchc_test;
+    pchc_test.loadFromText(fileName);
+    CompareCurves<piecewise_polynomial_curve_t,piecewise_cubic_hermite_curve_t>(ppc, pchc_test, errMsg4, error);
 }
 
 int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
     bool error = false;
-    /*
     CubicFunctionTest(error);
     ExactCubicNoErrorTest(error);
     ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
@@ -1506,7 +1524,6 @@ int main(int /*argc*/, char** /*argv[]*/)
     toPolynomialConversionTest(error);
     cubicConversionTest(error);
     curveAbcDimDynamicTest(error);
-    */
     serializationCurvesTest(error);
 
     if(error)

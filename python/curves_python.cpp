@@ -9,6 +9,7 @@
 
 #include "python_definitions.h"
 #include "python_variables.h"
+#include "archive_python_binding.h"
 
 #include <vector>
 
@@ -287,6 +288,7 @@ BOOST_PYTHON_MODULE(curves)
             .def("compute_derivate", &bezier6_t::compute_derivate)
             .def("compute_primitive", &bezier6_t::compute_primitive)
             .def("waypoints", &wayPointsToList<bezier6_t,6>)
+            .def(SerializableVisitor<bezier6_t>())
             .def_readonly("degree", &bezier6_t::degree_)
             .def_readonly("nbWaypoints", &bezier6_t::size_)
         ;
@@ -306,6 +308,7 @@ BOOST_PYTHON_MODULE(curves)
             .def("compute_derivate", &bezier3_t::compute_derivate)
             .def("compute_primitive", &bezier3_t::compute_primitive)
             .def("waypoints", &wayPointsToList<bezier3_t,3>)
+            .def(SerializableVisitor<bezier3_t>())
             .def_readonly("degree", &bezier3_t::degree_)
             .def_readonly("nbWaypoints", &bezier3_t::size_)
         ;
@@ -344,13 +347,13 @@ BOOST_PYTHON_MODULE(curves)
 
 
     /** BEGIN polynomial curve function**/
-    class_<polynomial_t>("polynomial",  init<const polynomial_t::coeff_t, const real, const real >())
+    class_<polynomial_t>("polynomial", init<const polynomial_t::coeff_t, const real, const real >())
             .def("__init__", make_constructor(&wrapSplineConstructor))
             .def("min", &polynomial_t::min)
             .def("max", &polynomial_t::max)
             .def("__call__", &polynomial_t::operator())
             .def("derivate", &polynomial_t::derivate)
-            .def("serialize", &polynomial_t::saveAsText)
+            .def(SerializableVisitor<polynomial_t>())
         ;
     /** END polynomial function**/
 
@@ -364,6 +367,7 @@ BOOST_PYTHON_MODULE(curves)
             .def("derivate", &piecewise_polynomial_curve_t::derivate)
             .def("add_curve", &piecewise_polynomial_curve_t::add_curve)
             .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous)
+            //.def(SerializableVisitor<piecewise_polynomial_curve_t>())
         ;
     class_<piecewise_bezier3_curve_t>
         ("piecewise_bezier3_curve", no_init)
@@ -374,6 +378,7 @@ BOOST_PYTHON_MODULE(curves)
             .def("derivate", &piecewise_bezier3_curve_t::derivate)
             .def("add_curve", &piecewise_bezier3_curve_t::add_curve)
             .def("is_continuous", &piecewise_bezier3_curve_t::is_continuous)
+            //.def(SerializableVisitor<piecewise_bezier3_curve_t>())
         ;
     class_<piecewise_bezier6_curve_t>
         ("piecewise_bezier6_curve", no_init)
@@ -384,6 +389,7 @@ BOOST_PYTHON_MODULE(curves)
             .def("derivate", &piecewise_bezier6_curve_t::derivate)
             .def("add_curve", &piecewise_bezier6_curve_t::add_curve)
             .def("is_continuous", &piecewise_bezier6_curve_t::is_continuous)
+            //.def(SerializableVisitor<piecewise_bezier6_curve_t>())
         ;
     class_<piecewise_cubic_hermite_curve_t>
         ("piecewise_cubic_hermite_curve", no_init)
@@ -394,6 +400,7 @@ BOOST_PYTHON_MODULE(curves)
             .def("derivate", &piecewise_cubic_hermite_curve_t::derivate)
             .def("add_curve", &piecewise_cubic_hermite_curve_t::add_curve)
             .def("is_continuous", &piecewise_cubic_hermite_curve_t::is_continuous)
+            //.def(SerializableVisitor<piecewise_cubic_hermite_curve_t>())
         ;
     /** END piecewise curve function **/
 
@@ -421,6 +428,7 @@ BOOST_PYTHON_MODULE(curves)
             .def("max", &cubic_hermite_spline_t::max)
             .def("__call__", &cubic_hermite_spline_t::operator())
             .def("derivate", &cubic_hermite_spline_t::derivate)
+            .def(SerializableVisitor<cubic_hermite_spline_t>())
         ;
     /** END cubic_hermite_spline **/
 

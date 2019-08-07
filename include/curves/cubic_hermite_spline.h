@@ -18,6 +18,11 @@
 
 #include <iostream>
 
+#include "serialization/archive.hpp"
+#include "serialization/eigen-matrix.hpp"
+
+#include <boost/serialization/utility.hpp>
+
 namespace curves
 {
 /// \class CubicHermiteSpline.
@@ -32,7 +37,8 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
 , typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>
 , typename Tangent= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>
 >
-struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
+struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>,
+                              public serialization::Serializable< cubic_hermite_spline<Time, Numeric, Dim, Safe, Point, Tangent> >
 {
     typedef std::pair<Point, Tangent> pair_point_tangent_t; 
     typedef std::vector< pair_point_tangent_t ,Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
@@ -40,6 +46,9 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     typedef Numeric num_t;
     
     public:
+
+    cubic_hermite_spline(){}
+
     /// \brief Constructor.
     /// \param wayPointsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
     /// \param wayPointsEns   : an iterator pointing to the last  element of a pair(position, derivative) container.
@@ -66,7 +75,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     
     cubic_hermite_spline(const cubic_hermite_spline& other)
         : control_points_(other.control_points_), time_control_points_(other.time_control_points_),
-          duration_splines_(other.duration_splines_), t_min_(other.t_min_), t_max_(other.t_max_), 
+          duration_splines_(other.duration_splines_), T_min_(other.T_min_), T_max_(other.T_max_), 
           size_(other.size_), degree_(other.degree_)
           {}
     
@@ -82,7 +91,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     ///
     virtual Point operator()(const Time t) const
     {
-        if(Safe &! (t_min_ <= t && t <= t_max_))
+        if(Safe &! (T_min_ <= t && t <= T_max_))
         {
             throw std::invalid_argument("can't evaluate cubic hermite spline, out of range");
         }
@@ -114,8 +123,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     void setTime(const vector_time_t & time_control_points)
     {
         time_control_points_ = time_control_points;
-        t_min_ = time_control_points_.front();
-        t_max_ = time_control_points_.back();
+        T_min_ = time_control_points_.front();
+        T_max_ = time_control_points_.back();
         if (time_control_points.size() != size())
         {
             throw std::length_error("size of time control points should be equal to number of control points");
@@ -361,15 +370,29 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
     /// duration of each subspline is : ( T_{P_1}-T_{P_0}, T_{P_2}-T_{P_1}, ..., T_{P_N}-T_{P_{N-1} )<br>
     /// It contains \f$N-1\f$ durations. 
     vector_time_t duration_splines_;
-    /// Starting time of cubic hermite spline : t_min_ is equal to first time of control points.
-    /*const*/ Time t_min_;
-    /// Ending time of cubic hermite spline : t_max_ is equal to last time of control points.
-    /*const*/ Time t_max_;
+    /// Starting time of cubic hermite spline : T_min_ is equal to first time of control points.
+    /*const*/ Time T_min_;
+    /// Ending time of cubic hermite spline : T_max_ is equal to last time of control points.
+    /*const*/ Time T_max_;
     /// Number of control points (pairs).
     std::size_t size_;
     /// Degree (Cubic so degree 3)
     std::size_t degree_;
     /*Attributes*/
+
+    // Serialization of the class
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version){
+        ar & boost::serialization::make_nvp("control_points", control_points_);
+        ar & boost::serialization::make_nvp("time_control_points", time_control_points_);
+        ar & boost::serialization::make_nvp("duration_splines", duration_splines_);
+        ar & boost::serialization::make_nvp("T_min", T_min_);
+        ar & boost::serialization::make_nvp("T_max", T_max_);
+        ar & boost::serialization::make_nvp("size", size_);
+        ar & boost::serialization::make_nvp("degree", degree_);
+    }
 
 };
 
