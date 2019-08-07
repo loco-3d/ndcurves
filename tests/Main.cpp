@@ -607,12 +607,12 @@ void ExactCubicNoErrorTest(bool& error)
     if (!QuasiEqual(exactCubic.max(),3.0))
     {
         error = true;
-        std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 3\n";
+        std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 3 but is : "<<exactCubic.max()<<"\n";
     }
     if (!QuasiEqual(exactCubic.min(),0.0))
     {
         error = true;
-        std::cout << "Evaluation of exactCubic error, MinBound should be equal to 0\n";
+        std::cout << "Evaluation of exactCubic error, MinBound should be equal to 0 but is : "<<exactCubic.min()<<"\n";
     }
 }
 

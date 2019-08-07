@@ -57,6 +57,20 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>,
         add_curve(cf);
     }
 
+    piecewise_curve(const t_curve_t list_curves)
+    {
+        size_ = 0;
+        for( std::size_t i=0; i<list_curves.size(); i++ )
+        {
+            add_curve(list_curves[i]);
+        }
+    }
+
+    piecewise_curve(const piecewise_curve& other)
+        : curves_(other.curves_), time_curves_(other.time_curves_), size_(other.size_),
+          T_min_(other.T_min_), T_max_(other.T_max_)
+    {}
+
     virtual ~piecewise_curve(){}
 
     virtual Point operator()(const Time t) const
@@ -289,6 +303,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>,
     /// \brief Get the maximum time for which the curve is defined.
     /// \return \f$t_{max}\f$, upper bound of time range.
     Time virtual max() const{return T_max_;}
+    std::size_t getNumberCurves() { return curves_.size(); }
     /*Helpers*/
 
     /* Variables */

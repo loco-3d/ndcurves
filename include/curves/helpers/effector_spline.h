@@ -111,7 +111,7 @@ exact_cubic_t* effector_spline(
     spline_t end_spline=make_end_spline(land_normal,landWaypoint.second,land_offset,landWaypoint.first,land_offset_duration);
     spline_constraints_t constraints = compute_required_offset_velocity_acceleration(end_spline,land_offset_duration);
     exact_cubic_t all_but_end(waypoints.begin(), waypoints.end(),constraints);
-    t_spline_t splines = all_but_end.subSplines_;
+    t_spline_t splines = all_but_end.curves_;
     splines.push_back(end_spline);
     return new exact_cubic_t(splines);
 }

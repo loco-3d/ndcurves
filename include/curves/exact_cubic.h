@@ -25,6 +25,8 @@
 #include "quintic_spline.h"
 #include "curve_constraint.h"
 
+#include "piecewise_curve.h"
+
 #include "MathDefs.h"
 
 #include <functional>
@@ -39,7 +41,7 @@ namespace curves
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >
 , typename SplineBase=polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
-struct exact_cubic : public curve_abc<Time, Numeric, Safe, Point>
+struct exact_cubic : public piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase>
 {
     typedef Point   point_t;
     typedef T_Point t_point_t;
@@ -53,6 +55,8 @@ struct exact_cubic : public curve_abc<Time, Numeric, Safe, Point>
     typedef typename t_spline_t::const_iterator cit_spline_t;
     typedef curve_constraints<Point, Dim> spline_constraints;
 
+    typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase> piecewise_curve_t;
+
     /* Constructors - destructors */
     public:
     /// \brief Constructor.
@@ -61,7 +65,8 @@ struct exact_cubic : public curve_abc<Time, Numeric, Safe, Point>
     ///
     template<typename In>
     exact_cubic(In wayPointsBegin, In wayPointsEnd)
-        : subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd)) {}
+        : piecewise_curve_t(computeWayPoints<In>(wayPointsBegin, wayPointsEnd))
+    {}
 
     /// \brief Constructor.
     /// \param wayPointsBegin : an iterator pointing to the first element of a waypoint container.
@@ -70,28 +75,31 @@ struct exact_cubic : public curve_abc<Time, Numeric, Safe, Point>
     ///
     template<typename In>
     exact_cubic(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints)
-        : subSplines_(computeWayPoints<In>(wayPointsBegin, wayPointsEnd, constraints)) {}
+        : piecewise_curve_t(computeWayPoints<In>(wayPointsBegin, wayPointsEnd, constraints))
+    {}
 
     /// \brief Constructor.
-    /// \param subSplines: vector of subsplines.
+    /// \param subSplines: vector of subSplines.
     exact_cubic(const t_spline_t& subSplines)
-        : subSplines_(subSplines) {}
+        : piecewise_curve_t(subSplines)
+    {}
 
     /// \brief Copy Constructor.
     exact_cubic(const exact_cubic& other)
-        : subSplines_(other.subSplines_) {}
+        : piecewise_curve_t(other)
+    {}
 
     /// \brief Destructor.
     virtual ~exact_cubic(){}
 
     std::size_t getNumberSplines()
     {
-        return subSplines_.size();
+        return this->getNumberCurves();
     }
 
     spline_t getSplineAt(std::size_t index)
     {
-        return subSplines_.at(index);
+        return this->curves_.at(index);
     }
 
     private:
@@ -245,71 +253,6 @@ struct exact_cubic : public curve_abc<Time, Numeric, Safe, Point>
         subSplines.push_back(create_quintic<Time,Numeric,Dim,Safe,Point,T_Point>
                              (a0,b0,c0,d,e,f, init_t, end_t));
     }
-
-    private:
-    //exact_cubic& operator=(const exact_cubic&);
-    /* Constructors - destructors */
-
-    /*Operations*/
-    public:
-    ///  \brief Evaluation of the cubic spline at time t.
-    ///  \param t : time when to evaluate the spline
-    ///  \return \f$x(t)\f$ point corresponding on spline at time t.
-    ///
-    virtual point_t operator()(const time_t t) const
-    {
-        if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max()))
-        {
-            throw std::out_of_range("time t to evaluate should be in range [Tmin, Tmax] of the spline");
-        }
-        for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
-        {
-            if( (t >= (it->min()) && t <= (it->max())) || it+1 == subSplines_.end())
-            {
-                return it->operator()(t);
-            }
-        }
-        // this should not happen
-        throw std::runtime_error("Exact cubic evaluation failed; t is outside bounds");
-    }
-
-    ///  \brief Evaluate the derivative of order N of spline at time t.
-    ///  \param t : time when to evaluate the spline.
-    ///  \param order : order of derivative.
-    ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline of order N at time t.
-    ///
-    virtual point_t derivate(const time_t t, const std::size_t order) const
-    {
-        if(Safe && (t < subSplines_.front().min() || t > subSplines_.back().max()))
-        {
-            throw std::out_of_range("time t to evaluate should be in range [Tmin, Tmax] of the spline");
-        }
-        for(cit_spline_t it = subSplines_.begin(); it != subSplines_.end(); ++ it)
-        {
-            if( (t >= (it->min()) && t <= (it->max())) || it+1 == subSplines_.end())
-            {
-                return it->derivate(t, order);
-            }
-        }
-        // this should not happen
-        throw std::runtime_error("Exact cubic evaluation failed; t is outside bounds");
-    }
-    /*Operations*/
-
-    /*Helpers*/
-    public:
-    /// \brief Get the minimum time for which the curve is defined
-    /// \return \f$t_{min}\f$ lower bound of time range.
-    num_t virtual min() const{return subSplines_.front().min();}
-    /// \brief Get the maximum time for which the curve is defined.
-    /// \return \f$t_{max}\f$ upper bound of time range.
-    num_t virtual max() const{return subSplines_.back().max();}
-    /*Helpers*/
-
-    /*Attributes*/
-    public:
-    t_spline_t subSplines_; // const
-    /*Attributes*/
 };
 } // namespace curves
 #endif //_CLASS_EXACTCUBIC
