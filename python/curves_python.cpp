@@ -351,7 +351,7 @@ BOOST_PYTHON_MODULE(curves)
             .def("max", &polynomial_t::max)
             .def("__call__", &polynomial_t::operator())
             .def("derivate", &polynomial_t::derivate)
-            //.def(SerializableVisitor<polynomial_t>())
+            .def("serialize", &polynomial_t::saveAsText)
         ;
     /** END polynomial function**/
 
