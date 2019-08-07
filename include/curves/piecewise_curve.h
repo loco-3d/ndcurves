@@ -337,6 +337,37 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
     std::size_t size_; // Number of segments in piecewise curve = size of curves_
     Time T_min_, T_max_;
     static const double MARGIN;
+
+    public:
+    // Serialization of the class
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version){
+        ar & curves_;
+        ar & time_curves_;
+        ar & size_;
+        ar & T_min_ & T_max_;
+    }
+
+    template<typename Piecewise_polynomial_curve, typename Polynomial>
+    static void serialize_to_file(std::string filename, Piecewise_polynomial_curve ppc)
+    {
+        std::ofstream ofile(filename.c_str());
+        boost::archive::text_oarchive oTextArchive(ofile);
+        oTextArchive << ppc; //piecewise_curve.convert_piecewise_curve_to_polynomial<Polynomial>();
+    }
+
+    template<typename Piecewise_polynomial_curve>
+    static Piecewise_polynomial_curve deserialize_from_file(std::string filename)
+    {
+        Piecewise_polynomial_curve ppc;
+        std::ifstream ifile(filename.c_str());
+        boost::archive::text_iarchive iTextArchive(ifile);
+        iTextArchive >> ppc;     // désérialisation dans d
+        return ppc;
+    }
+
 };
 
 template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point, typename T_Point, typename Curve>

@@ -1441,7 +1441,8 @@ void piecewiseCurveConversionFromDiscretePointsTest(bool& error)
 
 void serializationPiecewisePolynomialCurveTest(bool& error)
 {
-    std::string errmsg1("in serializationPiecewisePolynomialCurveTest, Error While serializing : ");
+    std::string errMsg1("in serializationPiecewisePolynomialCurveTest, Error While serializing Polynomials : ");
+    std::string errMsg2("in serializationPiecewisePolynomialCurveTest, Error While serializing Piecewise curves : ");
     point_t a(1,1,1); // in [0,1[
     point_t b(2,1,1); // in [1,2[
     point_t c(3,1,1); // in [2,3]
@@ -1457,32 +1458,30 @@ void serializationPiecewisePolynomialCurveTest(bool& error)
     piecewise_polynomial_curve_t pc_test = pc;
     pc.add_curve(pol2);
     pc.add_curve(pol3);
-    // Test serialization
-    std::string fileName("./testSerialization/fileTest");
-    //piecewise_polynomial_curve_t::serializeToFile<piecewise_polynomial_curve_t, polynomial_t>(pc, fileName);
-    //pc.saveAsText(fileName);
+    std::string fileName("fileTest.test");
+    
+    // Test serialization on Polynomial
+    std::cout<<"Serialize test : Polynomial => ";
+    polynomial_t::serialize_to_file<polynomial_t>(fileName, pol1);
+    polynomial_t pol_test = pol2;
+    pol_test = polynomial_t::deserialize_from_file<polynomial_t>(fileName);
+    CompareCurves<polynomial_t, polynomial_t>(pol1, pol_test, errMsg1, error);
+    std::cout<<"OK"<<std::endl;
+
+    // Test serialization on Piecewise curves
+    std::cout<<"Serialize test : Piecewise polynomial curve => ";
+    piecewise_polynomial_curve_t::serialize_to_file<piecewise_polynomial_curve_t, polynomial_t>(fileName, pc);
     // Test deserialization
-    /*
-    piecewise_polynomial_curve_t pc_deserialized = piecewise_polynomial_curve_t
-                                                   ::deserializeFromFile<piecewise_polynomial_curve_t, polynomial_t>(fileName);
-    */
-    //pc_test.loadFromText(fileName);
-    //pol1.saveAsText(fileName);
-
-    serialize_test_class stc(10);
-    stc.serialize_to_file(fileName);
-
-    serialize_test_class stc2(0);
-    stc2.deserialize_from_file(fileName);
-
-    std::cout<<"Test ok : "<<stc2.a_<<std::endl;
+    piecewise_polynomial_curve_t ppc_deserialized = piecewise_polynomial_curve_t
+                                                   ::deserialize_from_file<piecewise_polynomial_curve_t>(fileName);
+    CompareCurves<piecewise_polynomial_curve_t,piecewise_polynomial_curve_t>(pc, ppc_deserialized, errMsg2, error);
+    std::cout<<"OK"<<std::endl;
 }
 
 int main(int /*argc*/, char** /*argv[]*/)
 {
     std::cout << "performing tests... \n";
     bool error = false;
-    
     CubicFunctionTest(error);
     ExactCubicNoErrorTest(error);
     ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
@@ -1507,6 +1506,7 @@ int main(int /*argc*/, char** /*argv[]*/)
     toPolynomialConversionTest(error);
     cubicConversionTest(error);
     curveAbcDimDynamicTest(error);
+    serializationPiecewisePolynomialCurveTest(error);
 
     if(error)
     {

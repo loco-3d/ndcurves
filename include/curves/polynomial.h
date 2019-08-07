@@ -23,9 +23,14 @@
 #include <functional>
 #include <stdexcept>
 
+#include <fstream>
+#include <string>
+#include <stdexcept>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include "serialization/archive.hpp"
 #include "serialization/eigen-matrix.hpp"
-#include <boost/serialization/vector.hpp>
 
 namespace curves
 {
@@ -60,7 +65,9 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     /// \param max  : UPPER bound on interval definition of the curve.
     polynomial(const coeff_t& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
-          coefficients_(coefficients), dim_(Dim), degree_(coefficients_.cols()-1), T_min_(min), T_max_(max)
+          coefficients_(coefficients), 
+          dim_(Dim), degree_(coefficients_.cols()-1), 
+          T_min_(min), T_max_(max)
     {
         safe_check();
     }
@@ -74,7 +81,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     polynomial(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
           coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
-          dim_(Dim), degree_(coefficients_.cols()-1), T_min_(min), T_max_(max)
+          dim_(Dim), degree_(coefficients_.cols()-1), 
+          T_min_(min), T_max_(max)
     {
         safe_check();
     }
@@ -87,8 +95,9 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     /// \param max   : UPPER bound on interval definition of the spline.
     template<typename In>
     polynomial(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
-        :coefficients_(init_coeffs(zeroOrderCoefficient, out)),
-          dim_(Dim), degree_(coefficients_.cols()-1), T_min_(min), T_max_(max)
+        : coefficients_(init_coeffs(zeroOrderCoefficient, out)),
+          dim_(Dim), degree_(coefficients_.cols()-1), 
+          T_min_(min), T_max_(max)
     {
         safe_check();
     }
@@ -103,7 +112,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
     polynomial(const polynomial& other)
         : coefficients_(other.coefficients_),
           dim_(other.dim_), degree_(other.degree_), T_min_(other.T_min_), T_max_(other.T_max_)
-          {}
+    {}
 
 
     //polynomial& operator=(const polynomial& other);
@@ -227,6 +236,37 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
             res.col(i) = *cit;
         }
         return res;
+    }
+
+    public:
+    // Serialization of the class
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version){
+        ar & coefficients_;
+        ar & dim_;
+        ar & degree_;
+        ar & T_min_ ;
+        ar & T_max_;
+    }
+
+    template<typename Polynomial>
+    static void serialize_to_file(std::string filename, Polynomial pol)
+    {
+        std::ofstream ofile(filename.c_str());
+        boost::archive::text_oarchive oTextArchive(ofile);
+        oTextArchive << pol;
+    }
+
+    template<typename Polynomial>
+    static Polynomial deserialize_from_file(std::string filename)
+    {
+        Polynomial pol;
+        std::ifstream ifile(filename.c_str());
+        boost::archive::text_iarchive iTextArchive(ifile);
+        iTextArchive >> pol;     // désérialisation dans d
+        return pol;
     }
 
 }; //class polynomial

@@ -3,11 +3,14 @@ import unittest
 from numpy import matrix
 from numpy.linalg import norm
 
+#from curves import ( serialize_polynomial, deserialize_polynomial, serialize_piecewise_polynomial_curve, deserialize_piecewise_polynomial_curve )
+
 from curves import (bezier3, bezier6, bezier_from_hermite, bezier_from_polynomial, cubic_hermite_spline,
                     curve_constraints, exact_cubic, hermite_from_bezier, hermite_from_polynomial,
                     piecewise_bezier3_curve, piecewise_bezier6_curve, piecewise_cubic_hermite_curve,
                     piecewise_polynomial_curve, polynomial, polynomial_from_bezier, polynomial_from_hermite)
 
+#import curves
 
 class TestCurves(unittest.TestCase):
     #def print_str(self, inStr):
@@ -81,7 +84,7 @@ class TestCurves(unittest.TestCase):
 
     def test_polynomial(self):
         # To test :
-        # - Functions : constructor, min, max, derivate
+        # - Functions : constructor, min, max, derivate, serialize, deserialize
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = polynomial(waypoints)  # Defined on [0.,1.]
         a = polynomial(waypoints, -1., 3.)  # Defined on [-1.,3.]
@@ -90,11 +93,15 @@ class TestCurves(unittest.TestCase):
         a(0.4)
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
+        # Test serialization
+        #serialize_polynomial("serialize_polynomial.test",a);
+        #b = deserialize_polynomial("serialize_polynomial.test");
+        #self.assertTrue((a(0.4) == b(0.4)).all())
         return
 
     def test_piecewise_polynomial_curve(self):
         # To test :
-        # - Functions : constructor, min, max, derivate, add_curve, is_continuous
+        # - Functions : constructor, min, max, derivate, add_curve, is_continuous, serialize, deserialize
         waypoints1 = matrix([[1., 1., 1.]]).transpose()
         waypoints2 = matrix([[1., 1., 1.], [1., 1., 1.]]).transpose()
         a = polynomial(waypoints1, 0., 1.)
@@ -108,6 +115,10 @@ class TestCurves(unittest.TestCase):
         ppc.derivate(0.4, 2)
         ppc.is_continuous(0)
         ppc.is_continuous(1)
+        # Test serialization
+        #serialize_piecewise_polynomial_curve("serialize_ppc.test",ppc);
+        #ppc2 = deserialize_piecewise_polynomial_curve("serialize_ppc.test");
+        #self.assertTrue((ppc(0.4) == ppc2(0.4)).all())
         return
 
     def test_piecewise_bezier3_curve(self):

@@ -177,6 +177,27 @@ piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveConstructor(const
 }
 /* end wrap piecewise polynomial curve */
 
+/* Wrap serialize and deserialize functions in Polynomial and Piecewise Polynomial curve */
+/*
+void wrapSerializePolynomial(std::string file_path, polynomial_t pol)
+{
+    polynomial_t::serialize_to_file<polynomial_t>(file_path, pol);
+}
+polynomial_t wrapDeserializePolynomial(std::string file_path)
+{
+    return polynomial_t::deserialize_from_file<polynomial_t>(file_path);
+}
+void wrapSerializePiecewisePolynomialCurve(std::string file_path, piecewise_polynomial_curve_t ppc)
+{
+    piecewise_polynomial_curve_t::serialize_to_file<piecewise_polynomial_curve_t, polynomial_t>(file_path, ppc);
+}
+piecewise_polynomial_curve_t wrapDeserializePiecewisePolynomialCurve(std::string file_path)
+{
+    return piecewise_polynomial_curve_t::deserialize_from_file<piecewise_polynomial_curve_t>(file_path);
+}
+*/
+/*End wrap serialize and deserialize functions in Polynomial and Piecewise Polynomial curve */
+
 /* Wrap exact cubic spline */
 t_waypoint_t getWayPoints(const coeff_t& array, const time_waypoints_t& time_wp)
 {
@@ -450,6 +471,14 @@ BOOST_PYTHON_MODULE(curves)
     def("hermite_from_polynomial", hermite_from_curve<cubic_hermite_spline_t, polynomial_t>);
     /** END curves conversion**/
 
+    /** BEGIN serialization of polynomial and piecewise polynomial curve **/
+    /*
+    def("serialize_polynomial", wrapSerializePolynomial);
+    def("deserialize_polynomial", wrapDeserializePolynomial);
+    def("serialize_piecewise_polynomial_curve", wrapSerializePiecewisePolynomialCurve);
+    def("deserialize_piecewise_polynomial_curve", wrapDeserializePiecewisePolynomialCurve);
+    */
+    /** END serialization of polynomial and piecewise polynomial curve **/
 
 }
 
