@@ -42,7 +42,8 @@ namespace curves
 ///
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
          typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
-struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
+struct polynomial : public curve_abc<Time, Numeric, Safe, Point>,
+                    public serialization::Serializable< polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
 {
     typedef Point 	point_t;
     typedef T_Point t_point_t;
@@ -244,32 +245,15 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
 
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version){
-        ar & coefficients_;
-        ar & dim_;
-        ar & degree_;
-        ar & T_min_ ;
-        ar & T_max_;
-    }
-
-    template<typename Polynomial>
-    static void serialize_to_file(std::string filename, Polynomial pol)
-    {
-        std::ofstream ofile(filename.c_str());
-        boost::archive::text_oarchive oTextArchive(ofile);
-        oTextArchive << pol;
-    }
-
-    template<typename Polynomial>
-    static Polynomial deserialize_from_file(std::string filename)
-    {
-        Polynomial pol;
-        std::ifstream ifile(filename.c_str());
-        boost::archive::text_iarchive iTextArchive(ifile);
-        iTextArchive >> pol;     // désérialisation dans d
-        return pol;
+        ar & boost::serialization::make_nvp("coefficients", coefficients_);
+        ar & boost::serialization::make_nvp("dim", dim_);
+        ar & boost::serialization::make_nvp("degree", degree_);
+        ar & boost::serialization::make_nvp("T_min", T_min_);
+        ar & boost::serialization::make_nvp("T_max", T_max_);
     }
 
 }; //class polynomial
+
 } // namespace curves
 #endif //_STRUCT_POLYNOMIAL
 

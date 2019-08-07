@@ -28,7 +28,8 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
      typename T_Point= std::vector<Point,Eigen::aligned_allocator<Point> >,
      typename Curve= curve_abc<Time, Numeric, Safe, Point>
      >
-struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
+struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>,
+                         public serialization::Serializable< piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Curve> >
 {
     typedef Point   point_t;
     typedef T_Point t_point_t;
@@ -236,50 +237,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
         ppc.add_curve(Polynomial(coeffs,time_actual,T_max));
         return ppc;
     }
-/*
-    template <typename Piecewise_curve, typename Polynomial>
-    static void serializeToFile(Piecewise_curve pc, std::string file_path)
-    {
-        // Get piecewise polynomial curve corresponding
-        piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> ppc = pc.convert_piecewise_curve_to_polynomial<Polynomial>();
-        // Serialize
-        std::ofstream ofs(file_path.c_str());
-        if(ofs) 
-        {
-            boost::archive::binary_oarchive oa(ofs);
-            oa << ppc;
-        } 
-        else 
-        {
-            throw "PiecewiseCurve, Error while serializing to file";
-        }
-        ofs.close();
-    }
 
-    template <typename Piecewise_polynomial_curve, typename Polynomial>
-    static Piecewise_polynomial_curve deserializeFromFile(std::string file_path)
-    {
-        // Get a piecewise polynomial curve
-        point_t p;
-        t_point_t t_p;
-        t_p.push_back(p);
-        Polynomial pol(t_p.begin(), t_p.end(),0,1);
-        Piecewise_polynomial_curve ppc(pol);
-        // Deserialize in it
-        std::ifstream ifs(file_path.c_str());
-        if(ifs) 
-        {
-            boost::archive::binary_iarchive ia(ifs);
-            ia >> ppc;
-        } 
-        else 
-        {
-            throw "PiecewiseCurve, Error while deserializing from file";
-        }
-        ifs.close();
-        return ppc;
-    }
-*/
     private:
 
     /// \brief Get index of the interval corresponding to time t for the interpolation.
@@ -348,24 +306,6 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
         ar & time_curves_;
         ar & size_;
         ar & T_min_ & T_max_;
-    }
-
-    template<typename Piecewise_polynomial_curve, typename Polynomial>
-    static void serialize_to_file(std::string filename, Piecewise_polynomial_curve ppc)
-    {
-        std::ofstream ofile(filename.c_str());
-        boost::archive::text_oarchive oTextArchive(ofile);
-        oTextArchive << ppc; //piecewise_curve.convert_piecewise_curve_to_polynomial<Polynomial>();
-    }
-
-    template<typename Piecewise_polynomial_curve>
-    static Piecewise_polynomial_curve deserialize_from_file(std::string filename)
-    {
-        Piecewise_polynomial_curve ppc;
-        std::ifstream ifile(filename.c_str());
-        boost::archive::text_iarchive iTextArchive(ifile);
-        iTextArchive >> ppc;     // désérialisation dans d
-        return ppc;
     }
 
 };

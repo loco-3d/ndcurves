@@ -8,8 +8,6 @@
 #include "curves/cubic_hermite_spline.h"
 #include "curves/piecewise_curve.h"
 
-#include "curves/serialize_test_class.h"
-
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -1462,18 +1460,19 @@ void serializationPiecewisePolynomialCurveTest(bool& error)
     
     // Test serialization on Polynomial
     std::cout<<"Serialize test : Polynomial => ";
-    polynomial_t::serialize_to_file<polynomial_t>(fileName, pol1);
-    polynomial_t pol_test = pol2;
-    pol_test = polynomial_t::deserialize_from_file<polynomial_t>(fileName);
+    pol1.saveAsText(fileName);
+    // Test deserialization
+    polynomial_t pol_test;
+    pol_test.loadFromText(fileName);
     CompareCurves<polynomial_t, polynomial_t>(pol1, pol_test, errMsg1, error);
     std::cout<<"OK"<<std::endl;
 
     // Test serialization on Piecewise curves
     std::cout<<"Serialize test : Piecewise polynomial curve => ";
-    piecewise_polynomial_curve_t::serialize_to_file<piecewise_polynomial_curve_t, polynomial_t>(fileName, pc);
+    pc.saveAsText(fileName);
     // Test deserialization
-    piecewise_polynomial_curve_t ppc_deserialized = piecewise_polynomial_curve_t
-                                                   ::deserialize_from_file<piecewise_polynomial_curve_t>(fileName);
+    piecewise_polynomial_curve_t ppc_deserialized;
+    ppc_deserialized.loadFromText(fileName);
     CompareCurves<piecewise_polynomial_curve_t,piecewise_polynomial_curve_t>(pc, ppc_deserialized, errMsg2, error);
     std::cout<<"OK"<<std::endl;
 }

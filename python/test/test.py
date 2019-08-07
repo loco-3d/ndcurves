@@ -94,8 +94,10 @@ class TestCurves(unittest.TestCase):
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         # Test serialization
-        #serialize_polynomial("serialize_polynomial.test",a);
-        #b = deserialize_polynomial("serialize_polynomial.test");
+        #a.saveAsText("serialiation_polynomial.test")
+        #waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        #b = polynomial(waypoints)
+        #b.loadFromText("serialiation_polynomial.test")
         #self.assertTrue((a(0.4) == b(0.4)).all())
         return
 
