@@ -23,12 +23,6 @@
 #include <functional>
 #include <stdexcept>
 
-#include <fstream>
-#include <string>
-#include <stdexcept>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
 #include "serialization/archive.hpp"
 #include "serialization/eigen-matrix.hpp"
 
