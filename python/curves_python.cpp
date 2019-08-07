@@ -9,7 +9,6 @@
 
 #include "python_definitions.h"
 #include "python_variables.h"
-#include "archive_python_binding.h"
 
 #include <vector>
 
