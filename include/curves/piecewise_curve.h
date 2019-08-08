@@ -319,10 +319,11 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>,
 
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version){
-        ar & curves_;
-        ar & time_curves_;
-        ar & size_;
-        ar & T_min_ & T_max_;
+        ar & boost::serialization::make_nvp("curves", curves_);
+        ar & boost::serialization::make_nvp("time_curves", time_curves_);
+        ar & boost::serialization::make_nvp("size", size_);
+        ar & boost::serialization::make_nvp("T_min", T_min_);
+        ar & boost::serialization::make_nvp("T_max", T_max_);
     }
 
 };

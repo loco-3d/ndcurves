@@ -28,8 +28,6 @@ class TestCurves(unittest.TestCase):
         while t < 2.:
             self.assertTrue(norm(a(t) - matrix([1., 2., 3.]).T) < __EPS)
             t += 0.1
-        waypoints_0 = matrix([[0,0,0], [0,0,0]]).transpose()
-        waypoints6_0 = matrix([[0,0,0,0,0,0], [0,0,0,0,0,0]]).transpose()
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         waypoints6 = matrix([[1., 2., 3., 7., 5., 5.], [4., 5., 6., 4., 5., 6.]]).transpose()
         time_waypoints = matrix([0., 1.]).transpose()
@@ -82,23 +80,25 @@ class TestCurves(unittest.TestCase):
         a = bezier3(waypoints, c)
         self.assertTrue(norm(a.derivate(0, 1) - c.init_vel) < 1e-10)
         self.assertTrue(norm(a.derivate(1, 2) - c.end_acc) < 1e-10)
-        # Test serialization : Bezier 6
-        a6.saveAsText("serialization_bezier6.test")
-        #waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
-        b6 = bezier6(waypoints6_0)
-        b6.loadFromText("serialization_bezier6.test")
-        self.assertTrue((a6(0.4) == b6(0.4)).all())
+
         # Test serialization : bezier 3
-        a.saveAsText("serialization_bezier3.test")
+        a.saveAsText("serialization_curve.test")
         #waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
-        b = bezier3(waypoints_0)
-        b.loadFromText("serialization_bezier3.test")
+        b = bezier3()
+        b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
+
+        # Test serialization : Bezier 6
+        a6.saveAsText("serialization_curve.test")
+        b6 = bezier6()
+        b6.loadFromText("serialization_curve.test")
+        self.assertTrue((a6(0.4) == b6(0.4)).all())
         return
 
     def test_polynomial(self):
         # To test :
         # - Functions : constructor, min, max, derivate, serialize, deserialize
+        waypoints_0 = matrix([[0.,0.,0.], [0.,0.,0.]]).transpose()
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = polynomial(waypoints)  # Defined on [0.,1.]
         a = polynomial(waypoints, -1., 3.)  # Defined on [-1.,3.]
@@ -108,31 +108,52 @@ class TestCurves(unittest.TestCase):
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         # Test serialization
-        a.saveAsText("serialiation_polynomial.test")
-        #waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
-        b = polynomial(waypoints)
-        b.loadFromText("serialiation_polynomial.test")
+        a.saveAsText("serialization_curve.test")
+        b = polynomial()
+        b.loadFromText("serialization_curve.test")
+        self.assertTrue((a(0.4) == b(0.4)).all())
+        return
+
+    def test_cubic_hermite_spline(self):
+        points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        time_points = matrix([0., 1.]).transpose()
+        a = cubic_hermite_spline(points, tangents, time_points)
+        a.min()
+        a.max()
+        a(0.4)
+        self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
+        a.derivate(0.4, 2)
+        # Test serialization
+        a.saveAsText("serialization_curve.test")
+        b = cubic_hermite_spline()
+        b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         return
 
     def test_piecewise_polynomial_curve(self):
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous, serialize, deserialize
+        waypoints0 = matrix([[0., 0., 0.]]).transpose()
         waypoints1 = matrix([[1., 1., 1.]]).transpose()
         waypoints2 = matrix([[1., 1., 1.], [1., 1., 1.]]).transpose()
+        pol0 = polynomial(waypoints0, 0., 0.1)
         a = polynomial(waypoints1, 0., 1.)
         b = polynomial(waypoints2, 1., 3.)
-        ppc = piecewise_polynomial_curve(a)
-        ppc.add_curve(b)
-        ppc.min()
-        ppc.max()
-        ppc(0.4)
-        self.assertTrue((ppc.derivate(0.4, 0) == ppc(0.4)).all())
-        ppc.derivate(0.4, 2)
-        ppc.is_continuous(0)
-        ppc.is_continuous(1)
+        pc = piecewise_polynomial_curve(a)
+        pc.add_curve(b)
+        pc.min()
+        pc.max()
+        pc(0.4)
+        self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
+        pc.derivate(0.4, 2)
+        pc.is_continuous(0)
+        pc.is_continuous(1)
         # Test serialization
-        
+        pc.saveAsText("serialization_pc.test")
+        pc_test = piecewise_polynomial_curve()
+        pc_test.loadFromText("serialization_pc.test")
+        self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         return
 
     def test_piecewise_bezier3_curve(self):
@@ -141,15 +162,20 @@ class TestCurves(unittest.TestCase):
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier3(waypoints, 0., 1.)
         b = bezier3(waypoints, 1., 2.)
-        ppc = piecewise_bezier3_curve(a)
-        ppc.add_curve(b)
-        ppc.min()
-        ppc.max()
-        ppc(0.4)
-        self.assertTrue((ppc.derivate(0.4, 0) == ppc(0.4)).all())
-        ppc.derivate(0.4, 2)
-        ppc.is_continuous(0)
-        ppc.is_continuous(1)
+        pc = piecewise_bezier3_curve(a)
+        pc.add_curve(b)
+        pc.min()
+        pc.max()
+        pc(0.4)
+        self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
+        pc.derivate(0.4, 2)
+        pc.is_continuous(0)
+        pc.is_continuous(1)
+        # Test serialization
+        pc.saveAsText("serialization_pc.test")
+        pc_test = piecewise_bezier3_curve()
+        pc_test.loadFromText("serialization_pc.test")
+        self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         return
 
     def test_piecewise_bezier6_curve(self):
@@ -158,15 +184,20 @@ class TestCurves(unittest.TestCase):
         waypoints = matrix([[1., 2., 3., 7., 5., 5.], [4., 5., 6., 4., 5., 6.]]).transpose()
         a = bezier6(waypoints, 0., 1.)
         b = bezier6(waypoints, 1., 2.)
-        ppc = piecewise_bezier6_curve(a)
-        ppc.add_curve(b)
-        ppc.min()
-        ppc.max()
-        ppc(0.4)
-        self.assertTrue((ppc.derivate(0.4, 0) == ppc(0.4)).all())
-        ppc.derivate(0.4, 2)
-        ppc.is_continuous(0)
-        ppc.is_continuous(1)
+        pc = piecewise_bezier6_curve(a)
+        pc.add_curve(b)
+        pc.min()
+        pc.max()
+        pc(0.4)
+        self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
+        pc.derivate(0.4, 2)
+        pc.is_continuous(0)
+        pc.is_continuous(1)
+        # Test serialization
+        pc.saveAsText("serialization_pc.test")
+        pc_test = piecewise_bezier6_curve()
+        pc_test.loadFromText("serialization_pc.test")
+        self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         return
 
     def test_piecewise_cubic_hermite_curve(self):
@@ -178,15 +209,20 @@ class TestCurves(unittest.TestCase):
         time_points1 = matrix([1., 2.]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points0)
         b = cubic_hermite_spline(points, tangents, time_points1)
-        ppc = piecewise_cubic_hermite_curve(a)
-        ppc.add_curve(b)
-        ppc.min()
-        ppc.max()
-        ppc(0.4)
-        self.assertTrue((ppc.derivate(0.4, 0) == ppc(0.4)).all())
-        ppc.derivate(0.4, 2)
-        ppc.is_continuous(0)
-        ppc.is_continuous(1)
+        pc = piecewise_cubic_hermite_curve(a)
+        pc.add_curve(b)
+        pc.min()
+        pc.max()
+        pc(0.4)
+        self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
+        pc.derivate(0.4, 2)
+        pc.is_continuous(0)
+        pc.is_continuous(1)
+        # Test serialization
+        pc.saveAsText("serialization_pc.test")
+        pc_test = piecewise_cubic_hermite_curve()
+        pc_test.loadFromText("serialization_pc.test")
+        self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         return
 
     def test_exact_cubic(self):
@@ -220,18 +256,6 @@ class TestCurves(unittest.TestCase):
         c.end_acc = matrix([0., 1., 1.]).transpose()
         a = exact_cubic(waypoints, time_waypoints)
         a = exact_cubic(waypoints, time_waypoints, c)
-        return
-
-    def test_cubic_hermite_spline(self):
-        points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        time_points = matrix([0., 1.]).transpose()
-        a = cubic_hermite_spline(points, tangents, time_points)
-        a.min()
-        a.max()
-        a(0.4)
-        self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
-        a.derivate(0.4, 2)
         return
 
     def test_conversion_curves(self):
