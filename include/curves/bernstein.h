@@ -68,6 +68,9 @@ friend class boost::serialization::access;
 
 template<class Archive>
 void serialize(Archive& ar, const unsigned int version){
+    if (version) {
+            // Do something depending on version ?
+    }
     ar & boost::serialization::make_nvp("m_minus_i", m_minus_i);
     ar & boost::serialization::make_nvp("i", i_);
     ar & boost::serialization::make_nvp("bin_m_i", bin_m_i_);

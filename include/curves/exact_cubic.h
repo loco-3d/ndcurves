@@ -268,6 +268,9 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Dim, Safe, Point, T_P
 
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version){
+        if (version) {
+            // Do something depending on version ?
+        }
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(exact_cubic_t);
     }
 };

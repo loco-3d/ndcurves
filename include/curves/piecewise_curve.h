@@ -319,6 +319,9 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>,
 
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version){
+        if (version) {
+            // Do something depending on version ?
+        }
         ar & boost::serialization::make_nvp("curves", curves_);
         ar & boost::serialization::make_nvp("time_curves", time_curves_);
         ar & boost::serialization::make_nvp("size", size_);

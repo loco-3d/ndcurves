@@ -385,6 +385,9 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>,
 
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version){
+        if (version) {
+            // Do something depending on version ?
+        }
         ar & boost::serialization::make_nvp("control_points", control_points_);
         ar & boost::serialization::make_nvp("time_control_points", time_control_points_);
         ar & boost::serialization::make_nvp("duration_splines", duration_splines_);

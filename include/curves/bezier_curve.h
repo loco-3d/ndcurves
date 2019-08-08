@@ -419,6 +419,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>,
 
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version){
+        if (version) {
+            // Do something depending on version ?
+        }
         ar & boost::serialization::make_nvp("T_min", T_min_);
         ar & boost::serialization::make_nvp("T_max", T_max_);
         ar & boost::serialization::make_nvp("mult_T", mult_T_);
