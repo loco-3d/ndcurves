@@ -408,7 +408,7 @@ BOOST_PYTHON_MODULE(curves)
 
     /** BEGIN exact_cubic curve**/
     class_<exact_cubic_t>
-        ("exact_cubic", no_init)
+        ("exact_cubic", init<>())
             .def("__init__", make_constructor(&wrapExactCubicConstructor))
             .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
             .def("min", &exact_cubic_t::min)
@@ -417,6 +417,7 @@ BOOST_PYTHON_MODULE(curves)
             .def("derivate", &exact_cubic_t::derivate)
             .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
             .def("getSplineAt", &exact_cubic_t::getSplineAt)
+            .def(SerializableVisitor<exact_cubic_t>())
         ;
     /** END exact_cubic curve**/
 

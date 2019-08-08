@@ -1443,6 +1443,7 @@ void serializationCurvesTest(bool& error)
     std::string errMsg2("in serializationCurveTest, Error While serializing Bezier : ");
     std::string errMsg3("in serializationCurveTest, Error While serializing Cubic Hermite : ");
     std::string errMsg4("in serializationCurveTest, Error While serializing Piecewise curves : ");
+    std::string errMsg5("in serializationCurveTest, Error While serializing Exact cubic : ");
     point_t a(1,1,1); // in [0,1[
     point_t b(2,1,1); // in [1,2[
     point_t c(3,1,1); // in [2,3]
@@ -1494,6 +1495,23 @@ void serializationCurvesTest(bool& error)
     piecewise_cubic_hermite_curve_t pchc_test;
     pchc_test.loadFromText(fileName);
     CompareCurves<piecewise_polynomial_curve_t,piecewise_cubic_hermite_curve_t>(ppc, pchc_test, errMsg4, error);
+
+    // Test serialization on exact cubic
+    curves::T_Waypoint waypoints;
+    for(double i = 0; i <= 1; i = i + 0.2)
+    {
+        waypoints.push_back(std::make_pair(i,point_t(i,i,i)));
+    }
+    spline_constraints_t constraints;
+    constraints.end_vel = point_t(0,0,0);
+    constraints.init_vel = point_t(0,0,0);
+    constraints.end_acc = point_t(0,0,0);
+    constraints.init_acc = point_t(0,0,0);
+    exact_cubic_t ec(waypoints.begin(), waypoints.end(), constraints);
+    ec.saveAsText(fileName);
+    exact_cubic_t ec_test;
+    ec_test.loadFromText(fileName);
+    CompareCurves<exact_cubic_t,exact_cubic_t>(ec, ec_test, errMsg5, error);
 }
 
 int main(int /*argc*/, char** /*argv[]*/)

@@ -32,6 +32,9 @@
 #include <functional>
 #include <vector>
 
+#include "serialization/archive.hpp"
+#include "serialization/eigen-matrix.hpp"
+
 namespace curves
 {
 /// \class ExactCubic.
@@ -41,7 +44,8 @@ namespace curves
 template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
 , typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >
 , typename SplineBase=polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
-struct exact_cubic : public piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase>
+struct exact_cubic : public piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase>//,
+                     //public serialization::Serializable< exact_cubic<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase> >
 {
     typedef Point   point_t;
     typedef T_Point t_point_t;
@@ -55,10 +59,14 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Dim, Safe, Point, T_P
     typedef typename t_spline_t::const_iterator cit_spline_t;
     typedef curve_constraints<Point, Dim> spline_constraints;
 
+    typedef exact_cubic<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase> exact_cubic_t;
     typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase> piecewise_curve_t;
 
     /* Constructors - destructors */
     public:
+
+    exact_cubic(){}
+
     /// \brief Constructor.
     /// \param wayPointsBegin : an iterator pointing to the first element of a waypoint container.
     /// \param wayPointsEns   : an iterator pointing to the last element of a waypoint container.
@@ -252,6 +260,15 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Dim, Safe, Point, T_P
 
         subSplines.push_back(create_quintic<Time,Numeric,Dim,Safe,Point,T_Point>
                              (a0,b0,c0,d,e,f, init_t, end_t));
+    }
+
+    public:
+    // Serialization of the class
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version){
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(exact_cubic_t);
     }
 };
 } // namespace curves

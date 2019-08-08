@@ -238,6 +238,11 @@ class TestCurves(unittest.TestCase):
         a.derivate(0.4, 2)
         a.getNumberSplines()
         a.getSplineAt(0)
+        # Test serialization
+        a.saveAsText("serialization_pc.test")
+        b = exact_cubic()
+        b.loadFromText("serialization_pc.test")
+        self.assertTrue((a(0.4) == b(0.4)).all())
         return
 
     def test_exact_cubic_constraint(self):
