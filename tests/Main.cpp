@@ -1360,6 +1360,13 @@ void piecewiseCurveConversionFromDiscretePointsTest(bool& error)
     error = true;
     std::cout<<"Error in piecewiseCurveConversionFromDiscretePointsTest"<<std::endl;
   }
+
+  ComparePoints(p0, ppc(T_min), errMsg, error);
+  ComparePoints(p_test_0_5, ppc(T_min+timestep/2.0), errMsg, error);
+  ComparePoints(p1, ppc(T_min+timestep), errMsg, error);
+  ComparePoints(p2, ppc(T_min+2*timestep), errMsg, error);
+  ComparePoints(p3, ppc(T_max), errMsg, error);
+  //TODO : test with C1 and C2
 }
 
 void serializationCurvesTest(bool& error)

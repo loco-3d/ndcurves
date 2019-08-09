@@ -235,6 +235,55 @@ namespace curves
         return piecewise_res;
       }
 
+      template<typename Polynomial>
+      static piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial>
+      convert_discrete_points_to_polynomial(T_Point points,T_Point points_derivative, t_time_t time_points)
+      {
+        if(Safe &! (points.size()>1))
+        {
+          //std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
+          throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, less than 2 discrete points");
+        }
+        if(points.size() != time_points.size()){
+            throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, points and time_points must have the same size.");
+        }
+        if(points.size() != points_derivative.size()){
+            throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, points and points_derivative must have the same size.");
+        }
+        piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> piecewise_res;
+
+        for(size_t i = 1 ; i < points.size() ; ++i){
+          piecewise_res.add_curve(Polynomial(points[i-1],points_derivative[i-1],points[i],points_derivative[i],time_points[i-1],time_points[i]));
+        }
+        return piecewise_res;
+      }
+
+      template<typename Polynomial>
+      static piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial>
+      convert_discrete_points_to_polynomial(T_Point points,T_Point points_derivative, T_Point points_second_derivative, t_time_t time_points)
+      {
+        if(Safe &! (points.size()>1))
+        {
+          //std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
+          throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, less than 2 discrete points");
+        }
+        if(points.size() != time_points.size()){
+            throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, points and time_points must have the same size.");
+        }
+        if(points.size() != points_derivative.size()){
+            throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, points and points_derivative must have the same size.");
+        }
+        if(points.size() != points_second_derivative.size()){
+            throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, points and points_second_derivative must have the same size.");
+        }
+        piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> piecewise_res;
+
+        for(size_t i = 1 ; i < points.size() ; ++i){
+            piecewise_res.add_curve(Polynomial(points[i-1],points_derivative[i-1],points_second_derivative[i-1],points[i],points_derivative[i],points_second_derivative[i],time_points[i-1],time_points[i]));
+        }
+        return piecewise_res;
+      }
+
     private:
 
       /// \brief Get index of the interval corresponding to time t for the interpolation.
