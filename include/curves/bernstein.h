@@ -39,7 +39,7 @@ namespace curves
   /// \brief Computes a Bernstein polynome.
   ///
   template <typename Numeric = double>
-  struct Bern : public serialization::Serializable< Bern<Numeric> > {
+  struct Bern {
     Bern(){}
     Bern(const unsigned int m, const unsigned int i)
       :m_minus_i(m - i),
@@ -63,7 +63,6 @@ namespace curves
 
     // Serialization of the class
     friend class boost::serialization::access;
-
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version){
       if (version) {

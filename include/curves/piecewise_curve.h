@@ -29,9 +29,7 @@ namespace curves
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, 
            typename T_Point= std::vector<Point,Eigen::aligned_allocator<Point> >,
            typename Curve= curve_abc<Time, Numeric, Safe, Point> >
-  struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>,
-                           public serialization::Serializable< piecewise_curve<Time, Numeric, Dim, Safe, 
-                                                                               Point, T_Point, Curve> >
+  struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point>
   {
     typedef Point   point_t;
     typedef T_Point t_point_t;

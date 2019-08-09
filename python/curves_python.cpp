@@ -310,6 +310,12 @@ namespace curves
       .def("compute_derivate", &bezier6_t::compute_derivate)
       .def("compute_primitive", &bezier6_t::compute_primitive)
       .def("waypoints", &wayPointsToList<bezier6_t,6>)
+      .def("saveAsText", &bezier6_t::saveAsText<bezier6_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&bezier6_t::loadFromText<bezier6_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&bezier6_t::saveAsXML<bezier6_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&bezier6_t::loadFromXML<bezier6_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&bezier6_t::saveAsBinary<bezier6_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&bezier6_t::loadFromBinary<bezier6_t>,bp::args("filename"),"Loads *this from a binary file.")
       .def_readonly("degree", &bezier6_t::degree_)
       .def_readonly("nbWaypoints", &bezier6_t::size_)
       .def(SerializableVisitor<bezier6_t>())
@@ -328,9 +334,15 @@ namespace curves
       .def("compute_derivate", &bezier3_t::compute_derivate)
       .def("compute_primitive", &bezier3_t::compute_primitive)
       .def("waypoints", &wayPointsToList<bezier3_t,3>)
+      .def("saveAsText", &bezier3_t::saveAsText<bezier3_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&bezier3_t::loadFromText<bezier3_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&bezier3_t::saveAsXML<bezier3_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&bezier3_t::loadFromXML<bezier3_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&bezier3_t::saveAsBinary<bezier3_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&bezier3_t::loadFromBinary<bezier3_t>,bp::args("filename"),"Loads *this from a binary file.")
       .def_readonly("degree", &bezier3_t::degree_)
       .def_readonly("nbWaypoints", &bezier3_t::size_)
-      .def(SerializableVisitor<bezier3_t>())
+      //.def(SerializableVisitor<bezier3_t>())
     ;
     /** END bezier curve**/
     /** BEGIN variable points bezier curve**/
@@ -374,7 +386,13 @@ namespace curves
       .def("__call__", &polynomial_t::operator(),"Evaluate the spline at the given time.")
       .def("derivate", &polynomial_t::derivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
       .def("compute_derivate", &polynomial_t::compute_derivate,"Compute derivative of order N of curve at time t.")
-      .def(SerializableVisitor<polynomial_t>())
+      .def("saveAsText", &polynomial_t::saveAsText<polynomial_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&polynomial_t::loadFromText<polynomial_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&polynomial_t::saveAsXML<polynomial_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&polynomial_t::loadFromXML<polynomial_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&polynomial_t::saveAsBinary<polynomial_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&polynomial_t::loadFromBinary<polynomial_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<polynomial_t>())
     ;
 
     /** END polynomial function**/
@@ -391,7 +409,13 @@ namespace curves
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous,"Check if the curve is continuous at the given order.")
-      .def(SerializableVisitor<piecewise_polynomial_curve_t>())
+      .def("saveAsText", &piecewise_polynomial_curve_t::saveAsText<piecewise_polynomial_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&piecewise_polynomial_curve_t::loadFromText<piecewise_polynomial_curve_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&piecewise_polynomial_curve_t::saveAsXML<piecewise_polynomial_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&piecewise_polynomial_curve_t::loadFromXML<piecewise_polynomial_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&piecewise_polynomial_curve_t::saveAsBinary<piecewise_polynomial_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&piecewise_polynomial_curve_t::loadFromBinary<piecewise_polynomial_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<piecewise_polynomial_curve_t>())
     ;
     class_<piecewise_bezier3_curve_t>
     ("piecewise_bezier3_curve", init<>())
@@ -402,7 +426,13 @@ namespace curves
       .def("derivate", &piecewise_bezier3_curve_t::derivate)
       .def("add_curve", &piecewise_bezier3_curve_t::add_curve)
       .def("is_continuous", &piecewise_bezier3_curve_t::is_continuous)
-      .def(SerializableVisitor<piecewise_bezier3_curve_t>())
+      .def("saveAsText", &piecewise_bezier3_curve_t::saveAsText<piecewise_bezier3_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&piecewise_bezier3_curve_t::loadFromText<piecewise_bezier3_curve_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&piecewise_bezier3_curve_t::saveAsXML<piecewise_bezier3_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&piecewise_bezier3_curve_t::loadFromXML<piecewise_bezier3_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&piecewise_bezier3_curve_t::saveAsBinary<piecewise_bezier3_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&piecewise_bezier3_curve_t::loadFromBinary<piecewise_bezier3_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<piecewise_bezier3_curve_t>())
     ;
     class_<piecewise_bezier6_curve_t>
     ("piecewise_bezier6_curve", init<>())
@@ -413,7 +443,13 @@ namespace curves
       .def("derivate", &piecewise_bezier6_curve_t::derivate)
       .def("add_curve", &piecewise_bezier6_curve_t::add_curve)
       .def("is_continuous", &piecewise_bezier6_curve_t::is_continuous)
-      .def(SerializableVisitor<piecewise_bezier6_curve_t>())
+      .def("saveAsText", &piecewise_bezier6_curve_t::saveAsText<piecewise_bezier6_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&piecewise_bezier6_curve_t::loadFromText<piecewise_bezier6_curve_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&piecewise_bezier6_curve_t::saveAsXML<piecewise_bezier6_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&piecewise_bezier6_curve_t::loadFromXML<piecewise_bezier6_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&piecewise_bezier6_curve_t::saveAsBinary<piecewise_bezier6_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&piecewise_bezier6_curve_t::loadFromBinary<piecewise_bezier6_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<piecewise_bezier6_curve_t>())
     ;
     class_<piecewise_cubic_hermite_curve_t>
     ("piecewise_cubic_hermite_curve", init<>())
@@ -424,7 +460,13 @@ namespace curves
       .def("derivate", &piecewise_cubic_hermite_curve_t::derivate)
       .def("add_curve", &piecewise_cubic_hermite_curve_t::add_curve)
       .def("is_continuous", &piecewise_cubic_hermite_curve_t::is_continuous)
-      .def(SerializableVisitor<piecewise_cubic_hermite_curve_t>())
+      .def("saveAsText", &piecewise_cubic_hermite_curve_t::saveAsText<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&piecewise_cubic_hermite_curve_t::loadFromText<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&piecewise_cubic_hermite_curve_t::saveAsXML<piecewise_cubic_hermite_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&piecewise_cubic_hermite_curve_t::loadFromXML<piecewise_cubic_hermite_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&piecewise_cubic_hermite_curve_t::saveAsBinary<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&piecewise_cubic_hermite_curve_t::loadFromBinary<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<piecewise_cubic_hermite_curve_t>())
     ;
     /** END piecewise curve function **/
     /** BEGIN exact_cubic curve**/
@@ -438,7 +480,13 @@ namespace curves
       .def("derivate", &exact_cubic_t::derivate)
       .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
       .def("getSplineAt", &exact_cubic_t::getSplineAt)
-      .def(SerializableVisitor<exact_cubic_t>())
+      .def("saveAsText", &exact_cubic_t::saveAsText<exact_cubic_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&exact_cubic_t::loadFromText<exact_cubic_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&exact_cubic_t::saveAsXML<exact_cubic_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&exact_cubic_t::loadFromXML<exact_cubic_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&exact_cubic_t::saveAsBinary<exact_cubic_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&exact_cubic_t::loadFromBinary<exact_cubic_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<exact_cubic_t>())
     ;
     /** END exact_cubic curve**/
     /** BEGIN cubic_hermite_spline **/
@@ -449,7 +497,13 @@ namespace curves
       .def("max", &cubic_hermite_spline_t::max)
       .def("__call__", &cubic_hermite_spline_t::operator())
       .def("derivate", &cubic_hermite_spline_t::derivate)
-      .def(SerializableVisitor<cubic_hermite_spline_t>())
+      .def("saveAsText", &cubic_hermite_spline_t::saveAsText<cubic_hermite_spline_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&cubic_hermite_spline_t::loadFromText<cubic_hermite_spline_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&cubic_hermite_spline_t::saveAsXML<cubic_hermite_spline_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&cubic_hermite_spline_t::loadFromXML<cubic_hermite_spline_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&cubic_hermite_spline_t::saveAsBinary<cubic_hermite_spline_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&cubic_hermite_spline_t::loadFromBinary<cubic_hermite_spline_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<cubic_hermite_spline_t>())
     ;
     /** END cubic_hermite_spline **/
     /** BEGIN curve constraints**/

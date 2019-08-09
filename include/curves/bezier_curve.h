@@ -33,8 +33,7 @@ namespace curves
   ///
   template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
-  struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>,
-                        public serialization::Serializable< bezier_curve<Time, Numeric, Dim, Safe, Point> >
+  struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>
   {
     typedef Point   point_t;
     typedef Time    time_t;

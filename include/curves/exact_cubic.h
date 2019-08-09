@@ -45,8 +45,7 @@ namespace curves
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, 
            typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >,
            typename SplineBase=polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
-  struct exact_cubic : public piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase>//,
-  //public serialization::Serializable< exact_cubic<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase> >
+  struct exact_cubic : public piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase>
   {
     typedef Point   point_t;
     typedef T_Point t_point_t;
@@ -257,13 +256,12 @@ namespace curves
     public:
       // Serialization of the class
       friend class boost::serialization::access;
-
       template<class Archive>
       void serialize(Archive& ar, const unsigned int version){
         if (version) {
           // Do something depending on version ?
         }
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(exact_cubic_t);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(piecewise_curve_t);
       }
   };
 } // namespace curves

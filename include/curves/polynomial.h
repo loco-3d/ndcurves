@@ -36,8 +36,7 @@ namespace curves
   ///
   template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
-  struct polynomial : public curve_abc<Time, Numeric, Safe, Point>,
-                      public serialization::Serializable< polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
+  struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
   {
     typedef Point   point_t;
     typedef T_Point t_point_t;

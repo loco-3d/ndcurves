@@ -23,9 +23,10 @@ namespace curves
   /// \struct curve_abc.
   /// \brief Represents a curve of dimension Dim.
   /// If value of parameter Safe is false, no verification is made on the evaluation of the curve.
-  template<typename Time= double, typename Numeric=Time, bool Safe=false
-  , typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
-  struct  curve_abc : std::unary_function<Time, Point>
+  template<typename Time= double, typename Numeric=Time, bool Safe=false,
+           typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
+  struct  curve_abc : std::unary_function<Time, Point>,
+                      public serialization::Serializable
   {
     typedef Point   point_t;
     typedef Time    time_t;
@@ -62,6 +63,14 @@ namespace curves
       std::pair<time_t, time_t> timeRange() {return std::make_pair(min(), max());}
       /*Helpers*/
 
+      // Serialization of the class
+      friend class boost::serialization::access;
+      template<class Archive>
+      void serialize(Archive& ar, const unsigned int version){
+        if (version) {
+        // Do something depending on version ?
+        }
+      }
   };
 } // namespace curves
 #endif //_STRUCT_CURVE_ABC
