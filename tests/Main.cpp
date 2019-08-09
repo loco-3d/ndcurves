@@ -43,6 +43,14 @@ namespace curves
   {
     return std::fabs(a-b)<margin;
   }
+  bool QuasiEqual(const point_t a, const point_t b)
+  {
+    bool equal = true;
+    for(size_t i = 0 ; i < 3 ; ++i){
+      equal = equal && QuasiEqual(a[i],b[i]);
+    }
+    return equal;
+  }
 } // End namespace curves
 
 using namespace curves;
@@ -1472,6 +1480,115 @@ void serializationCurvesTest(bool& error)
   }
 }
 
+void polynomialFromBoundaryConditions(bool& error){
+  point_t zeros(0.,0.,0.);
+  point_t p0(0.,1.,0.);
+  point_t p1(1.,2.,-3.);
+  point_t dp0(-8.,4.,6.);
+  point_t dp1(10.,-10.,10.);
+  point_t ddp0(-1.,7.,4.);
+  point_t ddp1(12.,-8.,2.5);
+  double min = 0.5;
+  double max = 2.;
+  // C0 : order 1
+  polynomial_t polC0 = polynomial_t(p0,p1,min,max);
+  if(polC0.min() != min){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: min interval not respected."<<std::endl;
+  }
+  if(polC0.max() != max){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: max interval not respected."<<std::endl;
+  }
+  if(polC0(min) != p0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: initial value not respected"<<std::endl;
+  }
+  if(polC0(max) != p1){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: final value not respected"<<std::endl;
+  }
+  if(polC0.degree_ != 1){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: curve is not degree 1 "<<std::endl;
+  }
+  if(polC0((max+min)/2.) != (p0*0.5 + p1*0.5)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: middle point doesn't have the right value' "<<std::endl;
+  }
+  //C1 : order 3
+  polynomial_t polC1 = polynomial_t(p0,dp0,p1,dp1,min,max);
+  if(polC1.min() != min){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: min interval not respected."<<std::endl;
+  }
+  if(polC1.max() != max){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: max interval not respected."<<std::endl;
+  }
+  if(polC1(min) != p0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: initial value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC1(max),p1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: final value not respected"<<std::endl;
+    std::cout<<"p1 = "<<p1.transpose()<< " curve end = "<<polC1(max).transpose()<<std::endl;
+  }
+  if(polC1.derivate(min,1) != dp0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: initial derivative value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC1.derivate(max,1), dp1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: final derivative value not respected"<<std::endl;
+    std::cout<<"dp1 = "<<dp1.transpose()<< " curve end derivative = "<<polC1.derivate(max,1).transpose()<<std::endl;
+  }
+  if(polC1.degree_ != 3){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: curve is not degree 3 "<<std::endl;
+  }
+  //C2 : order 5
+  polynomial_t polC2 = polynomial_t(p0,dp0,ddp0,p1,dp1,ddp1,min,max);
+  if(polC2.min() != min){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: min interval not respected."<<std::endl;
+  }
+  if(polC2.max() != max){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: max interval not respected."<<std::endl;
+  }
+  if(polC2(min) != p0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: initial value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC2(max),p1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: final value not respected"<<std::endl;
+  }
+  if(polC2.derivate(min,1) != dp0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: initial derivative value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC2.derivate(max,1), dp1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: final derivative value not respected"<<std::endl;
+  }
+  if(polC2.derivate(min,2) != ddp0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: initial second derivative value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC2.derivate(max,2), ddp1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: final second derivative value not respected"<<std::endl;
+  }
+  if(polC2.degree_ != 5){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: curve is not degree 5 "<<std::endl;
+  }
+}
+
+
 int main(int /*argc*/, char** /*argv[]*/)
 {
   std::cout << "performing tests... \n";
@@ -1501,6 +1618,7 @@ int main(int /*argc*/, char** /*argv[]*/)
   cubicConversionTest(error);
   curveAbcDimDynamicTest(error);
   serializationCurvesTest(error);
+  polynomialFromBoundaryConditions(error);
   if(error)
   {
     std::cout << "There were some errors\n";
