@@ -109,6 +109,8 @@ class TestCurves(unittest.TestCase):
         a(0.4)
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
+        a_derivated = a.compute_derivate(1)
+        self.assertTrue((a.derivate(0.4, 1) == a_derivated(0.4)).all())
         # Test serialization
         a.saveAsText("serialization_curve.test")
         b = polynomial()

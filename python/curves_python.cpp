@@ -373,6 +373,7 @@ namespace curves
       .def("max", &polynomial_t::max,"Get the HIGHER bound on interval definition of the curve.")
       .def("__call__", &polynomial_t::operator(),"Evaluate the spline at the given time.")
       .def("derivate", &polynomial_t::derivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
+      .def("compute_derivate", &polynomial_t::compute_derivate,"Compute derivative of order N of curve at time t.")
       .def(SerializableVisitor<polynomial_t>())
     ;
 

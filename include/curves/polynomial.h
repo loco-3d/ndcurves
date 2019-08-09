@@ -46,6 +46,7 @@ namespace curves
     typedef curve_abc<Time, Numeric, Safe, Point> curve_abc_t;
     typedef Eigen::Matrix<double, Dim, Eigen::Dynamic> coeff_t;
     typedef Eigen::Ref<coeff_t> coeff_t_ref;
+    typedef polynomial<Time, Numeric, Dim, Safe, Point, T_Point> polynomial_t;
 
     /* Constructors - destructors */
     public:
@@ -174,6 +175,17 @@ namespace curves
         return currentPoint_;
       }
 
+      polynomial_t compute_derivate(const std::size_t order) const
+      {
+        if(order == 0) 
+        {
+          return *this;
+        }
+        coeff_t coeff_derivated = deriv_coeff(coefficients_);
+        polynomial_t deriv(coeff_derivated, T_min_, T_max_);
+        return deriv.compute_derivate(order-1);
+      }
+
     private:
       num_t fact(const std::size_t n, const std::size_t order) const
       {
@@ -183,6 +195,15 @@ namespace curves
           res *= (num_t)(n-i);
         }
         return res;
+      }
+
+      coeff_t deriv_coeff(coeff_t coeff) const
+      {
+        coeff_t coeff_derivated(coeff.rows(), coeff.cols()-1);
+        for (std::size_t i=0; i<coeff_derivated.cols(); i++) {
+          coeff_derivated.col(i) = coeff.col(i+1)*(i+1);
+        }
+        return coeff_derivated;
       }
     /*Operations*/
 
@@ -204,7 +225,6 @@ namespace curves
       /*Attributes*/
 
     private:
-
       template<typename In>
       coeff_t init_coeffs(In zeroOrderCoefficient, In highestOrderCoefficient)
       {

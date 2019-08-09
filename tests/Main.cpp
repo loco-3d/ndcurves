@@ -87,7 +87,7 @@ void CompareCurves(curve1 c1, curve2 c2, const std::string& errMsg, bool& error)
 }
 
 /*Cubic Function tests*/
-void CubicFunctionTest(bool& error)
+void PolynomialCubicFunctionTest(bool& error)
 {
   std::string errMsg("In test CubicFunctionTest ; unexpected result for x ");
   point_t a(1,2,3);
@@ -154,6 +154,19 @@ void CubicFunctionTest(bool& error)
     error = true;
     std::cout << "Evaluation of cubic cf error, MinBound should be equal to 1\n";
   }
+  // Test derivate and compute_derivative
+  // Order 1
+  polynomial_t cf_derivated = cf.compute_derivate(1);
+  ComparePoints(cf.derivate(0,1), cf_derivated(0), errMsg+" - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.3,1), cf_derivated(0.5), errMsg+" - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.5,1), cf_derivated(0.5), errMsg+" - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(1,1), cf_derivated(1), errMsg+" - derivate order 1 : ", error);
+  // Order 2
+  polynomial_t cf_derivated_2 = cf.compute_derivate(2);
+  ComparePoints(cf.derivate(0,2), cf_derivated_2(0), errMsg+" - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.3,2), cf_derivated_2(0.5), errMsg+" - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.5,2), cf_derivated_2(0.5), errMsg+" - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(1,2), cf_derivated_2(1), errMsg+" - derivate order 1 : ", error);
 }
 
 /*bezier_curve Function tests*/
@@ -1425,7 +1438,7 @@ int main(int /*argc*/, char** /*argv[]*/)
 {
   std::cout << "performing tests... \n";
   bool error = false;
-  CubicFunctionTest(error);
+  PolynomialCubicFunctionTest(error);
   ExactCubicNoErrorTest(error);
   ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
   ExactCubicTwoPointsTest(error);
