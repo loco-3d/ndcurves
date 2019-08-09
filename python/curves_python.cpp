@@ -136,6 +136,18 @@ namespace curves
   {
     return new polynomial_t(array, 0., 1.);
   }
+  polynomial_t* wrapSplineConstructorFromBoundaryConditionsDegree1(const point_t& init,const point_t& end,const real min, const real max)
+  {
+    return new polynomial_t(init,end,min,max);
+  }
+  polynomial_t* wrapSplineConstructorFromBoundaryConditionsDegree3(const point_t& init,const point_t& d_init,const point_t& end,const point_t& d_end,const real min, const real max)
+  {
+    return new polynomial_t(init,d_init,end,d_end,min,max);
+  }
+  polynomial_t* wrapSplineConstructorFromBoundaryConditionsDegree5(const point_t& init,const point_t& d_init,const point_t& dd_init,const point_t& end,const point_t& d_end,const point_t& dd_end,const real min, const real max)
+  {
+    return new polynomial_t(init,d_init,dd_init,end,d_end,dd_end,min,max);
+  }
   /* End wrap polynomial */
 
   /* Wrap piecewise curve */
@@ -305,6 +317,22 @@ namespace curves
            "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [0,1]."
            " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest order."
            " Spline order is given by the number of the columns -1.")
+      .def("__init__", make_constructor(&wrapSplineConstructorFromBoundaryConditionsDegree1,
+                                        default_call_policies(),args("init","end","min","max")),
+           "Create a polynomial of degree 1 defined for t \in [min,max], "
+           "such that c(min) == init and c(max) == end.")
+      .def("__init__", make_constructor(&wrapSplineConstructorFromBoundaryConditionsDegree3,
+                                        default_call_policies(),args("init","d_init","end","d_end","min","max")),
+          "Create a polynomial of degree 3 defined for t \in [min,max], "
+          "such that c(min) == init and c(max) == end"
+          " dc(min) == d_init and dc(max) == d_end")
+      .def("__init__", make_constructor(&wrapSplineConstructorFromBoundaryConditionsDegree5,
+                                        default_call_policies(),
+                                        args("init","d_init","dd_init","end","d_end","dd_end","min","max")),
+           "Create a polynomial of degree 5 defined for t \in [min,max], "
+           "such that c(min) == init and c(max) == end"
+           " dc(min) == d_init and dc(max) == d_end"
+           " ddc(min) == dd_init and ddc(max) == dd_end")
       .def("min", &polynomial_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &polynomial_t::max,"Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &polynomial_t::dim)
