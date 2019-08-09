@@ -79,7 +79,7 @@ namespace curves
   }
 
   template <typename Bezier, typename PointList, typename T_Point, typename CurveConstraints>
-  Bezier* wrapBezierConstructorConstraintsTemplate(const PointList& array, const CurveConstraints& constraints, 
+  Bezier* wrapBezierConstructorConstraintsTemplate(const PointList& array, const CurveConstraints& constraints,
                                                    const real T_min =0., const real T_max =1.)
   {
     T_Point asVector = vectorFromEigenArray<PointList, T_Point>(array);
@@ -103,7 +103,8 @@ namespace curves
   bezier3_t* wrapBezierConstructorBounds3Constraints(const point_list_t& array, const curve_constraints_t& constraints,
                              const real T_min, const real T_max)
   {
-  return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, T_min, T_max) ;
+  return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, 
+                                                                                                           T_min, T_max) ;
   }
   /*END 3D constructors bezier */
   /*6D constructors bezier */
@@ -135,14 +136,15 @@ namespace curves
     {
       throw std::length_error("size of points and tangents must be the same");
     }
-    for(int i =0;i<points.cols();++i) 
+    for(int i =0;i<points.cols();++i)
     {
       res.push_back(pair_point_tangent_t(tangents.col(i), tangents.col(i)));
     }
     return res;
   }
 
-  cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const point_list_t& points, const point_list_t& tangents, const time_waypoints_t& time_pts) 
+  cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const point_list_t& points, const point_list_t& tangents, 
+                                                            const time_waypoints_t& time_pts)
   {
     t_pair_point_tangent_t ppt = getPairsPointTangent(points, tangents);
     std::vector<real> time_control_pts;
@@ -170,17 +172,33 @@ namespace curves
   {
     return new piecewise_polynomial_curve_t(pol);
   }
+  piecewise_polynomial_curve_t* wrapPiecewisePolynomialCurveEmptyConstructor()
+  {
+    return new piecewise_polynomial_curve_t();
+  }
   piecewise_bezier3_curve_t* wrapPiecewiseBezier3CurveConstructor(const bezier3_t& bc)
   {
     return new piecewise_bezier3_curve_t(bc);
+  }
+  piecewise_bezier3_curve_t* wrapPiecewiseBezier3CurveEmptyConstructor()
+  {
+    return new piecewise_bezier3_curve_t();
   }
   piecewise_bezier6_curve_t* wrapPiecewiseBezier6CurveConstructor(const bezier6_t& bc)
   {
     return new piecewise_bezier6_curve_t(bc);
   }
+  piecewise_bezier6_curve_t* wrapPiecewiseBezier6CurveEmptyConstructor()
+  {
+    return new piecewise_bezier6_curve_t();
+  }
   piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveConstructor(const cubic_hermite_spline_t& ch)
   {
     return new piecewise_cubic_hermite_curve_t(ch);
+  }
+  piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveEmptyConstructor()
+  {
+    return new piecewise_cubic_hermite_curve_t();
   }
   /* end wrap piecewise polynomial curve */
 
@@ -188,7 +206,7 @@ namespace curves
   t_waypoint_t getWayPoints(const coeff_t& array, const time_waypoints_t& time_wp)
   {
     t_waypoint_t res;
-    for(int i =0;i<array.cols();++i) 
+    for(int i =0;i<array.cols();++i)
     {
       res.push_back(std::make_pair(time_wp(i), array.col(i)));
     }
@@ -216,7 +234,8 @@ namespace curves
     return new exact_cubic_t(wps.begin(), wps.end());
   }
 
-  exact_cubic_t* wrapExactCubicConstructorConstraint(const coeff_t& array, const time_waypoints_t& time_wp, const curve_constraints_t& constraints)
+  exact_cubic_t* wrapExactCubicConstructorConstraint(const coeff_t& array, const time_waypoints_t& time_wp, 
+                                                     const curve_constraints_t& constraints)
   {
     t_waypoint_t wps = getWayPoints(array, time_wp);
     return new exact_cubic_t(wps.begin(), wps.end(), constraints);
@@ -341,26 +360,36 @@ namespace curves
     ;
     /** END variable points bezier curve**/
     /** BEGIN polynomial curve function**/
-    class_<polynomial_t>("polynomial", init<>())
-      .def("__init__", make_constructor(&wrapSplineConstructor1))
-      .def("__init__", make_constructor(&wrapSplineConstructor2))
-      .def("min", &polynomial_t::min)
-      .def("max", &polynomial_t::max)
-      .def("__call__", &polynomial_t::operator())
-      .def("derivate", &polynomial_t::derivate)
+    class_<polynomial_t>("polynomial",  init<>())
+      .def("__init__", make_constructor(&wrapSplineConstructor1),
+           "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [min,max]."
+           " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest order."
+           " Spline order is given by the number of the columns -1.")
+      .def("__init__", make_constructor(&wrapSplineConstructor2),
+           "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [0,1]."
+           " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest order."
+           " Spline order is given by the number of the columns -1.")
+      .def("min", &polynomial_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &polynomial_t::max,"Get the HIGHER bound on interval definition of the curve.")
+      .def("__call__", &polynomial_t::operator(),"Evaluate the spline at the given time.")
+      .def("derivate", &polynomial_t::derivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
       .def(SerializableVisitor<polynomial_t>())
     ;
+
     /** END polynomial function**/
     /** BEGIN piecewise curve function **/
     class_<piecewise_polynomial_curve_t>
     ("piecewise_polynomial_curve", init<>())
-      .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor))
-      .def("min", &piecewise_polynomial_curve_t::min)
-      .def("max", &piecewise_polynomial_curve_t::max)
-      .def("__call__", &piecewise_polynomial_curve_t::operator())
-      .def("derivate", &piecewise_polynomial_curve_t::derivate)
-      .def("add_curve", &piecewise_polynomial_curve_t::add_curve)
-      .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous)
+      .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor),
+           "Create a peicewise-polynomial curve containing the given polynomial curve.")
+      .def("min", &piecewise_polynomial_curve_t::min,"Set the LOWER bound on interval definition of the curve.")
+      .def("max", &piecewise_polynomial_curve_t::max,"Set the HIGHER bound on interval definition of the curve.")
+      .def("__call__", &piecewise_polynomial_curve_t::operator(),"Evaluate the curve at the given time.")
+      .def("derivate", &piecewise_polynomial_curve_t::derivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
+      .def("add_curve", &piecewise_polynomial_curve_t::add_curve,
+           "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
+           "where T_{min} is equal toT_{max} of the actual piecewise curve.")
+      .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous,"Check if the curve is continuous at the given order.")
       .def(SerializableVisitor<piecewise_polynomial_curve_t>())
     ;
     class_<piecewise_bezier3_curve_t>

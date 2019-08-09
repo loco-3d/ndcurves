@@ -66,7 +66,9 @@ namespace curves
     /* Constructors - destructors */
     public:
 
-      exact_cubic(){}
+      exact_cubic()
+        : piecewise_curve_t()
+      {}
 
       /// \brief Constructor.
       /// \param wayPointsBegin : an iterator pointing to the first element of a waypoint container.

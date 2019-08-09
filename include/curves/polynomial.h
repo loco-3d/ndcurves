@@ -50,7 +50,9 @@ namespace curves
     /* Constructors - destructors */
     public:
 
-      polynomial(){}
+      polynomial()
+        : T_min_(0), T_max_(0)
+      {}
 
       /// \brief Constructor.
       /// \param coefficients : a reference to an Eigen matrix where each column is a coefficient,

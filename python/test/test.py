@@ -1,4 +1,5 @@
 import unittest
+import os
 
 from numpy import matrix
 from numpy.linalg import norm
@@ -93,6 +94,7 @@ class TestCurves(unittest.TestCase):
         b6 = bezier6()
         b6.loadFromText("serialization_curve.test")
         self.assertTrue((a6(0.4) == b6(0.4)).all())
+        os.remove("serialization_curve.test")
         return
 
     def test_polynomial(self):
@@ -112,6 +114,7 @@ class TestCurves(unittest.TestCase):
         b = polynomial()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
+        os.remove("serialization_curve.test")
         return
 
     def test_cubic_hermite_spline(self):
@@ -129,6 +132,7 @@ class TestCurves(unittest.TestCase):
         b = cubic_hermite_spline()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
+        os.remove("serialization_curve.test")
         return
 
     def test_piecewise_polynomial_curve(self):
@@ -154,6 +158,7 @@ class TestCurves(unittest.TestCase):
         pc_test = piecewise_polynomial_curve()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
+        os.remove("serialization_pc.test")
         return
 
     def test_piecewise_bezier3_curve(self):
@@ -176,6 +181,7 @@ class TestCurves(unittest.TestCase):
         pc_test = piecewise_bezier3_curve()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
+        os.remove("serialization_pc.test")
         return
 
     def test_piecewise_bezier6_curve(self):
@@ -198,6 +204,7 @@ class TestCurves(unittest.TestCase):
         pc_test = piecewise_bezier6_curve()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
+        os.remove("serialization_pc.test")
         return
 
     def test_piecewise_cubic_hermite_curve(self):
@@ -223,6 +230,7 @@ class TestCurves(unittest.TestCase):
         pc_test = piecewise_cubic_hermite_curve()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
+        os.remove("serialization_pc.test")
         return
 
     def test_exact_cubic(self):
@@ -243,6 +251,7 @@ class TestCurves(unittest.TestCase):
         b = exact_cubic()
         b.loadFromText("serialization_pc.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
+        os.remove("serialization_pc.test")
         return
 
     def test_exact_cubic_constraint(self):

@@ -44,7 +44,7 @@ namespace curves
     public:
 
       piecewise_curve()
-        : size_(0)
+        : size_(0), T_min_(0), T_max_(0)
       {}
 
       /// \brief Constructor.

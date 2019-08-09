@@ -47,7 +47,9 @@ namespace curves
     /* Constructors - destructors */
     public:
 
-      bezier_curve(){}
+      bezier_curve()
+        : T_min_(0), T_max_(0)
+      {}
 
       /// \brief Constructor.
       /// Given the first and last point of a control points set, create the bezier curve.

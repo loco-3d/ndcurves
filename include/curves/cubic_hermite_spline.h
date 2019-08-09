@@ -46,7 +46,9 @@ namespace curves
 
     public:
 
-      cubic_hermite_spline(){}
+      cubic_hermite_spline()
+        : T_min_(0), T_max_(0)
+      {}
 
       /// \brief Constructor.
       /// \param wayPointsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
