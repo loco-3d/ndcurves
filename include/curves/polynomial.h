@@ -39,10 +39,10 @@ namespace curves
   struct polynomial : public curve_abc<Time, Numeric, Safe, Point>,
                       public serialization::Serializable< polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
   {
-    typedef Point 	point_t;
+    typedef Point   point_t;
     typedef T_Point t_point_t;
-    typedef Time 	time_t;
-    typedef Numeric	num_t;
+    typedef Time  time_t;
+    typedef Numeric num_t;
     typedef curve_abc<Time, Numeric, Safe, Point> curve_abc_t;
     typedef Eigen::Matrix<double, Dim, Eigen::Dynamic> coeff_t;
     typedef Eigen::Ref<coeff_t> coeff_t_ref;

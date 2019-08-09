@@ -35,8 +35,7 @@ namespace curves
   ///
   template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
-           typename Tangent= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>
-  >
+           typename Tangent= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
   struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>,
                                 public serialization::Serializable< cubic_hermite_spline<Time, Numeric, Dim, Safe, Point, Tangent> >
   {

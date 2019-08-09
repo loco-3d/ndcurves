@@ -31,8 +31,8 @@ namespace curves
   /// For degree lesser than 4, the evaluation is analitycal. Otherwise
   /// the bernstein polynoms are used to evaluate the spline at a given location.
   ///
-  template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false
-  , typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
+  template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
+           typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
   struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>,
                         public serialization::Serializable< bezier_curve<Time, Numeric, Dim, Safe, Point> >
   {
