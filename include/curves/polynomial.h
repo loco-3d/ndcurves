@@ -101,6 +101,113 @@ namespace curves
         safe_check();
       }
 
+      ///
+      /// \brief Constructor from boundary condition with C0 : create a polynomial that connect exactly init and end (order 1)
+      /// \param init the initial point of the curve
+      /// \param end the final point of the curve
+      /// \param min   : LOWER bound on interval definition of the spline.
+      /// \param max   : UPPER bound on interval definition of the spline.
+      ///
+      polynomial(const Point& init, const Point& end, const time_t min, const time_t max ):
+        dim_(Dim), degree_(1),
+        T_min_(min), T_max_(max)
+      {
+        t_point_t coeffs;
+        coeffs.push_back(init);
+        coeffs.push_back((end-init)/(max-min));
+        coefficients_ = init_coeffs(coeffs.begin(), coeffs.end());
+      }
+
+      ///
+      /// \brief Constructor from boundary condition with C1 :
+      /// create a polynomial that connect exactly init and end and thier first order derivatives(order 3)
+      /// \param init the initial point of the curve
+      /// \param d_init the initial value of the derivative of the curve
+      /// \param end the final point of the curve
+      /// \param d_end the final value of the derivative of the curve
+      /// \param min   : LOWER bound on interval definition of the spline.
+      /// \param max   : UPPER bound on interval definition of the spline.
+      ///
+      polynomial(const Point& init,const Point& d_init, const Point& end, const Point& d_end,const time_t min, const time_t max ):
+        dim_(Dim), degree_(3),
+        T_min_(min), T_max_(max)
+      {
+        /* the coefficients [c0 c1 c2 c3] are found by solving the following system of equation
+        (found from the boundary conditions) :
+        [1  0  0   0   ]   [c0]   [ init ]
+        [1  T  T^2 T^3 ] x [c1] = [ end  ]
+        [0  1  0   0   ]   [c2]   [d_init]
+        [0  1  2T  3T^2]   [c3]   [d_end ]
+        */
+        double T = max-min;
+        Eigen::Matrix<double, 4, 4> m;
+        m << 1.,0,0,0,
+            1.,T,T*T,T*T*T,
+            0,1.,0,0,
+            0,1.,2.*T,3.*T*T;
+         Eigen::Matrix<double, 4, 4> m_inv = m.inverse();
+         Eigen::Matrix<double,4,1> bc; // boundary condition vector
+         coefficients_ = coeff_t::Zero(dim_,degree_+1); // init coefficient matrix with the right size
+         for(size_t i = 0 ;i < dim_ ; ++i){ // for each dimension, solve the boundary condition problem :
+           bc[0] = init[i];
+           bc[1] = end[i];
+           bc[2] = d_init[i];
+           bc[3] = d_end[i];
+           coefficients_.row(i) = (m_inv*bc).transpose();
+         }
+      }
+
+      ///
+      /// \brief Constructor from boundary condition with C2 :
+      /// create a polynomial that connect exactly init and end and thier first and second order derivatives(order 5)
+      /// \param init the initial point of the curve
+      /// \param d_init the initial value of the derivative of the curve
+      /// \param d_init the initial value of the second derivative of the curve
+      /// \param end the final point of the curve
+      /// \param d_end the final value of the derivative of the curve
+      /// \param d_end the final value of the second derivative of the curve
+      /// \param min   : LOWER bound on interval definition of the spline.
+      /// \param max   : UPPER bound on interval definition of the spline.
+      ///
+      polynomial(const Point& init,const Point& d_init,const Point& dd_init, const Point& end, const Point& d_end,const Point& dd_end,const time_t min, const time_t max ):
+        dim_(Dim), degree_(5),
+        T_min_(min), T_max_(max)
+      {
+        /* the coefficients [c0 c1 c2 c3 c4 c5] are found by solving the following system of equation
+        (found from the boundary conditions) :
+        [1  0  0   0    0     0    ]   [c0]   [ init  ]
+        [1  T  T^2 T^3  T^4   T^5  ]   [c1]   [ end   ]
+        [0  1  0   0    0     0    ]   [c2]   [d_init ]
+        [0  1  2T  3T^2 4T^3  5T^4 ] x [c3] = [d_end  ]
+        [0  0  2   0    0     0    ]   [c4]   [dd_init]
+        [0  0  2   6T   12T^2 20T^3]   [c5]   [dd_end ]
+        */
+        double T = max-min;
+        Eigen::Matrix<double, 6, 6> m;
+        m << 1.,0,0,0,0,0,
+            1.,T,T*T,pow(T,3),pow(T,4),pow(T,5),
+            0,1.,0,0,0,0,
+            0,1.,2.*T,3.*T*T,4.*pow(T,3),5.*pow(T,4),
+            0,0,2,0,0,0,
+            0,0,2,6.*T,12.*T*T,20.*pow(T,3);
+         Eigen::Matrix<double, 6, 6> m_inv = m.inverse();
+         Eigen::Matrix<double,6,1> bc; // boundary condition vector
+         coefficients_ = coeff_t::Zero(dim_,degree_+1); // init coefficient matrix with the right size
+         for(size_t i = 0 ;i < dim_ ; ++i){ // for each dimension, solve the boundary condition problem :
+           bc[0] = init[i];
+           bc[1] = end[i];
+           bc[2] = d_init[i];
+           bc[3] = d_end[i];
+           bc[4] = dd_init[i];
+           bc[5] = dd_end[i];
+           coefficients_.row(i) = (m_inv*bc).transpose();
+         }
+      }
+
+
+
+
+
       /// \brief Destructor
       ~polynomial()
       {
