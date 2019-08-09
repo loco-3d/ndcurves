@@ -216,51 +216,23 @@ namespace curves
       }
 
       template<typename Polynomial>
-      static piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> 
-      convert_discrete_points_to_polynomial(T_Point points, Time T_min, Time T_max)
+      static piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial>
+      convert_discrete_points_to_polynomial(T_Point points, t_time_t time_points)
       {
         if(Safe &! (points.size()>1))
         {
           //std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
-          throw std::invalid_argument("piecewise_curve -> convert_discrete_points_to_polynomial, Error, less than 2 discrete points");
+          throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, less than 2 discrete points");
         }
-        typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_curve_out_t;
-        Time discretization_step = (T_max-T_min)/Time(points.size()-1);
-        Time time_actual = T_min;
-        // Initialization at first points
-        point_t actual_point = points[0];
-        point_t next_point = points[1];
-        point_t coeff_order_zero(actual_point);
-        point_t coeff_order_one((next_point-actual_point)/discretization_step);
-        t_point_t coeffs;
-        coeffs.push_back(coeff_order_zero);
-        coeffs.push_back(coeff_order_one);
-        Polynomial pol(coeffs,time_actual,time_actual+discretization_step);
-        piecewise_curve_out_t ppc(pol);
-        time_actual += discretization_step;
-        // Other points
-        for (std::size_t i=1; i<points.size()-2; i++)
-        {
-          coeffs.clear();
-          actual_point = points[i];
-          next_point = points[i+1];
-          coeff_order_zero = actual_point;
-          coeff_order_one = (next_point-actual_point)/discretization_step;
-          coeffs.push_back(coeff_order_zero);
-          coeffs.push_back(coeff_order_one);
-          ppc.add_curve(Polynomial(coeffs,time_actual,time_actual+discretization_step));
-          time_actual += discretization_step;
+        if(points.size() != time_points.size()){
+            throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, points and time_points must have the same size.");
         }
-        // Last points
-        coeffs.clear();
-        actual_point = points[points.size()-2];
-        next_point = points[points.size()-1];
-        coeff_order_zero = actual_point;
-        coeff_order_one = (next_point-actual_point)/discretization_step;
-        coeffs.push_back(coeff_order_zero);
-        coeffs.push_back(coeff_order_one);
-        ppc.add_curve(Polynomial(coeffs,time_actual,T_max));
-        return ppc;
+        piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_res;
+
+        for(size_t i = 1 ; i < points.size() ; ++i){
+          piecewise_res.add_curve(Polynomial(points[i-1],points[i],time_points[i-1],time_points[i]));
+        }
+        return piecewise_res;
       }
 
     private:
