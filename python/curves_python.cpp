@@ -297,11 +297,11 @@ namespace curves
     /** END variable points bezier curve**/
     /** BEGIN polynomial curve function**/
     class_<polynomial_t>("polynomial",  init<>())
-      .def("__init__", make_constructor(&wrapPolynomialConstructor1),
+      .def("__init__", make_constructor(&wrapSplineConstructor1,default_call_policies(),args("coeffs","min","max")),
            "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [min,max]."
            " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest order."
            " Spline order is given by the number of the columns -1.")
-      .def("__init__", make_constructor(&wrapPolynomialConstructor2),
+      .def("__init__", make_constructor(&wrapSplineConstructor2,default_call_policies(),arg("coeffs")),
            "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [0,1]."
            " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest order."
            " Spline order is given by the number of the columns -1.")
@@ -324,7 +324,7 @@ namespace curves
     /** BEGIN piecewise curve function **/
     class_<piecewise_polynomial_curve_t>
     ("piecewise_polynomial_curve", init<>())
-      .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor),
+      .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor,default_call_policies(),arg("curve")),
            "Create a peicewise-polynomial curve containing the given polynomial curve.")
       .def("min", &piecewise_polynomial_curve_t::min,"Set the LOWER bound on interval definition of the curve.")
       .def("max", &piecewise_polynomial_curve_t::max,"Set the HIGHER bound on interval definition of the curve.")
