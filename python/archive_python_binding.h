@@ -8,14 +8,11 @@
 
 namespace curves
 {
-
   namespace bp = boost::python;
-
   template<typename Derived>
   struct SerializableVisitor
-  : public boost::python::def_visitor< SerializableVisitor<Derived> >
+    : public boost::python::def_visitor< SerializableVisitor<Derived> >
   {
-
     template<class PyClass>
     void visit(PyClass& cl) const
     {

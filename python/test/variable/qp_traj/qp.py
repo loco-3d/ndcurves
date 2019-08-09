@@ -9,11 +9,11 @@ def quadprog_solve_qp(P, q, G=None, h=None, C=None, d=None):
     qp_a = -q
     if C is not None:
         if G is not None:
-                qp_C = -vstack([C, G]).T
-                qp_b = -hstack([d, h])   
+            qp_C = -vstack([C, G]).T
+            qp_b = -hstack([d, h])   
         else:
-                qp_C = -C.transpose()
-                qp_b = -d 
+            qp_C = -C.transpose()
+            qp_b = -d 
         meq = C.shape[0]
     else:  # no equality constraint 
         qp_C = -G.T
@@ -26,10 +26,10 @@ def quadprog_solve_qp(P, q, G=None, h=None, C=None, d=None):
 #subject to  G x <= h
 #subject to  C x  = d
 def solve_least_square(A,b,G=None, h=None, C=None, d=None):
-        P = dot(A.T, A)
-        #~ q = 2*dot(b, A).reshape(b.shape[0])
-        q = 2*dot(b, A)
-        return quadprog_solve_qp(P, q, G, h)
+    P = dot(A.T, A)
+    #~ q = 2*dot(b, A).reshape(b.shape[0])
+    q = 2*dot(b, A)
+    return quadprog_solve_qp(P, q, G, h)
 
 
 #min q' x  
@@ -40,11 +40,11 @@ def solve_lp(q, G=None, h=None, C=None, d=None):
     qp_a = -q
     if C is not None:
         if G is not None:
-                qp_C = -vstack([C, G]).T
-                qp_b = -hstack([d, h])  
+            qp_C = -vstack([C, G]).T
+            qp_b = -hstack([d, h])  
         else:
-                qp_C = -C.transpose()
-                qp_b = -d 
+            qp_C = -C.transpose()
+            qp_b = -d 
         meq = C.shape[0]
     else:  # no equality constraint 
         qp_C = -G.T
@@ -54,17 +54,14 @@ def solve_lp(q, G=None, h=None, C=None, d=None):
         
 
 if __name__ == '__main__':
-        
-        from numpy.linalg import norm
-        
-        A = array([[1., 2., 0.], [-8., 3., 2.], [0., 1., 1.]])
-        b = array([3., 2., 3.])
-        P = dot(A.T, A)
-        q = 2*dot(b, A).reshape((3,))
-        G = array([[1., 2., 1.], [2., 0., 1.], [-1., 2., -1.]])
-        h = array([3., 2., -2.]).reshape((3,))
-
-        res2 = solve_least_square(A, b, G, h)
-        res1 =  quadprog_solve_qp(P, q, G, h)
-        print res1
-        print res2
+    from numpy.linalg import norm
+    A = array([[1., 2., 0.], [-8., 3., 2.], [0., 1., 1.]])
+    b = array([3., 2., 3.])
+    P = dot(A.T, A)
+    q = 2*dot(b, A).reshape((3,))
+    G = array([[1., 2., 1.], [2., 0., 1.], [-1., 2., -1.]])
+    h = array([3., 2., -2.]).reshape((3,))
+    res2 = solve_least_square(A, b, G, h)
+    res1 =  quadprog_solve_qp(P, q, G, h)
+    print res1
+    print res2

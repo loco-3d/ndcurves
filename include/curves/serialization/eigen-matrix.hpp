@@ -33,7 +33,6 @@
 #include <boost/serialization/vector.hpp>
 
 namespace boost{
-
   namespace serialization{
     template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
     void save(Archive & ar, const Eigen::Matrix<_Scalar,_Rows,_Cols,_Options,_MaxRows,_MaxCols> & m, const unsigned int) // version

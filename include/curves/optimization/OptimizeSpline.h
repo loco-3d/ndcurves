@@ -418,113 +418,113 @@ namespace curves
       bux[i] = +MSK_INFINITY;
     }
 
-  MSKrescodee  r;
-  MSKtask_t    task = NULL;
-  /* Create the optimization task. */
-  r = MSK_maketask(env_,numcon,numvar,&task);
+    MSKrescodee  r;
+    MSKtask_t    task = NULL;
+    /* Create the optimization task. */
+    r = MSK_maketask(env_,numcon,numvar,&task);
 
-  /* Directs the log task stream to the 'printstr' function. */
-  /*if ( r==MSK_RES_OK )
-  r = MSK_linkfunctotaskstream(task,MSK_STREAM_LOG,NULL,printstr);*/
+    /* Directs the log task stream to the 'printstr' function. */
+    /*if ( r==MSK_RES_OK )
+    r = MSK_linkfunctotaskstream(task,MSK_STREAM_LOG,NULL,printstr);*/
 
-  /* Append 'numcon' empty constraints.
-  The constraints will initially have no bounds. */
-  if ( r == MSK_RES_OK )
-  {
-  r = MSK_appendcons(task,numcon);
-  }
+    /* Append 'numcon' empty constraints.
+    The constraints will initially have no bounds. */
+    if ( r == MSK_RES_OK )
+    {
+      r = MSK_appendcons(task,numcon);
+    }
 
-  /* Append 'numvar' variables.
-  The variables will initially be fixed at zero (x=0). */
-  if ( r == MSK_RES_OK )
-  {
-  r = MSK_appendvars(task,numvar);
-  }
+    /* Append 'numvar' variables.
+    The variables will initially be fixed at zero (x=0). */
+    if ( r == MSK_RES_OK )
+    {
+      r = MSK_appendvars(task,numvar);
+    }
 
-  for(int j=0; j<numvar && r == MSK_RES_OK; ++j)
-  {
-  /* Set the linear term c_j in the objective.*/   
-  if(r == MSK_RES_OK) 
-  {
-  r = MSK_putcj(task,j,0); 
-  }
-  /* Set the bounds on variable j.
-  blx[j] <= x_j <= bux[j] */
-  if(r == MSK_RES_OK)
-  {
-  r = MSK_putvarbound(task,
-  j,           /* Index of variable.*/
-  bkx[j],      /* Bound key.*/
-  blx[j],      /* Numerical value of lower bound.*/
-  bux[j]);     /* Numerical value of upper bound.*/
-  }
-  /* Input column j of A */   
-  if(r == MSK_RES_OK)
-  {
-  r = MSK_putacol(task,
-  j,                 /* Variable (column) index.*/
-  aptre[j]-aptrb[j], /* Number of non-zeros in column j.*/
-  asub+aptrb[j],     /* Pointer to row indexes of column j.*/
-  aval+aptrb[j]);    /* Pointer to Values of column j.*/
-  }
-  }
+    for(int j=0; j<numvar && r == MSK_RES_OK; ++j)
+    {
+      /* Set the linear term c_j in the objective.*/   
+      if(r == MSK_RES_OK) 
+      {
+        r = MSK_putcj(task,j,0); 
+      }
+      /* Set the bounds on variable j.
+      blx[j] <= x_j <= bux[j] */
+      if(r == MSK_RES_OK)
+      {
+        r = MSK_putvarbound(task,
+        j,           /* Index of variable.*/
+        bkx[j],      /* Bound key.*/
+        blx[j],      /* Numerical value of lower bound.*/
+        bux[j]);     /* Numerical value of upper bound.*/
+      }
+      /* Input column j of A */   
+      if(r == MSK_RES_OK)
+      {
+        r = MSK_putacol(task,
+        j,                 /* Variable (column) index.*/
+        aptre[j]-aptrb[j], /* Number of non-zeros in column j.*/
+        asub+aptrb[j],     /* Pointer to row indexes of column j.*/
+        aval+aptrb[j]);    /* Pointer to Values of column j.*/
+      }
+    }
 
-  /* Set the bounds on constraints.
-  for i=1, ...,numcon : blc[i] <= constraint i <= buc[i] */
-  for(int i=0; i<numcon && r == MSK_RES_OK; ++i)
-  {
-  r = MSK_putconbound(task,
-  i,           /* Index of constraint.*/
-  bkc[i],      /* Bound key.*/
-  blc[i],      /* Numerical value of lower bound.*/
-  buc[i]);     /* Numerical value of upper bound.*/
-  }
+    /* Set the bounds on constraints.
+    for i=1, ...,numcon : blc[i] <= constraint i <= buc[i] */
+    for(int i=0; i<numcon && r == MSK_RES_OK; ++i)
+    {
+      r = MSK_putconbound(task,
+      i,           /* Index of constraint.*/
+      bkc[i],      /* Bound key.*/
+      blc[i],      /* Numerical value of lower bound.*/
+      buc[i]);     /* Numerical value of upper bound.*/
+    }
 
-  /* Maximize objective function. */
-  if (r == MSK_RES_OK)
-  {
-  r = MSK_putobjsense(task, MSK_OBJECTIVE_SENSE_MINIMIZE);
-  }
+    /* Maximize objective function. */
+    if (r == MSK_RES_OK)
+    {
+      r = MSK_putobjsense(task, MSK_OBJECTIVE_SENSE_MINIMIZE);
+    }
 
 
-  if ( r==MSK_RES_OK ) 
-  {  
-  /* Input the Q for the objective. */ 
-  r = MSK_putqobj(task,numqz,qsubi,qsubj,qval); 
-  } 
+    if ( r==MSK_RES_OK ) 
+    {  
+      /* Input the Q for the objective. */ 
+      r = MSK_putqobj(task,numqz,qsubi,qsubj,qval); 
+    } 
 
-  if ( r==MSK_RES_OK )
-  {
-  MSKrescodee trmcode;
+    if ( r==MSK_RES_OK )
+    {
+      MSKrescodee trmcode;
 
-  /* Run optimizer */
-  r = MSK_optimizetrm(task,&trmcode);
-  if ( r==MSK_RES_OK )
-  {
-  double *xx = (double*) calloc(numvar,sizeof(double));
-  if ( xx )
-  {
-  /* Request the interior point solution. */
-  MSK_getxx(task, MSK_SOL_ITR, xx);
-  T_waypoints_t nwaypoints;
-  In begin(wayPointsBegin);
-  for(int i=0; i< size; i = ++i, ++begin)
-  {
-  point_t target;
-  for(int j=0; j< Dim; ++ j)
-  {
-  target(j) = xx[i + j*size];
-  }
-  nwaypoints.push_back(std::make_pair(begin->first, target));
-  }
-  res = new exact_cubic_t(nwaypoints.begin(), nwaypoints.end());
-  free(xx);
-  }
-  }
-  }
-  /* Delete the task and the associated data. */
-  MSK_deletetask(&task);
-  return res;
-  }
+      /* Run optimizer */
+      r = MSK_optimizetrm(task,&trmcode);
+      if ( r==MSK_RES_OK )
+      {
+        double *xx = (double*) calloc(numvar,sizeof(double));
+        if ( xx )
+        {
+          /* Request the interior point solution. */
+          MSK_getxx(task, MSK_SOL_ITR, xx);
+          T_waypoints_t nwaypoints;
+          In begin(wayPointsBegin);
+          for(int i=0; i< size; i = ++i, ++begin)
+          {
+            point_t target;
+            for(int j=0; j< Dim; ++ j)
+            {
+              target(j) = xx[i + j*size];
+            }
+            nwaypoints.push_back(std::make_pair(begin->first, target));
+          }
+          res = new exact_cubic_t(nwaypoints.begin(), nwaypoints.end());
+          free(xx);
+        }
+      }
+    }
+    /* Delete the task and the associated data. */
+    MSK_deletetask(&task);
+    return res;
+  } // End SplineOptimizer
 } // namespace curves
 #endif //_CLASS_SPLINEOPTIMIZER
