@@ -1584,6 +1584,22 @@ void polynomialFromBoundaryConditions(bool& error){
     error=true;
     std::cout<<"polynomialFromBoundaryConditions C2: curve is not degree 5 "<<std::endl;
   }
+  // check if the exeptions are correctly raised :
+  try{
+    polynomial_t polC0Err = polynomial_t(p0,p1,max,min);
+    error = true;
+    std::cout<<"Created a polynomial with tMin > tMax without error. "<<std::endl;
+  }catch(invalid_argument e){}
+  try{
+    polynomial_t polC1Err = polynomial_t(p0,dp0,p1,dp1,max,min);
+    error = true;
+    std::cout<<"Created a polynomial with tMin > tMax without error. "<<std::endl;
+  }catch(invalid_argument e){}
+  try{
+    polynomial_t polC2Err = polynomial_t(p0,dp0,ddp0,p1,dp1,ddp1,max,min);
+    error = true;
+    std::cout<<"Created a polynomial with tMin > tMax without error. "<<std::endl;
+  }catch(invalid_argument e){}
 }
 
 
