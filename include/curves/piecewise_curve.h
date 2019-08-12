@@ -40,7 +40,8 @@ namespace curves
     typedef typename std::vector< Time > t_time_t;
 
     public:
-
+      /// \brief Empty constructor. Add at least one curve to call other class functions.
+      ///
       piecewise_curve()
         : size_(0), T_min_(0), T_max_(0)
       {}
@@ -73,6 +74,7 @@ namespace curves
 
       virtual Point operator()(const Time t) const
       {
+        check_if_not_empty();
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
           //std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
@@ -87,7 +89,8 @@ namespace curves
       ///  \return \f$\frac{d^Np(t)}{dt^N}\f$ point corresponding on derivative spline of order N at time t.
       ///
       virtual Point derivate(const Time t, const std::size_t order) const
-      {   
+      { 
+        check_if_not_empty();  
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
           throw std::invalid_argument("can't evaluate piecewise curve, out of range");
@@ -125,6 +128,7 @@ namespace curves
       ///
       bool is_continuous(const std::size_t order)
       {
+        check_if_not_empty();
         bool isContinuous = true;
         std::size_t i=0;
         point_t value_end, value_start;
@@ -154,6 +158,7 @@ namespace curves
       template<typename Bezier>
       piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Bezier> convert_piecewise_curve_to_bezier()
       {
+        check_if_not_empty();
         typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Bezier> piecewise_curve_out_t;
         // Get first curve (segment)
         curve_t first_curve = curves_.at(0);
@@ -171,6 +176,7 @@ namespace curves
       template<typename Hermite>
       piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Hermite> convert_piecewise_curve_to_cubic_hermite()
       {
+        check_if_not_empty();
         typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Hermite> piecewise_curve_out_t;
         // Get first curve (segment)
         curve_t first_curve = curves_.at(0);
@@ -188,6 +194,7 @@ namespace curves
       template<typename Polynomial>
       piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> convert_piecewise_curve_to_polynomial()
       {
+        check_if_not_empty();
         typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> piecewise_curve_out_t;
         // Get first curve (segment)
         curve_t first_curve = curves_.at(0);
@@ -288,6 +295,14 @@ namespace curves
           }
         }
         return left_id-1;
+      }
+
+      void check_if_not_empty() const
+      {
+        if (curves_.size() == 0)
+        {
+          throw std::runtime_error("Error in piecewise curve : No curve added");
+        }
       }
 
 

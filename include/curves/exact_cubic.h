@@ -64,7 +64,8 @@ namespace curves
 
     /* Constructors - destructors */
     public:
-
+      /// \brief Empty constructor. Add at least one curve to call other class functions.
+      ///
       exact_cubic()
         : piecewise_curve_t()
       {}

@@ -44,7 +44,8 @@ namespace curves
     typedef Numeric num_t;
 
     public:
-
+      /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
+      ///
       cubic_hermite_spline()
         : T_min_(0), T_max_(0)
       {}
@@ -91,6 +92,7 @@ namespace curves
       ///
       virtual Point operator()(const Time t) const
       {
+        check_if_not_empty();
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
           throw std::invalid_argument("can't evaluate cubic hermite spline, out of range");
@@ -111,7 +113,8 @@ namespace curves
       ///  \return \f$\frac{d^Np(t)}{dt^N}\f$ point corresponding on derivative spline of order N at time t.
       ///
       virtual Point derivate(const Time t, const std::size_t order) const
-      {   
+      {
+        check_if_not_empty();
         return evalCubicHermiteSpline(t, order);
       }
 
@@ -313,6 +316,14 @@ namespace curves
           }
         }
         return left_id-1;
+      }
+
+      void check_if_not_empty() const
+      {
+        if (control_points_.size() == 0)
+        {
+          throw std::runtime_error("Error in cubic hermite : there is no control points set / did you use empty constructor ?");
+        }
       }
 
       /// \brief compute duration of each spline.

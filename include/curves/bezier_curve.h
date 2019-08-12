@@ -45,7 +45,8 @@ namespace curves
 
     /* Constructors - destructors */
     public:
-
+      /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
+      ///
       bezier_curve()
         : T_min_(0), T_max_(0)
       {}
@@ -125,6 +126,7 @@ namespace curves
       ///  \return \f$x(t)\f$ point corresponding on curve at time t.
       virtual point_t operator()(const time_t t) const
       {
+        check_if_not_empty();
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
           throw std::invalid_argument("can't evaluate bezier curve, time t is out of range"); // TODO
@@ -145,6 +147,7 @@ namespace curves
       ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
       bezier_curve_t compute_derivate(const std::size_t order) const
       {
+        check_if_not_empty();
         if(order == 0) 
         {
           return *this;
@@ -169,6 +172,7 @@ namespace curves
       ///  \return primitive at order N of x(t).
       bezier_curve_t compute_primitive(const std::size_t order) const
       {
+        check_if_not_empty();
         if(order == 0) 
         {
           return *this;
@@ -315,6 +319,7 @@ namespace curves
       ///
       std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric t)
       {
+        check_if_not_empty();
         if (fabs(t-T_max_)<MARGIN)
         {
           throw std::runtime_error("can't split curve, interval range is equal to original curve");
@@ -384,6 +389,14 @@ namespace curves
         res.push_back(P_n_1);
         res.push_back(PN);
         return res;
+      }
+
+      void check_if_not_empty() const
+      {
+        if (control_points_.size() == 0)
+        {
+          throw std::runtime_error("Error in beziercurve : there is no control points set / did you use empty constructor ?");
+        }
       }
       /*Operations*/
 

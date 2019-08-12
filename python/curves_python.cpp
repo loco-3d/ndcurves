@@ -283,6 +283,8 @@ namespace curves
   /* End wrap exact cubic spline */
 
 
+  // TO DO : Replace all load and save function for serialization in class by using 
+  //         SerializableVisitor in archive_python_binding.
   BOOST_PYTHON_MODULE(curves)
   {
     /** BEGIN eigenpy init**/
@@ -318,7 +320,7 @@ namespace curves
       .def("loadFromBinary",&bezier6_t::loadFromBinary<bezier6_t>,bp::args("filename"),"Loads *this from a binary file.")
       .def_readonly("degree", &bezier6_t::degree_)
       .def_readonly("nbWaypoints", &bezier6_t::size_)
-      .def(SerializableVisitor<bezier6_t>())
+      //.def(SerializableVisitor<bezier6_t>())
     ;
     /** END bezier curve**/
     /** BEGIN bezier curve**/

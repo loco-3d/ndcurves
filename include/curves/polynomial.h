@@ -49,7 +49,8 @@ namespace curves
 
     /* Constructors - destructors */
     public:
-
+      /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
+      ///
       polynomial()
         : T_min_(0), T_max_(0)
       {}
@@ -140,6 +141,7 @@ namespace curves
       ///  \return \f$x(t)\f$ point corresponding on spline at time t.
       virtual point_t operator()(const time_t t) const
       {
+        check_if_not_empty();
         if((t < T_min_ || t > T_max_) && Safe)
         { 
           throw std::invalid_argument("error in polynomial : time t to evaluate should be in range [Tmin, Tmax] of the curve");
@@ -160,6 +162,7 @@ namespace curves
       ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
       virtual point_t derivate(const time_t t, const std::size_t order) const
       {
+        check_if_not_empty();
         if((t < T_min_ || t > T_max_) && Safe)
         { 
           throw std::invalid_argument("error in polynomial : time t to evaluate derivative should be in range [Tmin, Tmax] of the curve");
@@ -176,6 +179,7 @@ namespace curves
 
       polynomial_t compute_derivate(const std::size_t order) const
       {
+        check_if_not_empty();
         if(order == 0) 
         {
           return *this;
@@ -203,6 +207,14 @@ namespace curves
           coeff_derivated.col(i) = coeff.col(i+1)*(i+1);
         }
         return coeff_derivated;
+      }
+
+      void check_if_not_empty() const
+      {
+        if (coefficients_.size() == 0)
+        {
+          throw std::runtime_error("Error in polynomial : there is no coefficients set / did you use empty constructor ?");
+        }
       }
     /*Operations*/
 

@@ -1465,7 +1465,6 @@ int main(int /*argc*/, char** /*argv[]*/)
   std::cout << "performing tests... \n";
   bool error = false;
   PolynomialCubicFunctionTest(error);
-  /*
   ExactCubicNoErrorTest(error);
   ExactCubicPointsCrossedTest(error); // checks that given wayPoints are crossed
   ExactCubicTwoPointsTest(error);
@@ -1489,7 +1488,6 @@ int main(int /*argc*/, char** /*argv[]*/)
   toPolynomialConversionTest(error);
   cubicConversionTest(error);
   curveAbcDimDynamicTest(error);
-  */
   serializationCurvesTest(error);
   if(error)
   {
