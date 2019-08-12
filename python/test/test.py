@@ -159,6 +159,25 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(isclose(polC2.derivate(max,1), dp1).all())
         self.assertTrue(isclose(polC2.derivate(min,2), ddp0).all())
         self.assertTrue(isclose(polC2.derivate(max,2), ddp1).all())
+        # check that the exception are correctly raised :
+        try:
+          polC0 = polynomial(p0,p1,max,min)
+          self.assertTrue(False) # should never get there
+        except ValueError:
+          pass
+
+        try:
+          polC1 = polynomial(p0,dp0,p1,dp1,max,min)
+          self.assertTrue(False) # should never get there
+        except ValueError:
+          pass
+
+        try:
+          polC2 = polynomial(p0,dp0,ddp0,p1,dp1,ddp1,max,min)
+          self.assertTrue(False) # should never get there
+        except ValueError:
+          pass
+
         return
 
     def test_cubic_hermite_spline(self):
