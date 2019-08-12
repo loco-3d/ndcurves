@@ -19,6 +19,7 @@ namespace curves
   typedef Eigen::VectorXd time_waypoints_t;
   typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point_list_t;
   typedef Eigen::Matrix<real, 6, Eigen::Dynamic> point_list6_t;
+  typedef std::vector<real>  t_time_t;
   typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
   typedef std::vector<point6_t,Eigen::aligned_allocator<point6_t> >  t_point6_t;
   typedef std::pair<real, point_t> Waypoint;
@@ -33,6 +34,16 @@ namespace curves
     for(int i =0;i<array.cols();++i)
     {
       res.push_back(array.col(i));
+    }
+    return res;
+  }
+  template <typename PointList, typename T_Point>
+  T_Point vectorFromEigenVector(const PointList& vector)
+  {
+    T_Point res;
+    for(int i =0;i<vector.rows();++i)
+    {
+      res.push_back(vector[i]);
     }
     return res;
   }

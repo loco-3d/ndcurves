@@ -175,6 +175,26 @@ namespace curves
   {
     return new piecewise_cubic_hermite_curve_t();
   }
+  static piecewise_polynomial_curve_t discretPointToPolynomialC0(const point_list_t& points, const time_waypoints_t& time_points){
+    t_point_t points_list = vectorFromEigenArray<point_list_t,t_point_t>(points);
+    t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
+    return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,time_points_list);
+  }
+  static piecewise_polynomial_curve_t discretPointToPolynomialC1(const point_list_t& points,const point_list_t& points_derivative, const time_waypoints_t& time_points){
+    t_point_t points_list = vectorFromEigenArray<point_list_t,t_point_t>(points);
+    t_point_t points_derivative_list = vectorFromEigenArray<point_list_t,t_point_t>(points_derivative);
+    t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
+    return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,points_derivative_list,time_points_list);
+  }
+  static piecewise_polynomial_curve_t discretPointToPolynomialC2(const point_list_t& points,const point_list_t& points_derivative,const point_list_t& points_second_derivative, const time_waypoints_t& time_points){
+    t_point_t points_list = vectorFromEigenArray<point_list_t,t_point_t>(points);
+    t_point_t points_derivative_list = vectorFromEigenArray<point_list_t,t_point_t>(points_derivative);
+    t_point_t points_second_derivative_list = vectorFromEigenArray<point_list_t,t_point_t>(points_second_derivative);
+
+    t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
+    return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,points_derivative_list,points_second_derivative_list,time_points_list);
+  }
+
   /* end wrap piecewise polynomial curve */
 
   /* Wrap exact cubic spline */
@@ -354,6 +374,13 @@ namespace curves
     ("piecewise_polynomial_curve", init<>())
       .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor,default_call_policies(),arg("curve")),
            "Create a peicewise-polynomial curve containing the given polynomial curve.")
+      .def("FromPointsList",&discretPointToPolynomialC0,
+           "Create a piecewise-polynomial connecting exactly all the given points at the given time. The created piecewise is C0 continuous.",args("points","time_points"))
+       .def("FromPointsList",&discretPointToPolynomialC1,
+             "Create a piecewise-polynomial connecting exactly all the given points at the given time and respect the given points derivative values. The created piecewise is C1 continuous.",args("points","points_derivative","time_points"))
+       .def("FromPointsList",&discretPointToPolynomialC2,
+             "Create a piecewise-polynomial connecting exactly all the given points at the given time and respect the given points derivative and second derivative values. The created piecewise is C2 continuous.",args("points","points_derivative","points_second_derivative","time_points"))
+      .staticmethod("FromPointsList")
       .def("min", &piecewise_polynomial_curve_t::min,"Set the LOWER bound on interval definition of the curve.")
       .def("max", &piecewise_polynomial_curve_t::max,"Set the HIGHER bound on interval definition of the curve.")
       .def("dim", &piecewise_polynomial_curve_t::dim)
