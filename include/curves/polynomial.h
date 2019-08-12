@@ -116,6 +116,7 @@ namespace curves
         coeffs.push_back(init);
         coeffs.push_back((end-init)/(max-min));
         coefficients_ = init_coeffs(coeffs.begin(), coeffs.end());
+        safe_check();
       }
 
       ///
@@ -155,6 +156,7 @@ namespace curves
            bc[3] = d_end[i];
            coefficients_.row(i) = (m_inv*bc).transpose();
          }
+         safe_check();
       }
 
       ///
@@ -202,6 +204,7 @@ namespace curves
            bc[5] = dd_end[i];
            coefficients_.row(i) = (m_inv*bc).transpose();
          }
+         safe_check();
       }
 
 
