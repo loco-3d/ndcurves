@@ -233,11 +233,11 @@ namespace curves
         {
           if(T_min_ > T_max_)
           {
-            std::invalid_argument("Tmin should be inferior to Tmax");
+            throw std::invalid_argument("Tmin should be inferior to Tmax");
           }
-          if(coefficients_.size() != int(degree_+1))
+          if(coefficients_.cols() != int(degree_+1))
           {
-            std::runtime_error("Spline order and coefficients do not match");
+            throw std::runtime_error("Spline order and coefficients do not match");
           }
         }
       }
