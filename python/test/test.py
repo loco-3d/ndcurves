@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from numpy import matrix
+from numpy import matrix, array_equal, isclose
 from numpy.linalg import norm
 
 #from curves import ( serialize_polynomial, deserialize_polynomial, serialize_piecewise_polynomial_curve, deserialize_piecewise_polynomial_curve )
@@ -126,6 +126,39 @@ class TestCurves(unittest.TestCase):
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
+        return
+
+    def test_polynomial_from_boundary_condition(self):
+        p0 = matrix([1.,3.,-2.]).T
+        p1 = matrix([0.6,2.,2.5]).T
+        dp0 = matrix([-6.,2.,-1.]).T
+        dp1 = matrix([10.,10.,10.]).T
+        ddp0 = matrix([1.,-7.,4.5]).T
+        ddp1 = matrix([6.,-1.,-4]).T
+        min = 1.
+        max = 2.5
+        polC0 = polynomial(p0,p1,min,max)
+        self.assertEqual(polC0.min(), min)
+        self.assertEqual(polC0.max(),max)
+        self.assertTrue(array_equal(polC0(min), p0))
+        self.assertTrue(array_equal(polC0(max), p1))
+        self.assertTrue(array_equal(polC0((min+max)/2.),0.5*p0+0.5*p1))
+        polC1 = polynomial(p0,dp0,p1,dp1,min,max)
+        self.assertEqual(polC1.min(), min)
+        self.assertEqual(polC1.max(),max)
+        self.assertTrue(isclose(polC1(min), p0).all())
+        self.assertTrue(isclose(polC1(max), p1).all())
+        self.assertTrue(isclose(polC1.derivate(min,1), dp0).all())
+        self.assertTrue(isclose(polC1.derivate(max,1), dp1).all())
+        polC2 = polynomial(p0,dp0,ddp0,p1,dp1,ddp1,min,max)
+        self.assertEqual(polC2.min(), min)
+        self.assertEqual(polC2.max(),max)
+        self.assertTrue(isclose(polC2(min), p0).all())
+        self.assertTrue(isclose(polC2(max), p1).all())
+        self.assertTrue(isclose(polC2.derivate(min,1), dp0).all())
+        self.assertTrue(isclose(polC2.derivate(max,1), dp1).all())
+        self.assertTrue(isclose(polC2.derivate(min,2), ddp0).all())
+        self.assertTrue(isclose(polC2.derivate(max,2), ddp1).all())
         return
 
     def test_cubic_hermite_spline(self):
