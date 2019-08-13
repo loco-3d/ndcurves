@@ -18,10 +18,7 @@
 
 #include <iostream>
 
-#include "serialization/archive.hpp"
-#include "serialization/eigen-matrix.hpp"
-
-#include <boost/serialization/utility.hpp>
+#include <boost/serialization/utility.hpp> // To serialize std::pair
 
 namespace curves
 {

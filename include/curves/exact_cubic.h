@@ -24,16 +24,12 @@
 #include "cubic_spline.h"
 #include "quintic_spline.h"
 #include "curve_constraint.h"
-
 #include "piecewise_curve.h"
 
 #include "MathDefs.h"
 
 #include <functional>
 #include <vector>
-
-#include "serialization/archive.hpp"
-#include "serialization/eigen-matrix.hpp"
 
 namespace curves
 {

@@ -14,8 +14,6 @@
 
 #include "MathDefs.h"
 
-#include "serialization/archive.hpp"
-
 #include <math.h>
 #include <vector>
 #include <stdexcept>

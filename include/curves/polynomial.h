@@ -23,9 +23,6 @@
 #include <functional>
 #include <stdexcept>
 
-#include "serialization/archive.hpp"
-#include "serialization/eigen-matrix.hpp"
-
 namespace curves
 {
   /// \class polynomial.
