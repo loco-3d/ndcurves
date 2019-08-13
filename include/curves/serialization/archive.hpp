@@ -1,8 +1,8 @@
 // Copyright (c) 2015-2018, CNRS
 // Authors: Justin Carpentier <jcarpent@laas.fr>
 
-#ifndef __multicontact_api_serialization_archive_hpp__
-#define __multicontact_api_serialization_archive_hpp__
+#ifndef __curves_serialization_archive_hpp__
+#define __curves_serialization_archive_hpp__
 
 #include "fwd.hpp"
 
