@@ -25,8 +25,8 @@
  */
 
 
-#ifndef __curves_serialization_eigen_matrix_hpp__
-#define __curves_serialization_eigen_matrix_hpp__
+#ifndef __serialization_eigen_matrix_hpp__
+#define __serialization_eigen_matrix_hpp__
 
 #include <Eigen/Dense>
 #include <boost/serialization/split_free.hpp>
