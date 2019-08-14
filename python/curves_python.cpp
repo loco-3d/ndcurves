@@ -23,10 +23,10 @@ using namespace curves;
 typedef double real;
 typedef Eigen::Vector3d point3_t;
 typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point3_t;
+typedef Eigen::VectorXd point_t;
 typedef std::pair<point3_t, point3_t> pair_point3_tangent_t;
 typedef Eigen::VectorXd time_waypoints_t;
-typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point_list_t;
-typedef Eigen::Matrix<real, 6, Eigen::Dynamic> point_list6_t;
+typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point3_list_t;
 typedef std::vector<point3_t,Eigen::aligned_allocator<point3_t> >  t_point3_t;
 typedef std::pair<real, point3_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
@@ -82,28 +82,28 @@ namespace curves
   /* End Template constructor bezier */
 
   /*3D constructors bezier */
-  bezier3_t* wrapBezierConstructor3(const point_list_t& array)
+  bezier3_t* wrapBezierConstructor3(const point3_list_t& array)
   {
-    return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point3_t>(array) ;
+    return wrapBezierConstructorTemplate<bezier3_t, point3_list_t, t_point3_t>(array) ;
   }
-  bezier3_t* wrapBezierConstructorBounds3(const point_list_t& array, const real T_min, const real T_max)
+  bezier3_t* wrapBezierConstructorBounds3(const point3_list_t& array, const real T_min, const real T_max)
   {
-    return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point3_t>(array, T_min, T_max) ;
+    return wrapBezierConstructorTemplate<bezier3_t, point3_list_t, t_point3_t>(array, T_min, T_max) ;
   }
-  bezier3_t* wrapBezierConstructor3Constraints(const point_list_t& array, const curve_constraints3_t& constraints)
+  bezier3_t* wrapBezierConstructor3Constraints(const point3_list_t& array, const curve_constraints3_t& constraints)
   {
-    return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point3_t, curve_constraints3_t>(array, constraints) ;
+    return wrapBezierConstructorConstraintsTemplate<bezier3_t, point3_list_t, t_point3_t, curve_constraints3_t>(array, constraints) ;
   }
-  bezier3_t* wrapBezierConstructorBounds3Constraints(const point_list_t& array, const curve_constraints3_t& constraints,
+  bezier3_t* wrapBezierConstructorBounds3Constraints(const point3_list_t& array, const curve_constraints3_t& constraints,
                              const real T_min, const real T_max)
   {
-  return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point3_t, curve_constraints3_t>(array, constraints, 
+  return wrapBezierConstructorConstraintsTemplate<bezier3_t, point3_list_t, t_point3_t, curve_constraints3_t>(array, constraints, 
                                                                                                            T_min, T_max) ;
   }
   /*END 3D constructors bezier */
 
   /* Wrap Cubic hermite spline */
-  t_pair_point3_tangent_t getPairsPointTangent(const point_list_t& points, const point_list_t& tangents)
+  t_pair_point3_tangent_t getPairsPointTangent(const point3_list_t& points, const point3_list_t& tangents)
   {
     t_pair_point3_tangent_t res;
     if (points.size() != tangents.size())
@@ -117,7 +117,7 @@ namespace curves
     return res;
   }
 
-  cubic_hermite_spline3_t* wrapCubicHermiteSplineConstructor(const point_list_t& points, const point_list_t& tangents, 
+  cubic_hermite_spline3_t* wrapCubicHermiteSplineConstructor(const point3_list_t& points, const point3_list_t& tangents, 
                                                             const time_waypoints_t& time_pts)
   {
     t_pair_point3_tangent_t ppt = getPairsPointTangent(points, tangents);
@@ -256,9 +256,7 @@ namespace curves
     /** BEGIN eigenpy init**/
     eigenpy::enableEigenPy();
     eigenpy::enableEigenPySpecific<point3_t,point3_t>();
-    eigenpy::enableEigenPySpecific<ret_point3_t,ret_point3_t>();
-    eigenpy::enableEigenPySpecific<point_list_t,point_list_t>();
-    eigenpy::enableEigenPySpecific<point_list6_t,point_list6_t>();
+    eigenpy::enableEigenPySpecific<point3_list_t,point3_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
     /*eigenpy::exposeAngleAxis();
     eigenpy::exposeQuaternion();*/
