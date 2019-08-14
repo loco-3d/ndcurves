@@ -22,9 +22,8 @@
 using namespace curves;
 typedef double real;
 typedef Eigen::Vector3d point3_t;
-typedef Eigen::Vector3d tangent_t;
-typedef std::pair<point3_t, tangent_t> pair_point3_tangent_t;
 typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point3_t;
+typedef std::pair<point3_t, point3_t> pair_point3_tangent_t;
 typedef Eigen::VectorXd time_waypoints_t;
 typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point_list_t;
 typedef Eigen::Matrix<real, 6, Eigen::Dynamic> point_list6_t;
