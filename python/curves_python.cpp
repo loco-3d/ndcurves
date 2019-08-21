@@ -194,6 +194,29 @@ namespace curves
     t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
     return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,points_derivative_list,points_second_derivative_list,time_points_list);
   }
+  void addFinalPointC0(piecewise_polynomial_curve_t self,const point_t& end,const real time){
+    if(self.is_continuous(1))
+      std::cout<<"Warning: by adding this final point to the piecewise curve, you loose C1 continuity and only guarantee C0 continuity."<<std::endl;
+    polynomial_t pol(self(self.max()),end,self.max(),time);
+    self.add_curve(pol);
+  }
+  void addFinalPointC1(piecewise_polynomial_curve_t self,const point_t& end,const point_t& d_end,const real time){
+    if(self.is_continuous(2))
+      std::cout<<"Warning: by adding this final point to the piecewise curve, you loose C2 continuity and only guarantee C1 continuity."<<std::endl;
+    if(!self.is_continuous(1))
+      std::cout<<"Warning: the current piecewise curve is not C1 continuous."<<std::endl;
+    polynomial_t pol(self(self.max()),self.derivate(self.max(),1),end,d_end,self.max(),time);
+    self.add_curve(pol);
+  }
+  void addFinalPointC2(piecewise_polynomial_curve_t self,const point_t& end,const point_t& d_end,const point_t& dd_end,const real time){
+    if(self.is_continuous(3))
+      std::cout<<"Warning: by adding this final point to the piecewise curve, you loose C3 continuity and only guarantee C2 continuity."<<std::endl;
+    if(!self.is_continuous(2))
+      std::cout<<"Warning: the current piecewise curve is not C2 continuous."<<std::endl;
+    polynomial_t pol(self(self.max()),self.derivate(self.max(),1),self.derivate(self.max(),2),end,d_end,dd_end,self.max(),time);
+    self.add_curve(pol);
+  }
+
 
   /* end wrap piecewise polynomial curve */
 
@@ -381,6 +404,12 @@ namespace curves
        .def("FromPointsList",&discretPointToPolynomialC2,
              "Create a piecewise-polynomial connecting exactly all the given points at the given time and respect the given points derivative and second derivative values. The created piecewise is C2 continuous.",args("points","points_derivative","points_second_derivative","time_points"))
       .staticmethod("FromPointsList")
+      .def("append",&addFinalPointC0,
+           "Append a new polynomial curve of degree 1 at the end of the piecewise curve, defined between self.max() and time and connecting exactly self(self.max()) and end",args("self","end","time"))
+       .def("append",&addFinalPointC1,
+             "Append a new polynomial curve of degree 3 at the end of the piecewise curve, defined between self.max() and time and connecting exactly self(self.max()) and end. It guarantee C1 continuity and guarantee that self.derivate(time,1) == d_end",args("self","end","d_end","time"))
+       .def("append",&addFinalPointC2,
+              "Append a new polynomial curve of degree 5 at the end of the piecewise curve, defined between self.max() and time and connecting exactly self(self.max()) and end. It guarantee C2 continuity and guarantee that self.derivate(time,1) == d_end and self.derivate(time,2) == dd_end",args("self","end","d_end","d_end","time"))
       .def("min", &piecewise_polynomial_curve_t::min,"Set the LOWER bound on interval definition of the curve.")
       .def("max", &piecewise_polynomial_curve_t::max,"Set the HIGHER bound on interval definition of the curve.")
       .def("dim", &piecewise_polynomial_curve_t::dim)
