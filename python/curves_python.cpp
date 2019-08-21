@@ -386,7 +386,7 @@ namespace curves
       .def("dim", &piecewise_polynomial_curve_t::dim)
       .def("__call__", &piecewise_polynomial_curve_t::operator(),"Evaluate the curve at the given time.")
       .def("derivate", &piecewise_polynomial_curve_t::derivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
-      .def("add_curve", &piecewise_polynomial_curve_t::add_curve,
+      .def("append", &piecewise_polynomial_curve_t::add_curve,
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous,"Check if the curve is continuous at the given order.")
