@@ -15,35 +15,47 @@
 
 #include <eigenpy/memory.hpp>
 #include <eigenpy/eigenpy.hpp>
+#include <Eigen/Dense>
 
 #include <boost/python.hpp>
 
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 using namespace curves;
 typedef double real;
+typedef Eigen::VectorXd time_waypoints_t;
+// 3D
 typedef Eigen::Vector3d point3_t;
 typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point3_t;
-typedef Eigen::VectorXd point_t;
 typedef std::pair<point3_t, point3_t> pair_point3_tangent_t;
-typedef Eigen::VectorXd time_waypoints_t;
 typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point3_list_t;
 typedef std::vector<point3_t,Eigen::aligned_allocator<point3_t> >  t_point3_t;
+typedef std::vector<pair_point3_tangent_t,Eigen::aligned_allocator<pair_point3_tangent_t> > t_pair_point3_tangent_t;
+// XD
+typedef Eigen::VectorXd pointX_t;
+typedef Eigen::Matrix<double, Eigen::Dynamic, 1, 0, Eigen::Dynamic, 1> ret_pointX_t;
+typedef std::pair<pointX_t, pointX_t> pair_pointX_tangent_t;
+typedef Eigen::MatrixXd pointX_list_t;
+typedef std::vector<pointX_t,Eigen::aligned_allocator<point3_t> >  t_pointX_t;
+typedef std::vector<pair_pointX_tangent_t,Eigen::aligned_allocator<pair_pointX_tangent_t> > t_pair_pointX_tangent_t;
+// Else
 typedef std::pair<real, point3_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 typedef std::vector<Waypoint6> T_Waypoint6;
-typedef std::vector<pair_point3_tangent_t,Eigen::aligned_allocator<pair_point3_tangent_t> > t_pair_point3_tangent_t;
 
+// Dynamic dim
+typedef curves::cubic_hermite_spline <real, real, true, pointX_t> cubic_hermite_spline_t;
+
+// 3D
 typedef curves::bezier_curve  <real, real, 3, true, point3_t> bezier3_t;
 typedef curves::polynomial  <real, real, 3, true, point3_t, t_point3_t> polynomial3_t;
 typedef curves::exact_cubic  <real, real, 3, true, point3_t, t_point3_t> exact_cubic3_t;
-typedef curves::cubic_hermite_spline <real, real, true, point3_t> cubic_hermite_spline3_t;
 typedef polynomial3_t::coeff_t coeff_t;
 typedef std::pair<real, point3_t> waypoint3_t;
 typedef std::vector<waypoint3_t, Eigen::aligned_allocator<point3_t> > t_waypoint3_t;
 
 typedef curves::piecewise_curve <real, real, 3, true, point3_t, t_point3_t, polynomial3_t> piecewise_polynomial3_curve_t;
 typedef curves::piecewise_curve <real, real, 3, true, point3_t, t_point3_t, bezier3_t> piecewise_bezier3_curve_t;
-typedef curves::piecewise_curve <real, real, 3, true, point3_t, t_point3_t, cubic_hermite_spline3_t> piecewise_cubic_hermite3_curve_t;
+typedef curves::piecewise_curve <real, real, 3, true, point3_t, t_point3_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
 
 typedef curves::Bern<double> bernstein_t;
 
@@ -51,14 +63,15 @@ typedef curves::curve_constraints<point3_t> curve_constraints3_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
+
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynomial3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic3_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(cubic_hermite_spline3_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(cubic_hermite_spline_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_polynomial3_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_bezier3_curve_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_cubic_hermite3_curve_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_cubic_hermite_curve_t)
 
 namespace curves
 {
@@ -103,30 +116,30 @@ namespace curves
   /*END 3D constructors bezier */
 
   /* Wrap Cubic hermite spline */
-  t_pair_point3_tangent_t getPairsPointTangent(const point3_list_t& points, const point3_list_t& tangents)
+  t_pair_pointX_tangent_t getPairsPointTangent(const pointX_list_t& points, const pointX_list_t& tangents)
   {
-    t_pair_point3_tangent_t res;
+    t_pair_pointX_tangent_t res;
     if (points.size() != tangents.size())
     {
       throw std::length_error("size of points and tangents must be the same");
     }
     for(int i =0;i<points.cols();++i)
     {
-      res.push_back(pair_point3_tangent_t(tangents.col(i), tangents.col(i)));
+      res.push_back(pair_pointX_tangent_t(tangents.col(i), tangents.col(i)));
     }
     return res;
   }
 
-  cubic_hermite_spline3_t* wrapCubicHermiteSplineConstructor(const point3_list_t& points, const point3_list_t& tangents, 
+  cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const pointX_list_t& points, const pointX_list_t& tangents, 
                                                             const time_waypoints_t& time_pts)
   {
-    t_pair_point3_tangent_t ppt = getPairsPointTangent(points, tangents);
+    t_pair_pointX_tangent_t ppt = getPairsPointTangent(points, tangents);
     std::vector<real> time_control_pts;
     for( int i =0; i<time_pts.size(); ++i)
     {
       time_control_pts.push_back(time_pts[i]);
     }
-    return new cubic_hermite_spline3_t(ppt.begin(), ppt.end(), time_control_pts);
+    return new cubic_hermite_spline_t(ppt.begin(), ppt.end(), time_control_pts);
   }
   /* End wrap Cubic hermite spline */
 
@@ -158,13 +171,13 @@ namespace curves
   {
     return new piecewise_bezier3_curve_t();
   }
-  piecewise_cubic_hermite3_curve_t* wrapPiecewiseCubicHermite3CurveConstructor(const cubic_hermite_spline3_t& ch)
+  piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermite3CurveConstructor(const cubic_hermite_spline_t& ch)
   {
-    return new piecewise_cubic_hermite3_curve_t(ch);
+    return new piecewise_cubic_hermite_curve_t(ch);
   }
-  piecewise_cubic_hermite3_curve_t* wrapPiecewiseCubicHermite3CurveEmptyConstructor()
+  piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermite3CurveEmptyConstructor()
   {
-    return new piecewise_cubic_hermite3_curve_t();
+    return new piecewise_cubic_hermite_curve_t();
   }
   /* end wrap piecewise polynomial curve */
 
@@ -255,6 +268,8 @@ namespace curves
   {
     /** BEGIN eigenpy init**/
     eigenpy::enableEigenPy();
+    eigenpy::enableEigenPySpecific<pointX_t,pointX_t>();
+    eigenpy::enableEigenPySpecific<pointX_list_t,pointX_list_t>();
     eigenpy::enableEigenPySpecific<point3_t,point3_t>();
     eigenpy::enableEigenPySpecific<point3_list_t,point3_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
@@ -374,22 +389,22 @@ namespace curves
       .def("loadFromBinary",&piecewise_bezier3_curve_t::loadFromBinary<piecewise_bezier3_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
       //.def(SerializableVisitor<piecewise_bezier3_curve_t>())
     ;
-    class_<piecewise_cubic_hermite3_curve_t>
+    class_<piecewise_cubic_hermite_curve_t>
     ("piecewise_cubic_hermite3_curve", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseCubicHermite3CurveConstructor))
-      .def("min", &piecewise_cubic_hermite3_curve_t::min)
-      .def("max", &piecewise_cubic_hermite3_curve_t::max)
-      .def("__call__", &piecewise_cubic_hermite3_curve_t::operator())
-      .def("derivate", &piecewise_cubic_hermite3_curve_t::derivate)
-      .def("add_curve", &piecewise_cubic_hermite3_curve_t::add_curve)
-      .def("is_continuous", &piecewise_cubic_hermite3_curve_t::is_continuous)
-      .def("saveAsText", &piecewise_cubic_hermite3_curve_t::saveAsText<piecewise_cubic_hermite3_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
-      .def("loadFromText",&piecewise_cubic_hermite3_curve_t::loadFromText<piecewise_cubic_hermite3_curve_t>,bp::args("filename"),"Loads *this from a text file.")
-      .def("saveAsXML",&piecewise_cubic_hermite3_curve_t::saveAsXML<piecewise_cubic_hermite3_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
-      .def("loadFromXML",&piecewise_cubic_hermite3_curve_t::loadFromXML<piecewise_cubic_hermite3_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
-      .def("saveAsBinary",&piecewise_cubic_hermite3_curve_t::saveAsBinary<piecewise_cubic_hermite3_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
-      .def("loadFromBinary",&piecewise_cubic_hermite3_curve_t::loadFromBinary<piecewise_cubic_hermite3_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
-      //.def(SerializableVisitor<piecewise_cubic_hermite3_curve_t>())
+      .def("min", &piecewise_cubic_hermite_curve_t::min)
+      .def("max", &piecewise_cubic_hermite_curve_t::max)
+      .def("__call__", &piecewise_cubic_hermite_curve_t::operator())
+      .def("derivate", &piecewise_cubic_hermite_curve_t::derivate)
+      .def("add_curve", &piecewise_cubic_hermite_curve_t::add_curve)
+      .def("is_continuous", &piecewise_cubic_hermite_curve_t::is_continuous)
+      .def("saveAsText", &piecewise_cubic_hermite_curve_t::saveAsText<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&piecewise_cubic_hermite_curve_t::loadFromText<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&piecewise_cubic_hermite_curve_t::saveAsXML<piecewise_cubic_hermite_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&piecewise_cubic_hermite_curve_t::loadFromXML<piecewise_cubic_hermite_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&piecewise_cubic_hermite_curve_t::saveAsBinary<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&piecewise_cubic_hermite_curve_t::loadFromBinary<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<piecewise_cubic_hermite_curve_t>())
     ;
     /** END piecewise curve function **/
     /** BEGIN exact_cubic curve**/
@@ -413,20 +428,20 @@ namespace curves
     ;
     /** END exact_cubic curve**/
     /** BEGIN cubic_hermite_spline **/
-    class_<cubic_hermite_spline3_t>
+    class_<cubic_hermite_spline_t>
     ("cubic_hermite_spline3", init<>())
       .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor))
-      .def("min", &cubic_hermite_spline3_t::min)
-      .def("max", &cubic_hermite_spline3_t::max)
-      .def("__call__", &cubic_hermite_spline3_t::operator())
-      .def("derivate", &cubic_hermite_spline3_t::derivate)
-      .def("saveAsText", &cubic_hermite_spline3_t::saveAsText<cubic_hermite_spline3_t>,bp::args("filename"),"Saves *this inside a text file.")
-      .def("loadFromText",&cubic_hermite_spline3_t::loadFromText<cubic_hermite_spline3_t>,bp::args("filename"),"Loads *this from a text file.")
-      .def("saveAsXML",&cubic_hermite_spline3_t::saveAsXML<cubic_hermite_spline3_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
-      .def("loadFromXML",&cubic_hermite_spline3_t::loadFromXML<cubic_hermite_spline3_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
-      .def("saveAsBinary",&cubic_hermite_spline3_t::saveAsBinary<cubic_hermite_spline3_t>,bp::args("filename"),"Saves *this inside a binary file.")
-      .def("loadFromBinary",&cubic_hermite_spline3_t::loadFromBinary<cubic_hermite_spline3_t>,bp::args("filename"),"Loads *this from a binary file.")
-      //.def(SerializableVisitor<cubic_hermite_spline3_t>())
+      .def("min", &cubic_hermite_spline_t::min)
+      .def("max", &cubic_hermite_spline_t::max)
+      .def("__call__", &cubic_hermite_spline_t::operator())
+      .def("derivate", &cubic_hermite_spline_t::derivate)
+      .def("saveAsText", &cubic_hermite_spline_t::saveAsText<cubic_hermite_spline_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&cubic_hermite_spline_t::loadFromText<cubic_hermite_spline_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&cubic_hermite_spline_t::saveAsXML<cubic_hermite_spline_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&cubic_hermite_spline_t::loadFromXML<cubic_hermite_spline_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&cubic_hermite_spline_t::saveAsBinary<cubic_hermite_spline_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&cubic_hermite_spline_t::loadFromBinary<cubic_hermite_spline_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<cubic_hermite_spline_t>())
     ;
     /** END cubic_hermite_spline **/
     /** BEGIN curve constraints**/
@@ -446,11 +461,11 @@ namespace curves
     /** END bernstein polynomial**/
     /** BEGIN curves conversion**/
     def("polynomial_from_bezier", polynomial_from_curve<polynomial3_t,bezier3_t>);
-    def("polynomial_from_hermite", polynomial_from_curve<polynomial3_t,cubic_hermite_spline3_t>);
-    def("bezier_from_hermite", bezier_from_curve<bezier3_t,cubic_hermite_spline3_t>);
+    def("polynomial_from_hermite", polynomial_from_curve<polynomial3_t,cubic_hermite_spline_t>);
+    def("bezier_from_hermite", bezier_from_curve<bezier3_t,cubic_hermite_spline_t>);
     def("bezier_from_polynomial", bezier_from_curve<bezier3_t,polynomial3_t>);
-    def("hermite_from_bezier", hermite_from_curve<cubic_hermite_spline3_t, bezier3_t>);
-    def("hermite_from_polynomial", hermite_from_curve<cubic_hermite_spline3_t, polynomial3_t>);
+    def("hermite_from_bezier", hermite_from_curve<cubic_hermite_spline_t, bezier3_t>);
+    def("hermite_from_polynomial", hermite_from_curve<cubic_hermite_spline_t, polynomial3_t>);
     /** END curves conversion**/
   } // End BOOST_PYTHON_MODULE
 } // namespace curves
