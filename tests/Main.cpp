@@ -32,7 +32,7 @@ namespace curves
   typedef exact_cubic   <double, double, 1, true, point_one> exact_cubic_one;
   typedef std::pair<double, point_one> WaypointOne;
   typedef std::vector<WaypointOne> T_WaypointOne;
-  typedef cubic_hermite_spline <double, double, 3, true, point_t> cubic_hermite_spline_t;
+  typedef cubic_hermite_spline <double, double, true, point_t> cubic_hermite_spline_t;
   typedef std::pair<point_t, tangent_t> pair_point_tangent_t;
   typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
   typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
@@ -1245,7 +1245,7 @@ void curveAbcDimDynamicTest(bool& error)
   typedef exact_cubic <double, double, 3, true> exact_cubic_test_t;
   typedef exact_cubic_test_t::spline_constraints spline_constraints_test_t;
   typedef bezier_curve  <double, double, 3, true> bezier_curve_test_t;
-  typedef cubic_hermite_spline <double, double, 3, true> cubic_hermite_spline_test_t;
+  typedef cubic_hermite_spline <double, double, true> cubic_hermite_spline_test_t;
   curve_abc_test_t * pt_curve_abc;
   // POLYNOMIAL
   point_t a(1,1,1);

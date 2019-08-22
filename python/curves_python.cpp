@@ -36,7 +36,7 @@ typedef std::vector<pair_point3_tangent_t,Eigen::aligned_allocator<pair_point3_t
 typedef curves::bezier_curve  <real, real, 3, true, point3_t> bezier3_t;
 typedef curves::polynomial  <real, real, 3, true, point3_t, t_point3_t> polynomial3_t;
 typedef curves::exact_cubic  <real, real, 3, true, point3_t, t_point3_t> exact_cubic3_t;
-typedef curves::cubic_hermite_spline <real, real, 3, true, point3_t> cubic_hermite_spline3_t;
+typedef curves::cubic_hermite_spline <real, real, true, point3_t> cubic_hermite_spline3_t;
 typedef polynomial3_t::coeff_t coeff_t;
 typedef std::pair<real, point3_t> waypoint3_t;
 typedef std::vector<waypoint3_t, Eigen::aligned_allocator<point3_t> > t_waypoint3_t;

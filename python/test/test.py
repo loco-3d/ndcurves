@@ -129,6 +129,22 @@ class TestCurves(unittest.TestCase):
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
+        # test dim 4
+        points = matrix([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
+        tangents = matrix([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
+        time_points = matrix([0., 1.]).transpose()
+        a = cubic_hermite_spline3(points, tangents, time_points)
+        a.min()
+        a.max()
+        a(0.4)
+        self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
+        a.derivate(0.4, 2)
+        # Test serialization
+        a.saveAsText("serialization_curve.test")
+        b = cubic_hermite_spline3()
+        b.loadFromText("serialization_curve.test")
+        self.assertTrue((a(0.4) == b(0.4)).all())
+        os.remove("serialization_curve.test")
         return
 
     def test_piecewise_polynomial_curve(self):

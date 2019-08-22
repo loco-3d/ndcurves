@@ -30,7 +30,7 @@ namespace curves
   /// - crosses each of the waypoint given in its initialization (\f$P_0\f$, \f$P_1\f$,...,\f$P_N\f$).
   /// - has its derivatives on \f$P_i\f$ and \f$P_{i+1}\f$ are \f$p'(t_{P_i}) = m_i\f$ and \f$p'(t_{P_{i+1}}) = m_{i+1}\f$.
   ///
-  template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
+  template<typename Time= double, typename Numeric=Time, bool Safe=false,
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
   struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
   {
