@@ -217,6 +217,9 @@ namespace curves
 
     public:
       /*Helpers*/
+      /// \brief Get dimension of curve.
+      /// \return dimension of curve.
+      std::size_t virtual dim() const{return dim_;};
       /// \brief Get the minimum time for which the curve is defined
       /// \return \f$t_{min}\f$ lower bound of time range.
       num_t virtual min() const {return T_min_;}
@@ -229,7 +232,7 @@ namespace curves
       coeff_t coefficients_; //const
       std::size_t dim_; //const
       std::size_t degree_; //const
-      time_t T_min_, T_max_;
+      time_t T_min_, T_max_; //const
       /*Attributes*/
 
     private:

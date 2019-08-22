@@ -305,6 +305,9 @@ namespace curves
 
     /*Helpers*/
     public:
+      /// \brief Get dimension of curve.
+      /// \return dimension of curve.
+      std::size_t virtual dim() const{return dim_;};
       /// \brief Get the minimum time for which the curve is defined
       /// \return \f$t_{min}\f$, lower bound of time range.
       Time virtual min() const{return T_min_;}
@@ -315,6 +318,7 @@ namespace curves
       /*Helpers*/
 
       /* Attributes */
+      std::size_t dim_; // Dim of curve
       t_curve_t curves_; // for curves 0/1/2 : [ curve0, curve1, curve2 ]
       t_time_t time_curves_; // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
       std::size_t size_; // Number of segments in piecewise curve = size of curves_

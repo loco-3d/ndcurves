@@ -54,6 +54,9 @@ namespace curves
       /*Operations*/
 
       /*Helpers*/
+      /// \brief Get dimension of curve.
+      /// \return dimension of curve.
+      virtual std::size_t dim() const = 0;
       /// \brief Get the minimum time for which the curve is defined.
       /// \return \f$t_{min}\f$, lower bound of time range.
       virtual time_t min() const = 0;

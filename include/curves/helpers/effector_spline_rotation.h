@@ -87,10 +87,12 @@ namespace curves
           return exact_cubic_constraint_one_dim(waypoints.begin(), waypoints.end());
         }
 
+        virtual std::size_t dim() const{return dim_;}
         virtual time_t min() const{return min_;}
         virtual time_t max() const{return max_;}
 
         /*Attributes*/
+        std::size_t dim_;              //const
         Eigen::Quaterniond quat_from_; //const
         Eigen::Quaterniond quat_to_;   //const
         double min_;                   //const

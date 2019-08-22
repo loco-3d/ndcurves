@@ -399,6 +399,9 @@ namespace curves
 
     public:
       /*Helpers*/
+      /// \brief Get dimension of curve.
+      /// \return dimension of curve.
+      std::size_t virtual dim() const{return dim_;};
       /// \brief Get the minimum time for which the curve is defined
       /// \return \f$t_{min}\f$, lower bound of time range.
       virtual time_t min() const{return T_min_;}
@@ -408,6 +411,8 @@ namespace curves
       /*Helpers*/
 
       /* Attributes */
+      /// Dim of curve
+      std::size_t dim_;
       /// Starting time of cubic hermite spline : T_min_ is equal to first time of control points.
       /*const*/ time_t T_min_;
       /// Ending time of cubic hermite spline : T_max_ is equal to last time of control points.

@@ -357,6 +357,9 @@ namespace curves
 
     /*Helpers*/
     public:
+      /// \brief Get dimension of curve.
+      /// \return dimension of curve.
+      std::size_t virtual dim() const{return dim_;};
       /// \brief Get the minimum time for which the curve is defined
       /// \return \f$t_{min}\f$, lower bound of time range.
       Time virtual min() const{return time_control_points_.front();}
@@ -366,12 +369,13 @@ namespace curves
       /*Helpers*/
 
       /*Attributes*/
+      /// Dim of curve
+      std::size_t dim_;
       /// Vector of pair < Point, Tangent >.
       t_pair_point_tangent_t control_points_;
       /// Vector of Time corresponding to time of each N control points : time at \f$P_0, P_1, P_2, ..., P_N\f$.
       /// Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.
       vector_time_t time_control_points_;
-
       /// Vector of Time corresponding to time duration of each subspline.<br>
       /// For N control points with time \f$T_{P_0}, T_{P_1}, T_{P_2}, ..., T_{P_N}\f$ respectively,
       /// duration of each subspline is : ( T_{P_1}-T_{P_0}, T_{P_2}-T_{P_1}, ..., T_{P_N}-T_{P_{N-1} )<br>
