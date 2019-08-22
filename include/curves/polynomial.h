@@ -257,6 +257,7 @@ namespace curves
         if (version) {
           // Do something depending on version ?
         }
+        ar & boost::serialization::make_nvp("dim", dim_);
         ar & boost::serialization::make_nvp("coefficients", coefficients_);
         ar & boost::serialization::make_nvp("dim", dim_);
         ar & boost::serialization::make_nvp("degree", degree_);

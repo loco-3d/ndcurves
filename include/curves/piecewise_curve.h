@@ -334,6 +334,7 @@ namespace curves
         if (version) {
           // Do something depending on version ?
         }
+        ar & boost::serialization::make_nvp("dim", dim_);
         ar & boost::serialization::make_nvp("curves", curves_);
         ar & boost::serialization::make_nvp("time_curves", time_curves_);
         ar & boost::serialization::make_nvp("size", size_);

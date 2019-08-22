@@ -440,6 +440,7 @@ namespace curves
         if (version) {
           // Do something depending on version ?
         }
+        ar & boost::serialization::make_nvp("dim", dim_);
         ar & boost::serialization::make_nvp("T_min", T_min_);
         ar & boost::serialization::make_nvp("T_max", T_max_);
         ar & boost::serialization::make_nvp("mult_T", mult_T_);
