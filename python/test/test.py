@@ -8,9 +8,9 @@ from numpy.linalg import norm
 
 from curves import (bezier_from_hermite, bezier_from_polynomial, hermite_from_polynomial,
                     hermite_from_bezier, polynomial_from_hermite, polynomial_from_bezier,
-                    cubic_hermite_spline3, curve_constraints3,curve_constraints, exact_cubic3, bezier, 
-                    piecewise_bezier3_curve, piecewise_cubic_hermite3_curve,
-                    piecewise_polynomial3_curve, polynomial3
+                    cubic_hermite_spline, curve_constraints3,curve_constraints, exact_cubic3, bezier, 
+                    piecewise_bezier_curve, piecewise_cubic_hermite_curve,
+                    piecewise_polynomial_curve, polynomial3
                     )
 
 #import curves
@@ -128,7 +128,7 @@ class TestCurves(unittest.TestCase):
         points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         time_points = matrix([0., 1.]).transpose()
-        a = cubic_hermite_spline3(points, tangents, time_points)
+        a = cubic_hermite_spline(points, tangents, time_points)
         a.min()
         a.max()
         a(0.4)
@@ -136,7 +136,7 @@ class TestCurves(unittest.TestCase):
         a.derivate(0.4, 2)
         # Test serialization
         a.saveAsText("serialization_curve.test")
-        b = cubic_hermite_spline3()
+        b = cubic_hermite_spline()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
@@ -144,7 +144,7 @@ class TestCurves(unittest.TestCase):
         points = matrix([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
         tangents = matrix([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
         time_points = matrix([0., 1.]).transpose()
-        a = cubic_hermite_spline3(points, tangents, time_points)
+        a = cubic_hermite_spline(points, tangents, time_points)
         a.min()
         a.max()
         a(0.4)
@@ -152,7 +152,7 @@ class TestCurves(unittest.TestCase):
         a.derivate(0.4, 2)
         # Test serialization
         a.saveAsText("serialization_curve.test")
-        b = cubic_hermite_spline3()
+        b = cubic_hermite_spline()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
@@ -167,7 +167,7 @@ class TestCurves(unittest.TestCase):
         pol0 = polynomial3(waypoints0, 0., 0.1)
         a = polynomial3(waypoints1, 0., 1.)
         b = polynomial3(waypoints2, 1., 3.)
-        pc = piecewise_polynomial3_curve(a)
+        pc = piecewise_polynomial_curve(a)
         pc.add_curve(b)
         pc.min()
         pc.max()
@@ -178,7 +178,7 @@ class TestCurves(unittest.TestCase):
         pc.is_continuous(1)
         # Test serialization
         pc.saveAsText("serialization_pc.test")
-        pc_test = piecewise_polynomial3_curve()
+        pc_test = piecewise_polynomial_curve()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
@@ -190,7 +190,7 @@ class TestCurves(unittest.TestCase):
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, 0., 1.)
         b = bezier(waypoints, 1., 2.)
-        pc = piecewise_bezier3_curve(a)
+        pc = piecewise_bezier_curve(a)
         pc.add_curve(b)
         pc.min()
         pc.max()
@@ -201,7 +201,7 @@ class TestCurves(unittest.TestCase):
         pc.is_continuous(1)
         # Test serialization
         pc.saveAsText("serialization_pc.test")
-        pc_test = piecewise_bezier3_curve()
+        pc_test = piecewise_bezier_curve()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
@@ -214,9 +214,9 @@ class TestCurves(unittest.TestCase):
         tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         time_points0 = matrix([0., 1.]).transpose()
         time_points1 = matrix([1., 2.]).transpose()
-        a = cubic_hermite_spline3(points, tangents, time_points0)
-        b = cubic_hermite_spline3(points, tangents, time_points1)
-        pc = piecewise_cubic_hermite3_curve(a)
+        a = cubic_hermite_spline(points, tangents, time_points0)
+        b = cubic_hermite_spline(points, tangents, time_points1)
+        pc = piecewise_cubic_hermite_curve(a)
         pc.add_curve(b)
         pc.min()
         pc.max()
@@ -227,7 +227,7 @@ class TestCurves(unittest.TestCase):
         pc.is_continuous(1)
         # Test serialization
         pc.saveAsText("serialization_pc.test")
-        pc_test = piecewise_cubic_hermite3_curve()
+        pc_test = piecewise_cubic_hermite_curve()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")

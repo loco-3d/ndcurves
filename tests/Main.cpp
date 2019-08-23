@@ -26,9 +26,9 @@ namespace curves
   typedef bezier_curve  <double, double, true, point_t> bezier_curve_t;
   typedef cubic_hermite_spline <double, double, true, point_t> cubic_hermite_spline_t;
   typedef exact_cubic   <double, double, 1, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
-  typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
-  typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
-  typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+  typedef piecewise_curve <double, double, true, point_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
+  typedef piecewise_curve <double, double, true, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
+  typedef piecewise_curve <double, double, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
   typedef exact_cubic_t::spline_constraints spline_constraints_t;
   typedef std::pair<double, point_t> Waypoint;
   typedef std::vector<Waypoint> T_Waypoint;
