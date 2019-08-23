@@ -28,7 +28,7 @@ namespace curves
   /// For degree lesser than 4, the evaluation is analitycal. Otherwise
   /// the bernstein polynoms are used to evaluate the spline at a given location.
   ///
-  template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
+  template<typename Time= double, typename Numeric=Time, bool Safe=false,
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
   struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point>
   {
@@ -38,14 +38,14 @@ namespace curves
     typedef curve_constraints<point_t> curve_constraints_t;
     typedef std::vector<point_t,Eigen::aligned_allocator<point_t> > t_point_t;
     typedef typename t_point_t::const_iterator cit_point_t;
-    typedef bezier_curve<Time, Numeric, Dim, Safe, Point > bezier_curve_t;
+    typedef bezier_curve<Time, Numeric, Safe, Point > bezier_curve_t;
 
     /* Constructors - destructors */
     public:
       /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
       ///
       bezier_curve()
-        : T_min_(0), T_max_(0)
+        : dim_(0), T_min_(0), T_max_(0)
       {}
 
       /// \brief Constructor.
@@ -73,6 +73,11 @@ namespace curves
         for(; it != PointsEnd; ++it)
         {
           control_points_.push_back(*it);
+        }
+        // set dim
+        if (control_points_.size()!=0)
+        {
+          dim_ = PointsBegin->size();
         }
       }
 
@@ -102,10 +107,15 @@ namespace curves
         {
           control_points_.push_back(*cit);
         }
+        // set dim
+        if (control_points_.size()!=0)
+        {
+          dim_ = PointsBegin->size();
+        }
       }
 
       bezier_curve(const bezier_curve& other)
-        : T_min_(other.T_min_), T_max_(other.T_max_), 
+        : dim_(other.dim_), T_min_(other.T_min_), T_max_(other.T_max_), 
           mult_T_(other.mult_T_), size_(other.size_),
           degree_(other.degree_), bernstein_(other.bernstein_), 
           control_points_(other.control_points_)
@@ -123,7 +133,7 @@ namespace curves
       ///  \return \f$x(t)\f$ point corresponding on curve at time t.
       virtual point_t operator()(const time_t t) const
       {
-        check_if_not_empty();
+        check_conditions();
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
           throw std::invalid_argument("can't evaluate bezier curve, time t is out of range"); // TODO
@@ -144,7 +154,7 @@ namespace curves
       ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
       bezier_curve_t compute_derivate(const std::size_t order) const
       {
-        check_if_not_empty();
+        check_conditions();
         if(order == 0) 
         {
           return *this;
@@ -156,7 +166,7 @@ namespace curves
         }
         if(derived_wp.empty())
         {
-          derived_wp.push_back(point_t::Zero(Dim));
+          derived_wp.push_back(point_t::Zero(dim_));
         }
         bezier_curve_t deriv(derived_wp.begin(), derived_wp.end(),T_min_, T_max_, mult_T_ * (1./(T_max_-T_min_)) );
         return deriv.compute_derivate(order-1);
@@ -169,14 +179,14 @@ namespace curves
       ///  \return primitive at order N of x(t).
       bezier_curve_t compute_primitive(const std::size_t order) const
       {
-        check_if_not_empty();
+        check_conditions();
         if(order == 0) 
         {
           return *this;
         }
         num_t new_degree = (num_t)(degree_+1);
         t_point_t n_wp;
-        point_t current_sum =  point_t::Zero(Dim);
+        point_t current_sum =  point_t::Zero(dim_);
         // recomputing waypoints q_i from derivative waypoints p_i. q_0 is the given constant.
         // then q_i = (sum( j = 0 -> j = i-1) p_j) /n+1
         n_wp.push_back(current_sum);
@@ -213,7 +223,7 @@ namespace curves
       point_t evalBernstein(const Numeric t) const
       {
         const Numeric u = (t-T_min_)/(T_max_-T_min_);
-        point_t res = point_t::Zero(Dim);
+        point_t res = point_t::Zero(dim_);
         typename t_point_t::const_iterator control_points_it = control_points_.begin();
         for(typename std::vector<Bern<Numeric> >::const_iterator cit = bernstein_.begin();
         cit !=bernstein_.end(); ++cit, ++control_points_it)
@@ -316,7 +326,7 @@ namespace curves
       ///
       std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric t)
       {
-        check_if_not_empty();
+        check_conditions();
         if (fabs(t-T_max_)<MARGIN)
         {
           throw std::runtime_error("can't split curve, interval range is equal to original curve");
@@ -388,11 +398,15 @@ namespace curves
         return res;
       }
 
-      void check_if_not_empty() const
+      void check_conditions() const
       {
         if (control_points_.size() == 0)
         {
-          throw std::runtime_error("Error in beziercurve : there is no control points set / did you use empty constructor ?");
+          throw std::runtime_error("Error in bezier curve : there is no control points set / did you use empty constructor ?");
+        }
+        else if(dim_ == 0)
+        {
+          throw std::runtime_error("Error in bezier curve : Dimension of points is zero / did you use empty constructor ?");
         }
       }
       /*Operations*/
@@ -425,10 +439,10 @@ namespace curves
       static const double MARGIN;
       /* Attributes */
 
-      static bezier_curve_t zero(const time_t T=1.)
+      static bezier_curve_t zero(const std::size_t dim, const time_t T=1.)
       {
         std::vector<point_t> ts;
-        ts.push_back(point_t::Zero(Dim));
+        ts.push_back(point_t::Zero(dim));
         return bezier_curve_t(ts.begin(), ts.end(),0.,T);
       }
 
@@ -451,8 +465,8 @@ namespace curves
       }
   }; // End struct bezier_curve
 
-  template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point>
-  const double bezier_curve<Time, Numeric, Dim, Safe, Point>::MARGIN(0.001);
+  template<typename Time, typename Numeric, bool Safe, typename Point>
+  const double bezier_curve<Time, Numeric, Safe, Point>::MARGIN(0.001);
 
 } // namespace curve
 #endif //_CLASS_BEZIERCURVE

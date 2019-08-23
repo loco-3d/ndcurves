@@ -23,21 +23,21 @@ namespace curves
   typedef curve_abc  <double, double, true, point_t> curve_abc_t;
   typedef polynomial  <double, double, 3, true, point_t, t_point_t> polynomial_t;
   typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
-  typedef bezier_curve  <double, double, 3, true, point_t> bezier_curve_t;
+  typedef bezier_curve  <double, double, true, point_t> bezier_curve_t;
+  typedef cubic_hermite_spline <double, double, true, point_t> cubic_hermite_spline_t;
+  typedef exact_cubic   <double, double, 1, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
+  typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
+  typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
+  typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
   typedef exact_cubic_t::spline_constraints spline_constraints_t;
   typedef std::pair<double, point_t> Waypoint;
   typedef std::vector<Waypoint> T_Waypoint;
   typedef Eigen::Matrix<double,1,1> point_one;
-  typedef polynomial<double, double, 1, true, point_one> polynom_one;
-  typedef exact_cubic   <double, double, 1, true, point_one> exact_cubic_one;
   typedef std::pair<double, point_one> WaypointOne;
   typedef std::vector<WaypointOne> T_WaypointOne;
-  typedef cubic_hermite_spline <double, double, true, point_t> cubic_hermite_spline_t;
   typedef std::pair<point_t, tangent_t> pair_point_tangent_t;
   typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
-  typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
-  typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
-  typedef piecewise_curve <double, double, 3, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+  
   const double margin = 1e-3;
   bool QuasiEqual(const double a, const double b)
   {
@@ -1245,7 +1245,7 @@ void curveAbcDimDynamicTest(bool& error)
   typedef polynomial  <double, double, 3, true> polynomial_test_t;
   typedef exact_cubic <double, double, 3, true> exact_cubic_test_t;
   typedef exact_cubic_test_t::spline_constraints spline_constraints_test_t;
-  typedef bezier_curve  <double, double, 3, true> bezier_curve_test_t;
+  typedef bezier_curve  <double, double, true> bezier_curve_test_t;
   typedef cubic_hermite_spline <double, double, true> cubic_hermite_spline_test_t;
   curve_abc_test_t * pt_curve_abc;
   // POLYNOMIAL
