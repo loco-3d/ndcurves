@@ -18,23 +18,24 @@ using namespace std;
 namespace curves
 {
   typedef Eigen::Vector3d point_t;
-  typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
-  typedef curve_abc  <double, double, true, point_t> curve_abc_t;
-  typedef polynomial  <double, double, true, point_t, t_point_t> polynomial_t;
-  typedef exact_cubic <double, double, true, point_t> exact_cubic_t;
+  typedef Eigen::VectorXd pointX_t;
+  typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_point_t;
+  typedef curve_abc  <double, double, true, pointX_t> curve_abc_t;
+  typedef polynomial  <double, double, true, pointX_t, t_point_t> polynomial_t;
+  typedef exact_cubic <double, double, true, pointX_t> exact_cubic_t;
   typedef exact_cubic   <double, double, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
-  typedef bezier_curve  <double, double, true, point_t> bezier_curve_t;
-  typedef cubic_hermite_spline <double, double, true, point_t> cubic_hermite_spline_t;
-  typedef piecewise_curve <double, double, true, point_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
-  typedef piecewise_curve <double, double, true, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
-  typedef piecewise_curve <double, double, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+  typedef bezier_curve  <double, double, true, pointX_t> bezier_curve_t;
+  typedef cubic_hermite_spline <double, double, true, pointX_t> cubic_hermite_spline_t;
+  typedef piecewise_curve <double, double, true, pointX_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
+  typedef piecewise_curve <double, double, true, pointX_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
+  typedef piecewise_curve <double, double, true, pointX_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
   typedef exact_cubic_t::spline_constraints spline_constraints_t;
-  typedef std::pair<double, point_t> Waypoint;
+  typedef std::pair<double, pointX_t> Waypoint;
   typedef std::vector<Waypoint> T_Waypoint;
   typedef Eigen::Matrix<double,1,1> point_one;
   typedef std::pair<double, point_one> WaypointOne;
   typedef std::vector<WaypointOne> T_WaypointOne;
-  typedef std::pair<point_t, point_t> pair_point_tangent_t;
+  typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
   typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
   
   const double margin = 1e-3;
