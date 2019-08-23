@@ -19,12 +19,11 @@
 
 namespace curves
 {
-  template <typename Point, std::size_t Dim=3>
+  template <typename Point>
   struct curve_constraints
   {
     typedef Point   point_t;
-    curve_constraints():
-    init_vel(point_t::Zero(Dim)),init_acc(init_vel),end_vel(init_vel),end_acc(init_vel){}
+    curve_constraints(){}
 
     ~curve_constraints(){}
 

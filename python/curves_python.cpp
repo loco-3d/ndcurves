@@ -23,33 +23,18 @@
 using namespace curves;
 typedef double real;
 typedef Eigen::VectorXd time_waypoints_t;
-// 3D
-typedef Eigen::Vector3d point3_t;
-typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point3_t;
-typedef std::pair<point3_t, point3_t> pair_point3_tangent_t;
-typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point3_list_t;
-typedef std::vector<point3_t,Eigen::aligned_allocator<point3_t> >  t_point3_t;
-typedef std::vector<pair_point3_tangent_t,Eigen::aligned_allocator<pair_point3_tangent_t> > t_pair_point3_tangent_t;
-typedef curves::curve_constraints<point3_t> curve_constraints3_t;
-// XD
+
 typedef Eigen::VectorXd pointX_t;
 typedef Eigen::Matrix<double, Eigen::Dynamic, 1, 0, Eigen::Dynamic, 1> ret_pointX_t;
 typedef std::pair<pointX_t, pointX_t> pair_pointX_tangent_t;
 typedef Eigen::MatrixXd pointX_list_t;
-typedef std::vector<pointX_t,Eigen::aligned_allocator<point3_t> >  t_pointX_t;
+typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
 typedef std::vector<pair_pointX_tangent_t,Eigen::aligned_allocator<pair_pointX_tangent_t> > t_pair_pointX_tangent_t;
 typedef curves::curve_constraints<pointX_t> curve_constraints_t;
-// Else
-typedef std::pair<real, point3_t> Waypoint;
-typedef std::vector<Waypoint> T_Waypoint;
-typedef std::vector<Waypoint6> T_Waypoint6;
+typedef std::pair<real, pointX_t> waypoint_t;
+typedef std::vector<waypoint_t> t_waypoint_t;
 
-// 3D
-typedef curves::exact_cubic  <real, real, 3, true, point3_t, t_point3_t> exact_cubic3_t;
-typedef std::pair<real, point3_t> waypoint3_t;
-typedef std::vector<waypoint3_t, Eigen::aligned_allocator<point3_t> > t_waypoint3_t;
-
-// Dynamic dim
+// Curves
 typedef curves::cubic_hermite_spline <real, real, true, pointX_t> cubic_hermite_spline_t;
 typedef curves::bezier_curve  <real, real, true, pointX_t> bezier_t;
 typedef curves::polynomial  <real, real, true, pointX_t, t_pointX_t> polynomial_t;
@@ -57,12 +42,12 @@ typedef polynomial_t::coeff_t coeff_t;
 typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
 typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, bezier_t> piecewise_bezier_curve_t;
 typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
 
 typedef curves::Bern<double> bernstein_t;
+
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
-
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
-
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(cubic_hermite_spline_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynomial_t)
@@ -70,9 +55,7 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_polynomial_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_bezier_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_cubic_hermite_curve_t)
-
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic3_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints3_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
 
 namespace curves
 {
@@ -183,9 +166,9 @@ namespace curves
   /* end wrap piecewise polynomial curve */
 
   /* Wrap exact cubic spline */
-  t_waypoint3_t getWayPoints(const coeff_t& array, const time_waypoints_t& time_wp)
+  t_waypoint_t getWayPoints(const coeff_t& array, const time_waypoints_t& time_wp)
   {
-    t_waypoint3_t res;
+    t_waypoint_t res;
     for(int i =0;i<array.cols();++i)
     {
       res.push_back(std::make_pair(time_wp(i), array.col(i)));
@@ -193,96 +176,56 @@ namespace curves
     return res;
   }
 
-  exact_cubic3_t* wrapExactCubic3Constructor(const coeff_t& array, const time_waypoints_t& time_wp)
+  exact_cubic_t* wrapExactCubicConstructor(const coeff_t& array, const time_waypoints_t& time_wp)
   {
-    t_waypoint3_t wps = getWayPoints(array, time_wp);
-    return new exact_cubic3_t(wps.begin(), wps.end());
+    t_waypoint_t wps = getWayPoints(array, time_wp);
+    return new exact_cubic_t(wps.begin(), wps.end());
   }
 
-  exact_cubic3_t* wrapExactCubic3ConstructorConstraint(const coeff_t& array, const time_waypoints_t& time_wp, 
-                                                     const curve_constraints3_t& constraints)
+  exact_cubic_t* wrapExactCubicConstructorConstraint(const coeff_t& array, const time_waypoints_t& time_wp, 
+                                                     const curve_constraints_t& constraints)
   {
-    t_waypoint3_t wps = getWayPoints(array, time_wp);
-    return new exact_cubic3_t(wps.begin(), wps.end(), constraints);
+    t_waypoint_t wps = getWayPoints(array, time_wp);
+    return new exact_cubic_t(wps.begin(), wps.end(), constraints);
   }
 
-  /// For constraints 3D
-  point3_t get_init_vel(const curve_constraints3_t& c)
-  {
-    return c.init_vel;
-  }
-
-  point3_t get_init_acc(const curve_constraints3_t& c)
-  {
-    return c.init_acc;
-  }
-
-  point3_t get_end_vel(const curve_constraints3_t& c)
-  {
-    return c.end_vel;
-  }
-
-  point3_t get_end_acc(const curve_constraints3_t& c)
-  {
-    return c.end_acc;
-  }
-
-  void set_init_vel(curve_constraints3_t& c, const point3_t& val)
-  {
-    c.init_vel = val;
-  }
-
-  void set_init_acc(curve_constraints3_t& c, const point3_t& val)
-  {
-    c.init_acc = val;
-  }
-
-  void set_end_vel(curve_constraints3_t& c, const point3_t& val)
-  {
-    c.end_vel = val;
-  }
-
-  void set_end_acc(curve_constraints3_t& c, const point3_t& val)
-  {
-    c.end_acc = val;
-  }
   /// For constraints XD
-  point3_t get_init_velX(const curve_constraints_t& c)
+  point_t get_init_vel(const curve_constraints_t& c)
   {
     return c.init_vel;
   }
 
-  point3_t get_init_accX(const curve_constraints_t& c)
+  point_t get_init_acc(const curve_constraints_t& c)
   {
     return c.init_acc;
   }
 
-  point3_t get_end_velX(const curve_constraints_t& c)
+  point_t get_end_vel(const curve_constraints_t& c)
   {
     return c.end_vel;
   }
 
-  point3_t get_end_accX(const curve_constraints_t& c)
+  point_t get_end_acc(const curve_constraints_t& c)
   {
     return c.end_acc;
   }
 
-  void set_init_velX(curve_constraints_t& c, const point_t& val)
+  void set_init_vel(curve_constraints_t& c, const point_t& val)
   {
     c.init_vel = val;
   }
 
-  void set_init_accX(curve_constraints_t& c, const point_t& val)
+  void set_init_acc(curve_constraints_t& c, const point_t& val)
   {
     c.init_acc = val;
   }
 
-  void set_end_velX(curve_constraints_t& c, const point_t& val)
+  void set_end_vel(curve_constraints_t& c, const point_t& val)
   {
     c.end_vel = val;
   }
 
-  void set_end_accX(curve_constraints_t& c, const point_t& val)
+  void set_end_acc(curve_constraints_t& c, const point_t& val)
   {
     c.end_acc = val;
   }
@@ -297,8 +240,6 @@ namespace curves
     eigenpy::enableEigenPy();
     eigenpy::enableEigenPySpecific<pointX_t,pointX_t>();
     eigenpy::enableEigenPySpecific<pointX_list_t,pointX_list_t>();
-    eigenpy::enableEigenPySpecific<point3_t,point3_t>();
-    eigenpy::enableEigenPySpecific<point3_list_t,point3_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
     /*eigenpy::exposeAngleAxis();
     eigenpy::exposeQuaternion();*/
@@ -440,24 +381,24 @@ namespace curves
     ;
     /** END piecewise curve function **/
     /** BEGIN exact_cubic curve**/
-    class_<exact_cubic3_t>
-    ("exact_cubic3", init<>())
-      .def("__init__", make_constructor(&wrapExactCubic3Constructor))
-      .def("__init__", make_constructor(&wrapExactCubic3ConstructorConstraint))
-      .def("min", &exact_cubic3_t::min)
-      .def("max", &exact_cubic3_t::max)
-      .def("dim", &exact_cubic3_t::dim)
-      .def("__call__", &exact_cubic3_t::operator())
-      .def("derivate", &exact_cubic3_t::derivate)
-      .def("getNumberSplines", &exact_cubic3_t::getNumberSplines)
-      .def("getSplineAt", &exact_cubic3_t::getSplineAt)
-      .def("saveAsText", &exact_cubic3_t::saveAsText<exact_cubic3_t>,bp::args("filename"),"Saves *this inside a text file.")
-      .def("loadFromText",&exact_cubic3_t::loadFromText<exact_cubic3_t>,bp::args("filename"),"Loads *this from a text file.")
-      .def("saveAsXML",&exact_cubic3_t::saveAsXML<exact_cubic3_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
-      .def("loadFromXML",&exact_cubic3_t::loadFromXML<exact_cubic3_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
-      .def("saveAsBinary",&exact_cubic3_t::saveAsBinary<exact_cubic3_t>,bp::args("filename"),"Saves *this inside a binary file.")
-      .def("loadFromBinary",&exact_cubic3_t::loadFromBinary<exact_cubic3_t>,bp::args("filename"),"Loads *this from a binary file.")
-      //.def(SerializableVisitor<exact_cubic3_t>())
+    class_<exact_cubic_t>
+    ("exact_cubic", init<>())
+      .def("__init__", make_constructor(&wrapExactCubicConstructor))
+      .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
+      .def("min", &exact_cubic_t::min)
+      .def("max", &exact_cubic_t::max)
+      .def("dim", &exact_cubic_t::dim)
+      .def("__call__", &exact_cubic_t::operator())
+      .def("derivate", &exact_cubic_t::derivate)
+      .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
+      .def("getSplineAt", &exact_cubic_t::getSplineAt)
+      .def("saveAsText", &exact_cubic_t::saveAsText<exact_cubic_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&exact_cubic_t::loadFromText<exact_cubic_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&exact_cubic_t::saveAsXML<exact_cubic_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&exact_cubic_t::loadFromXML<exact_cubic_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&exact_cubic_t::saveAsBinary<exact_cubic_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&exact_cubic_t::loadFromBinary<exact_cubic_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<exact_cubic_t>())
     ;
     /** END exact_cubic curve**/
     /** BEGIN cubic_hermite_spline **/
@@ -479,21 +420,12 @@ namespace curves
     ;
     /** END cubic_hermite_spline **/
     /** BEGIN curve constraints**/
-    class_<curve_constraints3_t>
-    ("curve_constraints3", init<>())
+    class_<curve_constraints_t>
+    ("curve_constraints", init<>())
       .add_property("init_vel", &get_init_vel, &set_init_vel)
       .add_property("init_acc", &get_init_acc, &set_init_acc)
       .add_property("end_vel", &get_end_vel, &set_end_vel)
       .add_property("end_acc", &get_end_acc, &set_end_acc)
-    ;
-    /** END curve constraints**/
-    /** BEGIN curve constraints**/
-    class_<curve_constraints_t>
-    ("curve_constraints", init<>())
-      .add_property("init_vel", &get_init_velX, &set_init_velX)
-      .add_property("init_acc", &get_init_accX, &set_init_accX)
-      .add_property("end_vel", &get_end_velX, &set_end_velX)
-      .add_property("end_acc", &get_end_accX, &set_end_accX)
     ;
     /** END curve constraints**/
     /** BEGIN bernstein polynomial**/

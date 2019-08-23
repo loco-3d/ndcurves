@@ -37,7 +37,7 @@ namespace curves
   /// \brief Represents a set of cubic splines defining a continuous function 
   /// crossing each of the waypoint given in its initialization.
   ///
-  template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
+  template<typename Time= double, typename Numeric=Time, bool Safe=false,
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, 
            typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >,
            typename SplineBase=polynomial<Time, Numeric, Safe, Point, T_Point> >
@@ -53,9 +53,9 @@ namespace curves
     typedef typename std::vector<spline_t> t_spline_t;
     typedef typename t_spline_t::iterator it_spline_t;
     typedef typename t_spline_t::const_iterator cit_spline_t;
-    typedef curve_constraints<Point, Dim> spline_constraints;
+    typedef curve_constraints<Point> spline_constraints;
 
-    typedef exact_cubic<Time, Numeric, Dim, Safe, Point, T_Point, SplineBase> exact_cubic_t;
+    typedef exact_cubic<Time, Numeric, Safe, Point, T_Point, SplineBase> exact_cubic_t;
     typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, SplineBase> piecewise_curve_t;
 
     /* Constructors - destructors */
@@ -119,7 +119,8 @@ namespace curves
       template<typename In>
       t_spline_t computeWayPoints(In wayPointsBegin, In wayPointsEnd) const
       {
-        std::size_t const size(std::distance(wayPointsBegin, wayPointsEnd));
+        const std::size_t dim = wayPointsBegin->second.size();
+        const std::size_t size = std::distance(wayPointsBegin, wayPointsEnd);
         if(Safe && size < 1)
         {
           throw std::length_error("size of waypoints must be superior to 0") ; // TODO
@@ -132,11 +133,11 @@ namespace curves
         MatrixX h4 = MatrixX::Zero(size, size);
         MatrixX h5 = MatrixX::Zero(size, size);
         MatrixX h6 = MatrixX::Zero(size, size);
-        MatrixX a =  MatrixX::Zero(size, Dim);
-        MatrixX b =  MatrixX::Zero(size, Dim);
-        MatrixX c =  MatrixX::Zero(size, Dim);
-        MatrixX d =  MatrixX::Zero(size, Dim);
-        MatrixX x =  MatrixX::Zero(size, Dim);
+        MatrixX a =  MatrixX::Zero(size, dim);
+        MatrixX b =  MatrixX::Zero(size, dim);
+        MatrixX c =  MatrixX::Zero(size, dim);
+        MatrixX d =  MatrixX::Zero(size, dim);
+        MatrixX x =  MatrixX::Zero(size, dim);
         In it(wayPointsBegin), next(wayPointsBegin);
         ++next;
         // Fill the matrices H as specified in the paper.
@@ -226,9 +227,10 @@ namespace curves
       template<typename In>
       void compute_end_spline(In wayPointsBegin, In wayPointsNext, spline_constraints& constraints, t_spline_t& subSplines) const
       {
+        const std::size_t dim = wayPointsBegin->second.size();
         const point_t& a0 = wayPointsBegin->second, a1 = wayPointsNext->second;
         const point_t& b0 = constraints.init_vel, b1 = constraints.end_vel,
-        c0 = constraints.init_acc / 2., c1 = constraints.end_acc;
+                       c0 = constraints.init_acc / 2., c1 = constraints.end_acc;
         const num_t& init_t = wayPointsBegin->first, end_t = wayPointsNext->first;
         const num_t dt = end_t - init_t, dt_2 = dt * dt, dt_3 = dt_2 * dt, dt_4 = dt_3 * dt, dt_5 = dt_4 * dt;
         //solving a system of four linear eq with 4 unknows: d0, e0
@@ -239,7 +241,7 @@ namespace curves
         const num_t x_e_0 = dt_4, x_e_1 = 4*dt_3, x_e_2 = 12*dt_2;
         const num_t x_f_0 = dt_5, x_f_1 = 5*dt_4, x_f_2 = 20*dt_3;
         point_t d, e, f;
-        MatrixX rhs = MatrixX::Zero(3,Dim);
+        MatrixX rhs = MatrixX::Zero(3,dim);
         rhs.row(0) = alpha_0; rhs.row(1) = alpha_1; rhs.row(2) = alpha_2;
         Matrix3 eq  = Matrix3::Zero(3,3);
         eq(0,0) = x_d_0; eq(0,1) = x_e_0; eq(0,2) = x_f_0;

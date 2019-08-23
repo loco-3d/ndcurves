@@ -8,7 +8,7 @@ from numpy.linalg import norm
 
 from curves import (bezier_from_hermite, bezier_from_polynomial, hermite_from_polynomial,
                     hermite_from_bezier, polynomial_from_hermite, polynomial_from_bezier,
-                    cubic_hermite_spline, curve_constraints3,curve_constraints, exact_cubic3, bezier, 
+                    cubic_hermite_spline, curve_constraints, exact_cubic, bezier, 
                     piecewise_bezier_curve, piecewise_cubic_hermite_curve,
                     piecewise_polynomial_curve, polynomial
                     )
@@ -21,6 +21,7 @@ class TestCurves(unittest.TestCase):
     #   return
 
     def test_bezier(self):
+        print("test_bezier")
         # To test :
         # - Functions : constructor, min, max, derivate,compute_derivate, compute_primitive
         # - Variables : degree, nbWayPoints
@@ -103,6 +104,7 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_polynomial(self):
+        print("test_polynomial")
         # To test :
         # - Functions : constructor, min, max, derivate, serialize, deserialize
         waypoints_0 = matrix([[0.,0.,0.], [0.,0.,0.]]).transpose()
@@ -125,6 +127,7 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_cubic_hermite_spline(self):
+        print("test_cubic_hermite_spline")
         points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         time_points = matrix([0., 1.]).transpose()
@@ -159,6 +162,7 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_piecewise_polynomial_curve(self):
+        print("test_piecewise_polynomial_curve")
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous, serialize, deserialize
         waypoints0 = matrix([[0., 0., 0.]]).transpose()
@@ -185,6 +189,7 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_piecewise_bezier_curve(self):
+        print("test_piecewise_bezier_curve")
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
@@ -208,6 +213,7 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_piecewise_cubic_hermite_curve(self):
+        print("test_piecewise_cubic_hermite_curve")
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous
         points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
@@ -234,12 +240,12 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_exact_cubic(self):
-        '''
+        print("test_exact_cubic")
         # To test :
         # - Functions : constructor, min, max, derivate, getNumberSplines, getSplineAt
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         time_waypoints = matrix([0., 1.]).transpose()
-        a = exact_cubic3(waypoints, time_waypoints)
+        a = exact_cubic(waypoints, time_waypoints)
         a.min()
         a.max()
         a(0.4)
@@ -249,32 +255,33 @@ class TestCurves(unittest.TestCase):
         a.getSplineAt(0)
         # Test serialization
         a.saveAsText("serialization_pc.test")
-        b = exact_cubic3()
+        b = exact_cubic()
         b.loadFromText("serialization_pc.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_pc.test")
-        '''
         return
 
     def test_exact_cubic_constraint(self):
+        print("test_exact_cubic_constraint")
         # To test :
         # - Functions : constructor, min, max, derivate
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         time_waypoints = matrix([0., 1.]).transpose()
-        c = curve_constraints3()
-        c.init_vel
-        c.end_vel
-        c.init_acc
-        c.end_acc
+        c = curve_constraints()
         c.init_vel = matrix([0., 1., 1.]).transpose()
         c.end_vel = matrix([0., 1., 1.]).transpose()
         c.init_acc = matrix([0., 1., 1.]).transpose()
         c.end_acc = matrix([0., 1., 1.]).transpose()
-        a = exact_cubic3(waypoints, time_waypoints)
-        a = exact_cubic3(waypoints, time_waypoints, c)
+        c.init_vel
+        c.end_vel
+        c.init_acc
+        c.end_acc
+        a = exact_cubic(waypoints, time_waypoints)
+        a = exact_cubic(waypoints, time_waypoints, c)
         return
 
     def test_conversion_curves(self):
+        print("test_conversion_curves")
         __EPS = 1e-6
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints)

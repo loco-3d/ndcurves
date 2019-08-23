@@ -18,14 +18,13 @@ using namespace std;
 namespace curves
 {
   typedef Eigen::Vector3d point_t;
-  typedef Eigen::Vector3d tangent_t;
   typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
   typedef curve_abc  <double, double, true, point_t> curve_abc_t;
   typedef polynomial  <double, double, true, point_t, t_point_t> polynomial_t;
-  typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
+  typedef exact_cubic <double, double, true, point_t> exact_cubic_t;
+  typedef exact_cubic   <double, double, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
   typedef bezier_curve  <double, double, true, point_t> bezier_curve_t;
   typedef cubic_hermite_spline <double, double, true, point_t> cubic_hermite_spline_t;
-  typedef exact_cubic   <double, double, 1, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
   typedef piecewise_curve <double, double, true, point_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
   typedef piecewise_curve <double, double, true, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
   typedef piecewise_curve <double, double, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
@@ -35,7 +34,7 @@ namespace curves
   typedef Eigen::Matrix<double,1,1> point_one;
   typedef std::pair<double, point_one> WaypointOne;
   typedef std::vector<WaypointOne> T_WaypointOne;
-  typedef std::pair<point_t, tangent_t> pair_point_tangent_t;
+  typedef std::pair<point_t, point_t> pair_point_tangent_t;
   typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
   
   const double margin = 1e-3;
@@ -630,12 +629,6 @@ void CheckWayPointConstraint(const std::string& errmsg, const double step, const
   }
 }
 
-void CheckDerivative(const std::string& errmsg, const double eval_point, const std::size_t order, const point_t& target, const exact_cubic_t* curve, bool& error )
-{
-  point_t res1 = curve->derivate(eval_point,order);
-  ComparePoints(target, res1, errmsg, error);
-}
-
 
 void ExactCubicPointsCrossedTest(bool& error)
 {
@@ -667,10 +660,10 @@ void ExactCubicVelocityConstraintsTest(bool& error)
   CheckWayPointConstraint(errmsg, 0.2, waypoints, &exactCubic, error);
   std::string errmsg3("Error in ExactCubicVelocityConstraintsTest (2); while checking derivative (expected / obtained)");
   // now check derivatives
-  CheckDerivative(errmsg3,0,1,constraints.init_vel,&exactCubic, error);
-  CheckDerivative(errmsg3,1,1,constraints.end_vel,&exactCubic, error);
-  CheckDerivative(errmsg3,0,2,constraints.init_acc,&exactCubic, error);
-  CheckDerivative(errmsg3,1,2,constraints.end_acc,&exactCubic, error);
+  ComparePoints(constraints.init_vel, exactCubic.derivate(0,1), errmsg3, error);
+  ComparePoints(constraints.end_vel, exactCubic.derivate(1,1), errmsg3, error);
+  ComparePoints(constraints.init_acc, exactCubic.derivate(0,2), errmsg3, error);
+  ComparePoints(constraints.end_acc, exactCubic.derivate(1,2), errmsg3, error);
   constraints.end_vel = point_t(1,2,3);
   constraints.init_vel = point_t(-1,-2,-3);
   constraints.end_acc = point_t(4,5,6);
@@ -680,13 +673,14 @@ void ExactCubicVelocityConstraintsTest(bool& error)
   CheckWayPointConstraint(errmsg2, 0.2, waypoints, &exactCubic2, error);
   std::string errmsg4("Error in ExactCubicVelocityConstraintsTest (4); while checking derivative (expected / obtained)");
   // now check derivatives
-  CheckDerivative(errmsg4,0,1,constraints.init_vel,&exactCubic2, error);
-  CheckDerivative(errmsg4,1,1,constraints.end_vel ,&exactCubic2, error);
-  CheckDerivative(errmsg4,0,2,constraints.init_acc,&exactCubic2, error);
-  CheckDerivative(errmsg4,1,2,constraints.end_acc ,&exactCubic2, error);
+  ComparePoints(constraints.init_vel, exactCubic2.derivate(0,1), errmsg4, error);
+  ComparePoints(constraints.end_vel, exactCubic2.derivate(1,1), errmsg4, error);
+  ComparePoints(constraints.init_acc, exactCubic2.derivate(0,2), errmsg4, error);
+  ComparePoints(constraints.end_acc, exactCubic2.derivate(1,2), errmsg4, error);
 }
 
-void CheckPointOnline(const std::string& errmsg, const point_t& A, const point_t& B, const double target, const exact_cubic_t* curve, bool& error )
+template<typename CurveType>
+void CheckPointOnline(const std::string& errmsg, const point_t& A, const point_t& B, const double target, const CurveType* curve, bool& error )
 {
   point_t res1 = curve->operator ()(target);
   point_t ar =(res1-A); ar.normalize();
@@ -721,21 +715,20 @@ void EffectorTrajectoryTest(bool& error)
   ComparePoints(off1, (*eff_traj)(1), errmsg, error);
   ComparePoints(off2, (*eff_traj)(9.5), errmsg, error);
   ComparePoints(end , (*eff_traj)(10), errmsg, error);
-  //then check offset at start / goal positions
   // now check derivatives
-  CheckDerivative(errmsg2,0,1,zero,eff_traj, error);
-  CheckDerivative(errmsg2,10,1,zero ,eff_traj, error);
-  CheckDerivative(errmsg2,0,2,zero,eff_traj, error);
-  CheckDerivative(errmsg2,10,2,zero ,eff_traj, error);
+  ComparePoints(zero, (*eff_traj).derivate(0,1), errmsg2, error);
+  ComparePoints(zero, (*eff_traj).derivate(10,1), errmsg2, error);
+  ComparePoints(zero, (*eff_traj).derivate(0,2), errmsg2, error);
+  ComparePoints(zero, (*eff_traj).derivate(10,2), errmsg2, error);
   //check that end and init splines are line
   std::string errmsg3("Error in EffectorTrajectoryTest; while checking that init/end splines are line (point A/ point B, time value / point obtained) \n");
   for(double i = 0.1; i<1; i+=0.1)
   {
-    CheckPointOnline(errmsg3,(*eff_traj)(0),(*eff_traj)(1),i,eff_traj,error);
+    CheckPointOnline<helpers::exact_cubic_t>(errmsg3,(*eff_traj)(0),(*eff_traj)(1),i,eff_traj,error);
   }
   for(double i = 9.981; i<10; i+=0.002)
   {
-    CheckPointOnline(errmsg3,(*eff_traj)(9.5),(*eff_traj)(10),i,eff_traj,error);
+    CheckPointOnline<helpers::exact_cubic_t>(errmsg3,(*eff_traj)(9.5),(*eff_traj)(10),i,eff_traj,error);
   }
   delete eff_traj;
 }
@@ -989,41 +982,41 @@ void BezierSplitCurve(bool& error)
 /* cubic hermite spline function test */
 void CubicHermitePairsPositionDerivativeTest(bool& error)
 {
-  std::string errmsg1("in Cubic Hermite 2 pairs (pos,vel), Error While checking that given wayPoints are crossed (expected / obtained) : ");
   std::string errmsg2("in Cubic Hermite 2 points, Error While checking value of point on curve : ");
   std::string errmsg3("in Cubic Hermite 2 points, Error While checking value of tangent on curve : ");
   std::vector< pair_point_tangent_t > control_points;
   point_t res1;
-
   point_t p0(0.,0.,0.);
   point_t p1(1.,2.,3.);
   point_t p2(4.,4.,4.);
-
-  tangent_t t0(0.5,0.5,0.5);
-  tangent_t t1(0.1,0.2,-0.5);
-  tangent_t t2(0.1,0.2,0.3);
-
-  std::vector< double > time_control_points;
-
+  point_t t0(0.5,0.5,0.5);
+  point_t t1(0.1,0.2,-0.5);
+  point_t t2(0.1,0.2,0.3);
+  std::vector< double > time_control_points, time_control_points_test;
   // Two pairs
   control_points.clear();
   control_points.push_back(pair_point_tangent_t(p0,t0));
   control_points.push_back(pair_point_tangent_t(p1,t1));
-  time_control_points.push_back(1.);  // Time at P0
-  time_control_points.push_back(3.);  // Time at P1
+  time_control_points.push_back(0.);  // Time at P0
+  time_control_points.push_back(1.);  // Time at P1
   // Create cubic hermite spline
   cubic_hermite_spline_t cubic_hermite_spline_1Pair(control_points.begin(), control_points.end(), time_control_points);
+  // Dimension
+  if (cubic_hermite_spline_1Pair.dim() != 3)
+  {
+    error = true;
+    std::cout << "Cubic hermite spline test, Error : Dimension of curve is wrong\n";
+  }
   //Check
-  res1 = cubic_hermite_spline_1Pair(1.);   // t=0
+  res1 = cubic_hermite_spline_1Pair(0.);   // t=0
   ComparePoints(p0, res1, errmsg1, error);
-  res1 = cubic_hermite_spline_1Pair(3.);   // t=1
+  res1 = cubic_hermite_spline_1Pair(1.);   // t=1
   ComparePoints(p1, res1, errmsg1, error);
   // Test derivative : two pairs
-  res1 = cubic_hermite_spline_1Pair.derivate(1.,1);
+  res1 = cubic_hermite_spline_1Pair.derivate(0.,1);
   ComparePoints(t0, res1, errmsg3, error);
-  res1 = cubic_hermite_spline_1Pair.derivate(3.,1);
+  res1 = cubic_hermite_spline_1Pair.derivate(1.,1);
   ComparePoints(t1, res1, errmsg3, error);
-
   // Three pairs
   control_points.push_back(pair_point_tangent_t(p2,t2));
   time_control_points.clear();
@@ -1047,11 +1040,11 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
   ComparePoints(t2, res1, errmsg3, error);
   // Test time control points by default [0,1] => with N control points : 
   // Time at P0= 0. | Time at P1= 1.0/(N-1) | Time at P2= 2.0/(N-1) | ... | Time at P_(N-1)= (N-1)/(N-1)= 1.0
-  time_control_points.clear();
-  time_control_points.push_back(0.);  // Time at P0
-  time_control_points.push_back(0.5);  // Time at P1
-  time_control_points.push_back(1.);  // Time at P2
-  cubic_hermite_spline_2Pairs.setTime(time_control_points);
+  time_control_points_test.clear();
+  time_control_points_test.push_back(0.);  // Time at P0
+  time_control_points_test.push_back(0.5);  // Time at P1
+  time_control_points_test.push_back(1.0);  // Time at P2
+  cubic_hermite_spline_2Pairs.setTime(time_control_points_test);
   res1 = cubic_hermite_spline_2Pairs(0.);  // t=0
   ComparePoints(p0, res1, errmsg1, error);
   res1 = cubic_hermite_spline_2Pairs(0.5); // t=0.5
@@ -1145,9 +1138,9 @@ void piecewiseCurveTest(bool& error)
     point_t p0(0.,0.,0.);
     point_t p1(1.,2.,3.);
     point_t p2(4.,4.,4.);
-    tangent_t t0(0.5,0.5,0.5);
-    tangent_t t1(0.1,0.2,-0.5);
-    tangent_t t2(0.1,0.2,0.3);
+    point_t t0(0.5,0.5,0.5);
+    point_t t1(0.1,0.2,-0.5);
+    point_t t2(0.1,0.2,0.3);
     std::vector< pair_point_tangent_t > control_points_0;
     control_points_0.push_back(pair_point_tangent_t(p0,t0));
     control_points_0.push_back(pair_point_tangent_t(p1,t1)); // control_points_0 = 1st piece of curve
@@ -1243,7 +1236,7 @@ void curveAbcDimDynamicTest(bool& error)
 {
   typedef curve_abc<double,double,true> curve_abc_test_t;
   typedef polynomial  <double, double, true> polynomial_test_t;
-  typedef exact_cubic <double, double, 3, true> exact_cubic_test_t;
+  typedef exact_cubic <double, double, true> exact_cubic_test_t;
   typedef exact_cubic_test_t::spline_constraints spline_constraints_test_t;
   typedef bezier_curve  <double, double, true> bezier_curve_test_t;
   typedef cubic_hermite_spline <double, double, true> cubic_hermite_spline_test_t;

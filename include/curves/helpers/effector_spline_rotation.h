@@ -36,7 +36,7 @@ namespace curves
     typedef std::pair<Numeric, quat_t > waypoint_quat_t;
     typedef std::vector<waypoint_quat_t> t_waypoint_quat_t;
     typedef Eigen::Matrix<Numeric, 1, 1> point_one_dim_t;
-    typedef exact_cubic <Numeric, Numeric, 1, false, point_one_dim_t> exact_cubic_constraint_one_dim;
+    typedef exact_cubic <Numeric, Numeric, false, point_one_dim_t> exact_cubic_constraint_one_dim;
     typedef std::pair<Numeric, point_one_dim_t > waypoint_one_dim_t;
     typedef std::vector<waypoint_one_dim_t> t_waypoint_one_dim_t;
 
@@ -102,7 +102,7 @@ namespace curves
     }; // End class rotation_spline
 
 
-    typedef exact_cubic<Time, Numeric, 4, false, quat_t, std::vector<quat_t,Eigen::aligned_allocator<quat_t> >, rotation_spline> exact_cubic_quat_t;
+    typedef exact_cubic<Time, Numeric, false, quat_t, std::vector<quat_t,Eigen::aligned_allocator<quat_t> >, rotation_spline> exact_cubic_quat_t;
 
     /// \class effector_spline_rotation.
     /// \brief Represents a trajectory for and end effector.

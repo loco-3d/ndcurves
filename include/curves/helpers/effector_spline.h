@@ -28,11 +28,11 @@ namespace curves
   {
     typedef double Numeric;
     typedef double Time;
-    typedef Eigen::Matrix<Numeric, 3, 1> Point;
+    typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> Point;
     typedef std::vector<Point,Eigen::aligned_allocator<Point> > T_Point;
     typedef std::pair<double, Point> Waypoint;
     typedef std::vector<Waypoint> T_Waypoint;
-    typedef exact_cubic<Time, Numeric, 3, true, Point, T_Point> exact_cubic_t;
+    typedef exact_cubic<Time, Numeric, true, Point, T_Point> exact_cubic_t;
     typedef exact_cubic_t::spline_constraints spline_constraints_t;
     typedef exact_cubic_t::t_spline_t t_spline_t;
     typedef exact_cubic_t::spline_t spline_t;
@@ -68,6 +68,8 @@ namespace curves
     spline_constraints_t compute_required_offset_velocity_acceleration(const spline_t& end_spline, const Time /*time_offset*/)
     {
       spline_constraints_t constraints;
+      constraints.init_acc = Point::Zero(end_spline.dim());
+      constraints.init_vel = Point::Zero(end_spline.dim());
       constraints.end_acc = end_spline.derivate(end_spline.min(),2);
       constraints.end_vel = end_spline.derivate(end_spline.min(),1);
       return constraints;
