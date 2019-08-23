@@ -37,12 +37,12 @@ namespace curves
     return res;
   }
 
-  template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point, typename T_Point>
-  polynomial<Time,Numeric,Dim,Safe,Point,T_Point> create_quintic(Point const& a, Point const& b, Point const& c, Point const &d, Point const &e, Point const &f,
+  template<typename Time, typename Numeric, bool Safe, typename Point, typename T_Point>
+  polynomial<Time,Numeric,Safe,Point,T_Point> create_quintic(Point const& a, Point const& b, Point const& c, Point const &d, Point const &e, Point const &f,
   const Time t_min, const Time t_max)
   {
     T_Point coeffs = make_quintic_vector<Point, T_Point>(a,b,c,d,e,f);
-    return polynomial<Time,Numeric,Dim,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), t_min, t_max);
+    return polynomial<Time,Numeric,Safe,Point,T_Point>(coeffs.begin(),coeffs.end(), t_min, t_max);
   }
 } // namespace curves
 #endif //_STRUCT_QUINTIC_SPLINE

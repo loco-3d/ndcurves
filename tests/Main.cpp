@@ -21,7 +21,7 @@ namespace curves
   typedef Eigen::Vector3d tangent_t;
   typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
   typedef curve_abc  <double, double, true, point_t> curve_abc_t;
-  typedef polynomial  <double, double, 3, true, point_t, t_point_t> polynomial_t;
+  typedef polynomial  <double, double, true, point_t, t_point_t> polynomial_t;
   typedef exact_cubic <double, double, 3, true, point_t> exact_cubic_t;
   typedef bezier_curve  <double, double, true, point_t> bezier_curve_t;
   typedef cubic_hermite_spline <double, double, true, point_t> cubic_hermite_spline_t;
@@ -1242,7 +1242,7 @@ void piecewiseCurveTest(bool& error)
 void curveAbcDimDynamicTest(bool& error)
 {
   typedef curve_abc<double,double,true> curve_abc_test_t;
-  typedef polynomial  <double, double, 3, true> polynomial_test_t;
+  typedef polynomial  <double, double, true> polynomial_test_t;
   typedef exact_cubic <double, double, 3, true> exact_cubic_test_t;
   typedef exact_cubic_test_t::spline_constraints spline_constraints_test_t;
   typedef bezier_curve  <double, double, true> bezier_curve_test_t;

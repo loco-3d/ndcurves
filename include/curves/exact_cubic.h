@@ -40,7 +40,7 @@ namespace curves
   template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, 
            typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> >,
-           typename SplineBase=polynomial<Time, Numeric, Dim, Safe, Point, T_Point> >
+           typename SplineBase=polynomial<Time, Numeric, Safe, Point, T_Point> >
   struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point, T_Point, SplineBase>
   {
     typedef Point   point_t;
@@ -182,9 +182,9 @@ namespace curves
         for(int i=0; next != wayPointsEnd; ++i, ++it, ++next)
         {
           subSplines.push_back(
-            create_cubic<Time,Numeric,Dim,Safe,Point,T_Point>(a.row(i), b.row(i), 
-                                                              c.row(i), d.row(i),
-                                                              (*it).first, (*next).first));
+            create_cubic<Time,Numeric,Safe,Point,T_Point>(a.row(i), b.row(i), 
+                                                          c.row(i), d.row(i),
+                                                          (*it).first, (*next).first));
         }
         return subSplines;
       }
@@ -218,7 +218,7 @@ namespace curves
         const num_t& init_t = wayPointsBegin->first, end_t = wayPointsNext->first;
         const num_t dt = end_t - init_t, dt_2 = dt * dt, dt_3 = dt_2 * dt;
         const point_t d0 = (a1 - a0 - b0 * dt - c0 * dt_2) / dt_3;
-        subSplines.push_back(create_cubic<Time,Numeric,Dim,Safe,Point,T_Point>(a0,b0,c0,d0,init_t, end_t));
+        subSplines.push_back(create_cubic<Time,Numeric,Safe,Point,T_Point>(a0,b0,c0,d0,init_t, end_t));
         constraints.init_vel = subSplines.back().derivate(end_t, 1);
         constraints.init_acc = subSplines.back().derivate(end_t, 2);
       }
@@ -247,7 +247,7 @@ namespace curves
         eq(2,0) = x_d_2; eq(2,1) = x_e_2; eq(2,2) = x_f_2;
         rhs = eq.inverse().eval() * rhs;
         d = rhs.row(0); e = rhs.row(1); f = rhs.row(2);
-        subSplines.push_back(create_quintic<Time,Numeric,Dim,Safe,Point,T_Point>(a0,b0,c0,d,e,f, init_t, end_t));
+        subSplines.push_back(create_quintic<Time,Numeric,Safe,Point,T_Point>(a0,b0,c0,d,e,f, init_t, end_t));
       }
 
     public:
