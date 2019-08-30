@@ -332,6 +332,8 @@ namespace curves
 
       coeff_t deriv_coeff(coeff_t coeff) const
       {
+        if(coeff.cols() == 1) // only the constant part is left, fill with 0
+          return coeff_t::Zero(coeff.rows(),1);
         coeff_t coeff_derivated(coeff.rows(), coeff.cols()-1);
         for (std::size_t i=0; i<std::size_t(coeff_derivated.cols()); i++) {
           coeff_derivated.col(i) = coeff.col(i+1)*(num_t)(i+1);
