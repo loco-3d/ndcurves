@@ -19,16 +19,16 @@ namespace curves
 {
   typedef Eigen::Vector3d point_t;
   typedef Eigen::VectorXd pointX_t;
-  typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_point_t;
+  typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
   typedef curve_abc  <double, double, true, pointX_t> curve_abc_t;
-  typedef polynomial  <double, double, true, pointX_t, t_point_t> polynomial_t;
+  typedef polynomial  <double, double, true, pointX_t, t_pointX_t> polynomial_t;
   typedef exact_cubic <double, double, true, pointX_t> exact_cubic_t;
   typedef exact_cubic   <double, double, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
   typedef bezier_curve  <double, double, true, pointX_t> bezier_curve_t;
   typedef cubic_hermite_spline <double, double, true, pointX_t> cubic_hermite_spline_t;
-  typedef piecewise_curve <double, double, true, pointX_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
-  typedef piecewise_curve <double, double, true, pointX_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
-  typedef piecewise_curve <double, double, true, pointX_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+  typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
+  typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
+  typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
   typedef exact_cubic_t::spline_constraints spline_constraints_t;
   typedef std::pair<double, pointX_t> Waypoint;
   typedef std::vector<Waypoint> T_Waypoint;
@@ -103,7 +103,7 @@ void PolynomialCubicFunctionTest(bool& error)
   point_t b(2,3,4);
   point_t c(3,4,5);
   point_t d(3,6,7);
-  t_point_t vec;
+  t_pointX_t vec;
   vec.push_back(a);
   vec.push_back(b);
   vec.push_back(c);
@@ -1087,7 +1087,7 @@ void piecewiseCurveTest(bool& error)
     point_t b(2,1,1); // in [1,2[
     point_t c(3,1,1); // in [2,3]
     point_t res;
-    t_point_t vec1, vec2, vec3;
+    t_pointX_t vec1, vec2, vec3;
     vec1.push_back(a); // x=1, y=1, z=1
     vec2.push_back(b); // x=2, y=1, z=1
     vec3.push_back(c); // x=3, y=1, z=1
@@ -1169,7 +1169,7 @@ void piecewiseCurveTest(bool& error)
     // Create piecewise curve C2
     point_t a1(0,0,0);
     point_t b1(1,1,1);
-    t_point_t veca, vecb;
+    t_pointX_t veca, vecb;
     // in [0,1[
     veca.push_back(a1);
     veca.push_back(b1); // x=t, y=t, z=t 
@@ -1254,7 +1254,7 @@ void curveAbcDimDynamicTest(bool& error)
   // POLYNOMIAL
   point_t a(1,1,1);
   point_t b(2,2,2);
-  t_point_t vec;
+  t_pointX_t vec;
   vec.push_back(a);
   vec.push_back(b);
   polynomial_test_t pol(vec.begin(), vec.end(), 0, 1);
@@ -1341,7 +1341,7 @@ void piecewiseCurveConversionFromDiscretePointsTest(bool& error)
   point_t p2(4.,4.,4.);
   point_t p3(10.,10.,10.);
   point_t p_test_0_5 = (p0+p1)/2.0;
-  t_point_t points;
+  t_pointX_t points;
   points.push_back(p0);
   points.push_back(p1);
   points.push_back(p2);
@@ -1383,7 +1383,7 @@ void serializationCurvesTest(bool& error)
     point_t b(2,1,1); // in [1,2[
     point_t c(3,1,1); // in [2,3]
     point_t res;
-    t_point_t vec1, vec2, vec3;
+    t_pointX_t vec1, vec2, vec3;
     vec1.push_back(a); // x=1, y=1, z=1
     vec2.push_back(b); // x=2, y=1, z=1
     vec3.push_back(c); // x=3, y=1, z=1
