@@ -1234,6 +1234,40 @@ void piecewiseCurveTest(bool& error)
     CompareCurves<piecewise_polynomial_curve_t, piecewise_cubic_hermite_curve_t>(pc, pc_hermite, errmsg5, error);
     piecewise_polynomial_curve_t pc_polynomial_same = pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
     CompareCurves<piecewise_polynomial_curve_t, piecewise_polynomial_curve_t>(pc, pc_polynomial_same, errmsg5, error);
+
+    // compare compute_derivate and derivate results :
+
+    piecewise_polynomial_curve_t pc_C2_derivate = pc_C2.compute_derivate(1);
+    piecewise_polynomial_curve_t pc_C2_derivate2 = pc_C2.compute_derivate(2);
+    if(pc_C2.min() != pc_C2_derivate.min()){
+      error = true;
+      std::cout<<"min bounds for curve and it's derivate are not equals."<<std::endl;
+    }
+    if(pc_C2.min() != pc_C2_derivate2.min()){
+      error = true;
+      std::cout<<"min bounds for curve and it's second derivate are not equals."<<std::endl;
+    }
+    if(pc_C2.max() != pc_C2_derivate.max()){
+      error = true;
+      std::cout<<"max bounds for curve and it's derivate are not equals."<<std::endl;
+    }
+    if(pc_C2.max() != pc_C2_derivate2.max()){
+      error = true;
+      std::cout<<"max bounds for curve and it's second derivate are not equals."<<std::endl;
+    }
+    double t = 0.;
+    while(t<pc_C2.max()){
+      if(!QuasiEqual(pc_C2.derivate(t,1),pc_C2_derivate(t))){
+        error = true;
+        std::cout<<"value not equal between derivate and compute_derivate (order 1) at t = "<<t<<std::endl;
+      }
+      if(!QuasiEqual(pc_C2.derivate(t,2),pc_C2_derivate2(t))){
+        error = true;
+        std::cout<<"value not equal between derivate and compute_derivate (order 2) at t = "<<t<<std::endl;
+      }
+      t += 0.01;
+    }
+
   }
   catch(...)
   {
