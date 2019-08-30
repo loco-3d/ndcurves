@@ -100,6 +100,19 @@ namespace curves
         return (curves_.at(find_interval(t))).derivate(t, order);
       }
 
+      /**
+       * @brief compute_derivate return a piecewise_curve which is the derivative of this at given order
+       * @param order order of derivative
+       * @return
+       */
+      piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve> compute_derivate(const std::size_t order) const{
+        piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve> res;
+        for(typename t_curve_t::const_iterator itc = curves_.begin() ; itc < curves_.end() ; ++itc){
+          res.add_curve(itc->compute_derivate(order));
+        }
+        return res;
+      }
+
       ///  \brief Add a new curve to piecewise curve, which should be defined in \f$[T_{min},T_{max}]\f$ where \f$T_{min}\f$
       ///         is equal to \f$T_{max}\f$ of the actual piecewise curve. The curve added should be of type Curve as defined
       ///         in the template.
@@ -178,6 +191,7 @@ namespace curves
         }
         return pc_res;
       }
+
 
       template<typename Hermite>
       piecewise_curve<Time, Numeric, Safe, Point, T_Point, Hermite> convert_piecewise_curve_to_cubic_hermite()
@@ -283,6 +297,7 @@ namespace curves
         }
         return piecewise_res;
       }
+
 
     private:
 
