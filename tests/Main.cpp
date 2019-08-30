@@ -1479,13 +1479,13 @@ void serializationCurvesTest(bool& error)
 }
 
 void polynomialFromBoundaryConditions(bool& error){
-  point_t zeros(0.,0.,0.);
-  point_t p0(0.,1.,0.);
-  point_t p1(1.,2.,-3.);
-  point_t dp0(-8.,4.,6.);
-  point_t dp1(10.,-10.,10.);
-  point_t ddp0(-1.,7.,4.);
-  point_t ddp1(12.,-8.,2.5);
+  pointX_t zeros = point_t(0.,0.,0.);
+  pointX_t p0 = point_t(0.,1.,0.);
+  pointX_t p1 = point_t(1.,2.,-3.);
+  pointX_t dp0 = point_t(-8.,4.,6.);
+  pointX_t dp1 = point_t(10.,-10.,10.);
+  pointX_t ddp0 = point_t(-1.,7.,4.);
+  pointX_t ddp1 = point_t(12.,-8.,2.5);
   double min = 0.5;
   double max = 2.;
   // C0 : order 1
