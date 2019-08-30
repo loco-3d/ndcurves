@@ -236,7 +236,7 @@ namespace curves
       }
 
       template<typename Polynomial>
-      static piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial>
+      static piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial>
       convert_discrete_points_to_polynomial(T_Point points,T_Point points_derivative, t_time_t time_points)
       {
         if(Safe &! (points.size()>1))
@@ -250,7 +250,7 @@ namespace curves
         if(points.size() != points_derivative.size()){
             throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, points and points_derivative must have the same size.");
         }
-        piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> piecewise_res;
+        piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_res;
 
         for(size_t i = 1 ; i < points.size() ; ++i){
           piecewise_res.add_curve(Polynomial(points[i-1],points_derivative[i-1],points[i],points_derivative[i],time_points[i-1],time_points[i]));
@@ -259,7 +259,7 @@ namespace curves
       }
 
       template<typename Polynomial>
-      static piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial>
+      static piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial>
       convert_discrete_points_to_polynomial(T_Point points,T_Point points_derivative, T_Point points_second_derivative, t_time_t time_points)
       {
         if(Safe &! (points.size()>1))
@@ -276,7 +276,7 @@ namespace curves
         if(points.size() != points_second_derivative.size()){
             throw std::invalid_argument("piecewise_curve::convert_discrete_points_to_polynomial: Error, points and points_second_derivative must have the same size.");
         }
-        piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> piecewise_res;
+        piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_res;
 
         for(size_t i = 1 ; i < points.size() ; ++i){
             piecewise_res.add_curve(Polynomial(points[i-1],points_derivative[i-1],points_second_derivative[i-1],points[i],points_derivative[i],points_second_derivative[i],time_points[i-1],time_points[i]));

@@ -84,6 +84,7 @@ namespace curves
         safe_check();
       }
 
+
       /// \brief Constructor.
       /// \param zeroOrderCoefficient : an iterator pointing to the first element of a structure containing the coefficients
       ///  it corresponds to the zero degree coefficient.
@@ -109,9 +110,11 @@ namespace curves
       /// \param max   : UPPER bound on interval definition of the spline.
       ///
       polynomial(const Point& init, const Point& end, const time_t min, const time_t max ):
-        dim_(Dim), degree_(1),
+        dim_(init.size()), degree_(1),
         T_min_(min), T_max_(max)
       {
+        if(init.size() != end.size())
+          throw std::invalid_argument("init and end points must have the same dimensions.");
         t_point_t coeffs;
         coeffs.push_back(init);
         coeffs.push_back((end-init)/(max-min));
@@ -130,9 +133,15 @@ namespace curves
       /// \param max   : UPPER bound on interval definition of the spline.
       ///
       polynomial(const Point& init,const Point& d_init, const Point& end, const Point& d_end,const time_t min, const time_t max ):
-        dim_(Dim), degree_(3),
+        dim_(init.size()), degree_(3),
         T_min_(min), T_max_(max)
       {
+        if(init.size() != end.size())
+          throw std::invalid_argument("init and end points must have the same dimensions.");
+        if(init.size() != d_init.size())
+          throw std::invalid_argument("init and d_init points must have the same dimensions.");
+        if(init.size() != d_end.size())
+          throw std::invalid_argument("init and d_end points must have the same dimensions.");
         /* the coefficients [c0 c1 c2 c3] are found by solving the following system of equation
         (found from the boundary conditions) :
         [1  0  0   0   ]   [c0]   [ init ]
@@ -172,9 +181,19 @@ namespace curves
       /// \param max   : UPPER bound on interval definition of the spline.
       ///
       polynomial(const Point& init,const Point& d_init,const Point& dd_init, const Point& end, const Point& d_end,const Point& dd_end,const time_t min, const time_t max ):
-        dim_(Dim), degree_(5),
+        dim_(init.size()), degree_(5),
         T_min_(min), T_max_(max)
       {
+        if(init.size() != end.size())
+          throw std::invalid_argument("init and end points must have the same dimensions.");
+        if(init.size() != d_init.size())
+          throw std::invalid_argument("init and d_init points must have the same dimensions.");
+        if(init.size() != d_end.size())
+          throw std::invalid_argument("init and d_end points must have the same dimensions.");
+        if(init.size() != dd_init.size())
+          throw std::invalid_argument("init and dd_init points must have the same dimensions.");
+        if(init.size() != dd_end.size())
+          throw std::invalid_argument("init and dd_end points must have the same dimensions.");
         /* the coefficients [c0 c1 c2 c3 c4 c5] are found by solving the following system of equation
         (found from the boundary conditions) :
         [1  0  0   0    0     0    ]   [c0]   [ init  ]
