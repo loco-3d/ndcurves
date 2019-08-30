@@ -175,32 +175,32 @@ namespace curves
   {
     return new piecewise_cubic_hermite_curve_t();
   }
-  static piecewise_polynomial_curve_t discretPointToPolynomialC0(const point_list_t& points, const time_waypoints_t& time_points){
-    t_point_t points_list = vectorFromEigenArray<point_list_t,t_point_t>(points);
+  static piecewise_polynomial_curve_t discretPointToPolynomialC0(const pointX_list_t& points, const time_waypoints_t& time_points){
+    t_pointX_t points_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points);
     t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
     return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,time_points_list);
   }
-  static piecewise_polynomial_curve_t discretPointToPolynomialC1(const point_list_t& points,const point_list_t& points_derivative, const time_waypoints_t& time_points){
-    t_point_t points_list = vectorFromEigenArray<point_list_t,t_point_t>(points);
-    t_point_t points_derivative_list = vectorFromEigenArray<point_list_t,t_point_t>(points_derivative);
+  static piecewise_polynomial_curve_t discretPointToPolynomialC1(const pointX_list_t& points,const pointX_list_t& points_derivative, const time_waypoints_t& time_points){
+    t_pointX_t points_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points);
+    t_pointX_t points_derivative_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points_derivative);
     t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
     return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,points_derivative_list,time_points_list);
   }
-  static piecewise_polynomial_curve_t discretPointToPolynomialC2(const point_list_t& points,const point_list_t& points_derivative,const point_list_t& points_second_derivative, const time_waypoints_t& time_points){
-    t_point_t points_list = vectorFromEigenArray<point_list_t,t_point_t>(points);
-    t_point_t points_derivative_list = vectorFromEigenArray<point_list_t,t_point_t>(points_derivative);
-    t_point_t points_second_derivative_list = vectorFromEigenArray<point_list_t,t_point_t>(points_second_derivative);
+  static piecewise_polynomial_curve_t discretPointToPolynomialC2(const pointX_list_t& points,const pointX_list_t& points_derivative,const point_list_t& points_second_derivative, const time_waypoints_t& time_points){
+    t_pointX_t points_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points);
+    t_pointX_t points_derivative_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points_derivative);
+    t_pointX_t points_second_derivative_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points_second_derivative);
 
     t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
     return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,points_derivative_list,points_second_derivative_list,time_points_list);
   }
-  void addFinalPointC0(piecewise_polynomial_curve_t self,const point_t& end,const real time){
+  void addFinalPointC0(piecewise_polynomial_curve_t self,const pointX_t& end,const real time){
     if(self.is_continuous(1))
       std::cout<<"Warning: by adding this final point to the piecewise curve, you loose C1 continuity and only guarantee C0 continuity."<<std::endl;
     polynomial_t pol(self(self.max()),end,self.max(),time);
     self.add_curve(pol);
   }
-  void addFinalPointC1(piecewise_polynomial_curve_t self,const point_t& end,const point_t& d_end,const real time){
+  void addFinalPointC1(piecewise_polynomial_curve_t self,const pointX_t& end,const pointX_t& d_end,const real time){
     if(self.is_continuous(2))
       std::cout<<"Warning: by adding this final point to the piecewise curve, you loose C2 continuity and only guarantee C1 continuity."<<std::endl;
     if(!self.is_continuous(1))
@@ -208,7 +208,7 @@ namespace curves
     polynomial_t pol(self(self.max()),self.derivate(self.max(),1),end,d_end,self.max(),time);
     self.add_curve(pol);
   }
-  void addFinalPointC2(piecewise_polynomial_curve_t self,const point_t& end,const point_t& d_end,const point_t& dd_end,const real time){
+  void addFinalPointC2(piecewise_polynomial_curve_t self,const pointX_t& end,const pointX_t& d_end,const pointX_t& dd_end,const real time){
     if(self.is_continuous(3))
       std::cout<<"Warning: by adding this final point to the piecewise curve, you loose C3 continuity and only guarantee C2 continuity."<<std::endl;
     if(!self.is_continuous(2))
