@@ -226,7 +226,7 @@ class TestCurves(unittest.TestCase):
         a = polynomial(waypoints1, 0., 1.)
         b = polynomial(waypoints2, 1., 3.)
         pc = piecewise_polynomial_curve(a)
-        pc.add_curve(b)
+        pc.append(b)
         pc.min()
         pc.max()
         pc(0.4)
