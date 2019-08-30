@@ -186,7 +186,7 @@ namespace curves
     t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
     return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,points_derivative_list,time_points_list);
   }
-  static piecewise_polynomial_curve_t discretPointToPolynomialC2(const pointX_list_t& points,const pointX_list_t& points_derivative,const point_list_t& points_second_derivative, const time_waypoints_t& time_points){
+  static piecewise_polynomial_curve_t discretPointToPolynomialC2(const pointX_list_t& points,const pointX_list_t& points_derivative,const pointX_list_t& points_second_derivative, const time_waypoints_t& time_points){
     t_pointX_t points_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points);
     t_pointX_t points_derivative_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points_derivative);
     t_pointX_t points_second_derivative_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points_second_derivative);
