@@ -1,4 +1,5 @@
 import os
+<<<<<<< 1582da2653def2df6a259a85910c2e74f2f1f7b0
 import unittest
 
 from numpy import array_equal, isclose, matrix, random
@@ -8,6 +9,20 @@ from curves import (bezier, bezier_from_hermite, bezier_from_polynomial, cubic_h
                     exact_cubic, hermite_from_bezier, hermite_from_polynomial, piecewise_bezier_curve,
                     piecewise_cubic_hermite_curve, piecewise_polynomial_curve, polynomial, polynomial_from_bezier,
                     polynomial_from_hermite)
+=======
+from math import sqrt
+from numpy import matrix, array_equal, isclose,random,zeros
+from numpy.linalg import norm
+
+#from curves import ( serialize_polynomial, deserialize_polynomial, serialize_piecewise_polynomial_curve, deserialize_piecewise_polynomial_curve )
+
+from curves import (bezier_from_hermite, bezier_from_polynomial, hermite_from_polynomial,
+                    hermite_from_bezier, polynomial_from_hermite, polynomial_from_bezier,
+                    cubic_hermite_spline, curve_constraints, exact_cubic, bezier, 
+                    piecewise_bezier_curve, piecewise_cubic_hermite_curve,
+                    piecewise_polynomial_curve, polynomial,SO3Linear,Quaternion
+                    )
+>>>>>>> [test][python] add python unittest for SO3Linear
 
 
 class TestCurves(unittest.TestCase):
@@ -443,6 +458,74 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(norm(a(0.3) - a_bc(0.3)) < __EPS)
         return
 
+    def test_so3_linear(self):
+        print "test SO3 Linear"
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        min = 0.2
+        max = 1.5
+        so3Rot = SO3Linear(init_rot,end_rot,min,max)
+        so3Quat = SO3Linear(init_quat,end_quat,min,max)
+        self.assertTrue(isclose(so3Rot(min),init_rot).all())
+        self.assertTrue(isclose(so3Rot(max),end_rot).all())
+        self.assertTrue(isclose(so3Quat(min),init_rot).all())
+        self.assertTrue(isclose(so3Quat(max),end_rot).all())
+        self.assertEqual(so3Rot.computeAsQuaternion(min),init_quat)
+        self.assertEqual(so3Rot.computeAsQuaternion(max),end_quat)
+        self.assertEqual(so3Quat.computeAsQuaternion(min),init_quat)
+        self.assertEqual(so3Quat.computeAsQuaternion(max),end_quat)
+        t = min
+        while t < max:
+          self.assertTrue(isclose(so3Quat(t),so3Rot(t)).all())
+          t += 0.01
+        # check the derivatives :
+        vel =  matrix([[ 1.20830487],[ 0.  ], [ 0. ]])
+        zeros3 = matrix(zeros(3)).T
+        t = min
+        while t < max:
+          self.assertTrue(isclose(so3Quat.derivate(t,1),vel).all())
+          self.assertTrue(isclose(so3Rot.derivate(t,1),vel).all())
+          t += 0.01
+        for i in range(2,5):
+          t = min
+          while t < max:
+            self.assertTrue(isclose(so3Quat.derivate(t,i),zeros3).all())
+            self.assertTrue(isclose(so3Rot.derivate(t,i),zeros3).all())
+            t += 0.01
+
+        # check that errors are correctly raised when necessary :
+        try:
+          so3Rot(0.)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot(-0.1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot(3)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot.derivate(0,1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot.derivate(3.,1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot.derivate(1.,0)
+          self.assertTrue(False)
+        except:
+          pass
 
 if __name__ == '__main__':
     unittest.main()
