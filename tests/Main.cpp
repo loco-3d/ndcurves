@@ -7,7 +7,7 @@
 #include "curves/curve_conversion.h"
 #include "curves/cubic_hermite_spline.h"
 #include "curves/piecewise_curve.h"
-
+#include "curves/so3_linear.h"
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -15,39 +15,45 @@
 
 using namespace std;
 
-namespace curves {
+namespace curves
+{
 typedef Eigen::Vector3d point_t;
 typedef Eigen::VectorXd pointX_t;
-typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_pointX_t;
-typedef curve_abc<double, double, true, pointX_t> curve_abc_t;
-typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
-typedef exact_cubic<double, double, true, pointX_t> exact_cubic_t;
-typedef exact_cubic<double, double, true, Eigen::Matrix<double, 1, 1> > exact_cubic_one;
-typedef bezier_curve<double, double, true, pointX_t> bezier_curve_t;
-typedef cubic_hermite_spline<double, double, true, pointX_t> cubic_hermite_spline_t;
-typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
-typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
-typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t>
-    piecewise_cubic_hermite_curve_t;
+typedef Eigen::Quaternion<double> quaternion_t;
+typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
+typedef curve_abc  <double, double, true, pointX_t> curve_abc_t;
+typedef polynomial  <double, double, true, pointX_t, t_pointX_t> polynomial_t;
+typedef exact_cubic <double, double, true, pointX_t> exact_cubic_t;
+typedef exact_cubic   <double, double, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
+typedef bezier_curve  <double, double, true, pointX_t> bezier_curve_t;
+typedef cubic_hermite_spline <double, double, true, pointX_t> cubic_hermite_spline_t;
+typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
+typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
+typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
 typedef exact_cubic_t::spline_constraints spline_constraints_t;
 typedef std::pair<double, pointX_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
-typedef Eigen::Matrix<double, 1, 1> point_one;
+typedef Eigen::Matrix<double,1,1> point_one;
 typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
 typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
-typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
+typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
+typedef SO3Linear  <double, double, true> SO3Linear_t;
 
 const double margin = 1e-3;
-bool QuasiEqual(const double a, const double b) { return std::fabs(a - b) < margin; }
-bool QuasiEqual(const point_t a, const point_t b) {
+bool QuasiEqual(const double a, const double b)
+{
+  return std::fabs(a-b)<margin;
+}
+bool QuasiEqual(const point_t a, const point_t b)
+{
   bool equal = true;
-  for (size_t i = 0; i < 3; ++i) {
-    equal = equal && QuasiEqual(a[i], b[i]);
+  for(size_t i = 0 ; i < 3 ; ++i){
+    equal = equal && QuasiEqual(a[i],b[i]);
   }
   return equal;
 }
-}  // End namespace curves
+} // End namespace curves
 
 using namespace curves;
 
@@ -1559,7 +1565,69 @@ void polynomialFromBoundaryConditions(bool& error) {
   }
 }
 
+<<<<<<< 86b19a60e1a540c300beeaf898e0670f38d037bd
 int main(int /*argc*/, char** /*argv[]*/) {
+=======
+void so3LinearTest(bool& error){
+  quaternion_t q0(1,0,0,0);
+  quaternion_t q1(0.7071,0.7071,0,0);
+  SO3Linear_t so3Traj(q0,q1,0.,1.5);
+
+  if(so3Traj.min() != 0 ){
+    error=true;
+    std::cout<<"Min bound not respected"<<std::endl;
+  }
+  if(so3Traj.max() != 1.5 ){
+    error=true;
+    std::cout<<"Max bound not respected"<<std::endl;
+  }
+  if(!so3Traj.computeAsQuaternion(0).isApprox(q0)){
+    error=true;
+    std::cout<<"evaluate at t=0 is not the init quaternion"<<std::endl;
+  }
+  if(so3Traj(0) != q0.toRotationMatrix()){
+    error=true;
+    std::cout<<"evaluate at t=0 is not the init rotation"<<std::endl;
+  }
+  if(!so3Traj.computeAsQuaternion(1.5).isApprox(q1)){
+    error=true;
+    std::cout<<"evaluate at t=max is not the final quaternion"<<std::endl;
+  }
+  if(so3Traj(1.5) != q1.toRotationMatrix()){
+    error=true;
+    std::cout<<"evaluate at t=max is not the final rotation"<<std::endl;
+  }
+  //check derivatives :
+  if(so3Traj.derivate(0,1) != so3Traj.derivate(1.,1)){
+    error=true;
+    std::cout<<"first order derivative should be constant."<<std::endl;
+  }
+  if(so3Traj.derivate(0,2) != point_t::Zero(3)){
+    error=true;
+    std::cout<<"second order derivative should be null"<<std::endl;
+  }
+  // check if errors are correctly raised :
+  try{
+    so3Traj(-0.1);
+    error = true;
+    std::cout<<"SO3Linear: calling () with t < tmin should raise an invalid_argument error"<<std::endl;
+  }catch(std::invalid_argument e){  }
+  try{
+    so3Traj(1.7);
+    error = true;
+    std::cout<<"SO3Linear: calling () with t > tmin should raise an invalid_argument error"<<std::endl;
+  }catch(std::invalid_argument e){  }
+  try{
+    so3Traj.derivate(0,0);
+    error = true;
+    std::cout<<"SO3Linear: calling derivate with order = 0 should raise an invalid_argument error"<<std::endl;
+  }catch(std::invalid_argument e){  }
+}
+
+
+int main(int /*argc*/, char** /*argv[]*/)
+{
+>>>>>>> [test] add unittest for SO3Linear
   std::cout << "performing tests... \n";
   bool error = false;
   PolynomialCubicFunctionTest(error);
@@ -1588,7 +1656,14 @@ int main(int /*argc*/, char** /*argv[]*/) {
   curveAbcDimDynamicTest(error);
   serializationCurvesTest(error);
   polynomialFromBoundaryConditions(error);
+<<<<<<< 86b19a60e1a540c300beeaf898e0670f38d037bd
   if (error) {
+=======
+  so3LinearTest(error);
+
+  if(error)
+  {
+>>>>>>> [test] add unittest for SO3Linear
     std::cout << "There were some errors\n";
     return -1;
   } else {
