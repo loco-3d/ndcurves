@@ -6,7 +6,7 @@
 #include "curves/bernstein.h"
 #include "curves/cubic_hermite_spline.h"
 #include "curves/piecewise_curve.h"
-
+#include "curves/so3_linear.h"
 #include "python_definitions.h"
 #include "python_variables.h"
 #include "archive_python_binding.h"
@@ -15,6 +15,7 @@
 
 #include <eigenpy/memory.hpp>
 #include <eigenpy/eigenpy.hpp>
+#include <eigenpy/geometry.hpp>
 #include <Eigen/Dense>
 
 #include <boost/python.hpp>
@@ -38,6 +39,8 @@ typedef curves::curve_constraints<point3_t> curve_constraints3_t;
 
 typedef std::pair<real, pointX_t> waypoint_t;
 typedef std::vector<waypoint_t> t_waypoint_t;
+typedef Eigen::Matrix<real,3, 3> matrix3_t;
+typedef Eigen::Quaternion<real> quaternion_t;
 
 // Curves
 typedef curve_abc<real, real, true, pointX_t> curve_abc_t; // generic class of curve
@@ -50,10 +53,10 @@ typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, polynom
 typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, bezier_t> piecewise_bezier_curve_t;
 typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
 typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
-
 // Bezier 3
 
 typedef curves::Bern<double> bernstein_t;
+typedef SO3Linear  <double, double, true> SO3Linear_t;
 
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
@@ -66,6 +69,7 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_polynomial_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_bezier_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_cubic_hermite_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(SO3Linear_t)
 
 namespace curves
 {
@@ -338,6 +342,19 @@ namespace curves
   }
   /* End wrap exact cubic spline */
 
+  /* Wrap SO3Linear */
+  SO3Linear_t* wrapSO3LinearConstructorFromQuaternion(const quaternion_t& init_rot, const quaternion_t& end_rot, const real min, const real max)
+  {
+    return new SO3Linear_t(init_rot,end_rot, min, max);
+  }
+
+  SO3Linear_t* wrapSO3LinearConstructorFromMatrix(const matrix3_t& init_rot, const matrix3_t& end_rot, const real min, const real max)
+  {
+    return new SO3Linear_t(init_rot,end_rot, min, max);
+  }
+
+  /* End rap SO3Linear */
+
 
   // TO DO : Replace all load and save function for serialization in class by using
   //         SerializableVisitor in archive_python_binding.
@@ -348,6 +365,9 @@ namespace curves
     eigenpy::enableEigenPySpecific<pointX_t,pointX_t>();
     eigenpy::enableEigenPySpecific<pointX_list_t,pointX_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
+    eigenpy::enableEigenPySpecific<matrix3_t,matrix3_t>();
+    //eigenpy::enableEigenPySpecific<quaternion_t,quaternion_t>();
+    eigenpy::exposeQuaternion();
     /*eigenpy::exposeAngleAxis();
     eigenpy::exposeQuaternion();*/
     /** END eigenpy init**/
@@ -574,6 +594,18 @@ namespace curves
     ;
     /** END bernstein polynomial**/
 
+    /** BEGIN SO3 Linear**/
+    class_<SO3Linear_t>("SO3Linear",  init<>())
+      .def("__init__", make_constructor(&wrapSO3LinearConstructorFromMatrix,default_call_policies(),args("init_rotation","end_rotation","min","max")),"Create a SO3 Linear curve between two rotations, defined for t \in [min,max]."
+     " The input rotations are expressed as 3x3 matrix.")
+      .def("__init__", make_constructor(&wrapSO3LinearConstructorFromQuaternion,default_call_policies(),args("init_rotation","end_rotation","min","max")),"Create a SO3 Linear curve between two rotations, defined for t \in [min,max]."
+         " The input rotations are expressed as Quaternions.")
+      .def("__call__", &SO3Linear_t::operator(),"Output the rotation (as a 3x3 matrix) at the given time. This rotation is obtained by a Spherical Linear Interpolation between the initial and final rotation.")
+      .def("computeAsQuaternion",&SO3Linear_t::computeAsQuaternion,"Output the quaternion of the rotation at the given time. This rotation is obtained by a Spherical Linear Interpolation between the initial and final rotation.")
+      .def("derivate",&SO3Linear_t::derivate,"Output the derivate of the curve at the given time and order",args("self","time","order"))
+        ;
+
+    /** END  SO3 Linear**/
     /** BEGIN curves conversion**/
     def("polynomial_from_bezier", polynomial_from_curve<polynomial_t,bezier_t>);
     def("polynomial_from_hermite", polynomial_from_curve<polynomial_t,cubic_hermite_spline_t>);

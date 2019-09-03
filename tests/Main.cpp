@@ -1565,9 +1565,6 @@ void polynomialFromBoundaryConditions(bool& error) {
   }
 }
 
-<<<<<<< 86b19a60e1a540c300beeaf898e0670f38d037bd
-int main(int /*argc*/, char** /*argv[]*/) {
-=======
 void so3LinearTest(bool& error){
   quaternion_t q0(1,0,0,0);
   quaternion_t q1(0.7071,0.7071,0,0);
@@ -1627,7 +1624,6 @@ void so3LinearTest(bool& error){
 
 int main(int /*argc*/, char** /*argv[]*/)
 {
->>>>>>> [test] add unittest for SO3Linear
   std::cout << "performing tests... \n";
   bool error = false;
   PolynomialCubicFunctionTest(error);
@@ -1656,14 +1652,7 @@ int main(int /*argc*/, char** /*argv[]*/)
   curveAbcDimDynamicTest(error);
   serializationCurvesTest(error);
   polynomialFromBoundaryConditions(error);
-<<<<<<< 86b19a60e1a540c300beeaf898e0670f38d037bd
   if (error) {
-=======
-  so3LinearTest(error);
-
-  if(error)
-  {
->>>>>>> [test] add unittest for SO3Linear
     std::cout << "There were some errors\n";
     return -1;
   } else {
