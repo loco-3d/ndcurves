@@ -40,7 +40,9 @@ typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tan
 typedef piecewise_polynomial_curve <double, double, 3, true, point_t> piecewise_polynomial_curve_t;
 
 
-bool QuasiEqual(const double a, const double b, const float margin)
+const double margin = 0.001;
+
+bool QuasiEqual(const double a, const double b)
 {
 	if ((a <= 0 && b <= 0) || (a >= 0 && b>= 0))
 	{
@@ -51,8 +53,6 @@ bool QuasiEqual(const double a, const double b, const float margin)
 		return abs(a) + abs(b) <= margin;
 	}
 }
-
-const double margin = 0.001;
 
 } // namespace curves
 
@@ -159,15 +159,15 @@ void CubicFunctionTest(bool& error)
     {
         std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
     }
-    if(cf.max() != 1)
+    if(not QuasiEqual(cf.max(), 1.0))
     {
         error = true;
         std::cout << "Evaluation of cubic cf error, MaxBound should be equal to 1\n";
     }
-    if(cf.min() != 0)
+    if(not QuasiEqual(cf.min(), 0.0))
     {
         error = true;
-        std::cout << "Evaluation of cubic cf error, MinBound should be equal to 1\n";
+        std::cout << "Evaluation of exactCubic error, MinBound should be equal to 0\n";
     }
 }
 
@@ -255,12 +255,12 @@ void BezierCurveTest(bool& error)
 		std::cout << "Evaluation of bezier cf error, 1.1 should be an out of range value\n";
         error = true;
 	}
-	if(cf.max() != 1)
+	if(not QuasiEqual(cf.max(), 1))
 	{
 		error = true;
 		std::cout << "Evaluation of bezier cf error, MaxBound should be equal to 1\n";
 	}
-	if(cf.min() != 0)
+	if(not QuasiEqual(cf.min(), 0))
 	{
 		error = true;
 		std::cout << "Evaluation of bezier cf error, MinBound should be equal to 1\n";
@@ -594,13 +594,12 @@ void ExactCubicNoErrorTest(bool& error)
 	{
 		std::cout << "Evaluation of exactCubic cf error, 3.2 should be an out of range value\n";
 	}
-
-	if(exactCubic.max() != 3.)
+	if(not QuasiEqual(exactCubic.max(), 3.0))
 	{
 		error = true;
 		std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 3\n";
 	}
-	if(exactCubic.min() != 0.)
+	if(not QuasiEqual(exactCubic.min(), 0.0))
 	{
 		error = true;
 		std::cout << "Evaluation of exactCubic error, MinBound should be equal to 0\n";
@@ -877,22 +876,22 @@ void TestReparametrization(bool& error)
 {
     helpers::rotation_spline s;
     const helpers::exact_cubic_constraint_one_dim& sp = s.time_reparam_;
-    if(sp.min() != 0)
+    if(not QuasiEqual(sp.min(), 0.0))
     {
         std::cout << "in TestReparametrization; min value is not 0, got " << sp.min() << std::endl;
         error = true;
     }
-    if(sp.max() != 1)
+    if(not QuasiEqual(sp.max(), 1.0))
     {
         std::cout << "in TestReparametrization; max value is not 1, got " << sp.max() << std::endl;
         error = true;
     }
-    if(sp(1)[0] != 1.)
+    if(not QuasiEqual(sp(1)[0], 1.))
     {
         std::cout << "in TestReparametrization; end value is not 1, got " << sp(1)[0] << std::endl;
         error = true;
     }
-    if(sp(0)[0] != 0.)
+    if(not QuasiEqual(sp(0)[0], 0.))
     {
         std::cout << "in TestReparametrization; init value is not 0, got " << sp(0)[0] << std::endl;
         error = true;
@@ -1009,7 +1008,7 @@ void BezierSplitCurve(bool& error)
             std::cout<<" Degree of the splitted curve are not the same as the original curve"<<std::endl;
         }
 
-        if(c.max()-c.min() != (cs.first.max()-cs.first.min() + cs.second.max()-cs.second.min()))
+        if(not QuasiEqual(c.max()-c.min(), (cs.first.max()-cs.first.min() + cs.second.max()-cs.second.min())))
         {
             error = true;
             std::cout<<"Duration of the splitted curve doesn't correspond to the original"<<std::endl;
@@ -1027,7 +1026,7 @@ void BezierSplitCurve(bool& error)
             std::cout<<"final point of the splitted curve doesn't correspond to the original"<<std::endl;
         }
 
-        if(cs.first.max() != ts)
+        if(not QuasiEqual(cs.first.max(), ts))
         {
             error = true;
             std::cout<<"timing of the splitted curve doesn't correspond to the original"<<std::endl;
@@ -1081,25 +1080,25 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     tangent_t t1(0.1,0.2,-0.5);
     tangent_t t2(0.1,0.2,0.3);
 
-    std::vector< double > time_control_points, time_control_points_test;
+    std::vector< double > time_control_points;
 
     // Two pairs
     control_points.clear();
     control_points.push_back(pair_point_tangent_t(p0,t0));
     control_points.push_back(pair_point_tangent_t(p1,t1));
-    time_control_points.push_back(0.);  // Time at P0
-    time_control_points.push_back(1.);  // Time at P1
+    time_control_points.push_back(1.);  // Time at P0
+    time_control_points.push_back(3.);  // Time at P1
     // Create cubic hermite spline
     cubic_hermite_spline_t cubic_hermite_spline_1Pair(control_points.begin(), control_points.end(), time_control_points);
     //Check
-    res1 = cubic_hermite_spline_1Pair(0.);   // t=0
+    res1 = cubic_hermite_spline_1Pair(1.);   // t=0
     ComparePoints(p0, res1, errmsg1, error);
-    res1 = cubic_hermite_spline_1Pair(1.);   // t=1
+    res1 = cubic_hermite_spline_1Pair(3.);   // t=1
     ComparePoints(p1, res1, errmsg1, error);
     // Test derivative : two pairs
-    res1 = cubic_hermite_spline_1Pair.derivate(0.,1);
-    ComparePoints(t0, res1, errmsg3, error);
     res1 = cubic_hermite_spline_1Pair.derivate(1.,1);
+    ComparePoints(t0, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_1Pair.derivate(3.,1);
     ComparePoints(t1, res1, errmsg3, error);
 
     // Three pairs
@@ -1125,11 +1124,11 @@ void CubicHermitePairsPositionDerivativeTest(bool& error)
     ComparePoints(t2, res1, errmsg3, error);
     // Test time control points by default [0,1] => with N control points : 
     // Time at P0= 0. | Time at P1= 1.0/(N-1) | Time at P2= 2.0/(N-1) | ... | Time at P_(N-1)= (N-1)/(N-1)= 1.0
-    time_control_points_test.clear();
-    time_control_points_test.push_back(0.);  // Time at P0
-    time_control_points_test.push_back(0.5);  // Time at P1
-    time_control_points_test.push_back(1.0);  // Time at P2
-    cubic_hermite_spline_2Pairs.setTime(time_control_points_test);
+    time_control_points.clear();
+    time_control_points.push_back(0.);  // Time at P0
+    time_control_points.push_back(0.5);  // Time at P1
+    time_control_points.push_back(1.);  // Time at P2
+    cubic_hermite_spline_2Pairs.setTime(time_control_points);
     res1 = cubic_hermite_spline_2Pairs(0.);  // t=0
     ComparePoints(p0, res1, errmsg1, error);
     res1 = cubic_hermite_spline_2Pairs(0.5); // t=0.5

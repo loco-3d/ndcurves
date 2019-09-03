@@ -6,7 +6,6 @@
 * \date 06/17/2013
 */
 
-
 #ifndef _BEZIER_POLY_CONVERSION
 #define _BEZIER_POLY_CONVERSION
 
@@ -23,9 +22,6 @@
 
 namespace curves
 {
-/// \brief Provides methods for converting a curve from a bernstein representation
-/// to a polynomial representation.
-///
 
 /// \brief Converts a Bezier curve to a polynomial.
 /// \param bezier   : the Bezier curve to convert.
@@ -35,8 +31,6 @@ Polynomial from_bezier(const Bezier& curve)
 {
     typedef typename Polynomial::t_point_t    t_point_t;
     typedef typename Polynomial::num_t    num_t;
-    assert (curve.min() == 0.);
-    assert (curve.max() == 1.);
     t_point_t coefficients;
     Bezier current (curve);
     coefficients.push_back(curve(0.));
