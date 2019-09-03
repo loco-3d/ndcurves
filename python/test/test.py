@@ -1,15 +1,6 @@
 import os
-<<<<<<< 1582da2653def2df6a259a85910c2e74f2f1f7b0
 import unittest
 
-from numpy import array_equal, isclose, matrix, random
-from numpy.linalg import norm
-
-from curves import (bezier, bezier_from_hermite, bezier_from_polynomial, cubic_hermite_spline, curve_constraints,
-                    exact_cubic, hermite_from_bezier, hermite_from_polynomial, piecewise_bezier_curve,
-                    piecewise_cubic_hermite_curve, piecewise_polynomial_curve, polynomial, polynomial_from_bezier,
-                    polynomial_from_hermite)
-=======
 from math import sqrt
 from numpy import matrix, array_equal, isclose,random,zeros
 from numpy.linalg import norm
@@ -22,8 +13,6 @@ from curves import (bezier_from_hermite, bezier_from_polynomial, hermite_from_po
                     piecewise_bezier_curve, piecewise_cubic_hermite_curve,
                     piecewise_polynomial_curve, polynomial,SO3Linear,Quaternion
                     )
->>>>>>> [test][python] add python unittest for SO3Linear
-
 
 class TestCurves(unittest.TestCase):
     # def print_str(self, inStr):
