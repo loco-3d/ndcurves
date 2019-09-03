@@ -63,15 +63,15 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /*Attributes*/
     
     public:
-	/// \brief Constructor.
-	/// \param wayPointsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
-	/// \param wayPointsEns   : an iterator pointing to the last  element of a pair(position, derivative) container.
+    /// \brief Constructor.
+    /// \param wayPointsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
+    /// \param wayPointsEns   : an iterator pointing to the last  element of a pair(position, derivative) container.
     /// \param time_control_points : vector containing time for each waypoint.
     ///
-	template<typename In>
-	cubic_hermite_spline(In PairsBegin, In PairsEnd, const vector_time_t & time_control_points)
-	{
-		// Check size of pairs container.
+    template<typename In>
+    cubic_hermite_spline(In PairsBegin, In PairsEnd, const vector_time_t & time_control_points)
+    {
+        // Check size of pairs container.
         std::size_t const size(std::distance(PairsBegin, PairsEnd));
         size_ = size;
         if(Safe && size < 1)
@@ -85,30 +85,30 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
             control_points_.push_back(*it);
         }
         setTime(time_control_points);
-	}
+    }
 
-	/// \brief Destructor.
+    /// \brief Destructor.
     virtual ~cubic_hermite_spline(){}
 
     /*Operations*/
-	public:
+    public:
     ///  \brief Evaluation of the cubic hermite spline at time t.
     ///  \param t : time when to evaluate the spline.
     ///  \return \f$p(t)\f$ point corresponding on spline at time t.
     ///
-	virtual Point operator()(const Time t) const
+    virtual Point operator()(const Time t) const
     {
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
-			throw std::out_of_range("can't evaluate cubic hermite spline, out of range");
+            throw std::invalid_argument("can't evaluate cubic hermite spline, out of range");
         }
         if (size_ == 1)
         {
-			return control_points_.front().first;
+            return control_points_.front().first;
         }
         else
         {
-			return evalCubicHermiteSpline(t, 0);
+            return evalCubicHermiteSpline(t, 0);
         }
     }
 
@@ -139,7 +139,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         computeDurationSplines();
         if (!checkDurationSplines())
         {
-            throw std::logic_error("time_splines not monotonous, all spline duration should be superior to 0");
+            throw std::invalid_argument("time_splines not monotonous, all spline duration should be superior to 0");
         }
     }
 
@@ -214,7 +214,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         //
         const Time dt = (t1-t0);
         const Time alpha = (t - t0)/dt;
-        assert(0. <= alpha <= 1. && "alpha must be in [0,1]");
+        assert(0. <= alpha && alpha <= 1. && "alpha must be in [0,1]");
         Numeric h00, h10, h01, h11;
         evalCoeffs(alpha,h00,h10,h01,h11,order_derivative);
         //std::cout << "for val t="<<t<<" alpha="<<alpha<<" coef : h00="<<h00<<" h10="<<h10<<" h01="<<h01<<" h11="<<h11<<std::endl;
@@ -353,17 +353,17 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
         return is_positive;
     }
-	/*Operations*/	
+    /*Operations*/  
 
     /*Helpers*/
-	public:
+    public:
     /// \brief Get the minimum time for which the curve is defined
     /// \return \f$t_{min}\f$, lower bound of time range.
     Time virtual min() const{return time_control_points_.front();}
     /// \brief Get the maximum time for which the curve is defined.
     /// \return \f$t_{max}\f$, upper bound of time range.
     Time virtual max() const{return time_control_points_.back();}
-	/*Helpers*/
+    /*Helpers*/
 
 };
 

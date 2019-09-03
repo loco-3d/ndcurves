@@ -11,7 +11,7 @@ SET(${PROJECT_NAME}_HEADERS
   quintic_spline.h
   linear_variable.h
   cubic_hermite_spline.h
-  piecewise_polynomial_curve.h
+  piecewise_curve.h
   )
 
 INSTALL(FILES

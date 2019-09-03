@@ -25,23 +25,23 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
 , typename Point= Eigen::Matrix<Numeric, Dim, 1> >
 struct  curve_abc : std::unary_function<Time, Point>
 {
-	typedef Point 	point_t;
-	typedef Time 	time_t;
+    typedef Point   point_t;
+    typedef Time    time_t;
 
 /* Constructors - destructors */
-	public:
-	/// \brief Constructor.
+    public:
+    /// \brief Constructor.
     curve_abc(){}
 
-	/// \brief Destructor.
+    /// \brief Destructor.
     virtual ~curve_abc(){}
 /* Constructors - destructors */
 
 /*Operations*/
-	public:
-	///  \brief Evaluation of the cubic spline at time t.
-	///  \param t : time when to evaluate the spine
-	///  \return \f$x(t)\f$, point corresponding on curve at time t.
+    public:
+    ///  \brief Evaluation of the cubic spline at time t.
+    ///  \param t : time when to evaluate the spine
+    ///  \return \f$x(t)\f$, point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const = 0;
 
 
@@ -53,18 +53,18 @@ struct  curve_abc : std::unary_function<Time, Point>
 /*Operations*/
 
 /*Helpers*/
-	public:
-	/// \brief Get the minimum time for which the curve is defined.
-	/// \return \f$t_{min}\f$, lower bound of time range.
-	virtual time_t min() const = 0;
-	/// \brief Get the maximum time for which the curve is defined.
-	/// \return \f$t_{max}\f$, upper bound of time range.
-	virtual time_t max() const = 0;
+    public:
+    /// \brief Get the minimum time for which the curve is defined.
+    /// \return \f$t_{min}\f$, lower bound of time range.
+    virtual time_t min() const = 0;
+    /// \brief Get the maximum time for which the curve is defined.
+    /// \return \f$t_{max}\f$, upper bound of time range.
+    virtual time_t max() const = 0;
 
     std::pair<time_t, time_t> timeRange() {return std::make_pair(min(), max());}
 /*Helpers*/
 
-	};
+    };
 } // namespace curves
 #endif //_STRUCT_CURVE_ABC
 

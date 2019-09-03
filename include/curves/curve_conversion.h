@@ -38,7 +38,7 @@ Polynomial polynomial_from_curve(const curveTypeToConvert& curve)
 }
 
 
-/// \brief Converts a cubic hermite spline or polynomial to a cubic bezier curve.
+/// \brief Converts a cubic hermite spline or polynomial of order 3 or less to a cubic bezier curve.
 /// \param curve   : the polynomial of order 3 or less/cubic hermite spline defined between [Tmin,Tmax] to convert.
 /// \return the equivalent cubic bezier curve.
 template<typename Bezier, typename curveTypeToConvert>

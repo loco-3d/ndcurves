@@ -32,16 +32,16 @@ template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool S
 , typename Point= Eigen::Matrix<Numeric, Dim, 1> >
 struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
 {
-	typedef Point 	point_t;
-	typedef Time 	time_t;
-    typedef Numeric	num_t;
+    typedef Point   point_t;
+    typedef Time    time_t;
+    typedef Numeric num_t;
     typedef curve_constraints<point_t> curve_constraints_t;
     typedef std::vector<point_t,Eigen::aligned_allocator<point_t> > t_point_t;
     typedef typename t_point_t::const_iterator cit_point_t;
     typedef bezier_curve<Time, Numeric, Dim, Safe, Point > bezier_curve_t;
 
 /* Constructors - destructors */
-	public:
+    public:
 
     /// \brief Constructor.
     /// Given the first and last point of a control points set, create the bezier curve.
@@ -63,7 +63,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         In it(PointsBegin);
         if(Safe && (size_<1 || T_max_ <= T_min_))
         {
-            throw std::out_of_range("can't create bezier min bound is higher than max bound"); // TODO
+            throw std::invalid_argument("can't create bezier min bound is higher than max bound"); // TODO
         }
         for(; it != PointsEnd; ++it)
         {
@@ -90,7 +90,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     {
         if(Safe && (size_<1 || T_max_ <= T_min_))
         {
-            throw std::out_of_range("can't create bezier min bound is higher than max bound");
+            throw std::invalid_argument("can't create bezier min bound is higher than max bound");
         }
         t_point_t updatedList = add_constraints<In>(PointsBegin, PointsEnd, constraints);
         for(cit_point_t cit = updatedList.begin(); cit != updatedList.end(); ++cit)
@@ -99,27 +99,27 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         }
     }
 
-	///\brief Destructor
-	~bezier_curve()
-	{
-		// NOTHING
-	}
+    ///\brief Destructor
+    ~bezier_curve()
+    {
+        // NOTHING
+    }
 
-	private:
-//	bezier_curve(const bezier_curve&);
+    private:
+//  bezier_curve(const bezier_curve&);
 //  bezier_curve& operator=(const bezier_curve&);
 /* Constructors - destructors */
 
 /*Operations*/
-	public:
-	///  \brief Evaluation of the bezier curve at time t.
-	///  \param t : time when to evaluate the curve.
-	///  \return \f$x(t)\f$ point corresponding on curve at time t.
+    public:
+    ///  \brief Evaluation of the bezier curve at time t.
+    ///  \param t : time when to evaluate the curve.
+    ///  \return \f$x(t)\f$ point corresponding on curve at time t.
     virtual point_t operator()(const time_t t) const
     {
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
-            throw std::out_of_range("can't evaluate bezier curve, out of range"); // TODO
+            throw std::invalid_argument("can't evaluate bezier curve, time t is out of range"); // TODO
         }
         if (size_ == 1)
         {
@@ -128,7 +128,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
           return evalHorner(t);
         }
-	}
+    }
 
     ///  \brief Compute the derived curve at order N.
     ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
@@ -298,7 +298,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /// \return pair containing the first element of both bezier curve obtained.
     ///
     std::pair<bezier_curve_t,bezier_curve_t> split(const Numeric t){
-        if (t == T_max_)
+        if (fabs(t-T_max_)<MARGIN)
         {
             throw std::runtime_error("can't split curve, interval range is equal to original curve");
         }
@@ -326,15 +326,15 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         {
             throw std::out_of_range("In Extract curve : times out of bounds");
         }
-        if(t1 == T_min_ &&  t2 == T_max_)
+        if (fabs(t1-T_min_)<MARGIN && fabs(t2-T_max_)<MARGIN)
         {
             return bezier_curve_t(waypoints().begin(), waypoints().end(), T_min_, T_max_, mult_T_);
         }
-        if(t1 == T_min_)
+        if (fabs(t1-T_min_)<MARGIN)
         {
             return split(t2).first;
         }
-        if(t2 == T_max_)
+        if (fabs(t2-T_max_)<MARGIN)
         {
             return split(t1).second;
         }
@@ -384,7 +384,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     virtual time_t max() const{return T_max_;}
 /*Helpers*/
 
-	public:
+    public:
     /// Starting time of cubic hermite spline : T_min_ is equal to first time of control points.
     /*const*/ time_t T_min_;
     /// Ending time of cubic hermite spline : T_max_ is equal to last time of control points.
@@ -394,6 +394,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
     /*const*/ std::size_t degree_;
     /*const*/ std::vector<Bern<Numeric> > bernstein_;
     /*const*/ t_point_t  control_points_;
+    static const double MARGIN;
 
     public:
     static bezier_curve_t zero(const time_t T=1.)
@@ -403,6 +404,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Dim, Safe, Point>
         return bezier_curve_t(ts.begin(), ts.end(),0.,T);
     }
 };
+
+template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point>
+const double bezier_curve<Time, Numeric, Dim, Safe, Point>::MARGIN(0.001);
+
 } // namespace curve
 #endif //_CLASS_BEZIERCURVE
 

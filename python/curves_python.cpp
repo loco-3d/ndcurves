@@ -5,7 +5,7 @@
 #include "curves/curve_conversion.h"
 #include "curves/bernstein.h"
 #include "curves/cubic_hermite_spline.h"
-#include "curves/piecewise_polynomial_curve.h"
+#include "curves/piecewise_curve.h"
 
 #include "python_definitions.h"
 #include "python_variables.h"
@@ -40,12 +40,16 @@ typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tan
 typedef curves::bezier_curve  <real, real, 3, true, point_t> bezier3_t;
 typedef curves::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
 typedef curves::polynomial  <real, real, 3, true, point_t, t_point_t> polynomial_t;
-typedef curves::piecewise_polynomial_curve <real, real, 3, true, point_t, t_point_t> piecewise_polynomial_curve_t;
 typedef curves::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
 typedef curves::cubic_hermite_spline <real, real, 3, true, point_t> cubic_hermite_spline_t;
 typedef polynomial_t::coeff_t coeff_t;
 typedef std::pair<real, point_t> waypoint_t;
 typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t;
+
+typedef curves::piecewise_curve <real, real, 3, true, point_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
+typedef curves::piecewise_curve <real, real, 3, true, point_t, t_point_t, bezier3_t> piecewise_bezier3_curve_t;
+typedef curves::piecewise_curve <real, real, 6, true, point6_t, t_point6_t, bezier6_t> piecewise_bezier6_curve_t;
+typedef curves::piecewise_curve <real, real, 3, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
 
 typedef curves::Bern<double> bernstein_t;
 
@@ -154,10 +158,22 @@ polynomial_t* wrapSplineConstructor(const coeff_t& array)
 }
 /* End wrap polynomial */
 
-/* Wrap piecewise polynomial curve */
+/* Wrap piecewise curve */
 piecewise_polynomial_curve_t* wrapPiecewisePolynomialCurveConstructor(const polynomial_t& pol)
 {
     return new piecewise_polynomial_curve_t(pol);
+}
+piecewise_bezier3_curve_t* wrapPiecewiseBezier3CurveConstructor(const bezier3_t& bc)
+{
+    return new piecewise_bezier3_curve_t(bc);
+}
+piecewise_bezier6_curve_t* wrapPiecewiseBezier6CurveConstructor(const bezier6_t& bc)
+{
+    return new piecewise_bezier6_curve_t(bc);
+}
+piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveConstructor(const cubic_hermite_spline_t& ch)
+{
+    return new piecewise_cubic_hermite_curve_t(ch);
 }
 /* end wrap piecewise polynomial curve */
 
@@ -337,7 +353,7 @@ BOOST_PYTHON_MODULE(curves)
         ;
     /** END polynomial function**/
 
-    /** BEGIN piecewise polynomial curve function **/
+    /** BEGIN piecewise curve function **/
     class_<piecewise_polynomial_curve_t>
         ("piecewise_polynomial_curve", no_init)
             .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor))
@@ -345,10 +361,40 @@ BOOST_PYTHON_MODULE(curves)
             .def("max", &piecewise_polynomial_curve_t::max)
             .def("__call__", &piecewise_polynomial_curve_t::operator())
             .def("derivate", &piecewise_polynomial_curve_t::derivate)
-            .def("add_polynomial_curve", &piecewise_polynomial_curve_t::add_polynomial_curve)
+            .def("add_curve", &piecewise_polynomial_curve_t::add_curve)
             .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous)
         ;
-    /** END piecewise polynomial curve function **/
+    class_<piecewise_bezier3_curve_t>
+        ("piecewise_bezier3_curve", no_init)
+            .def("__init__", make_constructor(&wrapPiecewiseBezier3CurveConstructor))
+            .def("min", &piecewise_bezier3_curve_t::min)
+            .def("max", &piecewise_bezier3_curve_t::max)
+            .def("__call__", &piecewise_bezier3_curve_t::operator())
+            .def("derivate", &piecewise_bezier3_curve_t::derivate)
+            .def("add_curve", &piecewise_bezier3_curve_t::add_curve)
+            .def("is_continuous", &piecewise_bezier3_curve_t::is_continuous)
+        ;
+    class_<piecewise_bezier6_curve_t>
+        ("piecewise_bezier6_curve", no_init)
+            .def("__init__", make_constructor(&wrapPiecewiseBezier6CurveConstructor))
+            .def("min", &piecewise_bezier6_curve_t::min)
+            .def("max", &piecewise_bezier6_curve_t::max)
+            .def("__call__", &piecewise_bezier6_curve_t::operator())
+            .def("derivate", &piecewise_bezier6_curve_t::derivate)
+            .def("add_curve", &piecewise_bezier6_curve_t::add_curve)
+            .def("is_continuous", &piecewise_bezier6_curve_t::is_continuous)
+        ;
+    class_<piecewise_cubic_hermite_curve_t>
+        ("piecewise_cubic_hermite_curve", no_init)
+            .def("__init__", make_constructor(&wrapPiecewiseCubicHermiteCurveConstructor))
+            .def("min", &piecewise_cubic_hermite_curve_t::min)
+            .def("max", &piecewise_cubic_hermite_curve_t::max)
+            .def("__call__", &piecewise_cubic_hermite_curve_t::operator())
+            .def("derivate", &piecewise_cubic_hermite_curve_t::derivate)
+            .def("add_curve", &piecewise_cubic_hermite_curve_t::add_curve)
+            .def("is_continuous", &piecewise_cubic_hermite_curve_t::is_continuous)
+        ;
+    /** END piecewise curve function **/
 
 
     /** BEGIN exact_cubic curve**/

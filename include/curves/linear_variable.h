@@ -50,7 +50,7 @@ struct linear_variable{
         return *this;
     }
 
-    static linear_variable_t Zero(size_t dim=0){
+    static linear_variable_t Zero(){
         linear_variable_t w;
         w.A_  = matrix_t::Zero();
         w.b_  = point_t::Zero();

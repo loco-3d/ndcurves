@@ -26,20 +26,20 @@ namespace curves{
 template<typename _Matrix_Type_>
 void PseudoInverse(_Matrix_Type_& pinvmat)
 {
-	Eigen::JacobiSVD<_Matrix_Type_> svd(pinvmat, Eigen::ComputeFullU | Eigen::ComputeFullV);
-	_Matrix_Type_ m_sigma = svd.singularValues();
+    Eigen::JacobiSVD<_Matrix_Type_> svd(pinvmat, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    _Matrix_Type_ m_sigma = svd.singularValues();
 
-	double pinvtoler= 1.e-6; // choose your tolerance widely!
+    double pinvtoler= 1.e-6; // choose your tolerance widely!
 
-	_Matrix_Type_ m_sigma_inv = _Matrix_Type_::Zero(pinvmat.cols(),pinvmat.rows());
-	for (long i=0; i<m_sigma.rows(); ++i)
-	{
-		if (m_sigma(i) > pinvtoler)
-		{
-			m_sigma_inv(i,i)=1.0/m_sigma(i);
-		}
-	}
-	pinvmat = (svd.matrixV()*m_sigma_inv*svd.matrixU().transpose());
+    _Matrix_Type_ m_sigma_inv = _Matrix_Type_::Zero(pinvmat.cols(),pinvmat.rows());
+    for (long i=0; i<m_sigma.rows(); ++i)
+    {
+        if (m_sigma(i) > pinvtoler)
+        {
+            m_sigma_inv(i,i)=1.0/m_sigma(i);
+        }
+    }
+    pinvmat = (svd.matrixV()*m_sigma_inv*svd.matrixU().transpose());
 }
 
 } // namespace curves
