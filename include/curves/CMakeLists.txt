@@ -13,6 +13,7 @@ SET(${PROJECT_NAME}_HEADERS
   cubic_hermite_spline.h
   piecewise_curve.h
   so3_linear.h
+  se3_curve.h
   )
 
 INSTALL(FILES
