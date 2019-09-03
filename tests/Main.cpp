@@ -983,6 +983,7 @@ void BezierSplitCurve(bool& error)
 /* cubic hermite spline function test */
 void CubicHermitePairsPositionDerivativeTest(bool& error)
 {
+  std::string errmsg1("in Cubic Hermite 2 pairs (pos,vel), Error While checking that given wayPoints are crossed (expected / obtained) : ");
   std::string errmsg2("in Cubic Hermite 2 points, Error While checking value of point on curve : ");
   std::string errmsg3("in Cubic Hermite 2 points, Error While checking value of tangent on curve : ");
   std::vector< pair_point_tangent_t > control_points;
