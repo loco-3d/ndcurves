@@ -333,9 +333,9 @@ namespace curves
         }
         t_point_t wps_first(size_),wps_second(size_);
         const Numeric u = (t-T_min_)/(T_max_-T_min_);
-        wps_first[0] = control_points_.front();
-        wps_second[degree_] = control_points_.back();
         t_point_t casteljau_pts = waypoints();
+        wps_first[0] = casteljau_pts.front();
+        wps_second[degree_] = casteljau_pts.back();
         size_t id = 1;
         while(casteljau_pts.size() > 1)
         {
@@ -355,20 +355,21 @@ namespace curves
       /// \param t2 : end time of bezier curve extracted.
       /// \return bezier curve extract defined between \f$[t_1,t_2]\f$.
       ///
-      bezier_curve_t extract(const Numeric t1, const Numeric t2){
+      bezier_curve_t extract(const Numeric t1, const Numeric t2)
+      {
         if(t1 < T_min_ || t1 > T_max_ || t2 < T_min_ || t2 > T_max_)
         {
           throw std::out_of_range("In Extract curve : times out of bounds");
         }
-        if (fabs(t1-T_min_)<MARGIN && fabs(t2-T_max_)<MARGIN)
+        if (fabs(t1-T_min_)<MARGIN && fabs(t2-T_max_)<MARGIN) // t1=T_min and t2=T_max
         {
           return bezier_curve_t(waypoints().begin(), waypoints().end(), T_min_, T_max_, mult_T_);
         }
-        if (fabs(t1-T_min_)<MARGIN)
+        if (fabs(t1-T_min_)<MARGIN) // t1=T_min
         {
           return split(t2).first;
         }
-        if (fabs(t2-T_max_)<MARGIN)
+        if (fabs(t2-T_max_)<MARGIN) // t2=T_max
         {
           return split(t1).second;
         }

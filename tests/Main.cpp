@@ -976,10 +976,25 @@ void BezierSplitCurve(bool& error)
       ti += 0.01;
     }
     // Test extract function
-    bezier_curve_t bezier_extracted = c.extract(t0+0.01,t1-0.01);
-    for(double t=bezier_extracted.min(); t<bezier_extracted.max(); t+=0.01)
+    bezier_curve_t bezier_extracted0 = c.extract(t0+0.01,t1-0.01); // T_min < t0 < t1 < T_max
+    for(double t=bezier_extracted0.min(); t<bezier_extracted0.max(); t+=0.01)
     {
-      ComparePoints(bezier_extracted(t),c(t),errMsg6, error);
+      ComparePoints(bezier_extracted0(t),c(t),errMsg6, error);
+    }
+    bezier_curve_t bezier_extracted1 = c.extract(t0,t1-0.01); // T_min = t0 < t1 < T_max
+    for(double t=bezier_extracted1.min(); t<bezier_extracted1.max(); t+=0.01)
+    {
+      ComparePoints(bezier_extracted1(t),c(t),errMsg6, error);
+    }
+    bezier_curve_t bezier_extracted2 = c.extract(t0+0.01,t1); // T_min < t0 < t1 = T_max
+    for(double t=bezier_extracted2.min(); t<bezier_extracted2.max(); t+=0.01)
+    {
+      ComparePoints(bezier_extracted2(t),c(t),errMsg6, error);
+    }
+    bezier_curve_t bezier_extracted3 = c.extract(t0,t1); // T_min = t0 < t1 = T_max
+    for(double t=bezier_extracted3.min(); t<bezier_extracted3.max(); t+=0.01)
+    {
+      ComparePoints(bezier_extracted3(t),c(t),errMsg6, error);
     }
   }
 }
