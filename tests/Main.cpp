@@ -212,10 +212,10 @@ void BezierCurveTest(bool& error)
   std::string errMsg2("In test BezierCurveTest ; Bernstein polynomials do not evaluate as analytical evaluation");
   for(double d = 1.; d <2.; d+=0.1)
   {
-  ComparePoints( cf5.evalBernstein(d) , cf5 (d), errMsg2, error);
-  ComparePoints( cf5.evalHorner(d) , cf5 (d), errMsg2, error);
-  ComparePoints( cf5.compute_derivate(1).evalBernstein(d) , cf5.compute_derivate(1) (d), errMsg2, error);
-  ComparePoints( cf5.compute_derivate(1).evalHorner(d) , cf5.compute_derivate(1) (d), errMsg2, error);
+    ComparePoints( cf5.evalBernstein(d) , cf5 (d), errMsg2, error);
+    ComparePoints( cf5.evalHorner(d) , cf5 (d), errMsg2, error);
+    ComparePoints( cf5.compute_derivate(1).evalBernstein(d) , cf5.compute_derivate(1) (d), errMsg2, error);
+    ComparePoints( cf5.compute_derivate(1).evalHorner(d) , cf5.compute_derivate(1) (d), errMsg2, error);
   }
   bool error_in(true);
   try
@@ -920,62 +920,67 @@ void BezierSplitCurve(bool& error)
   double t_min = 0.2;
   double t_max = 10;
   double aux0, aux1;
+  std::string errMsg0("BezierSplitCurve, ERROR initial point of the splitted curve doesn't correspond to the original");
+  std::string errMsg1("BezierSplitCurve, ERROR splitting point of the splitted curve doesn't correspond to the original");
+  std::string errMsg2("BezierSplitCurve, ERROR final point of the splitted curve doesn't correspond to the original");
+  std::string errMsg3("BezierSplitCurve, ERROR while checking value on curve and curves splitted");
+  std::string errMsg4("BezierSplitCurve, ERROR Degree of the splitted curve are not the same as the original curve");
+  std::string errMsg5("BezierSplitCurve, ERROR duration of the splitted curve doesn't correspond to the original");
+  std::string errMsg6("BezierSplitCurve, ERROR while checking value on curve extracted");
   for(size_t i = 0 ; i < 1 ; ++i)
   {
-      // build a random curve and split it at random time :
-      //std::cout<<"build a random curve"<<std::endl;
-      point_t a;
-      std::vector<point_t> wps;
-      for(size_t j = 0 ; j <= n ; ++j)
-      {
-          wps.push_back(randomPoint(-10.,10.));
-      }
-      double t0 = (rand()/(double)RAND_MAX )*(t_max-t_min) + t_min;
-      double t1 = (rand()/(double)RAND_MAX )*(t_max-t0) + t0;
-      double ts = (rand()/(double)RAND_MAX )*(t1-t0)+t0;
-
-      bezier_curve_t c(wps.begin(), wps.end(),t0, t1);
-      std::pair<bezier_curve_t,bezier_curve_t> cs = c.split(ts);
-
-      // test on splitted curves :
-      if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) ))
-      {
-          error = true;
-          std::cout<<"BezierSplitCurve, ERROR Degree of the splitted curve are not the same as the original curve"<<std::endl;
-      }
-      aux0 = c.max()-c.min();
-      aux1 = (cs.first.max()-cs.first.min() + cs.second.max()-cs.second.min());
-      if(!QuasiEqual(aux0, aux1))
-      {
-          error = true;
-          std::cout<<"BezierSplitCurve, ERROR duration of the splitted curve doesn't correspond to the original"<<std::endl;
-      }
-      if(!QuasiEqual(cs.first.max(), ts))
-      {
-          error = true;
-          std::cout<<"BezierSplitCurve, ERROR timing of the splitted curve doesn't correspond to the original"<<std::endl;
-      }
-
-      std::string errmsg("BezierSplitCurve, ERROR initial point of the splitted curve doesn't correspond to the original");
-      ComparePoints(c(t0), cs.first(t0), errmsg, error);
-      errmsg = "BezierSplitCurve, ERROR splitting point of the splitted curve doesn't correspond to the original";
-      ComparePoints(cs.first(ts), cs.second(ts), errmsg, error);
-      errmsg = "BezierSplitCurve, ERROR final point of the splitted curve doesn't correspond to the original";
-      ComparePoints(c(t1), cs.second(cs.second.max()), errmsg, error);
-
-      // check along curve :
-      double ti = t0;
-      errmsg = "BezierSplitCurve, ERROR while checking value on curve and curves splitted";
-      while(ti <= ts)
-      {
-          ComparePoints(cs.first(ti), c(ti), errmsg, error);
-          ti += 0.01;
-      }
-      while(ti <= t1)
-      {
-          ComparePoints(cs.second(ti), c(ti), errmsg, error);
-          ti += 0.01;
-      }
+    // build a random curve and split it at random time :
+    //std::cout<<"build a random curve"<<std::endl;
+    point_t a;
+    std::vector<point_t> wps;
+    for(size_t j = 0 ; j <= n ; ++j)
+    {
+      wps.push_back(randomPoint(-10.,10.));
+    }
+    double t0 = (rand()/(double)RAND_MAX )*(t_max-t_min) + t_min;
+    double t1 = (rand()/(double)RAND_MAX )*(t_max-t0) + t0;
+    double ts = (rand()/(double)RAND_MAX )*(t1-t0)+t0;
+    bezier_curve_t c(wps.begin(), wps.end(),t0, t1);
+    std::pair<bezier_curve_t,bezier_curve_t> cs = c.split(ts);
+    // test on splitted curves :
+    if(! ((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_) ))
+    {
+      error = true;
+      std::cout<<errMsg4<<std::endl;
+    }
+    aux0 = c.max()-c.min();
+    aux1 = (cs.first.max()-cs.first.min() + cs.second.max()-cs.second.min());
+    if(!QuasiEqual(aux0, aux1))
+    {
+      error = true;
+      std::cout<<errMsg5<<std::endl;
+    }
+    if(!QuasiEqual(cs.first.max(), ts))
+    {
+      error = true;
+      std::cout<<errMsg0<<std::endl;
+    }
+    ComparePoints(c(t0), cs.first(t0), errMsg0, error);
+    ComparePoints(cs.first(ts), cs.second(ts), errMsg1, error);
+    ComparePoints(c(t1), cs.second(cs.second.max()), errMsg2, error);
+    // check along curve :
+    double ti = t0;
+    while(ti <= ts)
+    {
+      ComparePoints(cs.first(ti), c(ti), errMsg3, error);
+      ti += 0.01;
+    }
+    while(ti <= t1)
+    {
+      ComparePoints(cs.second(ti), c(ti), errMsg3, error);
+      ti += 0.01;
+    }
+    // Test extract function
+    bezier_curve_t bezier_extracted = c.extract(t0+0.01,t1-0.01);
+    for(double t=bezier_extracted.min(); t<bezier_extracted.max(); t+=0.01)
+    {
+      ComparePoints(bezier_extracted(t),c(t),errMsg6, error);
+    }
   }
 }
 
@@ -983,88 +988,103 @@ void BezierSplitCurve(bool& error)
 /* cubic hermite spline function test */
 void CubicHermitePairsPositionDerivativeTest(bool& error)
 {
-  std::string errmsg1("in Cubic Hermite 2 pairs (pos,vel), Error While checking that given wayPoints are crossed (expected / obtained) : ");
-  std::string errmsg2("in Cubic Hermite 2 points, Error While checking value of point on curve : ");
-  std::string errmsg3("in Cubic Hermite 2 points, Error While checking value of tangent on curve : ");
-  std::vector< pair_point_tangent_t > control_points;
-  point_t res1;
-  point_t p0(0.,0.,0.);
-  point_t p1(1.,2.,3.);
-  point_t p2(4.,4.,4.);
-  point_t t0(0.5,0.5,0.5);
-  point_t t1(0.1,0.2,-0.5);
-  point_t t2(0.1,0.2,0.3);
-  std::vector< double > time_control_points, time_control_points_test;
-  // Two pairs
-  control_points.clear();
-  control_points.push_back(pair_point_tangent_t(p0,t0));
-  control_points.push_back(pair_point_tangent_t(p1,t1));
-  time_control_points.push_back(0.);  // Time at P0
-  time_control_points.push_back(1.);  // Time at P1
-  // Create cubic hermite spline
-  cubic_hermite_spline_t cubic_hermite_spline_1Pair(control_points.begin(), control_points.end(), time_control_points);
-  // Dimension
-  if (cubic_hermite_spline_1Pair.dim() != 3)
-  {
-    error = true;
-    std::cout << "Cubic hermite spline test, Error : Dimension of curve is wrong\n";
-  }
-  //Check
-  res1 = cubic_hermite_spline_1Pair(0.);   // t=0
-  ComparePoints(p0, res1, errmsg1, error);
-  res1 = cubic_hermite_spline_1Pair(1.);   // t=1
-  ComparePoints(p1, res1, errmsg1, error);
-  // Test derivative : two pairs
-  res1 = cubic_hermite_spline_1Pair.derivate(0.,1);
-  ComparePoints(t0, res1, errmsg3, error);
-  res1 = cubic_hermite_spline_1Pair.derivate(1.,1);
-  ComparePoints(t1, res1, errmsg3, error);
-  // Three pairs
-  control_points.push_back(pair_point_tangent_t(p2,t2));
-  time_control_points.clear();
-  time_control_points.push_back(0.);  // Time at P0
-  time_control_points.push_back(2.);  // Time at P1
-  time_control_points.push_back(5.);  // Time at P2
-  cubic_hermite_spline_t cubic_hermite_spline_2Pairs(control_points.begin(), control_points.end(), time_control_points);
-  //Check
-  res1 = cubic_hermite_spline_2Pairs(0.);  // t=0
-  ComparePoints(p0, res1, errmsg1, error);
-  res1 = cubic_hermite_spline_2Pairs(2.);  // t=2
-  ComparePoints(p1, res1, errmsg2, error);
-  res1 = cubic_hermite_spline_2Pairs(5.);  // t=5
-  ComparePoints(p2, res1, errmsg1, error);
-  // Test derivative : three pairs
-  res1 = cubic_hermite_spline_2Pairs.derivate(0.,1);
-  ComparePoints(t0, res1, errmsg3, error);
-  res1 = cubic_hermite_spline_2Pairs.derivate(2.,1);
-  ComparePoints(t1, res1, errmsg3, error);
-  res1 = cubic_hermite_spline_2Pairs.derivate(5.,1);
-  ComparePoints(t2, res1, errmsg3, error);
-  // Test time control points by default [0,1] => with N control points : 
-  // Time at P0= 0. | Time at P1= 1.0/(N-1) | Time at P2= 2.0/(N-1) | ... | Time at P_(N-1)= (N-1)/(N-1)= 1.0
-  time_control_points_test.clear();
-  time_control_points_test.push_back(0.);  // Time at P0
-  time_control_points_test.push_back(0.5);  // Time at P1
-  time_control_points_test.push_back(1.0);  // Time at P2
-  cubic_hermite_spline_2Pairs.setTime(time_control_points_test);
-  res1 = cubic_hermite_spline_2Pairs(0.);  // t=0
-  ComparePoints(p0, res1, errmsg1, error);
-  res1 = cubic_hermite_spline_2Pairs(0.5); // t=0.5
-  ComparePoints(p1, res1, errmsg2, error);
-  res1 = cubic_hermite_spline_2Pairs(1.);  // t=1
-  ComparePoints(p2, res1, errmsg1, error);
-  // Test getTime
   try
   {
+    std::string errmsg1("in Cubic Hermite 2 pairs (pos,vel), Error While checking that given wayPoints are crossed (expected / obtained) : ");
+    std::string errmsg2("in Cubic Hermite 2 points, Error While checking value of point on curve : ");
+    std::string errmsg3("in Cubic Hermite 2 points, Error While checking value of tangent on curve : ");
+    std::vector< pair_point_tangent_t > control_points;
+    point_t res1;
+    point_t p0(0.,0.,0.);
+    point_t p1(1.,2.,3.);
+    point_t p2(4.,4.,4.);
+    point_t t0(0.5,0.5,0.5);
+    point_t t1(0.1,0.2,-0.5);
+    point_t t2(0.1,0.2,0.3);
+    std::vector< double > time_control_points, time_control_points_test;
+    // Two pairs
+    control_points.clear();
+    control_points.push_back(pair_point_tangent_t(p0,t0));
+    control_points.push_back(pair_point_tangent_t(p1,t1));
+    time_control_points.push_back(0.);  // Time at P0
+    time_control_points.push_back(1.);  // Time at P1
+    // Create cubic hermite spline
+    cubic_hermite_spline_t cubic_hermite_spline_1Pair(control_points.begin(), control_points.end(), time_control_points);
+    // Dimension
+    if (cubic_hermite_spline_1Pair.dim() != 3)
+    {
+      error = true;
+      std::cout << "Cubic hermite spline test, Error : Dimension of curve is wrong\n";
+    }
+    //Check
+    res1 = cubic_hermite_spline_1Pair(0.);   // t=0
+    ComparePoints(p0, res1, errmsg1, error);
+    res1 = cubic_hermite_spline_1Pair(1.);   // t=1
+    ComparePoints(p1, res1, errmsg1, error);
+    // Test derivative : two pairs
+    res1 = cubic_hermite_spline_1Pair.derivate(0.,1);
+    ComparePoints(t0, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_1Pair.derivate(1.,1);
+    ComparePoints(t1, res1, errmsg3, error);
+    // Three pairs
+    control_points.push_back(pair_point_tangent_t(p2,t2));
+    time_control_points.clear();
+    time_control_points.push_back(0.);  // Time at P0
+    time_control_points.push_back(2.);  // Time at P1
+    time_control_points.push_back(5.);  // Time at P2
+    cubic_hermite_spline_t cubic_hermite_spline_2Pairs(control_points.begin(), control_points.end(), time_control_points);
+    //Check
+    res1 = cubic_hermite_spline_2Pairs(0.);  // t=0
+    ComparePoints(p0, res1, errmsg1, error);
+    res1 = cubic_hermite_spline_2Pairs(2.);  // t=2
+    ComparePoints(p1, res1, errmsg2, error);
+    res1 = cubic_hermite_spline_2Pairs(5.);  // t=5
+    ComparePoints(p2, res1, errmsg1, error);
+    // Test derivative : three pairs
+    res1 = cubic_hermite_spline_2Pairs.derivate(0.,1);
+    ComparePoints(t0, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_2Pairs.derivate(2.,1);
+    ComparePoints(t1, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_2Pairs.derivate(5.,1);
+    ComparePoints(t2, res1, errmsg3, error);
+    // Test time control points by default [0,1] => with N control points : 
+    // Time at P0= 0. | Time at P1= 1.0/(N-1) | Time at P2= 2.0/(N-1) | ... | Time at P_(N-1)= (N-1)/(N-1)= 1.0
+    time_control_points_test.clear();
+    time_control_points_test.push_back(0.);  // Time at P0
+    time_control_points_test.push_back(0.5);  // Time at P1
+    time_control_points_test.push_back(1.0);  // Time at P2
+    cubic_hermite_spline_2Pairs.setTime(time_control_points_test);
+    res1 = cubic_hermite_spline_2Pairs(0.);  // t=0
+    ComparePoints(p0, res1, errmsg1, error);
+    res1 = cubic_hermite_spline_2Pairs(0.5); // t=0.5
+    ComparePoints(p1, res1, errmsg2, error);
+    res1 = cubic_hermite_spline_2Pairs(1.);  // t=1
+    ComparePoints(p2, res1, errmsg1, error);
+    // Test getTime
+    try
+    {
       cubic_hermite_spline_2Pairs.getTime();
+    }
+    catch(...)
+    {
+      error = false;
+    }
+    if(error)
+    {
+      std::cout << "Cubic hermite spline test, Error when calling getTime\n";
+    }
+    // Test derivative : three pairs, time default
+    res1 = cubic_hermite_spline_2Pairs.derivate(0.,1);
+    ComparePoints(t0, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_2Pairs.derivate(0.5,1);
+    ComparePoints(t1, res1, errmsg3, error);
+    res1 = cubic_hermite_spline_2Pairs.derivate(1.,1);
+    ComparePoints(t2, res1, errmsg3, error);
   }
   catch(...)
   {
-      error = false;
-  }
-  if(error)
-  {
-      std::cout << "Cubic hermite spline test, Error when calling getTime\n";
+    error = true;
+    std::cout<<"Error in CubicHermitePairsPositionDerivativeTest"<<std::endl;
   }
 }
 

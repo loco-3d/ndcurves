@@ -344,12 +344,17 @@ namespace curves
           wps_second[degree_-id] = casteljau_pts.back();
           ++id;
         }
-
         bezier_curve_t c_first(wps_first.begin(), wps_first.end(),T_min_,t,mult_T_);
         bezier_curve_t c_second(wps_second.begin(), wps_second.end(),t, T_max_,mult_T_);
         return std::make_pair(c_first,c_second);
       }
 
+      /// \brief Extract a bezier curve defined between \f$[t_1,t_2]\f$ from the actual bezier curve
+      ///        defined between \f$[T_{min},T_{max}]\f$ with \f$T_{min} \leq t_1 \leq t_2 \leq T_{max}\f$.
+      /// \param t1 : start time of bezier curve extracted.
+      /// \param t2 : end time of bezier curve extracted.
+      /// \return bezier curve extract defined between \f$[t_1,t_2]\f$.
+      ///
       bezier_curve_t extract(const Numeric t1, const Numeric t2){
         if(t1 < T_min_ || t1 > T_max_ || t2 < T_min_ || t2 > T_max_)
         {
@@ -368,7 +373,7 @@ namespace curves
           return split(t1).second;
         }
         std::pair<bezier_curve_t,bezier_curve_t> c_split = this->split(t1);
-        return c_split.second.split(t2-t1).first;
+        return c_split.second.split(t2).first;
       }
 
     private:
