@@ -1,8 +1,8 @@
 Spline
 ===================
 
-[![Pipeline status](https://gepgitlab.laas.fr/humanoid-path-planner/hpp-spline/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/humanoid-path-planner/hpp-spline/commits/master)
-[![Coverage report](https://gepgitlab.laas.fr/humanoid-path-planner/hpp-spline/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/humanoid-path-planner/hpp-spline/master/coverage/)
+[![Pipeline status](https://gepgitlab.laas.fr/loco-3d/curves/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/loco-3d/curves/commits/master)
+[![Coverage report](https://gepgitlab.laas.fr/loco-3d/curves/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/loco-3d/curves/master/coverage/)
 
 
 A template-based Library for creating curves of arbitrary order and dimension, eventually subject to derivative constraints. The main use of the library is the creation of end-effector trajectories for legged robots.
