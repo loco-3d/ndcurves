@@ -134,7 +134,7 @@ t_pair_point_tangent_t getPairsPointTangent(const point_list_t& points, const po
     }
     for(int i =0;i<points.cols();++i) 
     {
-        res.push_back(pair_point_tangent_t(tangents.col(i), tangents.col(i)));
+        res.push_back(pair_point_tangent_t(points.col(i), tangents.col(i)));
     }
     return res;
 }
