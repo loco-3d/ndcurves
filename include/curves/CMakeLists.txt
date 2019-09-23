@@ -20,3 +20,4 @@ INSTALL(FILES
   )
 
 ADD_SUBDIRECTORY(helpers)
+ADD_SUBDIRECTORY(serialization)
