@@ -140,6 +140,18 @@ namespace curves
   {
     return new polynomial_t(array, 0., 1.);
   }
+  polynomial_t* wrapPolynomialConstructorFromBoundaryConditionsDegree1(const pointX_t& init,const pointX_t& end,const real min, const real max)
+  {
+    return new polynomial_t(init,end,min,max);
+  }
+  polynomial_t* wrapPolynomialConstructorFromBoundaryConditionsDegree3(const pointX_t& init,const pointX_t& d_init,const pointX_t& end,const pointX_t& d_end,const real min, const real max)
+  {
+    return new polynomial_t(init,d_init,end,d_end,min,max);
+  }
+  polynomial_t* wrapPolynomialConstructorFromBoundaryConditionsDegree5(const pointX_t& init,const pointX_t& d_init,const pointX_t& dd_init,const pointX_t& end,const point_t& d_end,const point_t& dd_end,const real min, const real max)
+  {
+    return new polynomial_t(init,d_init,dd_init,end,d_end,dd_end,min,max);
+  }
   /* End wrap polynomial */
 
   /* Wrap piecewise curve */
@@ -167,6 +179,49 @@ namespace curves
   {
     return new piecewise_cubic_hermite_curve_t();
   }
+  static piecewise_polynomial_curve_t discretPointToPolynomialC0(const pointX_list_t& points, const time_waypoints_t& time_points){
+    t_pointX_t points_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points);
+    t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
+    return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,time_points_list);
+  }
+  static piecewise_polynomial_curve_t discretPointToPolynomialC1(const pointX_list_t& points,const pointX_list_t& points_derivative, const time_waypoints_t& time_points){
+    t_pointX_t points_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points);
+    t_pointX_t points_derivative_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points_derivative);
+    t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
+    return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,points_derivative_list,time_points_list);
+  }
+  static piecewise_polynomial_curve_t discretPointToPolynomialC2(const pointX_list_t& points,const pointX_list_t& points_derivative,const pointX_list_t& points_second_derivative, const time_waypoints_t& time_points){
+    t_pointX_t points_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points);
+    t_pointX_t points_derivative_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points_derivative);
+    t_pointX_t points_second_derivative_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points_second_derivative);
+
+    t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t,t_time_t>(time_points);
+    return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,points_derivative_list,points_second_derivative_list,time_points_list);
+  }
+  void addFinalPointC0(piecewise_polynomial_curve_t self,const pointX_t& end,const real time){
+    if(self.is_continuous(1))
+      std::cout<<"Warning: by adding this final point to the piecewise curve, you loose C1 continuity and only guarantee C0 continuity."<<std::endl;
+    polynomial_t pol(self(self.max()),end,self.max(),time);
+    self.add_curve(pol);
+  }
+  void addFinalPointC1(piecewise_polynomial_curve_t self,const pointX_t& end,const pointX_t& d_end,const real time){
+    if(self.is_continuous(2))
+      std::cout<<"Warning: by adding this final point to the piecewise curve, you loose C2 continuity and only guarantee C1 continuity."<<std::endl;
+    if(!self.is_continuous(1))
+      std::cout<<"Warning: the current piecewise curve is not C1 continuous."<<std::endl;
+    polynomial_t pol(self(self.max()),self.derivate(self.max(),1),end,d_end,self.max(),time);
+    self.add_curve(pol);
+  }
+  void addFinalPointC2(piecewise_polynomial_curve_t self,const pointX_t& end,const pointX_t& d_end,const pointX_t& dd_end,const real time){
+    if(self.is_continuous(3))
+      std::cout<<"Warning: by adding this final point to the piecewise curve, you loose C3 continuity and only guarantee C2 continuity."<<std::endl;
+    if(!self.is_continuous(2))
+      std::cout<<"Warning: the current piecewise curve is not C2 continuous."<<std::endl;
+    polynomial_t pol(self(self.max()),self.derivate(self.max(),1),self.derivate(self.max(),2),end,d_end,dd_end,self.max(),time);
+    self.add_curve(pol);
+  }
+
+
   /* end wrap piecewise polynomial curve */
 
   /* Wrap exact cubic spline */
@@ -325,14 +380,30 @@ namespace curves
     /** END variable points bezier curve**/
     /** BEGIN polynomial curve function**/
     class_<polynomial_t>("polynomial",  init<>())
-      .def("__init__", make_constructor(&wrapPolynomialConstructor1),
+      .def("__init__", make_constructor(&wrapPolynomialConstructor1,default_call_policies(),args("coeffs","min","max")),
            "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [min,max]."
            " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest order."
            " Spline order is given by the number of the columns -1.")
-      .def("__init__", make_constructor(&wrapPolynomialConstructor2),
+      .def("__init__", make_constructor(&wrapPolynomialConstructor2,default_call_policies(),arg("coeffs")),
            "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [0,1]."
            " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest order."
            " Spline order is given by the number of the columns -1.")
+      .def("__init__", make_constructor(&wrapPolynomialConstructorFromBoundaryConditionsDegree1,
+                                        default_call_policies(),args("init","end","min","max")),
+           "Create a polynomial of degree 1 defined for t \in [min,max], "
+           "such that c(min) == init and c(max) == end.")
+      .def("__init__", make_constructor(&wrapPolynomialConstructorFromBoundaryConditionsDegree3,
+                                        default_call_policies(),args("init","d_init","end","d_end","min","max")),
+          "Create a polynomial of degree 3 defined for t \in [min,max], "
+          "such that c(min) == init and c(max) == end"
+          " dc(min) == d_init and dc(max) == d_end")
+      .def("__init__", make_constructor(&wrapPolynomialConstructorFromBoundaryConditionsDegree5,
+                                        default_call_policies(),
+                                        args("init","d_init","dd_init","end","d_end","dd_end","min","max")),
+           "Create a polynomial of degree 5 defined for t \in [min,max], "
+           "such that c(min) == init and c(max) == end"
+           " dc(min) == d_init and dc(max) == d_end"
+           " ddc(min) == dd_init and ddc(max) == dd_end")
       .def("min", &polynomial_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &polynomial_t::max,"Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &polynomial_t::dim)
@@ -352,14 +423,28 @@ namespace curves
     /** BEGIN piecewise curve function **/
     class_<piecewise_polynomial_curve_t>
     ("piecewise_polynomial_curve", init<>())
-      .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor),
+      .def("__init__", make_constructor(&wrapPiecewisePolynomialCurveConstructor,default_call_policies(),arg("curve")),
            "Create a peicewise-polynomial curve containing the given polynomial curve.")
+      .def("FromPointsList",&discretPointToPolynomialC0,
+           "Create a piecewise-polynomial connecting exactly all the given points at the given time. The created piecewise is C0 continuous.",args("points","time_points"))
+       .def("FromPointsList",&discretPointToPolynomialC1,
+             "Create a piecewise-polynomial connecting exactly all the given points at the given time and respect the given points derivative values. The created piecewise is C1 continuous.",args("points","points_derivative","time_points"))
+       .def("FromPointsList",&discretPointToPolynomialC2,
+             "Create a piecewise-polynomial connecting exactly all the given points at the given time and respect the given points derivative and second derivative values. The created piecewise is C2 continuous.",args("points","points_derivative","points_second_derivative","time_points"))
+      .staticmethod("FromPointsList")
+      .def("append",&addFinalPointC0,
+           "Append a new polynomial curve of degree 1 at the end of the piecewise curve, defined between self.max() and time and connecting exactly self(self.max()) and end",args("self","end","time"))
+       .def("append",&addFinalPointC1,
+             "Append a new polynomial curve of degree 3 at the end of the piecewise curve, defined between self.max() and time and connecting exactly self(self.max()) and end. It guarantee C1 continuity and guarantee that self.derivate(time,1) == d_end",args("self","end","d_end","time"))
+       .def("append",&addFinalPointC2,
+              "Append a new polynomial curve of degree 5 at the end of the piecewise curve, defined between self.max() and time and connecting exactly self(self.max()) and end. It guarantee C2 continuity and guarantee that self.derivate(time,1) == d_end and self.derivate(time,2) == dd_end",args("self","end","d_end","d_end","time"))
       .def("min", &piecewise_polynomial_curve_t::min,"Set the LOWER bound on interval definition of the curve.")
       .def("max", &piecewise_polynomial_curve_t::max,"Set the HIGHER bound on interval definition of the curve.")
       .def("dim", &piecewise_polynomial_curve_t::dim)
       .def("__call__", &piecewise_polynomial_curve_t::operator(),"Evaluate the curve at the given time.")
       .def("derivate", &piecewise_polynomial_curve_t::derivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
-      .def("add_curve", &piecewise_polynomial_curve_t::add_curve,
+      .def("compute_derivate",&piecewise_polynomial_curve_t::compute_derivate,"Return a piecewise_polynomial curve which is the derivate of this.",args("self","order"))
+      .def("append", &piecewise_polynomial_curve_t::add_curve,
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous,"Check if the curve is continuous at the given order.")
@@ -379,6 +464,7 @@ namespace curves
       .def("dim", &piecewise_bezier_curve_t::dim)
       .def("__call__", &piecewise_bezier_curve_t::operator())
       .def("derivate", &piecewise_bezier_curve_t::derivate)
+      .def("compute_derivate",&piecewise_polynomial_curve_t::compute_derivate,"Return a piecewise_polynomial curve which is the derivate of this.",args("self","order"))
       .def("add_curve", &piecewise_bezier_curve_t::add_curve)
       .def("is_continuous", &piecewise_bezier_curve_t::is_continuous)
       .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>,bp::args("filename"),"Saves *this inside a text file.")

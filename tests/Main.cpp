@@ -19,16 +19,16 @@ namespace curves
 {
   typedef Eigen::Vector3d point_t;
   typedef Eigen::VectorXd pointX_t;
-  typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_point_t;
+  typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
   typedef curve_abc  <double, double, true, pointX_t> curve_abc_t;
-  typedef polynomial  <double, double, true, pointX_t, t_point_t> polynomial_t;
+  typedef polynomial  <double, double, true, pointX_t, t_pointX_t> polynomial_t;
   typedef exact_cubic <double, double, true, pointX_t> exact_cubic_t;
   typedef exact_cubic   <double, double, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
   typedef bezier_curve  <double, double, true, pointX_t> bezier_curve_t;
   typedef cubic_hermite_spline <double, double, true, pointX_t> cubic_hermite_spline_t;
-  typedef piecewise_curve <double, double, true, pointX_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
-  typedef piecewise_curve <double, double, true, pointX_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
-  typedef piecewise_curve <double, double, true, pointX_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+  typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
+  typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
+  typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
   typedef exact_cubic_t::spline_constraints spline_constraints_t;
   typedef std::pair<double, pointX_t> Waypoint;
   typedef std::vector<Waypoint> T_Waypoint;
@@ -42,6 +42,14 @@ namespace curves
   bool QuasiEqual(const double a, const double b)
   {
     return std::fabs(a-b)<margin;
+  }
+  bool QuasiEqual(const point_t a, const point_t b)
+  {
+    bool equal = true;
+    for(size_t i = 0 ; i < 3 ; ++i){
+      equal = equal && QuasiEqual(a[i],b[i]);
+    }
+    return equal;
   }
 } // End namespace curves
 
@@ -95,7 +103,7 @@ void PolynomialCubicFunctionTest(bool& error)
   point_t b(2,3,4);
   point_t c(3,4,5);
   point_t d(3,6,7);
-  t_point_t vec;
+  t_pointX_t vec;
   vec.push_back(a);
   vec.push_back(b);
   vec.push_back(c);
@@ -1114,7 +1122,7 @@ void piecewiseCurveTest(bool& error)
     point_t b(2,1,1); // in [1,2[
     point_t c(3,1,1); // in [2,3]
     point_t res;
-    t_point_t vec1, vec2, vec3;
+    t_pointX_t vec1, vec2, vec3;
     vec1.push_back(a); // x=1, y=1, z=1
     vec2.push_back(b); // x=2, y=1, z=1
     vec3.push_back(c); // x=3, y=1, z=1
@@ -1196,7 +1204,7 @@ void piecewiseCurveTest(bool& error)
     // Create piecewise curve C2
     point_t a1(0,0,0);
     point_t b1(1,1,1);
-    t_point_t veca, vecb;
+    t_pointX_t veca, vecb;
     // in [0,1[
     veca.push_back(a1);
     veca.push_back(b1); // x=t, y=t, z=t 
@@ -1261,6 +1269,40 @@ void piecewiseCurveTest(bool& error)
     CompareCurves<piecewise_polynomial_curve_t, piecewise_cubic_hermite_curve_t>(pc, pc_hermite, errmsg5, error);
     piecewise_polynomial_curve_t pc_polynomial_same = pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
     CompareCurves<piecewise_polynomial_curve_t, piecewise_polynomial_curve_t>(pc, pc_polynomial_same, errmsg5, error);
+
+    // compare compute_derivate and derivate results :
+
+    piecewise_polynomial_curve_t pc_C2_derivate = pc_C2.compute_derivate(1);
+    piecewise_polynomial_curve_t pc_C2_derivate2 = pc_C2.compute_derivate(2);
+    if(pc_C2.min() != pc_C2_derivate.min()){
+      error = true;
+      std::cout<<"min bounds for curve and it's derivate are not equals."<<std::endl;
+    }
+    if(pc_C2.min() != pc_C2_derivate2.min()){
+      error = true;
+      std::cout<<"min bounds for curve and it's second derivate are not equals."<<std::endl;
+    }
+    if(pc_C2.max() != pc_C2_derivate.max()){
+      error = true;
+      std::cout<<"max bounds for curve and it's derivate are not equals."<<std::endl;
+    }
+    if(pc_C2.max() != pc_C2_derivate2.max()){
+      error = true;
+      std::cout<<"max bounds for curve and it's second derivate are not equals."<<std::endl;
+    }
+    double t = 0.;
+    while(t<pc_C2.max()){
+      if(!QuasiEqual(pc_C2.derivate(t,1),pc_C2_derivate(t))){
+        error = true;
+        std::cout<<"value not equal between derivate and compute_derivate (order 1) at t = "<<t<<std::endl;
+      }
+      if(!QuasiEqual(pc_C2.derivate(t,2),pc_C2_derivate2(t))){
+        error = true;
+        std::cout<<"value not equal between derivate and compute_derivate (order 2) at t = "<<t<<std::endl;
+      }
+      t += 0.01;
+    }
+
   }
   catch(...)
   {
@@ -1281,7 +1323,7 @@ void curveAbcDimDynamicTest(bool& error)
   // POLYNOMIAL
   point_t a(1,1,1);
   point_t b(2,2,2);
-  t_point_t vec;
+  t_pointX_t vec;
   vec.push_back(a);
   vec.push_back(b);
   polynomial_test_t pol(vec.begin(), vec.end(), 0, 1);
@@ -1362,40 +1404,38 @@ void curveAbcDimDynamicTest(bool& error)
 
 void piecewiseCurveConversionFromDiscretePointsTest(bool& error)
 {
-  try
+  std::string errMsg("piecewiseCurveConversionFromDiscretePointsTest, Error, value on curve is wrong : ");
+  point_t p0(0.,0.,0.);
+  point_t p1(1.,2.,3.);
+  point_t p2(4.,4.,4.);
+  point_t p3(10.,10.,10.);
+  point_t p_test_0_5 = (p0+p1)/2.0;
+  t_pointX_t points;
+  points.push_back(p0);
+  points.push_back(p1);
+  points.push_back(p2);
+  points.push_back(p3);
+  double T_min = 1.0;
+  double T_max = 3.0;
+  double timestep = (T_max-T_min)/double(points.size()-1);
+  std::vector<double> time_points;
+  for(size_t i=0;i<points.size();++i)
+    time_points.push_back(T_min+i*timestep);
+  piecewise_polynomial_curve_t ppc =  piecewise_polynomial_curve_t::
+  convert_discrete_points_to_polynomial<polynomial_t>(points,time_points);
+  if (!ppc.is_continuous(0))
   {
-    std::string errMsg("piecewiseCurveConversionFromDiscretePointsTest, Error, value on curve is wrong : ");
-    point_t p0(0.,0.,0.);
-    point_t p1(1.,2.,3.);
-    point_t p2(4.,4.,4.);
-    point_t p3(10.,10.,10.);
-    point_t p_test_0_5 = (p0+p1)/2.0;
-    t_point_t points;
-    points.push_back(p0);
-    points.push_back(p1);
-    points.push_back(p2);
-    points.push_back(p3);
-    double T_min = 1.0;
-    double T_max = 3.0;
-    double timestep = (T_max-T_min)/double(points.size()-1);
-    piecewise_polynomial_curve_t ppc =  piecewise_polynomial_curve_t::
-    convert_discrete_points_to_polynomial<polynomial_t>(points,T_min,T_max);
-    if (!ppc.is_continuous(0))
-    {
-      std::cout<<"piecewiseCurveConversionFromDiscretePointsTest, Error, piecewise curve is not C0"<<std::endl;
-      error = true;
-    }
-    ComparePoints(p0, ppc(T_min), errMsg, error);
-    ComparePoints(p_test_0_5, ppc(T_min+timestep/2.0), errMsg, error);
-    ComparePoints(p1, ppc(T_min+timestep), errMsg, error);
-    ComparePoints(p2, ppc(T_min+2*timestep), errMsg, error);
-    ComparePoints(p3, ppc(T_max), errMsg, error);
-  }
-  catch(...)
-  {
+    std::cout<<"piecewiseCurveConversionFromDiscretePointsTest, Error, piecewise curve is not C0"<<std::endl;
     error = true;
     std::cout<<"Error in piecewiseCurveConversionFromDiscretePointsTest"<<std::endl;
   }
+
+  ComparePoints(p0, ppc(T_min), errMsg, error);
+  ComparePoints(p_test_0_5, ppc(T_min+timestep/2.0), errMsg, error);
+  ComparePoints(p1, ppc(T_min+timestep), errMsg, error);
+  ComparePoints(p2, ppc(T_min+2*timestep), errMsg, error);
+  ComparePoints(p3, ppc(T_max), errMsg, error);
+  //TODO : test with C1 and C2
 }
 
 void serializationCurvesTest(bool& error)
@@ -1412,7 +1452,7 @@ void serializationCurvesTest(bool& error)
     point_t b(2,1,1); // in [1,2[
     point_t c(3,1,1); // in [2,3]
     point_t res;
-    t_point_t vec1, vec2, vec3;
+    t_pointX_t vec1, vec2, vec3;
     vec1.push_back(a); // x=1, y=1, z=1
     vec2.push_back(b); // x=2, y=1, z=1
     vec3.push_back(c); // x=3, y=1, z=1
@@ -1507,6 +1547,131 @@ void serializationCurvesTest(bool& error)
   }
 }
 
+void polynomialFromBoundaryConditions(bool& error){
+  pointX_t zeros = point_t(0.,0.,0.);
+  pointX_t p0 = point_t(0.,1.,0.);
+  pointX_t p1 = point_t(1.,2.,-3.);
+  pointX_t dp0 = point_t(-8.,4.,6.);
+  pointX_t dp1 = point_t(10.,-10.,10.);
+  pointX_t ddp0 = point_t(-1.,7.,4.);
+  pointX_t ddp1 = point_t(12.,-8.,2.5);
+  double min = 0.5;
+  double max = 2.;
+  // C0 : order 1
+  polynomial_t polC0 = polynomial_t(p0,p1,min,max);
+  if(polC0.min() != min){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: min interval not respected."<<std::endl;
+  }
+  if(polC0.max() != max){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: max interval not respected."<<std::endl;
+  }
+  if(polC0(min) != p0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: initial value not respected"<<std::endl;
+  }
+  if(polC0(max) != p1){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: final value not respected"<<std::endl;
+  }
+  if(polC0.degree_ != 1){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: curve is not degree 1 "<<std::endl;
+  }
+  if(polC0((max+min)/2.) != (p0*0.5 + p1*0.5)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C0: middle point doesn't have the right value' "<<std::endl;
+  }
+  //C1 : order 3
+  polynomial_t polC1 = polynomial_t(p0,dp0,p1,dp1,min,max);
+  if(polC1.min() != min){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: min interval not respected."<<std::endl;
+  }
+  if(polC1.max() != max){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: max interval not respected."<<std::endl;
+  }
+  if(polC1(min) != p0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: initial value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC1(max),p1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: final value not respected"<<std::endl;
+    std::cout<<"p1 = "<<p1.transpose()<< " curve end = "<<polC1(max).transpose()<<std::endl;
+  }
+  if(polC1.derivate(min,1) != dp0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: initial derivative value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC1.derivate(max,1), dp1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: final derivative value not respected"<<std::endl;
+    std::cout<<"dp1 = "<<dp1.transpose()<< " curve end derivative = "<<polC1.derivate(max,1).transpose()<<std::endl;
+  }
+  if(polC1.degree_ != 3){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C1: curve is not degree 3 "<<std::endl;
+  }
+  //C2 : order 5
+  polynomial_t polC2 = polynomial_t(p0,dp0,ddp0,p1,dp1,ddp1,min,max);
+  if(polC2.min() != min){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: min interval not respected."<<std::endl;
+  }
+  if(polC2.max() != max){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: max interval not respected."<<std::endl;
+  }
+  if(polC2(min) != p0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: initial value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC2(max),p1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: final value not respected"<<std::endl;
+  }
+  if(polC2.derivate(min,1) != dp0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: initial derivative value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC2.derivate(max,1), dp1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: final derivative value not respected"<<std::endl;
+  }
+  if(polC2.derivate(min,2) != ddp0){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: initial second derivative value not respected"<<std::endl;
+  }
+  if(!QuasiEqual(polC2.derivate(max,2), ddp1)){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: final second derivative value not respected"<<std::endl;
+  }
+  if(polC2.degree_ != 5){
+    error=true;
+    std::cout<<"polynomialFromBoundaryConditions C2: curve is not degree 5 "<<std::endl;
+  }
+  // check if the exeptions are correctly raised :
+  try{
+    polynomial_t polC0Err = polynomial_t(p0,p1,max,min);
+    error = true;
+    std::cout<<"Created a polynomial with tMin > tMax without error. "<<std::endl;
+  }catch(invalid_argument e){}
+  try{
+    polynomial_t polC1Err = polynomial_t(p0,dp0,p1,dp1,max,min);
+    error = true;
+    std::cout<<"Created a polynomial with tMin > tMax without error. "<<std::endl;
+  }catch(invalid_argument e){}
+  try{
+    polynomial_t polC2Err = polynomial_t(p0,dp0,ddp0,p1,dp1,ddp1,max,min);
+    error = true;
+    std::cout<<"Created a polynomial with tMin > tMax without error. "<<std::endl;
+  }catch(invalid_argument e){}
+}
+
+
 int main(int /*argc*/, char** /*argv[]*/)
 {
   std::cout << "performing tests... \n";
@@ -1536,6 +1701,7 @@ int main(int /*argc*/, char** /*argv[]*/)
   cubicConversionTest(error);
   curveAbcDimDynamicTest(error);
   serializationCurvesTest(error);
+  polynomialFromBoundaryConditions(error);
   if(error)
   {
     std::cout << "There were some errors\n";

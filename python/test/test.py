@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from numpy import matrix
+from numpy import matrix, array_equal, isclose,random
 from numpy.linalg import norm
 
 #from curves import ( serialize_polynomial, deserialize_polynomial, serialize_piecewise_polynomial_curve, deserialize_piecewise_polynomial_curve )
@@ -128,6 +128,58 @@ class TestCurves(unittest.TestCase):
         os.remove("serialization_curve.test")
         return
 
+    def test_polynomial_from_boundary_condition(self):
+        p0 = matrix([1.,3.,-2.]).T
+        p1 = matrix([0.6,2.,2.5]).T
+        dp0 = matrix([-6.,2.,-1.]).T
+        dp1 = matrix([10.,10.,10.]).T
+        ddp0 = matrix([1.,-7.,4.5]).T
+        ddp1 = matrix([6.,-1.,-4]).T
+        min = 1.
+        max = 2.5
+        polC0 = polynomial(p0,p1,min,max)
+        self.assertEqual(polC0.min(), min)
+        self.assertEqual(polC0.max(),max)
+        self.assertTrue(array_equal(polC0(min), p0))
+        self.assertTrue(array_equal(polC0(max), p1))
+        self.assertTrue(array_equal(polC0((min+max)/2.),0.5*p0+0.5*p1))
+        polC1 = polynomial(p0,dp0,p1,dp1,min,max)
+        self.assertEqual(polC1.min(), min)
+        self.assertEqual(polC1.max(),max)
+        self.assertTrue(isclose(polC1(min), p0).all())
+        self.assertTrue(isclose(polC1(max), p1).all())
+        self.assertTrue(isclose(polC1.derivate(min,1), dp0).all())
+        self.assertTrue(isclose(polC1.derivate(max,1), dp1).all())
+        polC2 = polynomial(p0,dp0,ddp0,p1,dp1,ddp1,min,max)
+        self.assertEqual(polC2.min(), min)
+        self.assertEqual(polC2.max(),max)
+        self.assertTrue(isclose(polC2(min), p0).all())
+        self.assertTrue(isclose(polC2(max), p1).all())
+        self.assertTrue(isclose(polC2.derivate(min,1), dp0).all())
+        self.assertTrue(isclose(polC2.derivate(max,1), dp1).all())
+        self.assertTrue(isclose(polC2.derivate(min,2), ddp0).all())
+        self.assertTrue(isclose(polC2.derivate(max,2), ddp1).all())
+        # check that the exception are correctly raised :
+        try:
+          polC0 = polynomial(p0,p1,max,min)
+          self.assertTrue(False) # should never get there
+        except ValueError:
+          pass
+
+        try:
+          polC1 = polynomial(p0,dp0,p1,dp1,max,min)
+          self.assertTrue(False) # should never get there
+        except ValueError:
+          pass
+
+        try:
+          polC2 = polynomial(p0,dp0,ddp0,p1,dp1,ddp1,max,min)
+          self.assertTrue(False) # should never get there
+        except ValueError:
+          pass
+
+        return
+
     def test_cubic_hermite_spline(self):
         print("test_cubic_hermite_spline")
         points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
@@ -174,7 +226,7 @@ class TestCurves(unittest.TestCase):
         a = polynomial(waypoints1, 0., 1.)
         b = polynomial(waypoints2, 1., 3.)
         pc = piecewise_polynomial_curve(a)
-        pc.add_curve(b)
+        pc.append(b)
         pc.min()
         pc.max()
         pc(0.4)
@@ -191,8 +243,64 @@ class TestCurves(unittest.TestCase):
         os.remove("serialization_pc.test")
         return
 
-    def test_piecewise_bezier_curve(self):
-        print("test_piecewise_bezier_curve")
+    def test_piecewise_from_points_list(self):
+        N = 7
+        points = matrix(random.rand(3,N))
+        points_derivative = matrix(random.rand(3,N))
+        points_second_derivative = matrix(random.rand(3,N))
+        time_points = matrix(random.rand(N)).T
+        time_points.sort(0)
+        polC0 =piecewise_polynomial_curve.FromPointsList(points,time_points)
+        self.assertEqual(polC0.min(),time_points[0,0])
+        self.assertEqual(polC0.max(),time_points[-1,0])
+        self.assertTrue(polC0.is_continuous(0))
+        self.assertTrue(not polC0.is_continuous(1))
+        for i in range(N):
+          self.assertTrue(isclose(polC0(time_points[i,0]),points[:,i]).all())
+
+        polC1 =piecewise_polynomial_curve.FromPointsList(points,points_derivative,time_points)
+        self.assertEqual(polC1.min(),time_points[0,0])
+        self.assertEqual(polC1.max(),time_points[-1,0])
+        self.assertTrue(polC1.is_continuous(0))
+        self.assertTrue(polC1.is_continuous(1))
+        self.assertTrue(not polC1.is_continuous(2))
+        for i in range(N):
+          self.assertTrue(isclose(polC1(time_points[i,0]),points[:,i]).all())
+          self.assertTrue(isclose(polC1.derivate(time_points[i,0],1),points_derivative[:,i]).all())
+
+        polC2 =piecewise_polynomial_curve.FromPointsList(points,points_derivative,points_second_derivative,time_points)
+        self.assertEqual(polC2.min(),time_points[0,0])
+        self.assertEqual(polC2.max(),time_points[-1,0])
+        self.assertTrue(polC2.is_continuous(0))
+        self.assertTrue(polC2.is_continuous(1))
+        self.assertTrue(polC2.is_continuous(2))
+        self.assertTrue(not polC2.is_continuous(3))
+        for i in range(N):
+          self.assertTrue(isclose(polC2(time_points[i,0]),points[:,i]).all())
+          self.assertTrue(isclose(polC2.derivate(time_points[i,0],1),points_derivative[:,i]).all())
+          self.assertTrue(isclose(polC2.derivate(time_points[i,0],2),points_second_derivative[:,i]).all())
+
+        # check if exepetion are corectly raised when time_points are not in ascending values
+        time_points[0,0] = 1
+        time_points[1,0] = 0.5
+        try:
+            polC0 =piecewise_polynomial_curve.FromPointsList(points,time_points)
+            self.assertTrue(False) # should not get here
+        except ValueError:
+            pass
+        try:
+            polC1 =piecewise_polynomial_curve.FromPointsList(points,points_derivative,time_points)
+            self.assertTrue(False) # should not get here
+        except ValueError:
+            pass
+        try:
+            polC2 =piecewise_polynomial_curve.FromPointsList(points,points_derivative,points_second_derivative,time_points)
+            self.assertTrue(False) # should not get here
+        except ValueError:
+            pass
+        return
+
+    def test_piecewise_bezier3_curve(self):
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
