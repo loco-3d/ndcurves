@@ -190,11 +190,26 @@ namespace curves
         return deriv.compute_derivate(order-1);
       }
 
+      Eigen::MatrixXd coeff() const
+      {
+        return coefficients_;
+      }
+
+      point_t coeffAtDegree(const std::size_t degree) const
+      {
+        point_t res;
+        if (degree <= degree_)
+        {
+          res = coefficients_.col(degree);
+        }
+        return res;
+      }
+
     private:
       num_t fact(const std::size_t n, const std::size_t order) const
       {
         num_t res(1);
-        for(std::size_t i = 0; i < order; ++i)
+        for(std::size_t i = 0; i < std::size_t(order); ++i)
         {
           res *= (num_t)(n-i);
         }
