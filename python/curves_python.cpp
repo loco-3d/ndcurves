@@ -44,12 +44,16 @@ typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, bezier_
 typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
 typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
 
+// Bezier 3
+typedef curves::bezier_curve  <real, real, true, Eigen::Vector3d> bezier3_t;
+
 typedef curves::Bern<double> bernstein_t;
 
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(cubic_hermite_spline_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynomial_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_polynomial_curve_t)
@@ -244,6 +248,30 @@ namespace curves
     /*eigenpy::exposeAngleAxis();
     eigenpy::exposeQuaternion();*/
     /** END eigenpy init**/
+    /** BEGIN bezier3 curve**/
+    class_<bezier3_t>("bezier3", init<>())
+      .def("__init__", make_constructor(&wrapBezierConstructor))
+      .def("__init__", make_constructor(&wrapBezierConstructorBounds))
+      .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
+      .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
+      .def("min", &bezier3_t::min)
+      .def("max", &bezier3_t::max)
+      .def("dim", &bezier3_t::dim)
+      .def("__call__", &bezier3_t::operator())
+      .def("derivate", &bezier3_t::derivate)
+      .def("compute_derivate", &bezier3_t::compute_derivate)
+      .def("compute_primitive", &bezier3_t::compute_primitive)
+      .def("saveAsText", &bezier3_t::saveAsText<bezier3_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&bezier3_t::loadFromText<bezier3_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&bezier3_t::saveAsXML<bezier3_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&bezier3_t::loadFromXML<bezier3_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&bezier3_t::saveAsBinary<bezier3_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&bezier3_t::loadFromBinary<bezier3_t>,bp::args("filename"),"Loads *this from a binary file.")
+      .def_readonly("degree", &bezier3_t::degree_)
+      .def_readonly("nbWaypoints", &bezier3_t::size_)
+      //.def(SerializableVisitor<bezier_t>())
+    ;
+    /** END bezier3 curve**/
     /** BEGIN bezier curve**/
     class_<bezier_t>("bezier", init<>())
       .def("__init__", make_constructor(&wrapBezierConstructor))
