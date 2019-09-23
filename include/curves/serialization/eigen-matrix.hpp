@@ -25,8 +25,8 @@
  */
 
 
-#ifndef __serialization_eigen_matrix_hpp__
-#define __serialization_eigen_matrix_hpp__
+#ifndef EIGEN_BOOST_SERIALIZATION
+#define EIGEN_BOOST_SERIALIZATION
 
 #include <Eigen/Dense>
 #include <boost/serialization/split_free.hpp>

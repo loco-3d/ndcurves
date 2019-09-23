@@ -22,7 +22,7 @@ namespace curves
   ///        On the piecewise polynomial curve, cf0 is located between \f$[T0_{min},T0_{max}[\f$,
   ///        cf1 between \f$[T0_{max},T1_{max}[\f$ and cf2 between \f$[T1_{max},T2_{max}]\f$.
   ///
-  template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
+  template<typename Time= double, typename Numeric=Time, bool Safe=false,
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, 
            typename T_Point= std::vector<Point,Eigen::aligned_allocator<Point> >,
            typename Curve= curve_abc<Time, Numeric, Safe, Point> >
@@ -40,7 +40,7 @@ namespace curves
       /// \brief Empty constructor. Add at least one curve to call other class functions.
       ///
       piecewise_curve()
-        : size_(0), T_min_(0), T_max_(0)
+        : dim_(0), size_(0), T_min_(0), T_max_(0)
       {}
 
       /// \brief Constructor.
@@ -49,12 +49,17 @@ namespace curves
       ///
       piecewise_curve(const curve_t& cf)
       {
+        dim_ = cf(cf.min()).size();
         size_ = 0;
         add_curve(cf);
       }
 
       piecewise_curve(const t_curve_t list_curves)
       {
+        if (list_curves.size()!=0)
+        {
+          dim_ = list_curves[0](list_curves[0].min()).size();
+        }
         size_ = 0;
         for( std::size_t i=0; i<list_curves.size(); i++ )
         {
@@ -63,7 +68,7 @@ namespace curves
       }
 
       piecewise_curve(const piecewise_curve& other)
-        : curves_(other.curves_), time_curves_(other.time_curves_), size_(other.size_),
+        : dim_(other.dim_), curves_(other.curves_), time_curves_(other.time_curves_), size_(other.size_),
         T_min_(other.T_min_), T_max_(other.T_max_)
       {}
 
@@ -102,6 +107,10 @@ namespace curves
       ///
       void add_curve(const curve_t& cf)
       {
+        if (size_==0 && dim_==0)
+        {
+          dim_ = cf(cf.min()).size();
+        }
         // Check time continuity : Beginning time of pol must be equal to T_max_ of actual piecewise curve.
         if (size_!=0 && !(fabs(cf.min()-T_max_)<MARGIN))
         {
@@ -153,10 +162,10 @@ namespace curves
       }
 
       template<typename Bezier>
-      piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Bezier> convert_piecewise_curve_to_bezier()
+      piecewise_curve<Time, Numeric, Safe, Point, T_Point, Bezier> convert_piecewise_curve_to_bezier()
       {
         check_if_not_empty();
-        typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Bezier> piecewise_curve_out_t;
+        typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, Bezier> piecewise_curve_out_t;
         // Get first curve (segment)
         curve_t first_curve = curves_.at(0);
         Bezier first_curve_output = bezier_from_curve<Bezier, curve_t>(first_curve);
@@ -171,10 +180,10 @@ namespace curves
       }
 
       template<typename Hermite>
-      piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Hermite> convert_piecewise_curve_to_cubic_hermite()
+      piecewise_curve<Time, Numeric, Safe, Point, T_Point, Hermite> convert_piecewise_curve_to_cubic_hermite()
       {
         check_if_not_empty();
-        typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Hermite> piecewise_curve_out_t;
+        typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, Hermite> piecewise_curve_out_t;
         // Get first curve (segment)
         curve_t first_curve = curves_.at(0);
         Hermite first_curve_output = hermite_from_curve<Hermite, curve_t>(first_curve);
@@ -189,10 +198,10 @@ namespace curves
       }
 
       template<typename Polynomial>
-      piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> convert_piecewise_curve_to_polynomial()
+      piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> convert_piecewise_curve_to_polynomial()
       {
         check_if_not_empty();
-        typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> piecewise_curve_out_t;
+        typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_curve_out_t;
         // Get first curve (segment)
         curve_t first_curve = curves_.at(0);
         Polynomial first_curve_output = polynomial_from_curve<Polynomial, curve_t>(first_curve);
@@ -207,7 +216,7 @@ namespace curves
       }
 
       template<typename Polynomial>
-      static piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> 
+      static piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> 
       convert_discrete_points_to_polynomial(T_Point points, Time T_min, Time T_max)
       {
         if(Safe &! (points.size()>1))
@@ -215,7 +224,7 @@ namespace curves
           //std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
           throw std::invalid_argument("piecewise_curve -> convert_discrete_points_to_polynomial, Error, less than 2 discrete points");
         }
-        typedef piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Polynomial> piecewise_curve_out_t;
+        typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_curve_out_t;
         Time discretization_step = (T_max-T_min)/Time(points.size()-1);
         Time time_actual = T_min;
         // Initialization at first points
@@ -302,9 +311,11 @@ namespace curves
         }
       }
 
-
     /*Helpers*/
     public:
+      /// \brief Get dimension of curve.
+      /// \return dimension of curve.
+      std::size_t virtual dim() const{return dim_;};
       /// \brief Get the minimum time for which the curve is defined
       /// \return \f$t_{min}\f$, lower bound of time range.
       Time virtual min() const{return T_min_;}
@@ -315,6 +326,7 @@ namespace curves
       /*Helpers*/
 
       /* Attributes */
+      std::size_t dim_; // Dim of curve
       t_curve_t curves_; // for curves 0/1/2 : [ curve0, curve1, curve2 ]
       t_time_t time_curves_; // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
       std::size_t size_; // Number of segments in piecewise curve = size of curves_
@@ -330,6 +342,7 @@ namespace curves
         if (version) {
           // Do something depending on version ?
         }
+        ar & boost::serialization::make_nvp("dim", dim_);
         ar & boost::serialization::make_nvp("curves", curves_);
         ar & boost::serialization::make_nvp("time_curves", time_curves_);
         ar & boost::serialization::make_nvp("size", size_);
@@ -338,8 +351,8 @@ namespace curves
       }
   }; // End struct piecewise curve
 
-  template<typename Time, typename Numeric, std::size_t Dim, bool Safe, typename Point, typename T_Point, typename Curve>
-  const double piecewise_curve<Time, Numeric, Dim, Safe, Point, T_Point, Curve>::MARGIN(0.001);
+  template<typename Time, typename Numeric, bool Safe, typename Point, typename T_Point, typename Curve>
+  const double piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve>::MARGIN(0.001);
 
 } // end namespace
 

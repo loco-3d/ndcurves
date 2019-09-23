@@ -31,7 +31,7 @@ namespace curves
   /// \f$ x(t) = a + b(t - t_{min}) + ... + d(t - t_{min})^N \f$<br> 
   /// where N is the order and \f$ t \in [t_{min}, t_{max}] \f$.
   ///
-  template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
+  template<typename Time= double, typename Numeric=Time, bool Safe=false,
            typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, typename T_Point =std::vector<Point,Eigen::aligned_allocator<Point> > >
   struct polynomial : public curve_abc<Time, Numeric, Safe, Point>
   {
@@ -40,16 +40,16 @@ namespace curves
     typedef Time  time_t;
     typedef Numeric num_t;
     typedef curve_abc<Time, Numeric, Safe, Point> curve_abc_t;
-    typedef Eigen::Matrix<double, Dim, Eigen::Dynamic> coeff_t;
+    typedef Eigen::MatrixXd coeff_t;
     typedef Eigen::Ref<coeff_t> coeff_t_ref;
-    typedef polynomial<Time, Numeric, Dim, Safe, Point, T_Point> polynomial_t;
+    typedef polynomial<Time, Numeric, Safe, Point, T_Point> polynomial_t;
 
     /* Constructors - destructors */
     public:
       /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
       ///
       polynomial()
-        : T_min_(0), T_max_(0)
+        : curve_abc_t(), dim_(0), T_min_(0), T_max_(0)
       {}
 
       /// \brief Constructor.
@@ -60,8 +60,9 @@ namespace curves
       /// \param max  : UPPER bound on interval definition of the curve.
       polynomial(const coeff_t& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
+          dim_(coefficients.rows()),
           coefficients_(coefficients), 
-          dim_(Dim), degree_(coefficients_.cols()-1), 
+          degree_(coefficients.cols()-1), 
           T_min_(min), T_max_(max)
       {
         safe_check();
@@ -75,8 +76,9 @@ namespace curves
       /// \param max  : UPPER bound on interval definition of the spline.
       polynomial(const T_Point& coefficients, const time_t min, const time_t max)
         : curve_abc_t(),
+          dim_(coefficients.begin()->size()),
           coefficients_(init_coeffs(coefficients.begin(), coefficients.end())),
-          dim_(Dim), degree_(coefficients_.cols()-1), 
+          degree_(coefficients_.cols()-1), 
           T_min_(min), T_max_(max)
       {
         safe_check();
@@ -90,8 +92,10 @@ namespace curves
       /// \param max   : UPPER bound on interval definition of the spline.
       template<typename In>
       polynomial(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
-        : coefficients_(init_coeffs(zeroOrderCoefficient, out)),
-          dim_(Dim), degree_(coefficients_.cols()-1), 
+        : curve_abc_t(),
+          dim_(zeroOrderCoefficient->size()),
+          coefficients_(init_coeffs(zeroOrderCoefficient, out)),
+          degree_(coefficients_.cols()-1), 
           T_min_(min), T_max_(max)
       {
         safe_check();
@@ -105,8 +109,8 @@ namespace curves
 
 
       polynomial(const polynomial& other)
-        : coefficients_(other.coefficients_),
-          dim_(other.dim_), degree_(other.degree_), T_min_(other.T_min_), T_max_(other.T_max_)
+        : dim_(other.dim_), coefficients_(other.coefficients_),
+          degree_(other.degree_), T_min_(other.T_min_), T_max_(other.T_max_)
       {}
 
 
@@ -217,6 +221,9 @@ namespace curves
 
     public:
       /*Helpers*/
+      /// \brief Get dimension of curve.
+      /// \return dimension of curve.
+      std::size_t virtual dim() const{return dim_;};
       /// \brief Get the minimum time for which the curve is defined
       /// \return \f$t_{min}\f$ lower bound of time range.
       num_t virtual min() const {return T_min_;}
@@ -226,10 +233,10 @@ namespace curves
       /*Helpers*/
 
       /*Attributes*/
-      coeff_t coefficients_; //const
       std::size_t dim_; //const
+      coeff_t coefficients_; //const
       std::size_t degree_; //const
-      time_t T_min_, T_max_;
+      time_t T_min_, T_max_; //const
       /*Attributes*/
 
     private:
@@ -237,7 +244,7 @@ namespace curves
       coeff_t init_coeffs(In zeroOrderCoefficient, In highestOrderCoefficient)
       {
         std::size_t size = std::distance(zeroOrderCoefficient, highestOrderCoefficient);
-        coeff_t res = coeff_t(Dim, size); int i = 0;
+        coeff_t res = coeff_t(dim_, size); int i = 0;
         for(In cit = zeroOrderCoefficient; cit != highestOrderCoefficient; ++cit, ++i)
         {
           res.col(i) = *cit;
@@ -254,6 +261,7 @@ namespace curves
         if (version) {
           // Do something depending on version ?
         }
+        ar & boost::serialization::make_nvp("dim", dim_);
         ar & boost::serialization::make_nvp("coefficients", coefficients_);
         ar & boost::serialization::make_nvp("dim", dim_);
         ar & boost::serialization::make_nvp("degree", degree_);

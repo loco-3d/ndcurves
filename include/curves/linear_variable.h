@@ -116,6 +116,12 @@ namespace curves
       return *this;
     }
 
+    std::size_t size() 
+    {
+      variables_t w;
+      return w.size();
+    }
+
     static variables_t Zero(size_t /*dim*/){
       variables_t w;
       return w;

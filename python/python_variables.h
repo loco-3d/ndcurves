@@ -14,7 +14,7 @@ namespace curves
   static const int dim = 3;
   typedef curves::linear_variable<dim, real> linear_variable_3_t;
   typedef curves::variables<linear_variable_3_t> variables_3_t;
-  typedef curves::bezier_curve  <real, real, dim, true, variables_3_t> bezier_linear_variable_t;
+  typedef curves::bezier_curve  <real, real, true, variables_3_t> bezier_linear_variable_t;
 
   /*linear variable control points*/
   bezier_linear_variable_t* wrapBezierLinearConstructor(const point_list_t& matrices, const point_list_t& vectors);

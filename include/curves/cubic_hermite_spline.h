@@ -30,12 +30,11 @@ namespace curves
   /// - crosses each of the waypoint given in its initialization (\f$P_0\f$, \f$P_1\f$,...,\f$P_N\f$).
   /// - has its derivatives on \f$P_i\f$ and \f$P_{i+1}\f$ are \f$p'(t_{P_i}) = m_i\f$ and \f$p'(t_{P_{i+1}}) = m_{i+1}\f$.
   ///
-  template<typename Time= double, typename Numeric=Time, std::size_t Dim=3, bool Safe=false,
-           typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
-           typename Tangent= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
+  template<typename Time= double, typename Numeric=Time, bool Safe=false,
+           typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
   struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point>
   {
-    typedef std::pair<Point, Tangent> pair_point_tangent_t; 
+    typedef std::pair<Point, Point> pair_point_tangent_t; 
     typedef std::vector< pair_point_tangent_t ,Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
     typedef std::vector<Time> vector_time_t;
     typedef Numeric num_t;
@@ -44,7 +43,7 @@ namespace curves
       /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
       ///
       cubic_hermite_spline()
-        : T_min_(0), T_max_(0)
+        : dim_(0), T_min_(0), T_max_(0)
       {}
 
       /// \brief Constructor.
@@ -67,12 +66,18 @@ namespace curves
         {
           control_points_.push_back(*it);
         }
+        // Set dimension according to size of points
+        if (control_points_.size()!=0)
+        {
+          dim_ = control_points_[0].first.size();
+        }
+        // Set time
         setTime(time_control_points);
       }
 
 
       cubic_hermite_spline(const cubic_hermite_spline& other)
-        : control_points_(other.control_points_), time_control_points_(other.time_control_points_),
+        : dim_(other.dim_), control_points_(other.control_points_), time_control_points_(other.time_control_points_),
           duration_splines_(other.duration_splines_), T_min_(other.T_min_), T_max_(other.T_max_), 
           size_(other.size_), degree_(other.degree_)
       {}
@@ -89,7 +94,7 @@ namespace curves
       ///
       virtual Point operator()(const Time t) const
       {
-        check_if_not_empty();
+        check_conditions();
         if(Safe &! (T_min_ <= t && t <= T_max_))
         {
           throw std::invalid_argument("can't evaluate cubic hermite spline, out of range");
@@ -111,7 +116,7 @@ namespace curves
       ///
       virtual Point derivate(const Time t, const std::size_t order) const
       {
-        check_if_not_empty();
+        check_conditions();
         return evalCubicHermiteSpline(t, order);
       }
 
@@ -315,11 +320,15 @@ namespace curves
         return left_id-1;
       }
 
-      void check_if_not_empty() const
+      void check_conditions() const
       {
         if (control_points_.size() == 0)
         {
           throw std::runtime_error("Error in cubic hermite : there is no control points set / did you use empty constructor ?");
+        }
+        else if(dim_ == 0)
+        {
+          throw std::runtime_error("Error in cubic hermite : Dimension of points is zero / did you use empty constructor ?");
         }
       }
 
@@ -358,6 +367,9 @@ namespace curves
 
     /*Helpers*/
     public:
+      /// \brief Get dimension of curve.
+      /// \return dimension of curve.
+      std::size_t virtual dim() const{return dim_;};
       /// \brief Get the minimum time for which the curve is defined
       /// \return \f$t_{min}\f$, lower bound of time range.
       Time virtual min() const{return time_control_points_.front();}
@@ -367,12 +379,13 @@ namespace curves
       /*Helpers*/
 
       /*Attributes*/
+      /// Dim of curve
+      std::size_t dim_;
       /// Vector of pair < Point, Tangent >.
       t_pair_point_tangent_t control_points_;
       /// Vector of Time corresponding to time of each N control points : time at \f$P_0, P_1, P_2, ..., P_N\f$.
       /// Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.
       vector_time_t time_control_points_;
-
       /// Vector of Time corresponding to time duration of each subspline.<br>
       /// For N control points with time \f$T_{P_0}, T_{P_1}, T_{P_2}, ..., T_{P_N}\f$ respectively,
       /// duration of each subspline is : ( T_{P_1}-T_{P_0}, T_{P_2}-T_{P_1}, ..., T_{P_N}-T_{P_{N-1} )<br>
@@ -396,6 +409,7 @@ namespace curves
         if (version) {
           // Do something depending on version ?
         }
+        ar & boost::serialization::make_nvp("dim", dim_);
         ar & boost::serialization::make_nvp("control_points", control_points_);
         ar & boost::serialization::make_nvp("time_control_points", time_control_points_);
         ar & boost::serialization::make_nvp("duration_splines", duration_splines_);

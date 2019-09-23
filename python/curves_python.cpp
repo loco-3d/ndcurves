@@ -15,56 +15,47 @@
 
 #include <eigenpy/memory.hpp>
 #include <eigenpy/eigenpy.hpp>
+#include <Eigen/Dense>
 
 #include <boost/python.hpp>
 
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 using namespace curves;
 typedef double real;
-typedef Eigen::Vector3d point_t;
-typedef Eigen::Vector3d tangent_t;
-typedef std::pair<point_t, tangent_t> pair_point_tangent_t;
-typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> point6_t;
-typedef Eigen::Matrix<double, 3, 1, 0, 3, 1> ret_point_t;
-typedef Eigen::Matrix<double, 6, 1, 0, 6, 1> ret_point6_t;
 typedef Eigen::VectorXd time_waypoints_t;
-typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point_list_t;
-typedef Eigen::Matrix<real, 6, Eigen::Dynamic> point_list6_t;
-typedef std::vector<point_t,Eigen::aligned_allocator<point_t> >  t_point_t;
-typedef std::vector<point6_t,Eigen::aligned_allocator<point6_t> >  t_point6_t;
-typedef std::pair<real, point_t> Waypoint;
-typedef std::vector<Waypoint> T_Waypoint;
-typedef std::pair<real, point6_t> Waypoint6;
-typedef std::vector<Waypoint6> T_Waypoint6;
-typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
 
-typedef curves::bezier_curve  <real, real, 3, true, point_t> bezier3_t;
-typedef curves::bezier_curve  <real, real, 6, true, point6_t> bezier6_t;
-typedef curves::polynomial  <real, real, 3, true, point_t, t_point_t> polynomial_t;
-typedef curves::exact_cubic  <real, real, 3, true, point_t, t_point_t> exact_cubic_t;
-typedef curves::cubic_hermite_spline <real, real, 3, true, point_t> cubic_hermite_spline_t;
+typedef Eigen::VectorXd pointX_t;
+typedef Eigen::Matrix<double, Eigen::Dynamic, 1, 0, Eigen::Dynamic, 1> ret_pointX_t;
+typedef std::pair<pointX_t, pointX_t> pair_pointX_tangent_t;
+typedef Eigen::MatrixXd pointX_list_t;
+typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
+typedef std::vector<pair_pointX_tangent_t,Eigen::aligned_allocator<pair_pointX_tangent_t> > t_pair_pointX_tangent_t;
+typedef curves::curve_constraints<pointX_t> curve_constraints_t;
+typedef std::pair<real, pointX_t> waypoint_t;
+typedef std::vector<waypoint_t> t_waypoint_t;
+
+// Curves
+typedef curves::cubic_hermite_spline <real, real, true, pointX_t> cubic_hermite_spline_t;
+typedef curves::bezier_curve  <real, real, true, pointX_t> bezier_t;
+typedef curves::polynomial  <real, real, true, pointX_t, t_pointX_t> polynomial_t;
 typedef polynomial_t::coeff_t coeff_t;
-typedef std::pair<real, point_t> waypoint_t;
-typedef std::vector<waypoint_t, Eigen::aligned_allocator<point_t> > t_waypoint_t;
-
-typedef curves::piecewise_curve <real, real, 3, true, point_t, t_point_t, polynomial_t> piecewise_polynomial_curve_t;
-typedef curves::piecewise_curve <real, real, 3, true, point_t, t_point_t, bezier3_t> piecewise_bezier3_curve_t;
-typedef curves::piecewise_curve <real, real, 6, true, point6_t, t_point6_t, bezier6_t> piecewise_bezier6_curve_t;
-typedef curves::piecewise_curve <real, real, 3, true, point_t, t_point_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
+typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, bezier_t> piecewise_bezier_curve_t;
+typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
 
 typedef curves::Bern<double> bernstein_t;
 
-typedef curves::curve_constraints<point_t> curve_constraints_t;
-typedef curves::curve_constraints<point6_t> curve_constraints6_t;
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
-
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier3_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier6_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynomial_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(cubic_hermite_spline_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynomial_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_polynomial_curve_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_bezier_curve_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_cubic_hermite_curve_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
 
 namespace curves
 {
@@ -88,65 +79,45 @@ namespace curves
   /* End Template constructor bezier */
 
   /*3D constructors bezier */
-  bezier3_t* wrapBezierConstructor3(const point_list_t& array)
+  bezier_t* wrapBezierConstructor(const pointX_list_t& array)
   {
-    return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array) ;
+    return wrapBezierConstructorTemplate<bezier_t, pointX_list_t, t_pointX_t>(array) ;
   }
-  bezier3_t* wrapBezierConstructorBounds3(const point_list_t& array, const real T_min, const real T_max)
+  bezier_t* wrapBezierConstructorBounds(const pointX_list_t& array, const real T_min, const real T_max)
   {
-    return wrapBezierConstructorTemplate<bezier3_t, point_list_t, t_point_t>(array, T_min, T_max) ;
+    return wrapBezierConstructorTemplate<bezier_t, pointX_list_t, t_pointX_t>(array, T_min, T_max) ;
   }
-  bezier3_t* wrapBezierConstructor3Constraints(const point_list_t& array, const curve_constraints_t& constraints)
+  bezier_t* wrapBezierConstructorConstraints(const pointX_list_t& array, const curve_constraints_t& constraints)
   {
-    return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints) ;
+    return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(array, constraints) ;
   }
-  bezier3_t* wrapBezierConstructorBounds3Constraints(const point_list_t& array, const curve_constraints_t& constraints,
-                             const real T_min, const real T_max)
+  bezier_t* wrapBezierConstructorBoundsConstraints(const pointX_list_t& array, const curve_constraints_t& constraints,
+                                                   const real T_min, const real T_max)
   {
-  return wrapBezierConstructorConstraintsTemplate<bezier3_t, point_list_t, t_point_t, curve_constraints_t>(array, constraints, 
-                                                                                                           T_min, T_max) ;
+  return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(array, constraints, 
+                                                                                                            T_min, T_max) ;
   }
   /*END 3D constructors bezier */
-  /*6D constructors bezier */
-  bezier6_t* wrapBezierConstructor6(const point_list6_t& array)
-  {
-    return wrapBezierConstructorTemplate<bezier6_t, point_list6_t, t_point6_t>(array) ;
-  }
-  bezier6_t* wrapBezierConstructorBounds6(const point_list6_t& array, const real T_min, const real T_max)
-  {
-    return wrapBezierConstructorTemplate<bezier6_t, point_list6_t, t_point6_t>(array, T_min, T_max) ;
-  }
-  bezier6_t* wrapBezierConstructor6Constraints(const point_list6_t& array, const curve_constraints6_t& constraints)
-  {
-    return wrapBezierConstructorConstraintsTemplate<bezier6_t, point_list6_t, t_point6_t, curve_constraints6_t>(array, constraints) ;
-  }
-  bezier6_t* wrapBezierConstructorBounds6Constraints(const point_list6_t& array, const curve_constraints6_t& constraints, 
-                                                     const real T_min, const real T_max)
-  {
-    return wrapBezierConstructorConstraintsTemplate<bezier6_t, point_list6_t, t_point6_t, curve_constraints6_t>(array, constraints, 
-                                                                                                                T_min, T_max) ;
-  }
-  /*END 6D constructors bezier */
 
   /* Wrap Cubic hermite spline */
-  t_pair_point_tangent_t getPairsPointTangent(const point_list_t& points, const point_list_t& tangents)
+  t_pair_pointX_tangent_t getPairsPointTangent(const pointX_list_t& points, const pointX_list_t& tangents)
   {
-    t_pair_point_tangent_t res;
+    t_pair_pointX_tangent_t res;
     if (points.size() != tangents.size())
     {
       throw std::length_error("size of points and tangents must be the same");
     }
     for(int i =0;i<points.cols();++i)
     {
-      res.push_back(pair_point_tangent_t(points.col(i), tangents.col(i)));
+      res.push_back(pair_pointX_tangent_t(points.col(i), tangents.col(i)));
     }
     return res;
   }
 
-  cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const point_list_t& points, const point_list_t& tangents, 
+  cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const pointX_list_t& points, const pointX_list_t& tangents, 
                                                             const time_waypoints_t& time_pts)
   {
-    t_pair_point_tangent_t ppt = getPairsPointTangent(points, tangents);
+    t_pair_pointX_tangent_t ppt = getPairsPointTangent(points, tangents);
     std::vector<real> time_control_pts;
     for( int i =0; i<time_pts.size(); ++i)
     {
@@ -157,11 +128,11 @@ namespace curves
   /* End wrap Cubic hermite spline */
 
   /* Wrap polynomial */
-  polynomial_t* wrapSplineConstructor1(const coeff_t& array, const real min, const real max)
+  polynomial_t* wrapPolynomialConstructor1(const coeff_t& array, const real min, const real max)
   {
     return new polynomial_t(array, min, max);
   }
-  polynomial_t* wrapSplineConstructor2(const coeff_t& array)
+  polynomial_t* wrapPolynomialConstructor2(const coeff_t& array)
   {
     return new polynomial_t(array, 0., 1.);
   }
@@ -176,21 +147,13 @@ namespace curves
   {
     return new piecewise_polynomial_curve_t();
   }
-  piecewise_bezier3_curve_t* wrapPiecewiseBezier3CurveConstructor(const bezier3_t& bc)
+  piecewise_bezier_curve_t* wrapPiecewiseBezierCurveConstructor(const bezier_t& bc)
   {
-    return new piecewise_bezier3_curve_t(bc);
+    return new piecewise_bezier_curve_t(bc);
   }
-  piecewise_bezier3_curve_t* wrapPiecewiseBezier3CurveEmptyConstructor()
+  piecewise_bezier_curve_t* wrapPiecewiseBezierCurveEmptyConstructor()
   {
-    return new piecewise_bezier3_curve_t();
-  }
-  piecewise_bezier6_curve_t* wrapPiecewiseBezier6CurveConstructor(const bezier6_t& bc)
-  {
-    return new piecewise_bezier6_curve_t(bc);
-  }
-  piecewise_bezier6_curve_t* wrapPiecewiseBezier6CurveEmptyConstructor()
-  {
-    return new piecewise_bezier6_curve_t();
+    return new piecewise_bezier_curve_t();
   }
   piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveConstructor(const cubic_hermite_spline_t& ch)
   {
@@ -213,21 +176,6 @@ namespace curves
     return res;
   }
 
-  template <typename BezierType, int dim>
-  Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> wayPointsToList(const BezierType& self)
-  {
-    typedef typename BezierType::t_point_t t_point;
-    typedef typename BezierType::t_point_t::const_iterator cit_point;
-    const t_point& wps = self.waypoints();
-    Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> res (dim, wps.size());
-    int col = 0;
-    for(cit_point cit = wps.begin(); cit != wps.end(); ++cit, ++col)
-    {
-      res.block<dim,1>(0,col) = *cit;
-    }
-    return res;
-  }
-
   exact_cubic_t* wrapExactCubicConstructor(const coeff_t& array, const time_waypoints_t& time_wp)
   {
     t_waypoint_t wps = getWayPoints(array, time_wp);
@@ -241,6 +189,7 @@ namespace curves
     return new exact_cubic_t(wps.begin(), wps.end(), constraints);
   }
 
+  /// For constraints XD
   point_t get_init_vel(const curve_constraints_t& c)
   {
     return c.init_vel;
@@ -289,62 +238,34 @@ namespace curves
   {
     /** BEGIN eigenpy init**/
     eigenpy::enableEigenPy();
-    eigenpy::enableEigenPySpecific<point_t,point_t>();
-    eigenpy::enableEigenPySpecific<ret_point_t,ret_point_t>();
-    eigenpy::enableEigenPySpecific<point_list_t,point_list_t>();
-    eigenpy::enableEigenPySpecific<point6_t,point6_t>();
-    eigenpy::enableEigenPySpecific<ret_point6_t,ret_point6_t>();
-    eigenpy::enableEigenPySpecific<point_list6_t,point_list6_t>();
+    eigenpy::enableEigenPySpecific<pointX_t,pointX_t>();
+    eigenpy::enableEigenPySpecific<pointX_list_t,pointX_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
     /*eigenpy::exposeAngleAxis();
     eigenpy::exposeQuaternion();*/
     /** END eigenpy init**/
-    /** BEGIN bezier curve 6**/
-    class_<bezier6_t>("bezier6", init<>())
-      .def("__init__", make_constructor(&wrapBezierConstructor6))
-      .def("__init__", make_constructor(&wrapBezierConstructorBounds6))
-      //.def("__init__", make_constructor(&wrapBezierConstructor6Constraints))
-      //.def("__init__", make_constructor(&wrapBezierConstructorBounds6Constraints))
-      .def("min", &bezier6_t::min)
-      .def("max", &bezier6_t::max)
-      .def("__call__", &bezier6_t::operator())
-      .def("derivate", &bezier6_t::derivate)
-      .def("compute_derivate", &bezier6_t::compute_derivate)
-      .def("compute_primitive", &bezier6_t::compute_primitive)
-      .def("waypoints", &wayPointsToList<bezier6_t,6>)
-      .def("saveAsText", &bezier6_t::saveAsText<bezier6_t>,bp::args("filename"),"Saves *this inside a text file.")
-      .def("loadFromText",&bezier6_t::loadFromText<bezier6_t>,bp::args("filename"),"Loads *this from a text file.")
-      .def("saveAsXML",&bezier6_t::saveAsXML<bezier6_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
-      .def("loadFromXML",&bezier6_t::loadFromXML<bezier6_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
-      .def("saveAsBinary",&bezier6_t::saveAsBinary<bezier6_t>,bp::args("filename"),"Saves *this inside a binary file.")
-      .def("loadFromBinary",&bezier6_t::loadFromBinary<bezier6_t>,bp::args("filename"),"Loads *this from a binary file.")
-      .def_readonly("degree", &bezier6_t::degree_)
-      .def_readonly("nbWaypoints", &bezier6_t::size_)
-      //.def(SerializableVisitor<bezier6_t>())
-    ;
-    /** END bezier curve**/
     /** BEGIN bezier curve**/
-    class_<bezier3_t>("bezier3", init<>())
-      .def("__init__", make_constructor(&wrapBezierConstructor3))
-      .def("__init__", make_constructor(&wrapBezierConstructorBounds3))
-      .def("__init__", make_constructor(&wrapBezierConstructor3Constraints))
-      .def("__init__", make_constructor(&wrapBezierConstructorBounds3Constraints))
-      .def("min", &bezier3_t::min)
-      .def("max", &bezier3_t::max)
-      .def("__call__", &bezier3_t::operator())
-      .def("derivate", &bezier3_t::derivate)
-      .def("compute_derivate", &bezier3_t::compute_derivate)
-      .def("compute_primitive", &bezier3_t::compute_primitive)
-      .def("waypoints", &wayPointsToList<bezier3_t,3>)
-      .def("saveAsText", &bezier3_t::saveAsText<bezier3_t>,bp::args("filename"),"Saves *this inside a text file.")
-      .def("loadFromText",&bezier3_t::loadFromText<bezier3_t>,bp::args("filename"),"Loads *this from a text file.")
-      .def("saveAsXML",&bezier3_t::saveAsXML<bezier3_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
-      .def("loadFromXML",&bezier3_t::loadFromXML<bezier3_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
-      .def("saveAsBinary",&bezier3_t::saveAsBinary<bezier3_t>,bp::args("filename"),"Saves *this inside a binary file.")
-      .def("loadFromBinary",&bezier3_t::loadFromBinary<bezier3_t>,bp::args("filename"),"Loads *this from a binary file.")
-      .def_readonly("degree", &bezier3_t::degree_)
-      .def_readonly("nbWaypoints", &bezier3_t::size_)
-      //.def(SerializableVisitor<bezier3_t>())
+    class_<bezier_t>("bezier", init<>())
+      .def("__init__", make_constructor(&wrapBezierConstructor))
+      .def("__init__", make_constructor(&wrapBezierConstructorBounds))
+      .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
+      .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
+      .def("min", &bezier_t::min)
+      .def("max", &bezier_t::max)
+      .def("dim", &bezier_t::dim)
+      .def("__call__", &bezier_t::operator())
+      .def("derivate", &bezier_t::derivate)
+      .def("compute_derivate", &bezier_t::compute_derivate)
+      .def("compute_primitive", &bezier_t::compute_primitive)
+      .def("saveAsText", &bezier_t::saveAsText<bezier_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&bezier_t::loadFromText<bezier_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&bezier_t::saveAsXML<bezier_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&bezier_t::loadFromXML<bezier_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&bezier_t::saveAsBinary<bezier_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&bezier_t::loadFromBinary<bezier_t>,bp::args("filename"),"Loads *this from a binary file.")
+      .def_readonly("degree", &bezier_t::degree_)
+      .def_readonly("nbWaypoints", &bezier_t::size_)
+      //.def(SerializableVisitor<bezier_t>())
     ;
     /** END bezier curve**/
     /** BEGIN variable points bezier curve**/
@@ -363,6 +284,7 @@ namespace curves
       .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
       .def("min", &bezier_linear_variable_t::min)
       .def("max", &bezier_linear_variable_t::max)
+      .def("dim", &bezier_linear_variable_t::dim)
       //.def("__call__", &bezier_linear_control_t::operator())
       .def("derivate", &bezier_linear_variable_t::derivate)
       .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
@@ -375,16 +297,17 @@ namespace curves
     /** END variable points bezier curve**/
     /** BEGIN polynomial curve function**/
     class_<polynomial_t>("polynomial",  init<>())
-      .def("__init__", make_constructor(&wrapSplineConstructor1),
+      .def("__init__", make_constructor(&wrapPolynomialConstructor1),
            "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [min,max]."
            " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest order."
            " Spline order is given by the number of the columns -1.")
-      .def("__init__", make_constructor(&wrapSplineConstructor2),
+      .def("__init__", make_constructor(&wrapPolynomialConstructor2),
            "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [0,1]."
            " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest order."
            " Spline order is given by the number of the columns -1.")
       .def("min", &polynomial_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &polynomial_t::max,"Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &polynomial_t::dim)
       .def("__call__", &polynomial_t::operator(),"Evaluate the spline at the given time.")
       .def("derivate", &polynomial_t::derivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
       .def("compute_derivate", &polynomial_t::compute_derivate,"Compute derivative of order N of curve at time t.")
@@ -405,6 +328,7 @@ namespace curves
            "Create a peicewise-polynomial curve containing the given polynomial curve.")
       .def("min", &piecewise_polynomial_curve_t::min,"Set the LOWER bound on interval definition of the curve.")
       .def("max", &piecewise_polynomial_curve_t::max,"Set the HIGHER bound on interval definition of the curve.")
+      .def("dim", &piecewise_polynomial_curve_t::dim)
       .def("__call__", &piecewise_polynomial_curve_t::operator(),"Evaluate the curve at the given time.")
       .def("derivate", &piecewise_polynomial_curve_t::derivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
       .def("add_curve", &piecewise_polynomial_curve_t::add_curve,
@@ -419,45 +343,30 @@ namespace curves
       .def("loadFromBinary",&piecewise_polynomial_curve_t::loadFromBinary<piecewise_polynomial_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
       //.def(SerializableVisitor<piecewise_polynomial_curve_t>())
     ;
-    class_<piecewise_bezier3_curve_t>
-    ("piecewise_bezier3_curve", init<>())
-      .def("__init__", make_constructor(&wrapPiecewiseBezier3CurveConstructor))
-      .def("min", &piecewise_bezier3_curve_t::min)
-      .def("max", &piecewise_bezier3_curve_t::max)
-      .def("__call__", &piecewise_bezier3_curve_t::operator())
-      .def("derivate", &piecewise_bezier3_curve_t::derivate)
-      .def("add_curve", &piecewise_bezier3_curve_t::add_curve)
-      .def("is_continuous", &piecewise_bezier3_curve_t::is_continuous)
-      .def("saveAsText", &piecewise_bezier3_curve_t::saveAsText<piecewise_bezier3_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
-      .def("loadFromText",&piecewise_bezier3_curve_t::loadFromText<piecewise_bezier3_curve_t>,bp::args("filename"),"Loads *this from a text file.")
-      .def("saveAsXML",&piecewise_bezier3_curve_t::saveAsXML<piecewise_bezier3_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
-      .def("loadFromXML",&piecewise_bezier3_curve_t::loadFromXML<piecewise_bezier3_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
-      .def("saveAsBinary",&piecewise_bezier3_curve_t::saveAsBinary<piecewise_bezier3_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
-      .def("loadFromBinary",&piecewise_bezier3_curve_t::loadFromBinary<piecewise_bezier3_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
-      //.def(SerializableVisitor<piecewise_bezier3_curve_t>())
-    ;
-    class_<piecewise_bezier6_curve_t>
-    ("piecewise_bezier6_curve", init<>())
-      .def("__init__", make_constructor(&wrapPiecewiseBezier6CurveConstructor))
-      .def("min", &piecewise_bezier6_curve_t::min)
-      .def("max", &piecewise_bezier6_curve_t::max)
-      .def("__call__", &piecewise_bezier6_curve_t::operator())
-      .def("derivate", &piecewise_bezier6_curve_t::derivate)
-      .def("add_curve", &piecewise_bezier6_curve_t::add_curve)
-      .def("is_continuous", &piecewise_bezier6_curve_t::is_continuous)
-      .def("saveAsText", &piecewise_bezier6_curve_t::saveAsText<piecewise_bezier6_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
-      .def("loadFromText",&piecewise_bezier6_curve_t::loadFromText<piecewise_bezier6_curve_t>,bp::args("filename"),"Loads *this from a text file.")
-      .def("saveAsXML",&piecewise_bezier6_curve_t::saveAsXML<piecewise_bezier6_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
-      .def("loadFromXML",&piecewise_bezier6_curve_t::loadFromXML<piecewise_bezier6_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
-      .def("saveAsBinary",&piecewise_bezier6_curve_t::saveAsBinary<piecewise_bezier6_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
-      .def("loadFromBinary",&piecewise_bezier6_curve_t::loadFromBinary<piecewise_bezier6_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
-      //.def(SerializableVisitor<piecewise_bezier6_curve_t>())
+    class_<piecewise_bezier_curve_t>
+    ("piecewise_bezier_curve", init<>())
+      .def("__init__", make_constructor(&wrapPiecewiseBezierCurveConstructor))
+      .def("min", &piecewise_bezier_curve_t::min)
+      .def("max", &piecewise_bezier_curve_t::max)
+      .def("dim", &piecewise_bezier_curve_t::dim)
+      .def("__call__", &piecewise_bezier_curve_t::operator())
+      .def("derivate", &piecewise_bezier_curve_t::derivate)
+      .def("add_curve", &piecewise_bezier_curve_t::add_curve)
+      .def("is_continuous", &piecewise_bezier_curve_t::is_continuous)
+      .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&piecewise_bezier_curve_t::saveAsXML<piecewise_bezier_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&piecewise_bezier_curve_t::loadFromXML<piecewise_bezier_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&piecewise_bezier_curve_t::saveAsBinary<piecewise_bezier_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&piecewise_bezier_curve_t::loadFromBinary<piecewise_bezier_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
+      //.def(SerializableVisitor<piecewise_bezier_curve_t>())
     ;
     class_<piecewise_cubic_hermite_curve_t>
     ("piecewise_cubic_hermite_curve", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseCubicHermiteCurveConstructor))
       .def("min", &piecewise_cubic_hermite_curve_t::min)
       .def("max", &piecewise_cubic_hermite_curve_t::max)
+      .def("dim", &piecewise_cubic_hermite_curve_t::dim)
       .def("__call__", &piecewise_cubic_hermite_curve_t::operator())
       .def("derivate", &piecewise_cubic_hermite_curve_t::derivate)
       .def("add_curve", &piecewise_cubic_hermite_curve_t::add_curve)
@@ -478,6 +387,7 @@ namespace curves
       .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
       .def("min", &exact_cubic_t::min)
       .def("max", &exact_cubic_t::max)
+      .def("dim", &exact_cubic_t::dim)
       .def("__call__", &exact_cubic_t::operator())
       .def("derivate", &exact_cubic_t::derivate)
       .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
@@ -497,6 +407,7 @@ namespace curves
       .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor))
       .def("min", &cubic_hermite_spline_t::min)
       .def("max", &cubic_hermite_spline_t::max)
+      .def("dim", &cubic_hermite_spline_t::dim)
       .def("__call__", &cubic_hermite_spline_t::operator())
       .def("derivate", &cubic_hermite_spline_t::derivate)
       .def("saveAsText", &cubic_hermite_spline_t::saveAsText<cubic_hermite_spline_t>,bp::args("filename"),"Saves *this inside a text file.")
@@ -524,11 +435,11 @@ namespace curves
     ;
     /** END bernstein polynomial**/
     /** BEGIN curves conversion**/
-    def("polynomial_from_bezier", polynomial_from_curve<polynomial_t,bezier3_t>);
+    def("polynomial_from_bezier", polynomial_from_curve<polynomial_t,bezier_t>);
     def("polynomial_from_hermite", polynomial_from_curve<polynomial_t,cubic_hermite_spline_t>);
-    def("bezier_from_hermite", bezier_from_curve<bezier3_t,cubic_hermite_spline_t>);
-    def("bezier_from_polynomial", bezier_from_curve<bezier3_t,polynomial_t>);
-    def("hermite_from_bezier", hermite_from_curve<cubic_hermite_spline_t, bezier3_t>);
+    def("bezier_from_hermite", bezier_from_curve<bezier_t,cubic_hermite_spline_t>);
+    def("bezier_from_polynomial", bezier_from_curve<bezier_t,polynomial_t>);
+    def("hermite_from_bezier", hermite_from_curve<cubic_hermite_spline_t, bezier_t>);
     def("hermite_from_polynomial", hermite_from_curve<cubic_hermite_spline_t, polynomial_t>);
     /** END curves conversion**/
   } // End BOOST_PYTHON_MODULE
