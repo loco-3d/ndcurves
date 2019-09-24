@@ -2,7 +2,8 @@
 // Authors: Justin Carpentier <jcarpent@laas.fr>
 
 /*
- Code adapted from: https://gist.githubusercontent.com/mtao/5798888/raw/5be9fa9b66336c166dba3a92c0e5b69ffdb81501/eigen_boost_serialization.hpp
+ Code adapted from:
+ https://gist.githubusercontent.com/mtao/5798888/raw/5be9fa9b66336c166dba3a92c0e5b69ffdb81501/eigen_boost_serialization.hpp
  Copyright (c) 2015 Michael Tao
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,7 +25,6 @@
  THE SOFTWARE.
  */
 
-
 #ifndef EIGEN_BOOST_SERIALIZATION
 #define EIGEN_BOOST_SERIALIZATION
 
@@ -32,34 +32,36 @@
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/vector.hpp>
 
-namespace boost{
-  namespace serialization{
-    template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-    void save(Archive & ar, const Eigen::Matrix<_Scalar,_Rows,_Cols,_Options,_MaxRows,_MaxCols> & m, const unsigned int) // version
-    {
-      Eigen::DenseIndex rows(m.rows()), cols(m.cols());
-      ar & BOOST_SERIALIZATION_NVP(rows);
-      ar & BOOST_SERIALIZATION_NVP(cols);
-      ar & make_nvp("data",make_array(m.data(), (size_t)m.size()));
-    }
-
-    template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-    void load(Archive & ar, Eigen::Matrix<_Scalar,_Rows,_Cols,_Options,_MaxRows,_MaxCols> & m, const unsigned int) // version
-    {
-      Eigen::DenseIndex rows,cols;
-      ar >> BOOST_SERIALIZATION_NVP(rows);
-      ar >> BOOST_SERIALIZATION_NVP(cols);
-      m.resize(rows,cols);
-//      if(m.size() > 0)
-        ar >> make_nvp("data",make_array(m.data(), (size_t)m.size()));
-    }
-
-    template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-    void serialize(Archive & ar, Eigen::Matrix<_Scalar,_Rows,_Cols,_Options,_MaxRows,_MaxCols> & m, const unsigned int version)
-    {
-      split_free(ar,m,version);
-    }
-  }
+namespace boost {
+namespace serialization {
+template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+void save(Archive& ar, const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& m,
+          const unsigned int)  // version
+{
+  Eigen::DenseIndex rows(m.rows()), cols(m.cols());
+  ar& BOOST_SERIALIZATION_NVP(rows);
+  ar& BOOST_SERIALIZATION_NVP(cols);
+  ar& make_nvp("data", make_array(m.data(), (size_t)m.size()));
 }
 
-#endif // ifndef __multicontact_api_serialization_eigen_matrix_hpp__
+template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+void load(Archive& ar, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& m,
+          const unsigned int)  // version
+{
+  Eigen::DenseIndex rows, cols;
+  ar >> BOOST_SERIALIZATION_NVP(rows);
+  ar >> BOOST_SERIALIZATION_NVP(cols);
+  m.resize(rows, cols);
+  //      if(m.size() > 0)
+  ar >> make_nvp("data", make_array(m.data(), (size_t)m.size()));
+}
+
+template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+void serialize(Archive& ar, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& m,
+               const unsigned int version) {
+  split_free(ar, m, version);
+}
+}  // namespace serialization
+}  // namespace boost
+
+#endif  // ifndef __multicontact_api_serialization_eigen_matrix_hpp__
