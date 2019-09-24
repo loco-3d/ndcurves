@@ -98,7 +98,7 @@ namespace curves
   bezier_t* wrapBezierConstructorBoundsConstraints(const pointX_list_t& array, const curve_constraints_t& constraints,
                                                    const real T_min, const real T_max)
   {
-  return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(array, constraints, 
+    return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(array, constraints, 
                                                                                                             T_min, T_max) ;
   }
   /*END 3D constructors bezier */
@@ -316,6 +316,7 @@ namespace curves
       .def("derivate", &bezier3_t::derivate)
       .def("compute_derivate", &bezier3_t::compute_derivate)
       .def("compute_primitive", &bezier3_t::compute_primitive)
+      .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
       .def("saveAsText", &bezier3_t::saveAsText<bezier3_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&bezier3_t::loadFromText<bezier3_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&bezier3_t::saveAsXML<bezier3_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
@@ -340,6 +341,7 @@ namespace curves
       .def("derivate", &bezier_t::derivate)
       .def("compute_derivate", &bezier_t::compute_derivate)
       .def("compute_primitive", &bezier_t::compute_primitive)
+      .def("waypointAtIndex", &bezier_t::waypointAtIndex)
       .def("saveAsText", &bezier_t::saveAsText<bezier_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&bezier_t::loadFromText<bezier_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&bezier_t::saveAsXML<bezier_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
@@ -407,6 +409,8 @@ namespace curves
       .def("min", &polynomial_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &polynomial_t::max,"Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &polynomial_t::dim)
+      .def("coeffAtDegree", &polynomial_t::coeffAtDegree)
+      .def("coeff", &polynomial_t::coeff)
       .def("__call__", &polynomial_t::operator(),"Evaluate the spline at the given time.")
       .def("derivate", &polynomial_t::derivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
       .def("compute_derivate", &polynomial_t::compute_derivate,"Compute derivative of order N of curve at time t.")

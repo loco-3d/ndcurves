@@ -265,6 +265,16 @@ namespace curves
 
       const t_point_t& waypoints() const {return control_points_;}
 
+      const point_t waypointAtIndex(const std::size_t index) const
+      {
+        point_t waypoint;
+        if (index<=control_points_.size())
+        {
+          waypoint = control_points_[index];
+        }
+        return waypoint;
+      }
+
       /// \brief Evaluate the curve value at time t using deCasteljau algorithm.
       /// The algorithm will compute the \f$N-1\f$ centroids of parameters \f${t,1-t}\f$ of consecutive \f$N\f$ control points 
       /// of bezier curve, and perform it iteratively until getting one point in the list which will be the evaluation of bezier

@@ -36,6 +36,14 @@ class TestCurves(unittest.TestCase):
         time_waypoints = matrix([0., 1.]).transpose()
         # Create bezier6 and bezier
         a = bezier(waypoints, 0., 3.)
+        # Test waypoints
+        self.assertTrue (a.nbWaypoints == 2)
+        for i in range(0, a.nbWaypoints):
+            if i==0:
+                self.assertTrue ((a.waypointAtIndex(0) == matrix([1., 2., 3.]).transpose()).all())
+            elif i==1:
+                self.assertTrue ((a.waypointAtIndex(1) == matrix([4., 5., 6.]).transpose()).all())
+        #self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
         #self.print_str(("test 1")
         self.assertEqual(a.degree, a.nbWaypoints - 1)
@@ -108,13 +116,17 @@ class TestCurves(unittest.TestCase):
         print("test_polynomial")
         # To test :
         # - Functions : constructor, min, max, derivate, serialize, deserialize
-        waypoints_0 = matrix([[0.,0.,0.], [0.,0.,0.]]).transpose()
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = polynomial(waypoints)  # Defined on [0.,1.]
         a = polynomial(waypoints, -1., 3.)  # Defined on [-1.,3.]
         a.min()
         a.max()
         a(0.4)
+        # Test get coefficient at degree
+        self.assertTrue((a.coeff()==waypoints).all())
+        self.assertTrue((a.coeffAtDegree(0) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((a.coeffAtDegree(1) == matrix([4., 5., 6.]).transpose()).all())
+        # Other tests
         self.assertTrue ((a(a.min()) == matrix([1., 2., 3.]).transpose()).all())
         self.assertTrue ((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
