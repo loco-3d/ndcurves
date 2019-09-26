@@ -522,6 +522,11 @@ void cubicConversionTest(bool& error)
   //std::cout<<"bezier to hermite \n";
   cubic_hermite_spline_t chs2 = hermite_from_curve<cubic_hermite_spline_t, bezier_curve_t>(bc0);
   CompareCurves<bezier_curve_t, cubic_hermite_spline_t>(bc0, chs2, errMsg1, error);
+
+  // Test : compute derivative of bezier => Convert it to polynomial
+  bezier_curve_t bc_der = bc0.compute_derivate(1);
+  polynomial_t pol_test = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc_der);
+  CompareCurves<bezier_curve_t, polynomial_t>(bc_der, pol_test, errMsg1, error);
 }
 
 /*Exact Cubic Function tests*/
