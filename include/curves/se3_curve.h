@@ -178,6 +178,22 @@ namespace curves
     time_t T_min_, T_max_;
     /*Attributes*/
 
+
+    // Serialization of the class
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version){
+      if (version) {
+        // Do something depending on version ?
+      }
+      ar & boost::serialization::make_nvp("dim", dim_);
+      ar & boost::serialization::make_nvp("translation_curve", translation_curve_);
+      ar & boost::serialization::make_nvp("rotation_curve", rotation_curve_);
+      ar & boost::serialization::make_nvp("T_min", T_min_);
+      ar & boost::serialization::make_nvp("T_max", T_max_);
+    }
+
   private:
     void safe_check()
     {
