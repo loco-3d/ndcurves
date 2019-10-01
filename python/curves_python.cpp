@@ -636,6 +636,8 @@ namespace curves
       .def("__call__", &SO3Linear_t::operator(),"Output the rotation (as a 3x3 matrix) at the given time. This rotation is obtained by a Spherical Linear Interpolation between the initial and final rotation.")
       .def("computeAsQuaternion",&SO3Linear_t::computeAsQuaternion,"Output the quaternion of the rotation at the given time. This rotation is obtained by a Spherical Linear Interpolation between the initial and final rotation.")
       .def("derivate",&SO3Linear_t::derivate,"Output the derivate of the curve at the given time and order",args("self","time","order"))
+        .def("min", &SO3Linear_t::min, "Get the LOWER bound on interval definition of the curve.")
+        .def("max", &SO3Linear_t::max,"Get the HIGHER bound on interval definition of the curve.")
         ;
 
     /** END  SO3 Linear**/
