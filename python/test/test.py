@@ -2,6 +2,7 @@ import os
 import unittest
 
 from math import sqrt
+import numpy as np
 from numpy import matrix, array_equal, isclose,random,zeros
 from numpy.linalg import norm
 
@@ -11,7 +12,7 @@ from curves import (bezier_from_hermite, bezier_from_polynomial, hermite_from_po
                     hermite_from_bezier, polynomial_from_hermite, polynomial_from_bezier,
                     cubic_hermite_spline, curve_constraints, exact_cubic, bezier, 
                     piecewise_bezier_curve, piecewise_cubic_hermite_curve,
-                    piecewise_polynomial_curve, polynomial,SO3Linear,Quaternion
+                    piecewise_polynomial_curve, polynomial,SO3Linear,SE3Curve,Quaternion
                     )
 
 class TestCurves(unittest.TestCase):
@@ -512,6 +513,76 @@ class TestCurves(unittest.TestCase):
           pass
         try:
           so3Rot.derivate(1.,0)
+          self.assertTrue(False)
+        except:
+          pass
+
+    def test_se3_curve_linear(self):
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        init_translation = matrix([1,1.2,-0.6]).T
+        end_translation = matrix([2.3,0,0.9]).T
+        init_pose = matrix(np.identity(4))
+        end_pose = matrix(np.identity(4))
+        init_pose[:3,:3] = init_rot
+        end_pose[:3,:3] = end_rot
+        init_pose[:3,3] = init_translation
+        end_pose[:3,3] = end_translation
+        min = 0.2
+        max = 1.5
+        se3 = SE3Curve(init_pose,end_pose,min,max)
+        p = se3(min)
+        self.assertEqual(p.shape[0],4)
+        self.assertEqual(p.shape[1],4)
+        self.assertEqual(se3.min(),min)
+        self.assertEqual(se3.max(),max)
+        self.assertTrue(isclose(se3(min),init_pose).all())
+        self.assertTrue(isclose(se3(max),end_pose).all())
+        self.assertTrue(isclose(se3.rotation(min),init_rot).all())
+        self.assertTrue(isclose(se3.translation(min),init_translation).all())
+        self.assertTrue(isclose(se3.rotation(max),end_rot).all())
+        self.assertTrue(isclose(se3.translation(max),end_translation).all())
+        # check value of derivative (should be constant here)
+        d = se3.derivate(min,1)
+        self.assertEqual(d.shape[0],6)
+        self.assertEqual(d.shape[1],1)
+        self.assertTrue(isclose(d[0:3],((end_translation-init_translation)/(max-min))).all())
+        self.assertTrue(isclose(d[3],1.20830487))
+        self.assertTrue(isclose(d[4:6],matrix([0,0]).T).all())
+        self.assertTrue(isclose(d,se3.derivate(0.5,1)).all())
+        self.assertTrue(isclose(d,se3.derivate(max,1)).all())
+        self.assertTrue(isclose(se3.derivate(min,2),matrix(zeros(6)).T).all())
+        self.assertTrue(isclose(se3.derivate(min,3),matrix(zeros(6)).T).all())
+        # check that errors are correctly raised when necessary :
+        try:
+          se3(0.)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3(-0.1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3(3)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3.derivate(0,1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3.derivate(3.,1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3.derivate(1.,0)
           self.assertTrue(False)
         except:
           pass
