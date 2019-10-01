@@ -456,8 +456,13 @@ class TestCurves(unittest.TestCase):
         end_rot = end_quat.matrix()
         min = 0.2
         max = 1.5
+
         so3Rot = SO3Linear(init_rot,end_rot,min,max)
         so3Quat = SO3Linear(init_quat,end_quat,min,max)
+        self.assertEqual(so3Rot.min(),min)
+        self.assertEqual(so3Rot.max(),max)
+        self.assertEqual(so3Quat.min(),min)
+        self.assertEqual(so3Quat.max(),max)
         self.assertTrue(isclose(so3Rot(min),init_rot).all())
         self.assertTrue(isclose(so3Rot(max),end_rot).all())
         self.assertTrue(isclose(so3Quat(min),init_rot).all())
