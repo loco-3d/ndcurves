@@ -87,6 +87,10 @@ namespace curves
       {
         throw std::invalid_argument("can't evaluate bezier curve, time t is out of range"); // TODO
       }
+      if(t > T_max_)
+        return end_rot_;
+      if(t < T_min_)
+        return init_rot_;
       Scalar u = (t-T_min_) / (T_max_ - T_min_);
       return init_rot_.slerp(u,end_rot_);
     }
@@ -103,9 +107,9 @@ namespace curves
     ///  \param t : the time when to evaluate the spline.
     ///  \param order : order of derivative.
     ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
-    virtual point3_t derivate(const time_t /*t*/, const std::size_t order) const
+    virtual point3_t derivate(const time_t t, const std::size_t order) const
     {
-      if(order > 1){
+      if(order > 1 || t > T_max_ || t < T_min_){
         return point3_t::Zero(3);
       }else if(order == 1){
         return angular_vel_;
