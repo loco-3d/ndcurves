@@ -7,6 +7,7 @@
 #include "curves/cubic_hermite_spline.h"
 #include "curves/piecewise_curve.h"
 #include "curves/so3_linear.h"
+#include "curves/se3_curve.h"
 #include "python_definitions.h"
 #include "python_variables.h"
 #include "archive_python_binding.h"
@@ -40,6 +41,8 @@ typedef curves::curve_constraints<point3_t> curve_constraints3_t;
 typedef std::pair<real, pointX_t> waypoint_t;
 typedef std::vector<waypoint_t> t_waypoint_t;
 typedef Eigen::Matrix<real,3, 3> matrix3_t;
+typedef Eigen::Matrix<real,4, 4> matrix4_t;
+typedef Eigen::Transform<double,3,Eigen::Affine> transform_t;
 typedef Eigen::Quaternion<real> quaternion_t;
 
 // Curves
@@ -57,6 +60,7 @@ typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubi
 
 typedef curves::Bern<double> bernstein_t;
 typedef SO3Linear  <double, double, true> SO3Linear_t;
+typedef SE3Curve  <double, double, true> SE3Curve_t;
 
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
@@ -70,6 +74,7 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_bezier_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_cubic_hermite_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(SO3Linear_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(SE3Curve_t)
 
 namespace curves
 {
@@ -353,8 +358,35 @@ namespace curves
     return new SO3Linear_t(init_rot,end_rot, min, max);
   }
 
-  /* End rap SO3Linear */
+  /* End wrap SO3Linear */
 
+  /* Wrap SE3Curves */
+  SE3Curve_t* wrapSE3CurveFromTransform(const matrix4_t& init_pose, const matrix4_t& end_pose, const real min, const real max)
+  {
+    return new SE3Curve_t(transform_t(init_pose),transform_t(end_pose), min, max);
+  }
+
+  matrix4_t se3Return(const SE3Curve_t& curve, const real t)
+  {
+    return curve(t).matrix();
+  }
+
+  pointX_t se3ReturnDerivate(const SE3Curve_t& curve, const real t, const std::size_t order)
+  {
+    return curve.derivate(t,order);
+  }
+
+  matrix3_t se3returnRotation(const SE3Curve_t& curve, const real t)
+  {
+    return curve(t).rotation();
+  }
+
+  pointX_t se3returnTranslation(const SE3Curve_t& curve, const real t)
+  {
+    return pointX_t(curve(t).translation());
+  }
+
+  /* End wrap SE3Curves */
 
   // TO DO : Replace all load and save function for serialization in class by using
   //         SerializableVisitor in archive_python_binding.
@@ -366,6 +398,7 @@ namespace curves
     eigenpy::enableEigenPySpecific<pointX_list_t,pointX_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
     eigenpy::enableEigenPySpecific<matrix3_t,matrix3_t>();
+    eigenpy::enableEigenPySpecific<matrix4_t,matrix4_t>();
     //eigenpy::enableEigenPySpecific<quaternion_t,quaternion_t>();
     eigenpy::exposeQuaternion();
     /*eigenpy::exposeAngleAxis();
@@ -606,6 +639,19 @@ namespace curves
         ;
 
     /** END  SO3 Linear**/
+    /** BEGIN SE3 Curve**/
+    class_<SE3Curve_t>("SE3Curve",  init<>())
+      .def("__init__", make_constructor(&wrapSE3CurveFromTransform,default_call_policies(),args("init_transform","end_transform","min","max")),"Create a SE3 curve between two transform, defined for t \in [min,max]."
+     " Using linear interpolation for translation and slerp for rotation between init and end."
+     " The input transform are expressed as 4x4 matrix.")
+        .def("__call__", &se3Return,"Output the transform (as a 4x4 matrix) at the given time.")
+        .def("rotation", &se3returnRotation,"Output the rotation (as a 3x3 matrix) at the given time.",args("self","time"))
+        .def("translation", &se3returnTranslation,"Output the rotation (as a vector 3) at the given time.",args("self","time"))
+        .def("derivate",&se3ReturnDerivate,"Output the derivate of the curve at the given time and order",args("self","time","order"))
+        .def("min", &SE3Curve_t::min, "Get the LOWER bound on interval definition of the curve.")
+        .def("max", &SE3Curve_t::max,"Get the HIGHER bound on interval definition of the curve.")
+        ;
+    /** END SE3 Curve**/
     /** BEGIN curves conversion**/
     def("polynomial_from_bezier", polynomial_from_curve<polynomial_t,bezier_t>);
     def("polynomial_from_hermite", polynomial_from_curve<polynomial_t,cubic_hermite_spline_t>);
