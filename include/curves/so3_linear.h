@@ -149,6 +149,7 @@ namespace curves
       ar & boost::serialization::make_nvp("dim", dim_);
       ar & boost::serialization::make_nvp("init_rot", init_rot_);
       ar & boost::serialization::make_nvp("end_rot", end_rot_);
+      ar & boost::serialization::make_nvp("angular_vel", angular_vel_);
       ar & boost::serialization::make_nvp("T_min", T_min_);
       ar & boost::serialization::make_nvp("T_max", T_max_);
     }
