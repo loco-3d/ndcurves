@@ -54,7 +54,19 @@ namespace curves
       // better switch to shared ptr
     }
 
+
     /* Constructor without curve object for the translation : */
+    /// \brief Constructor from init/end transform use polynomial of degree 1 for position and SO3Linear for rotation
+    SE3Curve(const transform_t& init_transform, const transform_t& end_transform,const time_t& t_min, const time_t& t_max)
+      : curve_abc_t(),
+        dim_(6),
+        translation_curve_(new polynomial_t(pointX_t(init_transform.translation()),pointX_t(end_transform.translation()),t_min,t_max)),
+        rotation_curve_(new SO3Linear_t(init_transform.rotation(),end_transform.rotation(),t_min,t_max)),
+        T_min_(t_min), T_max_(t_max)
+    {
+      safe_check();
+    }
+
     /// \brief Constructor from init/end pose, with quaternion. use polynomial of degree 1 for position and SO3Linear for rotation
     SE3Curve(const pointX_t& init_pos, const pointX_t& end_pos, const Quaternion& init_rot, const Quaternion& end_rot,const time_t& t_min, const time_t& t_max)
       : curve_abc_t(),
