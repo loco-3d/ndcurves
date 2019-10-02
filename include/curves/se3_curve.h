@@ -31,9 +31,9 @@ namespace curves
     typedef Eigen::Matrix<Scalar,3, 3> matrix3_t;
     typedef Eigen::Quaternion<Scalar> Quaternion;
     typedef Time  time_t;
-    typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_abc_t;
-    typedef curve_abc<Time, Numeric, Safe, pointX_t > curve_translation_t;
-    typedef curve_abc<Time, Numeric, Safe, matrix3_t,point3_t> curve_rotation_t;
+    typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_abc_t; // parent class
+    typedef curve_abc<Time, Numeric, Safe, pointX_t> curve_X_t; // generic class of curve
+    typedef curve_abc<Time, Numeric, Safe, matrix3_t,point3_t> curve_rotation_t; // templated class used for the rotation (return dimension are fixed)
     typedef SO3Linear<Time, Numeric, Safe> SO3Linear_t;
     typedef polynomial  <Time, Numeric, Safe, pointX_t> polynomial_t;
     typedef SE3Curve<Time, Numeric, Safe> SE3Curve_t;
@@ -90,7 +90,7 @@ namespace curves
     /* Constructor with curve object for the translation : */
     /// \brief Constructor from curve for the translation and init/end rotation, with quaternion.
     /// Use SO3Linear for rotation with the same time bounds as the
-    SE3Curve(curve_translation_t* translation_curve,const Quaternion& init_rot, const Quaternion& end_rot)
+    SE3Curve(curve_X_t* translation_curve,const Quaternion& init_rot, const Quaternion& end_rot)
       : curve_abc_t(),
         dim_(6),translation_curve_(translation_curve),
         rotation_curve_(new SO3Linear_t(init_rot,end_rot,translation_curve->min(),translation_curve->max())),
@@ -100,7 +100,7 @@ namespace curves
     }
     /// \brief Constructor from curve for the translation and init/end rotation, with rotation matrix.
     /// Use SO3Linear for rotation with the same time bounds as the
-    SE3Curve(curve_translation_t* translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot)
+    SE3Curve(curve_X_t* translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot)
       : curve_abc_t(),
         dim_(6),translation_curve_(translation_curve),
         rotation_curve_(new SO3Linear_t(init_rot,end_rot,translation_curve->min(),translation_curve->max())),
@@ -111,16 +111,19 @@ namespace curves
 
     /* Constructor from translation and rotation curves object : */
     /// \brief Constructor from from translation and rotation curves object
-    SE3Curve(curve_translation_t* translation_curve,curve_rotation_t* rotation_curve)
+    SE3Curve(curve_X_t* translation_curve,curve_rotation_t* rotation_curve)
       : curve_abc_t(),
         dim_(6),translation_curve_(translation_curve),
         rotation_curve_(rotation_curve),
         T_min_(translation_curve->min()), T_max_(translation_curve->max())
     {
-      if(rotation_curve.min() != T_min_){
+      if(translation_curve->dim() != 3 ){
+        throw std::invalid_argument("The translation curve should be of dimension 3.");
+      }
+      if(rotation_curve->min() != T_min_){
         throw std::invalid_argument("Min bounds of translation and rotation curve are not the same.");
       }
-      if(rotation_curve.max() != T_max_){
+      if(rotation_curve->max() != T_max_){
         throw std::invalid_argument("Max bounds of translation and rotation curve are not the same.");
       }
       safe_check();
@@ -173,7 +176,7 @@ namespace curves
 
     /*Attributes*/
     std::size_t dim_; //dim doesn't mean anything in this class ...
-    curve_translation_t* translation_curve_ = NULL;
+    curve_X_t* translation_curve_ = NULL;
     curve_rotation_t* rotation_curve_= NULL;
     time_t T_min_, T_max_;
     /*Attributes*/
