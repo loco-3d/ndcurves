@@ -538,6 +538,7 @@ namespace curves
       .def("__call__", &bernstein_t::operator())
     ;
     /** END bernstein polynomial**/
+
     /** BEGIN curves conversion**/
     def("polynomial_from_bezier", polynomial_from_curve<polynomial_t,bezier_t>);
     def("polynomial_from_hermite", polynomial_from_curve<polynomial_t,cubic_hermite_spline_t>);
