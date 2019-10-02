@@ -25,12 +25,17 @@ typedef double real;
 typedef Eigen::VectorXd time_waypoints_t;
 
 typedef Eigen::VectorXd pointX_t;
+typedef Eigen::Matrix<double,3, 1> point3_t;
 typedef Eigen::Matrix<double, Eigen::Dynamic, 1, 0, Eigen::Dynamic, 1> ret_pointX_t;
 typedef std::pair<pointX_t, pointX_t> pair_pointX_tangent_t;
 typedef Eigen::MatrixXd pointX_list_t;
+typedef Eigen::Matrix<double,3, Eigen::Dynamic> point3_list_t;
 typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
+typedef std::vector<pointX_t,Eigen::aligned_allocator<point3_t> >  t_point3_t;
 typedef std::vector<pair_pointX_tangent_t,Eigen::aligned_allocator<pair_pointX_tangent_t> > t_pair_pointX_tangent_t;
 typedef curves::curve_constraints<pointX_t> curve_constraints_t;
+typedef curves::curve_constraints<point3_t> curve_constraints3_t;
+
 typedef std::pair<real, pointX_t> waypoint_t;
 typedef std::vector<waypoint_t> t_waypoint_t;
 
@@ -38,6 +43,7 @@ typedef std::vector<waypoint_t> t_waypoint_t;
 typedef curve_abc<real, real, true, pointX_t> curve_abc_t; // generic class of curve
 typedef curves::cubic_hermite_spline <real, real, true, pointX_t> cubic_hermite_spline_t;
 typedef curves::bezier_curve  <real, real, true, pointX_t> bezier_t;
+typedef curves::bezier_curve  <real, real, true, point3_t> bezier3_t;
 typedef curves::polynomial  <real, real, true, pointX_t, t_pointX_t> polynomial_t;
 typedef polynomial_t::coeff_t coeff_t;
 typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
@@ -46,7 +52,6 @@ typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, cubic_h
 typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
 
 // Bezier 3
-typedef curves::bezier_curve  <real, real, true, Eigen::Vector3d> bezier3_t;
 
 typedef curves::Bern<double> bernstein_t;
 
@@ -94,8 +99,38 @@ namespace curves
     return new Bezier(asVector.begin(), asVector.end(), constraints, T_min, T_max);
   }
   /* End Template constructor bezier */
+  /* Helper converter constraintsX -> constraints 3 */
+  curve_constraints3_t convertToConstraints3(curve_constraints_t constraintsX){
+    curve_constraints3_t constraints3;
+    constraints3.init_vel =point3_t(constraintsX.init_vel);
+    constraints3.init_acc = point3_t(constraintsX.init_acc);
+    constraints3.end_vel = point3_t(constraintsX.end_vel);
+    constraints3.end_acc = point3_t(constraintsX.end_acc);
+    return constraints3;
+  }
+  /* END helper converter constraintsX -> constraints 3 */
 
   /*3D constructors bezier */
+  bezier3_t* wrapBezier3Constructor(const pointX_list_t& array)
+  {
+    return wrapBezierConstructorTemplate<bezier3_t, pointX_list_t, t_point3_t>(array) ;
+  }
+  bezier3_t* wrapBezier3ConstructorBounds(const pointX_list_t& array, const real T_min, const real T_max)
+  {
+    return wrapBezierConstructorTemplate<bezier3_t, pointX_list_t, t_point3_t>(array, T_min, T_max) ;
+  }
+  bezier3_t* wrapBezier3ConstructorConstraints(const pointX_list_t& array, const curve_constraints_t& constraints)
+  {
+    return wrapBezierConstructorConstraintsTemplate<bezier3_t, pointX_list_t, t_point3_t, curve_constraints3_t>(array, convertToConstraints3(constraints)) ;
+  }
+  bezier3_t* wrapBezier3ConstructorBoundsConstraints(const pointX_list_t& array, const curve_constraints_t& constraints,
+                                                   const real T_min, const real T_max)
+  {
+    return wrapBezierConstructorConstraintsTemplate<bezier3_t, pointX_list_t, t_point3_t, curve_constraints3_t>(array, convertToConstraints3(constraints),T_min, T_max) ;
+  }
+  /*END 3D constructors bezier */
+
+  /*constructors bezier */
   bezier_t* wrapBezierConstructor(const pointX_list_t& array)
   {
     return wrapBezierConstructorTemplate<bezier_t, pointX_list_t, t_pointX_t>(array) ;
@@ -111,10 +146,10 @@ namespace curves
   bezier_t* wrapBezierConstructorBoundsConstraints(const pointX_list_t& array, const curve_constraints_t& constraints,
                                                    const real T_min, const real T_max)
   {
-    return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(array, constraints, 
+    return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(array, constraints,
                                                                                                             T_min, T_max) ;
   }
-  /*END 3D constructors bezier */
+  /*END constructors bezier */
 
   /* Wrap Cubic hermite spline */
   t_pair_pointX_tangent_t getPairsPointTangent(const pointX_list_t& points, const pointX_list_t& tangents)
@@ -131,7 +166,7 @@ namespace curves
     return res;
   }
 
-  cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const pointX_list_t& points, const pointX_list_t& tangents, 
+  cubic_hermite_spline_t* wrapCubicHermiteSplineConstructor(const pointX_list_t& points, const pointX_list_t& tangents,
                                                             const time_waypoints_t& time_pts)
   {
     t_pair_pointX_tangent_t ppt = getPairsPointTangent(points, tangents);
@@ -254,7 +289,7 @@ namespace curves
     return new exact_cubic_t(wps.begin(), wps.end());
   }
 
-  exact_cubic_t* wrapExactCubicConstructorConstraint(const coeff_t& array, const time_waypoints_t& time_wp, 
+  exact_cubic_t* wrapExactCubicConstructorConstraint(const coeff_t& array, const time_waypoints_t& time_wp,
                                                      const curve_constraints_t& constraints)
   {
     t_waypoint_t wps = getWayPoints(array, time_wp);
@@ -304,7 +339,7 @@ namespace curves
   /* End wrap exact cubic spline */
 
 
-  // TO DO : Replace all load and save function for serialization in class by using 
+  // TO DO : Replace all load and save function for serialization in class by using
   //         SerializableVisitor in archive_python_binding.
   BOOST_PYTHON_MODULE(curves)
   {
@@ -332,10 +367,15 @@ namespace curves
 
     /** BEGIN bezier3 curve**/
     class_<bezier3_t>("bezier3", init<>())
-      .def("__init__", make_constructor(&wrapBezierConstructor))
-      .def("__init__", make_constructor(&wrapBezierConstructorBounds))
-      .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
-      .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
+      .def("__init__", make_constructor(&wrapBezier3Constructor))
+      .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
+      .def("__init__", make_constructor(&wrapBezier3ConstructorConstraints))
+      .def("__init__", make_constructor(&wrapBezier3ConstructorBoundsConstraints))
+      .def("min", &bezier3_t::min)
+      .def("max", &bezier3_t::max)
+      .def("dim", &bezier3_t::dim)
+      .def("__call__", &bezier3_t::operator())
+      .def("derivate", &bezier3_t::derivate)
       .def("compute_derivate", &bezier3_t::compute_derivate)
       .def("compute_primitive", &bezier3_t::compute_primitive)
       .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
