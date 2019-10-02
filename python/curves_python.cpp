@@ -47,6 +47,7 @@ typedef Eigen::Quaternion<real> quaternion_t;
 
 // Curves
 typedef curve_abc<real, real, true, pointX_t> curve_abc_t; // generic class of curve
+typedef curve_abc<real, real, true, matrix3_t,point3_t> curve_rotation_t; // templated class used for the rotation (return dimension are fixed)
 typedef curves::cubic_hermite_spline <real, real, true, pointX_t> cubic_hermite_spline_t;
 typedef curves::bezier_curve  <real, real, true, pointX_t> bezier_t;
 typedef curves::bezier_curve  <real, real, true, point3_t> bezier3_t;
@@ -366,6 +367,34 @@ namespace curves
     return new SE3Curve_t(transform_t(init_pose),transform_t(end_pose), min, max);
   }
 
+
+  SE3Curve_t* wrapSE3CurveFromBezier3Translation(bezier3_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
+  {
+    bezier_t* translation = new bezier_t(translation_curve.waypoints().begin(),translation_curve.waypoints().end(),translation_curve.min(),translation_curve.max());
+    return new SE3Curve_t(translation,init_rot,end_rot);
+  }
+
+  SE3Curve_t* wrapSE3CurveFromBezierTranslation(bezier_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
+  {
+    return new SE3Curve_t(&translation_curve,init_rot,end_rot);
+  }
+
+  SE3Curve_t* wrapSE3CurveFromPolynomialTranslation(polynomial_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
+  {
+    return new SE3Curve_t(&translation_curve,init_rot,end_rot);
+  }
+
+  SE3Curve_t* wrapSE3CurveFromPiecewisePolynomialTranslation(piecewise_polynomial_curve_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
+  {
+    return new SE3Curve_t(&translation_curve,init_rot,end_rot);
+  }
+
+  SE3Curve_t* wrapSE3CurveFromTwoCurves(curve_abc_t& translation_curve, curve_rotation_t& rotation_curve)
+  {
+    return new SE3Curve_t(&translation_curve,&rotation_curve);
+  }
+
+
   matrix4_t se3Return(const SE3Curve_t& curve, const real t)
   {
     return curve(t).matrix();
@@ -643,9 +672,51 @@ namespace curves
     /** END  SO3 Linear**/
     /** BEGIN SE3 Curve**/
     class_<SE3Curve_t>("SE3Curve",  init<>())
-      .def("__init__", make_constructor(&wrapSE3CurveFromTransform,default_call_policies(),args("init_transform","end_transform","min","max")),"Create a SE3 curve between two transform, defined for t \in [min,max]."
+      .def("__init__",
+       make_constructor(&wrapSE3CurveFromTransform,default_call_policies(),
+       args("init_transform","end_transform","min","max")),
+     "Create a SE3 curve between two transform, defined for t \in [min,max]."
      " Using linear interpolation for translation and slerp for rotation between init and end."
      " The input transform are expressed as 4x4 matrix.")
+      .def("__init__",
+       make_constructor(&wrapSE3CurveFromTwoCurves,
+       default_call_policies(),
+       args("translation_curve","rotation_curve")),
+       "Create a SE3 curve from a translation curve and a rotation one."
+        "The translation curve should be of dimension 3 and the rotation one should output 3x3 matrix"
+        "Both curves should have the same time bounds.")
+        .def("__init__",
+         make_constructor(&wrapSE3CurveFromBezier3Translation,
+         default_call_policies(),
+         args("translation_curve","init_rotation","end_rotation")),
+         "Create a SE3 curve from a translation curve two rotation"
+          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
+          "The orientation along the SE3Curve will be a slerp between the two given rotations."
+          "The orientations should be represented as 3x3 rotation matrix")
+        .def("__init__",
+         make_constructor(&wrapSE3CurveFromBezierTranslation,
+         default_call_policies(),
+         args("translation_curve","init_rotation","end_rotation")),
+         "Create a SE3 curve from a translation curve two rotation"
+          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
+          "The orientation along the SE3Curve will be a slerp between the two given rotations."
+          "The orientations should be represented as 3x3 rotation matrix")
+        .def("__init__",
+         make_constructor(&wrapSE3CurveFromPolynomialTranslation,
+         default_call_policies(),
+         args("translation_curve","init_rotation","end_rotation")),
+         "Create a SE3 curve from a translation curve two rotation"
+          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
+          "The orientation along the SE3Curve will be a slerp between the two given rotations."
+          "The orientations should be represented as 3x3 rotation matrix")
+        .def("__init__",
+         make_constructor(&wrapSE3CurveFromPiecewisePolynomialTranslation,
+         default_call_policies(),
+         args("translation_curve","init_rotation","end_rotation")),
+         "Create a SE3 curve from a translation curve two rotation"
+          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
+          "The orientation along the SE3Curve will be a slerp between the two given rotations."
+          "The orientations should be represented as 3x3 rotation matrix")
         .def("__call__", &se3Return,"Output the transform (as a 4x4 matrix) at the given time.")
         .def("rotation", &se3returnRotation,"Output the rotation (as a 3x3 matrix) at the given time.",args("self","time"))
         .def("translation", &se3returnTranslation,"Output the rotation (as a vector 3) at the given time.",args("self","time"))

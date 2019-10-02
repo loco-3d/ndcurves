@@ -18,7 +18,6 @@ using namespace std;
 
 namespace curves
 {
-<<<<<<< 06b299dffb1b52a6d7134e44925a1459a1f22369
 typedef Eigen::Vector3d point_t;
 typedef Eigen::VectorXd pointX_t;
 typedef Eigen::Quaternion<double> quaternion_t;
@@ -41,32 +40,8 @@ typedef std::vector<WaypointOne> T_WaypointOne;
 typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
 typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
 typedef SO3Linear  <double, double, true> SO3Linear_t;
-=======
-  typedef Eigen::Vector3d point_t;
-  typedef Eigen::VectorXd pointX_t;
-  typedef Eigen::Quaternion<double> quaternion_t;
-  typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
-  typedef curve_abc  <double, double, true, pointX_t> curve_abc_t;
-  typedef polynomial  <double, double, true, pointX_t, t_pointX_t> polynomial_t;
-  typedef exact_cubic <double, double, true, pointX_t> exact_cubic_t;
-  typedef exact_cubic   <double, double, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
-  typedef bezier_curve  <double, double, true, pointX_t> bezier_curve_t;
-  typedef cubic_hermite_spline <double, double, true, pointX_t> cubic_hermite_spline_t;
-  typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
-  typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
-  typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
-  typedef exact_cubic_t::spline_constraints spline_constraints_t;
-  typedef std::pair<double, pointX_t> Waypoint;
-  typedef std::vector<Waypoint> T_Waypoint;
-  typedef Eigen::Matrix<double,1,1> point_one;
-  typedef std::pair<double, point_one> WaypointOne;
-  typedef std::vector<WaypointOne> T_WaypointOne;
-  typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
-  typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
-  typedef SO3Linear  <double, double, true> SO3Linear_t;
-  typedef SE3Curve  <double, double, true> SE3Curve_t;
-  typedef Eigen::Transform<double,3,Eigen::Affine> transform_t;
->>>>>>> [test] add unittest for SE3Curve
+typedef SE3Curve  <double, double, true> SE3Curve_t;
+typedef Eigen::Transform<double,3,Eigen::Affine> transform_t;
 
 const double margin = 1e-3;
 bool QuasiEqual(const double a, const double b)
@@ -1347,11 +1322,13 @@ void piecewiseCurveConversionFromDiscretePointsTest(bool& error) {
   double T_max = 3.0;
   double timestep = (T_max - T_min) / double(points.size() - 1);
   std::vector<double> time_points;
-  for (size_t i = 0; i < points.size(); ++i) time_points.push_back(T_min + i * timestep);
+  for(size_t i=0;i<points.size();++i)
+    time_points.push_back(T_min+double(i)*timestep);
   piecewise_polynomial_curve_t ppc =
-      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points, time_points);
-  if (!ppc.is_continuous(0)) {
-    std::cout << "piecewiseCurveConversionFromDiscretePointsTest, Error, piecewise curve is not C0" << std::endl;
+      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points,time_points);
+  if (!ppc.is_continuous(0))
+  {
+    std::cout<<"piecewiseCurveConversionFromDiscretePointsTest, Error, piecewise curve is not C0"<<std::endl;
     error = true;
     std::cout << "Error in piecewiseCurveConversionFromDiscretePointsTest" << std::endl;
   }
