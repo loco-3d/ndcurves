@@ -6,6 +6,6 @@
 
 #include <boost/serialization/nvp.hpp>
 
-#define BOOST_SERIALIZATION_MAKE_NVP(member) boost::serialization::make_nvp(##member,member)
+#define BOOST_SERIALIZATION_MAKE_NVP(member) boost::serialization::make_nvp(##member, member)
 
-#endif // ifndef __multicontact_api_serialization_fwd_hpp__
+#endif  // ifndef __multicontact_api_serialization_fwd_hpp__
