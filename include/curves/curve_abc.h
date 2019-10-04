@@ -65,7 +65,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   // Serialization of the class
   friend class boost::serialization::access;
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
+  void serialize(Archive& /*ar*/, const unsigned int version) {
     if (version) {
       // Do something depending on version ?
     }
