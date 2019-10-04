@@ -21,4 +21,5 @@ INSTALL(FILES
   )
 
 ADD_SUBDIRECTORY(helpers)
+ADD_SUBDIRECTORY(optimization)
 ADD_SUBDIRECTORY(serialization)

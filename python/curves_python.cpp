@@ -307,6 +307,11 @@ namespace curves
     return c.init_acc;
   }
 
+  point_t get_init_jerk(const curve_constraints_t& c)
+  {
+      return c.init_jerk;
+  }
+
   point_t get_end_vel(const curve_constraints_t& c)
   {
     return c.end_vel;
@@ -315,6 +320,11 @@ namespace curves
   point_t get_end_acc(const curve_constraints_t& c)
   {
     return c.end_acc;
+  }
+
+  point_t get_end_jerk(const curve_constraints_t& c)
+  {
+      return c.end_jerk;
   }
 
   void set_init_vel(curve_constraints_t& c, const point_t& val)
@@ -327,6 +337,11 @@ namespace curves
     c.init_acc = val;
   }
 
+  void set_init_jerk(curve_constraints_t& c, const point_t& val)
+  {
+      c.init_jerk = val;
+  }
+
   void set_end_vel(curve_constraints_t& c, const point_t& val)
   {
     c.end_vel = val;
@@ -336,6 +351,12 @@ namespace curves
   {
     c.end_acc = val;
   }
+
+  void set_end_jerk(curve_constraints_t& c, const point_t& val)
+  {
+      c.end_jerk = val;
+  }
+
   /* End wrap exact cubic spline */
 
 
@@ -570,12 +591,14 @@ namespace curves
     /** END cubic_hermite_spline **/
     /** BEGIN curve constraints**/
     class_<curve_constraints_t>
-    ("curve_constraints", init<>())
-      .add_property("init_vel", &get_init_vel, &set_init_vel)
-      .add_property("init_acc", &get_init_acc, &set_init_acc)
-      .add_property("end_vel", &get_end_vel, &set_end_vel)
-      .add_property("end_acc", &get_end_acc, &set_end_acc)
-    ;
+        ("curve_constraints", init<>())
+            .add_property("init_vel", &get_init_vel, &set_init_vel)
+            .add_property("init_acc", &get_init_acc, &set_init_acc)
+            .add_property("init_jerk", &get_init_jerk, &set_init_jerk)
+            .add_property("end_vel", &get_end_vel, &set_end_vel)
+            .add_property("end_acc", &get_end_acc, &set_end_acc)
+            .add_property("end_jerk", &get_end_jerk, &set_end_jerk)
+        ;
     /** END curve constraints**/
     /** BEGIN bernstein polynomial**/
     class_<bernstein_t>

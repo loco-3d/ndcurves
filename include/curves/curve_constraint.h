@@ -22,19 +22,23 @@ struct curve_constraints {
   typedef Point point_t;
   curve_constraints() {}
 
-  ~curve_constraints() {}
-
   curve_constraints(const curve_constraints& other)
-    :init_vel(other.init_vel)
-    ,init_acc(other.init_acc)
-    ,end_vel(other.end_vel)
-    ,end_acc(other.end_acc)
+    :init_vel (other.init_vel )
+    ,init_acc (other.init_acc )
+    ,init_jerk(other.init_jerk)
+    ,end_vel  (other.end_vel  )
+    ,end_acc  (other.end_acc  )
+    ,end_jerk (other.end_jerk )
   {}
 
-  point_t init_vel;
-  point_t init_acc;
-  point_t end_vel;
-  point_t end_acc;
+
+   ~curve_constraints(){}
+    point_t init_vel;
+    point_t init_acc;
+    point_t init_jerk;
+    point_t end_vel;
+    point_t end_acc;
+    point_t end_jerk;
 };
 }  // namespace curves
 #endif  //_CLASS_CUBICZEROVELACC
