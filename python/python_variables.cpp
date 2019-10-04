@@ -48,6 +48,22 @@ namespace curves
   }
 
 
+  Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> cost_t_quad(const quadratic_variable_t& p)
+  {
+      Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> A = p.A();
+      return A;
+  }
+  Eigen::Matrix<real, Eigen::Dynamic, 1> cost_t_linear(const quadratic_variable_t & p)
+  {
+      Eigen::Matrix<real, Eigen::Dynamic, 1> b = p.b();
+      return b;
+  }
+  real cost_t_constant(const quadratic_variable_t & p)
+  {
+      return p.c();
+  }
+
+
   matrix_pair*
           wayPointsToLists(const bezier_linear_variable_t& self)
   {

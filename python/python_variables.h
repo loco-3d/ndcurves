@@ -13,11 +13,11 @@ namespace curves
 {
   static const int dim = 3;
   typedef linear_variable<dim, real> linear_variable_3_t;
+  typedef quadratic_variable<real> quadratic_variable_t;
   typedef bezier_curve  <real, real, true, linear_variable_3_t> bezier_linear_variable_t;
 
   /*linear variable control points*/
   bezier_linear_variable_t* wrapBezierLinearConstructor(const point_list_t& matrices, const point_list_t& vectors);
-
   bezier_linear_variable_t* wrapBezierLinearConstructorBounds
   (const point_list_t& matrices, const point_list_t& vectors, const real T_min, const real T_max);
 
@@ -31,6 +31,10 @@ namespace curves
       Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> b() {return res.second;}
   };
 
+
+  Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> cost_t_quad(const quadratic_variable_t& p);
+  Eigen::Matrix<real, Eigen::Dynamic, 1> cost_t_linear(const quadratic_variable_t & p);
+  real cost_t_constant(const quadratic_variable_t & p);
 
   matrix_pair* wayPointsToLists(const bezier_linear_variable_t& self);
 

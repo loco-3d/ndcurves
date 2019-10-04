@@ -432,6 +432,15 @@ namespace curves
         .def_readonly("degree", &bezier_linear_variable_t::degree_)
         .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
         ;
+
+
+    class_<quadratic_variable_t >
+        ("cost", no_init)
+        .add_property("A", &cost_t_quad)
+        .add_property("b", &cost_t_linear)
+        .add_property("c", &cost_t_constant)
+        ;
+
     /** END variable points bezier curve**/
     /** BEGIN polynomial curve function**/
     class_<polynomial_t , bases<curve_abc_t> >("polynomial",  init<>())
