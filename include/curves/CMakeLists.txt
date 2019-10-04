@@ -10,6 +10,7 @@ SET(${PROJECT_NAME}_HEADERS
   curve_constraint.h
   quintic_spline.h
   linear_variable.h
+  quadratic_variable.h
   cubic_hermite_spline.h
   piecewise_curve.h
   )

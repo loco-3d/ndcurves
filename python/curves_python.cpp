@@ -406,31 +406,31 @@ namespace curves
     ;
     /** END bezier curve**/
     /** BEGIN variable points bezier curve**/
-    class_<LinearControlPointsHolder>
-    ("LinearWaypoint", no_init)
-      .def_readonly("A", &LinearControlPointsHolder::A)
-      .def_readonly("b", &LinearControlPointsHolder::b)
-    ;
+    class_<matrix_pair>
+        ("matrix_pair", no_init)
+        .def_readonly("A", &matrix_pair::A)
+        .def_readonly("b", &matrix_pair::b)
+        ;
     class_<LinearBezierVector>
     ("bezierVarVector", no_init)
       .def_readonly("size", &LinearBezierVector::size)
       .def("at", &LinearBezierVector::at, return_value_policy<manage_new_object>())
     ;
-    class_<bezier_linear_variable_t>("bezierVar", no_init)
-      .def("__init__", make_constructor(&wrapBezierLinearConstructor))
-      .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
-      .def("min", &bezier_linear_variable_t::min)
-      .def("max", &bezier_linear_variable_t::max)
-      .def("dim", &bezier_linear_variable_t::dim)
-      //.def("__call__", &bezier_linear_control_t::operator())
-      .def("derivate", &bezier_linear_variable_t::derivate)
-      .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
-      .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
-      .def("split", &split, return_value_policy<manage_new_object>())
-      .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
-      .def_readonly("degree", &bezier_linear_variable_t::degree_)
-      .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
-    ;
+    class_<bezier_linear_variable_t>
+    ("bezierVar", no_init)
+        .def("__init__", make_constructor(&wrapBezierLinearConstructor))
+        .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
+        .def("min", &bezier_linear_variable_t::min)
+        .def("max", &bezier_linear_variable_t::max)
+        //.def("__call__", &bezier_linear_control_t::operator())
+        .def("derivate", &bezier_linear_variable_t::derivate)
+        .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
+        .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
+        .def("split", &split_py, return_value_policy<manage_new_object>())
+        .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
+        .def_readonly("degree", &bezier_linear_variable_t::degree_)
+        .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
+        ;
     /** END variable points bezier curve**/
     /** BEGIN polynomial curve function**/
     class_<polynomial_t , bases<curve_abc_t> >("polynomial",  init<>())
