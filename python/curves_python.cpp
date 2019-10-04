@@ -35,6 +35,7 @@ typedef std::pair<real, pointX_t> waypoint_t;
 typedef std::vector<waypoint_t> t_waypoint_t;
 
 // Curves
+typedef curve_abc<real, real, true, pointX_t> curve_abc_t; // generic class of curve
 typedef curves::cubic_hermite_spline <real, real, true, pointX_t> cubic_hermite_spline_t;
 typedef curves::bezier_curve  <real, real, true, pointX_t> bezier_t;
 typedef curves::polynomial  <real, real, true, pointX_t, t_pointX_t> polynomial_t;
