@@ -75,15 +75,11 @@ namespace curves
   {
       LinearBezierVector* res (new LinearBezierVector);
       bezier_linear_variable_t current = self;
-      real current_time = 0.;
-      real tmp;
       for(int i = 0; i < times.rows(); ++i)
       {
-          tmp =times[i];
-          std::pair<bezier_linear_variable_t, bezier_linear_variable_t> pairsplit = current.split(tmp-current_time);
+          std::pair<bezier_linear_variable_t, bezier_linear_variable_t> pairsplit = current.split(times[i]);
           res->beziers_.push_back(pairsplit.first);
           current = pairsplit.second;
-          current_time += tmp-current_time;
       }
       res->beziers_.push_back(current);
       return res;

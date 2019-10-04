@@ -348,6 +348,7 @@ namespace curves
     eigenpy::enableEigenPySpecific<pointX_t,pointX_t>();
     eigenpy::enableEigenPySpecific<pointX_list_t,pointX_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
+    eigenpy::enableEigenPySpecific<point_list_t,point_list_t>();
     /*eigenpy::exposeAngleAxis();
     eigenpy::exposeQuaternion();*/
     /** END eigenpy init**/

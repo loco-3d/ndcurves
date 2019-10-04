@@ -128,6 +128,7 @@ struct quadratic_variable
     const point_t&  b () const {assert(!isZero());return b_;}
     const Numeric  c () const {assert(!isZero());return c_;}
     bool  isZero() const {return zero;}
+    std::size_t size() const {return zero ? 0 :  std::max(A_.cols(), (std::max(B_.cols(), c_.size()))) ;}
 
 private:
     Numeric c_;
