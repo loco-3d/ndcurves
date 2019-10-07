@@ -62,8 +62,8 @@ struct problem_definition
 
     problem_definition()
         : flag(NONE)
-        , start(point_t())
-        , end(point_t())
+        , start(point_t::Zero(Dim))
+        , end(point_t::Zero(Dim))
         , curveConstraints()
         , degree(5)
         , totalTime(1.)
