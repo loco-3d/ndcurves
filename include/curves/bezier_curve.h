@@ -241,7 +241,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
   const point_t waypointAtIndex(const std::size_t index) const {
     point_t waypoint;
-    if (index <= control_points_.size()) {
+    if (index < control_points_.size()) {
       waypoint = control_points_[index];
     }
     return waypoint;
