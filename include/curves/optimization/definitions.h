@@ -71,7 +71,6 @@ struct problem_definition
 
 
     constraint_flag flag;
-    //derivative_flag costFlag;
     point_t start;
     point_t end;
     curve_constraints_t curveConstraints;

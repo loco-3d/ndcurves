@@ -296,6 +296,20 @@ namespace curves
       c.end_jerk = val;
   }
 
+  matrix_pair* bezier_linear_variable_t_operator_call(const bezier_linear_variable_t* b, const double t)
+  {
+      bezier_linear_variable_t::point_t p = b->operator ()(t);
+      matrix_pair* res = new matrix_pair;
+      res->res = std::make_pair(p.B(),p.c());
+      return res;
+  }
+
+  bezier_t* bezier_linear_variable_t_evaluate(const bezier_linear_variable_t* b, const pointX_t& x)
+  {
+     return new bezier_t(evaluateLinear<bezier_t, bezier_linear_variable_t>(*b, x));
+  }
+
+
   /* End wrap exact cubic spline */
 
 
@@ -384,6 +398,8 @@ namespace curves
         .def("min", &bezier_linear_variable_t::min)
         .def("max", &bezier_linear_variable_t::max)
         //.def("__call__", &bezier_linear_control_t::operator())
+        .def("__call__", &bezier_linear_variable_t_operator_call, bp::return_value_policy<bp::manage_new_object>())
+        .def("evaluate", &bezier_linear_variable_t_evaluate, bp::return_value_policy<bp::manage_new_object>())
         .def("derivate", &bezier_linear_variable_t::derivate)
         .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
         .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)

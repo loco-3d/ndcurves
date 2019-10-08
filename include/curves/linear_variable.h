@@ -11,6 +11,7 @@
 #define _CLASS_LINEAR_VARIABLE
 
 #include "curve_abc.h"
+#include "bezier_curve.h"
 
 #include "MathDefs.h"
 
@@ -21,7 +22,7 @@
 
 namespace curves
 {
-template <int Dim, typename Numeric=double>
+template <int Dim, typename Numeric=double, bool Safe=true>
 struct linear_variable
 {
     typedef Eigen::Matrix<Numeric, Dim, Dim> matrix_dim_t;
@@ -40,6 +41,8 @@ struct linear_variable
     {
         if(isZero())
             return c();
+        if(Safe && B().cols() != val.rows() )
+            throw std::length_error("Cannot evaluate linear variable, variable value does not have the correct dimension");
         return B() * val + c();
     }
 
@@ -137,6 +140,16 @@ linear_variable<D,N> operator/(const linear_variable<D,N>& w,const double k)
     linear_variable<D,N> res(w.B(), w.c());
     return res/=k;
 }
+
+template <typename BezierFixed, typename BezierLinear, typename X >
+BezierFixed evaluateLinear(const BezierLinear& bIn, const X x)
+{
+    typename BezierFixed::t_point_t fixed_wps;
+    for (typename BezierLinear::cit_point_t cit = bIn.waypoints().begin(); cit != bIn.waypoints().end(); ++cit)
+        fixed_wps.push_back(cit->operator()(x));
+    return BezierFixed(fixed_wps.begin(),fixed_wps.end(), bIn.T_min_,bIn.T_max_);
+}
+
 } // namespace curves
 #endif //_CLASS_LINEAR_VARIABLE
 
