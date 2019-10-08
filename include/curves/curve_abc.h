@@ -33,11 +33,6 @@ struct  curve_abc : std::unary_function<Time, Point>,
   typedef Time    time_t;
 
   /* Constructors - destructors */
-  public:
-    /// \brief Constructor.
-    curve_abc(){}
-
-  /* Constructors - destructors */
  public:
   /// \brief Constructor.
   curve_abc() {}
