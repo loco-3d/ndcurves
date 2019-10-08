@@ -41,7 +41,7 @@ namespace curves
       matrix_x_t A_;
       matrix_x_t b_;
       matrix_x_t A() {return A_;}
-      matrix_x_t b() {std::cout << " b CPP " << b_ << std::endl; return b_;}
+      matrix_x_t b() {return b_;}
   };
 
   struct matrix_vector
@@ -52,7 +52,7 @@ namespace curves
       matrix_x_t A_;
       Eigen::VectorXd b_;
       matrix_x_t A() {return A_;}
-      Eigen::VectorXd b() {std::cout << " b CPP " << b_ << std::endl; return b_;}
+      Eigen::VectorXd b() {return b_;}
   };
 
 

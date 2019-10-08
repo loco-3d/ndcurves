@@ -33,8 +33,6 @@ def quadprog_solve_qp(P, q, G=None, h=None, C=None, d=None, verbose = False):
 
 #least square form of ||Ax-b||**2 
 def to_least_square(A, b):
-    print "b ", b
-    print "nb ", - dot(A.T, b)
     return dot(A.T, A), - dot(A.T, b)
 
 
