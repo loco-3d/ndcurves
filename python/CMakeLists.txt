@@ -23,3 +23,4 @@ ENDIF(APPLE)
 INSTALL(TARGETS ${PY_NAME} DESTINATION ${PYTHON_SITELIB})
 
 ADD_PYTHON_UNIT_TEST("python-curves" "python/test/test.py" "python")
+ADD_PYTHON_UNIT_TEST("python-optimization" "python/test/optimization.py" "python")

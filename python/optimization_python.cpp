@@ -69,7 +69,7 @@ namespace optimization
 
     quadratic_problem_t generate_integral_problem_3_t(const problem_definition_t &pDef, const integral_cost_flag c)
     {
-        return generate_problem<pointX_t,dim,real>(pDef, c);
+        return generate_problem<problem_definition_t::point_t,dim,real>(pDef, c);
     }
 
     void set_pd_flag(problem_definition_t* pDef, const int flag)

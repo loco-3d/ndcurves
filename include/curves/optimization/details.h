@@ -268,6 +268,9 @@ void initInequalityMatrix
     prob.ineqMatrix = matrix_x_t::Zero(rows,cols);
     prob.ineqVector = vector_x_t::Zero(rows);
 
+    if(pDef.inequalityMatrices_.size() == 0)
+        return;
+
     // compute sub-bezier curves
     T_bezier_t beziers = split<Point, Dim, Numeric>(pDef,pData);
 
