@@ -366,16 +366,11 @@ namespace curves
         ;
 
     /** BEGIN bezier3 curve**/
-    class_<bezier3_t>("bezier3", init<>())
+    class_<bezier3_t, bases<curve_abc_t> >("bezier3", init<>())
       .def("__init__", make_constructor(&wrapBezier3Constructor))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
       .def("__init__", make_constructor(&wrapBezier3ConstructorConstraints))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBoundsConstraints))
-      .def("min", &bezier3_t::min)
-      .def("max", &bezier3_t::max)
-      .def("dim", &bezier3_t::dim)
-      .def("__call__", &bezier3_t::operator())
-      .def("derivate", &bezier3_t::derivate)
       .def("compute_derivate", &bezier3_t::compute_derivate)
       .def("compute_primitive", &bezier3_t::compute_primitive)
       .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
