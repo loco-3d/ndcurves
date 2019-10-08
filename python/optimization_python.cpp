@@ -126,8 +126,7 @@ namespace optimization
     {
         if (idx > pDef->inequalityMatrices_.size() - 1)
             throw std::runtime_error("required id is beyond number of inequality matrices");
-        matrix_pair* res = new matrix_pair();
-        res->res = std::make_pair(pDef->inequalityMatrices_[idx], pDef->inequalityVectors_[idx]);
+        matrix_pair* res = new matrix_pair(pDef->inequalityMatrices_[idx], pDef->inequalityVectors_[idx]);
         return res;
     }
     bool del_ineq_at(problem_definition_t* pDef, const std::size_t idx)

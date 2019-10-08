@@ -296,11 +296,10 @@ namespace curves
       c.end_jerk = val;
   }
 
-  matrix_pair* bezier_linear_variable_t_operator_call(const bezier_linear_variable_t* b, const double t)
+  matrix_vector* bezier_linear_variable_t_operator_call(const bezier_linear_variable_t* b, const double t)
   {
       bezier_linear_variable_t::point_t p = b->operator ()(t);
-      matrix_pair* res = new matrix_pair;
-      res->res = std::make_pair(p.B(),p.c());
+      matrix_vector* res = new matrix_vector(p.B(), p.c());
       return res;
   }
 
@@ -386,6 +385,13 @@ namespace curves
         .def_readonly("A", &matrix_pair::A)
         .def_readonly("b", &matrix_pair::b)
         ;
+
+    class_<matrix_vector>
+        ("matrix_vector", no_init)
+        .def_readonly("A", &matrix_vector::A)
+        .def_readonly("b", &matrix_vector::b)
+        ;
+
     class_<LinearBezierVector>
     ("bezierVarVector", no_init)
       .def_readonly("size", &LinearBezierVector::size)

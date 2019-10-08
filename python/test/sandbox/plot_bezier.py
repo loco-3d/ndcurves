@@ -35,6 +35,7 @@ def plotBezier(bez, step = 100., color = "b", ax = None):
 
 def plotControlPoints(bez,color = "r", ax = None):
     wps = [bez.waypointAtIndex(i) for i in range(bez.nbWaypoints)]
+    print "wps ", wps
     x = np.array([wp[0] for wp in wps])
     y = np.array([wp[1] for wp in wps])
     z = np.array([wp[2] for wp in wps])

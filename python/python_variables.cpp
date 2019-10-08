@@ -81,8 +81,8 @@ namespace curves
           matrices.block(0,i*3,dim,3) = cit->B().transpose();
           vectors.block<3,1>(0,i)   =  cit->c();
       }
-      matrix_pair* res (new matrix_pair);
-      res->res = std::make_pair(matrices, vectors);
+      matrix_pair* res (new matrix_pair(matrices, vectors));
+      //res->res = std::make_pair(matrices, vectors);
       return res;
   }
 

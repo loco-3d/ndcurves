@@ -31,14 +31,28 @@ namespace curves
   bezier_linear_variable_t* wrapBezierLinearConstructorBounds
   (const point_list_t& matrices, const point_list_t& vectors, const real T_min, const real T_max);
 
-  typedef std::pair<Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic>,
-  Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> > linear_points_t;
+  typedef Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> matrix_x_t;
 
   struct matrix_pair
   {
-      linear_points_t res;
-      Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> A() {return res.first;}
-      Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> b() {return res.second;}
+      matrix_pair() {}
+      matrix_pair(const Eigen::Ref<const matrix_x_t > A, const Eigen::Ref<const matrix_x_t > b)
+          : A_(A), b_(b){}
+      matrix_x_t A_;
+      matrix_x_t b_;
+      matrix_x_t A() {return A_;}
+      matrix_x_t b() {std::cout << " b CPP " << b_ << std::endl; return b_;}
+  };
+
+  struct matrix_vector
+  {
+      matrix_vector() {}
+      matrix_vector(const Eigen::Ref<const matrix_x_t > A, const Eigen::Ref<const Eigen::VectorXd > b)
+          : A_(A), b_(b){}
+      matrix_x_t A_;
+      Eigen::VectorXd b_;
+      matrix_x_t A() {return A_;}
+      Eigen::VectorXd b() {std::cout << " b CPP " << b_ << std::endl; return b_;}
   };
 
 
@@ -110,6 +124,11 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_polynomial_curv
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_bezier_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_cubic_hermite_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::exact_cubic_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::matrix_x_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::pointX_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::linear_variable_3_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::matrix_pair)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::matrix_vector)
 
 
 #endif //_VARIABLES_PYTHON_BINDINGS
