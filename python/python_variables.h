@@ -68,12 +68,15 @@ namespace curves
   typedef Eigen::VectorXd time_waypoints_t;
 
   typedef Eigen::VectorXd pointX_t;
+  typedef Eigen::Matrix<double,3, 1> point3_t;
   typedef Eigen::Matrix<double, Eigen::Dynamic, 1, 0, Eigen::Dynamic, 1> ret_pointX_t;
   typedef std::pair<pointX_t, pointX_t> pair_pointX_tangent_t;
   typedef Eigen::MatrixXd pointX_list_t;
   typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
+  typedef std::vector<pointX_t,Eigen::aligned_allocator<point3_t> >  t_point3_t;
   typedef std::vector<pair_pointX_tangent_t,Eigen::aligned_allocator<pair_pointX_tangent_t> > t_pair_pointX_tangent_t;
   typedef curves::curve_constraints<pointX_t> curve_constraints_t;
+  typedef curves::curve_constraints<point3_t> curve_constraints3_t;
   typedef std::pair<real, pointX_t> waypoint_t;
   typedef std::vector<waypoint_t> t_waypoint_t;
 
