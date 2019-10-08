@@ -24,6 +24,13 @@ struct curve_constraints {
 
   ~curve_constraints() {}
 
+  curve_constraints(const curve_constraints& other)
+    :init_vel(other.init_vel)
+    ,init_acc(other.init_acc)
+    ,end_vel(other.end_vel)
+    ,end_acc(other.end_acc)
+  {}
+
   point_t init_vel;
   point_t init_acc;
   point_t end_vel;
@@ -31,3 +38,4 @@ struct curve_constraints {
 };
 }  // namespace curves
 #endif  //_CLASS_CUBICZEROVELACC
+
