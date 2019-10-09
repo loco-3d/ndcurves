@@ -694,17 +694,19 @@ namespace curves
     /** END bernstein polynomial**/
 
     /** BEGIN SO3 Linear**/
-    class_<SO3Linear_t>("SO3Linear",  init<>())
+    class_<SO3Linear_t, bases<curve_rotation_t> >("SO3Linear",  init<>())
       .def("__init__", make_constructor(&wrapSO3LinearConstructorFromMatrix,default_call_policies(),args("init_rotation","end_rotation","min","max")),"Create a SO3 Linear curve between two rotations, defined for t \in [min,max]."
      " The input rotations are expressed as 3x3 matrix.")
       .def("__init__", make_constructor(&wrapSO3LinearConstructorFromQuaternion,default_call_policies(),args("init_rotation","end_rotation","min","max")),"Create a SO3 Linear curve between two rotations, defined for t \in [min,max]."
          " The input rotations are expressed as Quaternions.")
-      .def("__call__", &SO3Linear_t::operator(),"Output the rotation (as a 3x3 matrix) at the given time. This rotation is obtained by a Spherical Linear Interpolation between the initial and final rotation.")
       .def("computeAsQuaternion",&SO3Linear_t::computeAsQuaternion,"Output the quaternion of the rotation at the given time. This rotation is obtained by a Spherical Linear Interpolation between the initial and final rotation.")
-      .def("derivate",&SO3Linear_t::derivate,"Output the derivate of the curve at the given time and order",args("self","time","order"))
-        .def("min", &SO3Linear_t::min, "Get the LOWER bound on interval definition of the curve.")
-        .def("max", &SO3Linear_t::max,"Get the HIGHER bound on interval definition of the curve.")
-        ;
+//      .def("saveAsText", &SO3Linear_t::saveAsText<SO3Linear_t>,bp::args("filename"),"Saves *this inside a text file.")
+//      .def("loadFromText",&SO3Linear_t::loadFromText<SO3Linear_t>,bp::args("filename"),"Loads *this from a text file.")
+//      .def("saveAsXML",&SO3Linear_t::saveAsXML<SO3Linear_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+//      .def("loadFromXML",&SO3Linear_t::loadFromXML<SO3Linear_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+//      .def("saveAsBinary",&SO3Linear_t::saveAsBinary<SO3Linear_t>,bp::args("filename"),"Saves *this inside a binary file.")
+//      .def("loadFromBinary",&SO3Linear_t::loadFromBinary<SO3Linear_t>,bp::args("filename"),"Loads *this from a binary file.")
+       ;
 
     /** END  SO3 Linear**/
     /** BEGIN SE3 Curve**/
