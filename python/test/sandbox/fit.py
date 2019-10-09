@@ -17,14 +17,20 @@ from qp import to_least_square, quadprog_solve_qp
 
 #points given as pairs (pt, t)
 #does not try to fit anything
-def default_fit_3d(degree, ptsTime, dim = 3, totalTime =1., zeroInitVel = False):
+def default_fit(degree, ptsTime, dim = 3, totalTime =1., constraintFlag = constraint_flag.NONE, curveConstraints = None):
     pD = problemDefinition(dim)
-    if zeroInitVel:
-        pD.flag = constraint_flag.INIT_VEL | constraint_flag.INIT_POS
-        c = curve_constraints(dim)
-        pD.start = array([ptsTime[0][0]]).T
-        c.init_vel = array([[0., 0., 0.,0.]]).T
-        pD.curveConstraints = c
+    #set initial and goal positions to the ones of the list (might not be used if constraints do not correspond)
+    pD.start = array([ptsTime[0][0]]).T
+    pD.end   = array([ptsTime[-1][0]]).T
+    #assign curve constraints
+    pD.totalTime = totalTime
+    pD.degree = degree
+    pD.flag = constraintFlag
+    problem = setup_control_points(pD)
+    bezierLinear = problem.bezier()
+    if curveConstraints is not None:
+        pD.curveConstraints = curveConstraints
+    #~ pD.flag = constraint_flag.INIT_VEL | constraint_flag.INIT_POS
     pD.totalTime = totalTime
     pD.degree = degree
     problem = setup_control_points(pD)
@@ -49,8 +55,9 @@ if __name__ == '__main__':
     totalTime = 1.
     degree = a.nbWaypoints-1
     ptsTime = [ (a(float(i) / 10.), float(i) / 10.) for i in range(11)]
+    dim = waypoints.shape[0]
     
-    bFit = default_fit_3d(degree, ptsTime, dim = waypoints.shape[0])    
+    bFit = default_fit(degree, ptsTime, dim = dim)    
 
     fig = plt.figure()
     ax = fig.add_subplot(221, projection="3d")    
@@ -58,20 +65,18 @@ if __name__ == '__main__':
     #~ plotControlPoints(a, ax = ax)
     plotBezier(bFit, ax = ax, color = "g")
     #~ plotControlPoints(bFit, ax = ax, color = "g")
-    
-    #~ plt.show(block=True)
-    
-    bFit = default_fit_3d(degree-1, ptsTime, dim = waypoints.shape[0])    
+        
+    bFit = default_fit(degree-1, ptsTime, dim = dim)    
     ax = fig.add_subplot(222, projection="3d")    
     plotBezier(a, ax = ax)
     #~ plotControlPoints(a, ax = ax)
     plotBezier(bFit, ax = ax, color = "g")
     #~ plotControlPoints(bFit, ax = ax, color = "g")
+            
+    c = curve_constraints(dim)
+    c.init_vel = array([[0., 0., 0.,0.]]).T
     
-    #~ plt.show(block=True)
-    
-    
-    bFit = default_fit_3d(degree, ptsTime, dim = waypoints.shape[0], zeroInitVel = True)    
+    bFit = default_fit(degree-1, ptsTime, dim = dim, constraintFlag = constraint_flag.INIT_VEL | constraint_flag.INIT_POS, curveConstraints = c)    
     ax = fig.add_subplot(223, projection="3d")    
     plotBezier(a, ax = ax)
     #~ plotControlPoints(a, ax = ax)
@@ -79,7 +84,7 @@ if __name__ == '__main__':
     #~ plotControlPoints(bFit, ax = ax, color = "g")
     
     
-    bFit = default_fit_3d(degree + 22, ptsTime, dim = waypoints.shape[0], zeroInitVel = True)    
+    bFit = default_fit(degree + 3, ptsTime, dim = dim, constraintFlag = constraint_flag.END_POS |  constraint_flag.INIT_VEL | constraint_flag.INIT_POS, curveConstraints = c)    
     ax = fig.add_subplot(224, projection="3d")    
     plotBezier(a, ax = ax)
     #~ plotControlPoints(a, ax = ax)
