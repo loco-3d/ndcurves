@@ -25,19 +25,16 @@ namespace curves
 template <typename Numeric=double, bool Safe=true>
 struct linear_variable
 {
-    typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> matrix_dim_t;
-    typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> matrix_dim_x_t;
-    typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> point_dim_t;
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> matrix_x_t;
     typedef linear_variable<Numeric> linear_variable_t;
 
-    linear_variable(): B_(matrix_dim_t::Identity(0,0)), c_(point_dim_t::Zero(0)), zero(true){} //variable
-    linear_variable(const point_dim_t& c):B_(matrix_dim_t::Zero(c.size(),c.size())),c_(c), zero(false) {} // constant
-    linear_variable(const matrix_dim_x_t& B, const point_dim_t& c):B_(B),c_(c), zero(false) {} //mixed
+    linear_variable(): B_(matrix_x_t::Identity(0,0)), c_(vector_x_t::Zero(0)), zero(true){} //variable
+    linear_variable(const vector_x_t& c):B_(matrix_x_t::Zero(c.size(),c.size())),c_(c), zero(false) {} // constant
+    linear_variable(const matrix_x_t& B, const vector_x_t& c):B_(B),c_(c), zero(false) {} //mixed
 
     // linear evaluation
-    point_dim_t operator()(const Eigen::Ref<const vector_x_t>& val) const
+    vector_x_t operator()(const Eigen::Ref<const vector_x_t>& val) const
     {
         if(isZero())
             return c();
@@ -97,13 +94,13 @@ struct linear_variable
 
     std::size_t size() const {return zero ? 0 : std::max(B_.cols(), c_.size()) ;}
 
-    const matrix_dim_x_t& B() const {return B_;}
-    const point_dim_t& c () const {return c_;}
+    const matrix_x_t& B() const {return B_;}
+    const vector_x_t& c () const {return c_;}
     bool isZero () const {return zero;}
 
 private:
-    matrix_dim_x_t B_;
-    point_dim_t c_;
+    matrix_x_t B_;
+    vector_x_t c_;
     bool zero;
 };
 

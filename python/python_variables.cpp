@@ -18,7 +18,7 @@ namespace curves
 
   linear_variable_3_t fillWithZeros(const linear_variable_3_t& var, const std::size_t totalvar, const std::size_t i)
   {
-      linear_variable_3_t::matrix_dim_x_t B(linear_variable_3_t::matrix_dim_x_t::Zero(dim,totalvar*dim));
+      linear_variable_3_t::matrix_x_t B(linear_variable_3_t::matrix_x_t::Zero(dim,totalvar*dim));
       B.block(0,dim*i,dim,dim) = var.B();
       return linear_variable_3_t (B,var.c());
   }

@@ -70,7 +70,7 @@ LinearVar fill_with_zeros(const LinearVar& var,const std::size_t i,
                           const std::size_t numVariables, const int Dim)
 {
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> matrix_t;
-    typename LinearVar::matrix_dim_x_t B;
+    typename LinearVar::matrix_x_t B;
     B = matrix_t::Zero(Dim,numVariables*Dim);
     if( startVariableIndex  <= i  && i<= startVariableIndex +numVariables-1 && var.size() >0 )
         B.block(0,Dim*(i-startVariableIndex),Dim,Dim) = var.B();
@@ -282,7 +282,7 @@ void initInequalityMatrix
     assert(pDef.inequalityMatrices_.size() == beziers.size());
 
     long currentRowIdx = 0;
-    typename problem_definition_t::CIT_matrix_dim_t cmit = pDef.inequalityMatrices_.begin();
+    typename problem_definition_t::CIT_matrix_x_t cmit = pDef.inequalityMatrices_.begin();
     typename problem_definition_t::CIT_vector_x_t cvit = pDef.inequalityVectors_.begin();
     // for each bezier split ..
     for (CIT_bezier_t bit = beziers.begin();

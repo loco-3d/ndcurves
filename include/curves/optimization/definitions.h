@@ -54,10 +54,9 @@ struct problem_definition
     typedef curve_constraints<point_t> curve_constraints_t;
     typedef Eigen::Matrix< num_t , Eigen::Dynamic , 1> vector_x_t;
     typedef Eigen::Matrix< num_t , Eigen::Dynamic , Eigen::Dynamic> matrix_x_t;
-    typedef Eigen::Matrix< num_t , Eigen::Dynamic , Eigen::Dynamic> matrix_dim_t;
-    typedef std::vector<matrix_dim_t, Eigen::aligned_allocator<matrix_dim_t> > T_matrix_dim_t;
+    typedef std::vector<matrix_x_t, Eigen::aligned_allocator<matrix_x_t> > T_matrix_x_t;
     typedef std::vector<vector_x_t, Eigen::aligned_allocator<vector_x_t> > T_vector_x_t;
-    typedef typename T_matrix_dim_t::const_iterator CIT_matrix_dim_t;
+    typedef typename T_matrix_x_t::const_iterator CIT_matrix_x_t;
     typedef typename T_vector_x_t::const_iterator CIT_vector_x_t;
 
     problem_definition(const int dim)
@@ -78,8 +77,8 @@ struct problem_definition
     std::size_t degree;
     num_t totalTime;
     vector_x_t splitTimes_;
-    T_matrix_dim_t inequalityMatrices_; // must be of size (splitTimes_ + 1)
-    T_vector_x_t    inequalityVectors_;  // must be of size (splitTimes_ + 1)
+    T_matrix_x_t inequalityMatrices_; // must be of size (splitTimes_ + 1)
+    T_vector_x_t inequalityVectors_;  // must be of size (splitTimes_ + 1)
     const int dim_;
 };
 

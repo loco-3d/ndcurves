@@ -1597,14 +1597,14 @@ enum vartype
 
 bool isVar(const linear_variable_t& var)
 {
-    return ! var.isZero() && var.B() == linear_variable_t::matrix_dim_t::Identity(3,3) &&
-           var.c() == linear_variable_t::point_dim_t::Zero(3);
+    return ! var.isZero() && var.B() == linear_variable_t::matrix_x_t::Identity(3,3) &&
+           var.c() == linear_variable_t::vector_x_t::Zero(3);
 }
 
 bool isConstant(const linear_variable_t& var)
 {
-    return var.isZero() || var.B() == linear_variable_t::matrix_dim_t::Zero(3,3) &&
-           var.c() != linear_variable_t::point_dim_t::Zero(3);
+    return var.isZero() || (var.B() == linear_variable_t::matrix_x_t::Zero(3,3) &&
+           var.c() != linear_variable_t::vector_x_t::Zero(3));
 }
 
 /*bool isMixed(const linear_variable_t& var)

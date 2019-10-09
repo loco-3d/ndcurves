@@ -13,7 +13,6 @@ namespace optimization
 {
   namespace python
   {
-    static const int dim = 3;
     static const bool safe = true;
     typedef problem_definition<pointX_t, real> problem_definition_t;
     typedef problem_data<pointX_t, real>problem_data_t;
@@ -29,7 +28,7 @@ namespace optimization
         return pDef.curveConstraints;
     }
 
-    problem_data_t setup_control_points_3_t(problem_definition_t &pDef)
+    problem_data_t setup_control_points_t(problem_definition_t &pDef)
     {
         problem_data_t pData = setup_control_points<pointX_t,real, safe>(pDef);
         return pData;//return new problem_data_t(pData);
@@ -63,12 +62,12 @@ namespace optimization
         return p.c();
     }
 
-    quadratic_problem_t generate_problem_3_t(const problem_definition_t &pDef, const quadratic_variable_t & c)
+    quadratic_problem_t generate_problem_t(const problem_definition_t &pDef, const quadratic_variable_t & c)
     {
         return generate_problem<pointX_t,real, true>(pDef, c);
     }
 
-    quadratic_problem_t generate_integral_problem_3_t(const problem_definition_t &pDef, const integral_cost_flag c)
+    quadratic_problem_t generate_integral_problem_t(const problem_definition_t &pDef, const integral_cost_flag c)
     {
         return generate_problem<problem_definition_t::point_t,real, true>(pDef, c);
     }
@@ -191,9 +190,9 @@ namespace optimization
             .add_property("b", &problem_t_ineqVector)
             ;
 
-        bp::def("setup_control_points", &setup_control_points_3_t);
-        bp::def("generate_problem", &generate_problem_3_t);
-        bp::def("generate_integral_problem", &generate_integral_problem_3_t);
+        bp::def("setup_control_points", &setup_control_points_t);
+        bp::def("generate_problem", &generate_problem_t);
+        bp::def("generate_integral_problem", &generate_integral_problem_t);
 
         bp::class_<problem_data_t>
             ("problemData", bp::no_init)

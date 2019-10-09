@@ -159,7 +159,7 @@ inline quadratic_variable<N> operator*(const linear_variable<N>& w1, const linea
     typedef linear_variable<N> lin_var_t;
     typedef typename quad_var_t::matrix_x_t matrix_x_t;
     typedef typename quad_var_t::point_t point_t;
-    typedef typename lin_var_t::point_dim_t point_dim_t;
+    typedef typename lin_var_t::vector_x_t point_dim_t;
     point_dim_t ones = point_dim_t::Ones(w1.c().size());
     point_t b1   = w1.B().transpose()*ones, b2 = w2.B().transpose()*ones;
     matrix_x_t B1 = to_diagonal<N>(b1);
