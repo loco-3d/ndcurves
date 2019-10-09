@@ -103,6 +103,15 @@ namespace curves
 
   };
 
+  struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t>
+  {
+      point_t operator()(const real) { return this->get_override("operator()")();}
+      point_t derivate(const real, const std::size_t) { return this->get_override("derivate")();}
+      std::size_t dim() { return this->get_override("dim")();}
+      real min() { return this->get_override("min")();}
+      real max() { return this->get_override("max")();}
+
+  };
   /* end base wrap of curve_abc */
 
   /* Template constructor bezier */
@@ -467,6 +476,13 @@ namespace curves
         .def("dim", pure_virtual(&curve_3_t::dim),"Get the dimension of the curve.")
         ;
 
+    class_<CurveRotationWrapper,boost::noncopyable, bases<curve_abc_t> >("curve_rotation",no_init)
+        .def("__call__", pure_virtual(&curve_rotation_t::operator()),"Evaluate the curve at the given time.",args("self","t"))
+        .def("derivate", pure_virtual(&curve_rotation_t::derivate),"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
+        .def("min", pure_virtual(&curve_rotation_t::min), "Get the LOWER bound on interval definition of the curve.")
+        .def("max", pure_virtual(&curve_rotation_t::max),"Get the HIGHER bound on interval definition of the curve.")
+        .def("dim", pure_virtual(&curve_rotation_t::dim),"Get the dimension of the curve.")
+        ;
 
     /** BEGIN bezier3 curve**/
     class_<bezier3_t, bases<curve_3_t> >("bezier3", init<>())
