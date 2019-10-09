@@ -168,10 +168,10 @@ namespace curves
     std::size_t virtual dim() const{return dim_;};
     /// \brief Get the minimum time for which the curve is defined
     /// \return \f$t_{min}\f$ lower bound of time range.
-    time_t virtual min() const {return T_min_;}
+    time_t min() const {return T_min_;}
     /// \brief Get the maximum time for which the curve is defined.
     /// \return \f$t_{max}\f$ upper bound of time range.
-    time_t virtual max() const {return T_max_;}
+    time_t max() const {return T_max_;}
     /*Helpers*/
 
     /*Attributes*/
