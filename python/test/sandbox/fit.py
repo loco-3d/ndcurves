@@ -30,16 +30,11 @@ def default_fit_3d(degree, ptsTime, dim = 3, totalTime =1., zeroInitVel = False)
     problem = setup_control_points(pD)
     bezierLinear = problem.bezier()
 
-    nVar = problem.numVariables * dim
-    A, b = zeros((nVar,nVar)), zeros(nVar)
-    for (pt, time) in ptsTime:
-        assert time <= totalTime, "total time inferior to sampling"
-        exprAtT = bezierLinear(time)
-        nA, nb = to_least_square(exprAtT.A, exprAtT.b + pt)
-        A += nA
-        b += nb
+    allsEvals = [(bezierLinear(time), pt) for (pt,time) in ptsTime]
+    allLeastSquares = [to_least_square(el.A, el.b + pt) for (el, pt) in  allsEvals]
+    Ab = [sum(x) for x in zip(*allLeastSquares)]
     
-    res = quadprog_solve_qp(A + identity(A.shape[0]) * 0.0001, b)
+    res = quadprog_solve_qp(Ab[0] + identity(problem.numVariables * dim) * 0.0001, Ab[1])
     return bezierLinear.evaluate(res.reshape((-1,1)) ) 
 
 
