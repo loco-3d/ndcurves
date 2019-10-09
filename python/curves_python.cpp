@@ -710,7 +710,7 @@ namespace curves
 
     /** END  SO3 Linear**/
     /** BEGIN SE3 Curve**/
-    class_<SE3Curve_t>("SE3Curve",  init<>())
+    class_<SE3Curve_t, bases<curve_abc_t> >("SE3Curve",  init<>())
       .def("__init__",
        make_constructor(&wrapSE3CurveFromTransform,default_call_policies(),
        args("init_transform","end_transform","min","max")),
@@ -756,13 +756,21 @@ namespace curves
           "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
           "The orientation along the SE3Curve will be a slerp between the two given rotations."
           "The orientations should be represented as 3x3 rotation matrix")
-        .def("__call__", &se3Return,"Output the transform (as a 4x4 matrix) at the given time.")
         .def("rotation", &se3returnRotation,"Output the rotation (as a 3x3 matrix) at the given time.",args("self","time"))
         .def("translation", &se3returnTranslation,"Output the rotation (as a vector 3) at the given time.",args("self","time"))
-        .def("derivate",&se3ReturnDerivate,"Output the derivate of the curve at the given time and order",args("self","time","order"))
+        .def("__call__", &se3Return,"Evaluate the curve at the given time.",args("self","t"))
+        .def("derivate", &se3ReturnDerivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
         .def("min", &SE3Curve_t::min, "Get the LOWER bound on interval definition of the curve.")
         .def("max", &SE3Curve_t::max,"Get the HIGHER bound on interval definition of the curve.")
+        .def("dim", &SE3Curve_t::dim,"Get the dimension of the curve.")
+//        .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>,bp::args("filename"),"Saves *this inside a text file.")
+//        .def("loadFromText",&SE3Curve_t::loadFromText<SE3Curve_t>,bp::args("filename"),"Loads *this from a text file.")
+//        .def("saveAsXML",&SE3Curve_t::saveAsXML<SE3Curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+//        .def("loadFromXML",&SE3Curve_t::loadFromXML<SE3Curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+//        .def("saveAsBinary",&SE3Curve_t::saveAsBinary<SE3Curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
+//        .def("loadFromBinary",&SE3Curve_t::loadFromBinary<SE3Curve_t>,bp::args("filename"),"Loads *this from a binary file.")
         ;
+
     /** END SE3 Curve**/
     /** BEGIN curves conversion**/
     def("polynomial_from_bezier", polynomial_from_curve<polynomial_t,bezier_t>);
