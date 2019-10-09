@@ -195,7 +195,7 @@ namespace optimization
         bp::def("generate_integral_problem", &generate_integral_problem_t);
 
         bp::class_<problem_data_t>
-            ("problemData", bp::no_init)
+            ("problem_data", bp::no_init)
                 .def("bezier", &pDataBezier, bp::return_value_policy<bp::manage_new_object>())
                 .def_readonly("numControlPoints", &problem_data_t::numControlPoints)
                 .def_readonly("numVariables", &problem_data_t::numVariables)
@@ -205,7 +205,7 @@ namespace optimization
 
 
         bp::class_<problem_definition_t>
-            ("problemDefinition", bp::init<int>())
+            ("problem_definition", bp::init<int>())
                 .add_property("flag", &get_pd_flag, &set_pd_flag)
                 .add_property("start", &get_start, &set_start)
                 .add_property("end", &get_end, &set_end)

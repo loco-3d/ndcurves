@@ -3,16 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plotBezier2D(bez, axes = [0,1], step = 100., color = "b", ax = None):
-    points1 = np.array([(bez(i / step * bez.max())[axes[0]], bez(i / step * bez.max())[axes[1]]) for i in range(int(step)+1)])
-    x = points1[:, 0]
-    y = points1[:, 1]
-    if ax is not None:
-        ax.plot (x, y, color, linewidth=2.0)
-    else:        
-        plt.plot(x, y, color, linewidth=2.0)
-
-
 def plotControlPoints2D(bez, axes = [0,1], color = "r", ax = None):
     wps = [bez.waypointAtIndex(i) for i in range(bez.nbWaypoints)]
     x = np.array([wp[axes[0]] for wp in wps])
@@ -22,26 +12,44 @@ def plotControlPoints2D(bez, axes = [0,1], color = "r", ax = None):
     else:        
         plt.scatter(x, y, color = color)
         
-def plotBezier(bez, step = 100., color = "b", ax = None):
-    points1 = np.array([(bez(i / step * bez.max())[0], bez(i / step * bez.max())[1], bez(i / step * bez.max())[2]) for i in range(int(step)+1)])
+def plotBezier2D(bez, axes = [0,1], step = 100., color = "b", showControlPoints = False, ax = None):
+    points1 = np.array([(bez(i / step * bez.max())[axes[0]], bez(i / step * bez.max())[axes[1]]) for i in range(int(step)+1)])
     x = points1[:, 0]
     y = points1[:, 1]
-    z = points1[:, 2]
-    if ax is not None:
-        ax.plot (x, y, z, color, linewidth=2.0)
-    else:        
-        plt.plot(x, y, z, color, linewidth=2.0)
+    if ax is None:        
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+    ax.plot (x, y, color, linewidth=2.0)
+    if showControlPoints:
+        plotControlPoints2D(bez, color = color, ax = ax)
 
+
+        
 
 def plotControlPoints(bez,color = "r", ax = None):
     wps = [bez.waypointAtIndex(i) for i in range(bez.nbWaypoints)]
     x = np.array([wp[0] for wp in wps])
     y = np.array([wp[1] for wp in wps])
     z = np.array([wp[2] for wp in wps])
-    if ax is not None:
-        ax.scatter (x, y, z, color = color)
-    else:        
-        plt.scatter(x, y, z, color = color)
+    if ax is None:        
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+    ax.scatter (x, y, z, color = color)
+        
+def plotBezier(bez, step = 100., color = "b", linewidth = 2., showControlPoints = False, ax = None):
+    points1 = np.array([(bez(i / step * bez.max())[0], bez(i / step * bez.max())[1], bez(i / step * bez.max())[2]) for i in range(int(step)+1)])
+    x = points1[:, 0]
+    y = points1[:, 1]
+    z = points1[:, 2]
+    
+    if ax is None:        
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+    ax.plot (x, y, z, color, linewidth=linewidth)
+    if showControlPoints:
+        plotControlPoints(bez, color = color, ax = ax)
+
+
 
 
 if __name__ == '__main__':

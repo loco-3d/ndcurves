@@ -11,7 +11,7 @@ from curves import (bezier, bezier_from_hermite, bezier_from_polynomial, cubic_h
                     piecewise_cubic_hermite_curve, piecewise_polynomial_curve, polynomial, polynomial_from_bezier,
                     polynomial_from_hermite)
 
-from curves.optimization import(constraint_flag, integral_cost_flag, quadratic_problem, setup_control_points, generate_problem, generate_integral_problem, problemData, problemDefinition)
+from curves.optimization import(constraint_flag, integral_cost_flag, quadratic_problem, setup_control_points, generate_problem, generate_integral_problem, problem_data, problem_definition)
 
 
 class TestProblemDefinition(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestProblemDefinition(unittest.TestCase):
           c.init_acc = matrix([0., 1., -1.]).transpose()
           c.end_acc = matrix([0., 0., 0]).transpose()
 
-          pD = problemDefinition(3)
+          pD = problem_definition(3)
           pD.start
           pD.curveConstraints = c
           pD.start = array([[0.,0.,0.]]).T
