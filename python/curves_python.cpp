@@ -395,20 +395,11 @@ namespace curves
     return new SE3Curve_t(translation,init_rot,end_rot);
   }
 
-  SE3Curve_t* wrapSE3CurveFromBezierTranslation(bezier_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
+  SE3Curve_t* wrapSE3CurveFromTranslation(curve_abc_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
   {
     return new SE3Curve_t(&translation_curve,init_rot,end_rot);
   }
 
-  SE3Curve_t* wrapSE3CurveFromPolynomialTranslation(polynomial_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
-  {
-    return new SE3Curve_t(&translation_curve,init_rot,end_rot);
-  }
-
-  SE3Curve_t* wrapSE3CurveFromPiecewisePolynomialTranslation(piecewise_polynomial_curve_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
-  {
-    return new SE3Curve_t(&translation_curve,init_rot,end_rot);
-  }
 
   SE3Curve_t* wrapSE3CurveFromTwoCurves(curve_abc_t& translation_curve, curve_rotation_t& rotation_curve)
   {
@@ -725,34 +716,18 @@ namespace curves
         "The translation curve should be of dimension 3 and the rotation one should output 3x3 matrix"
         "Both curves should have the same time bounds.")
         .def("__init__",
+         make_constructor(&wrapSE3CurveFromTranslation,
+         default_call_policies(),
+         args("translation_curve","init_rotation","end_rotation")),
+         "Create a SE3 curve from a translation curve and two rotation"
+          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
+          "The orientation along the SE3Curve will be a slerp between the two given rotations."
+          "The orientations should be represented as 3x3 rotation matrix")
+        .def("__init__",
          make_constructor(&wrapSE3CurveFromBezier3Translation,
          default_call_policies(),
          args("translation_curve","init_rotation","end_rotation")),
-         "Create a SE3 curve from a translation curve two rotation"
-          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
-          "The orientation along the SE3Curve will be a slerp between the two given rotations."
-          "The orientations should be represented as 3x3 rotation matrix")
-        .def("__init__",
-         make_constructor(&wrapSE3CurveFromBezierTranslation,
-         default_call_policies(),
-         args("translation_curve","init_rotation","end_rotation")),
-         "Create a SE3 curve from a translation curve two rotation"
-          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
-          "The orientation along the SE3Curve will be a slerp between the two given rotations."
-          "The orientations should be represented as 3x3 rotation matrix")
-        .def("__init__",
-         make_constructor(&wrapSE3CurveFromPolynomialTranslation,
-         default_call_policies(),
-         args("translation_curve","init_rotation","end_rotation")),
-         "Create a SE3 curve from a translation curve two rotation"
-          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
-          "The orientation along the SE3Curve will be a slerp between the two given rotations."
-          "The orientations should be represented as 3x3 rotation matrix")
-        .def("__init__",
-         make_constructor(&wrapSE3CurveFromPiecewisePolynomialTranslation,
-         default_call_policies(),
-         args("translation_curve","init_rotation","end_rotation")),
-         "Create a SE3 curve from a translation curve two rotation"
+         "Create a SE3 curve from a translation curve and two rotation"
           "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
           "The orientation along the SE3Curve will be a slerp between the two given rotations."
           "The orientations should be represented as 3x3 rotation matrix")
