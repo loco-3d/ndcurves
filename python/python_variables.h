@@ -96,6 +96,7 @@ namespace curves
 
   // Curves
   typedef curve_abc<real, real, true, pointX_t> curve_abc_t; // generic class of curve
+  typedef curve_abc<real, real, true, point3_t> curve_3_t; // generic class of curve of size 3
   typedef curves::cubic_hermite_spline <real, real, true, pointX_t> cubic_hermite_spline_t;
   typedef curves::bezier_curve  <real, real, true, pointX_t> bezier_t;
   typedef curves::polynomial  <real, real, true, pointX_t, t_pointX_t> polynomial_t;
