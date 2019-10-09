@@ -1,71 +1,10 @@
-#include "curves/bezier_curve.h"
-#include "curves/polynomial.h"
-#include "curves/exact_cubic.h"
-#include "curves/curve_constraint.h"
-#include "curves/curve_conversion.h"
-#include "curves/bernstein.h"
-#include "curves/cubic_hermite_spline.h"
-#include "curves/piecewise_curve.h"
-
-#include "python_definitions.h"
 #include "python_variables.h"
 #include "archive_python_binding.h"
+#include "optimization_python.h"
 
 #include <vector>
 
-#include <eigenpy/memory.hpp>
-#include <eigenpy/eigenpy.hpp>
-#include <Eigen/Dense>
 
-#include <boost/python.hpp>
-
-/*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
-using namespace curves;
-typedef double real;
-typedef Eigen::VectorXd time_waypoints_t;
-
-typedef Eigen::VectorXd pointX_t;
-typedef Eigen::Matrix<double,3, 1> point3_t;
-typedef Eigen::Matrix<double, Eigen::Dynamic, 1, 0, Eigen::Dynamic, 1> ret_pointX_t;
-typedef std::pair<pointX_t, pointX_t> pair_pointX_tangent_t;
-typedef Eigen::MatrixXd pointX_list_t;
-typedef Eigen::Matrix<double,3, Eigen::Dynamic> point3_list_t;
-typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
-typedef std::vector<pointX_t,Eigen::aligned_allocator<point3_t> >  t_point3_t;
-typedef std::vector<pair_pointX_tangent_t,Eigen::aligned_allocator<pair_pointX_tangent_t> > t_pair_pointX_tangent_t;
-typedef curves::curve_constraints<pointX_t> curve_constraints_t;
-typedef curves::curve_constraints<point3_t> curve_constraints3_t;
-
-typedef std::pair<real, pointX_t> waypoint_t;
-typedef std::vector<waypoint_t> t_waypoint_t;
-
-// Curves
-typedef curve_abc<real, real, true, pointX_t> curve_abc_t; // generic class of curve
-typedef curves::cubic_hermite_spline <real, real, true, pointX_t> cubic_hermite_spline_t;
-typedef curves::bezier_curve  <real, real, true, pointX_t> bezier_t;
-typedef curves::bezier_curve  <real, real, true, point3_t> bezier3_t;
-typedef curves::polynomial  <real, real, true, pointX_t, t_pointX_t> polynomial_t;
-typedef polynomial_t::coeff_t coeff_t;
-typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
-typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, bezier_t> piecewise_bezier_curve_t;
-typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
-typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
-
-// Bezier 3
-
-typedef curves::Bern<double> bernstein_t;
-
-/*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bernstein_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(cubic_hermite_spline_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(bezier3_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(polynomial_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curve_constraints_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_polynomial_curve_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_bezier_curve_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(piecewise_cubic_hermite_curve_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(exact_cubic_t)
 
 namespace curves
 {
@@ -101,7 +40,7 @@ namespace curves
   /* End Template constructor bezier */
   /* Helper converter constraintsX -> constraints 3 */
   curve_constraints3_t convertToConstraints3(curve_constraints_t constraintsX){
-    curve_constraints3_t constraints3;
+    curve_constraints3_t constraints3(3);
     constraints3.init_vel =point3_t(constraintsX.init_vel);
     constraints3.init_acc = point3_t(constraintsX.init_acc);
     constraints3.end_vel = point3_t(constraintsX.end_vel);
@@ -297,49 +236,83 @@ namespace curves
   }
 
   /// For constraints XD
-  point_t get_init_vel(const curve_constraints_t& c)
+  pointX_t get_init_vel(const curve_constraints_t& c)
   {
     return c.init_vel;
   }
 
-  point_t get_init_acc(const curve_constraints_t& c)
+  pointX_t get_init_acc(const curve_constraints_t& c)
   {
     return c.init_acc;
   }
 
-  point_t get_end_vel(const curve_constraints_t& c)
+  pointX_t get_init_jerk(const curve_constraints_t& c)
+  {
+      return c.init_jerk;
+  }
+
+  pointX_t get_end_vel(const curve_constraints_t& c)
   {
     return c.end_vel;
   }
 
-  point_t get_end_acc(const curve_constraints_t& c)
+  pointX_t get_end_acc(const curve_constraints_t& c)
   {
     return c.end_acc;
   }
 
-  void set_init_vel(curve_constraints_t& c, const point_t& val)
+  pointX_t get_end_jerk(const curve_constraints_t& c)
+  {
+      return c.end_jerk;
+  }
+
+  void set_init_vel(curve_constraints_t& c, const pointX_t& val)
   {
     c.init_vel = val;
   }
 
-  void set_init_acc(curve_constraints_t& c, const point_t& val)
+  void set_init_acc(curve_constraints_t& c, const pointX_t& val)
   {
     c.init_acc = val;
   }
 
-  void set_end_vel(curve_constraints_t& c, const point_t& val)
+  void set_init_jerk(curve_constraints_t& c, const pointX_t& val)
+  {
+      c.init_jerk = val;
+  }
+
+  void set_end_vel(curve_constraints_t& c, const pointX_t& val)
   {
     c.end_vel = val;
   }
 
-  void set_end_acc(curve_constraints_t& c, const point_t& val)
+  void set_end_acc(curve_constraints_t& c, const pointX_t& val)
   {
     c.end_acc = val;
   }
+
+  void set_end_jerk(curve_constraints_t& c, const pointX_t& val)
+  {
+      c.end_jerk = val;
+  }
+
+  matrix_vector* bezier_linear_variable_t_operator_call(const bezier_linear_variable_t* b, const double t)
+  {
+      bezier_linear_variable_t::point_t p = b->operator ()(t);
+      matrix_vector* res = new matrix_vector(p.B(), p.c());
+      return res;
+  }
+
+  bezier_t* bezier_linear_variable_t_evaluate(const bezier_linear_variable_t* b, const pointX_t& x)
+  {
+     return new bezier_t(evaluateLinear<bezier_t, bezier_linear_variable_t>(*b, x));
+  }
+
+
   /* End wrap exact cubic spline */
 
 
-  // TO DO : Replace all load and save function for serialization in class by using
+  // TO DO : Replace all load and save function for serialization in class by using 
   //         SerializableVisitor in archive_python_binding.
   BOOST_PYTHON_MODULE(curves)
   {
@@ -348,6 +321,7 @@ namespace curves
     eigenpy::enableEigenPySpecific<pointX_t,pointX_t>();
     eigenpy::enableEigenPySpecific<pointX_list_t,pointX_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
+    eigenpy::enableEigenPySpecific<point_list_t,point_list_t>();
     /*eigenpy::exposeAngleAxis();
     eigenpy::exposeQuaternion();*/
     /** END eigenpy init**/
@@ -406,31 +380,49 @@ namespace curves
     ;
     /** END bezier curve**/
     /** BEGIN variable points bezier curve**/
-    class_<LinearControlPointsHolder>
-    ("LinearWaypoint", no_init)
-      .def_readonly("A", &LinearControlPointsHolder::A)
-      .def_readonly("b", &LinearControlPointsHolder::b)
-    ;
+    class_<matrix_pair>
+        ("matrix_pair", no_init)
+        .def_readonly("A", &matrix_pair::A)
+        .def_readonly("b", &matrix_pair::b)
+        ;
+
+    class_<matrix_vector>
+        ("matrix_vector", no_init)
+        .def_readonly("A", &matrix_vector::A)
+        .def_readonly("b", &matrix_vector::b)
+        ;
+
     class_<LinearBezierVector>
     ("bezierVarVector", no_init)
       .def_readonly("size", &LinearBezierVector::size)
       .def("at", &LinearBezierVector::at, return_value_policy<manage_new_object>())
     ;
-    class_<bezier_linear_variable_t>("bezierVar", no_init)
-      .def("__init__", make_constructor(&wrapBezierLinearConstructor))
-      .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
-      .def("min", &bezier_linear_variable_t::min)
-      .def("max", &bezier_linear_variable_t::max)
-      .def("dim", &bezier_linear_variable_t::dim)
-      //.def("__call__", &bezier_linear_control_t::operator())
-      .def("derivate", &bezier_linear_variable_t::derivate)
-      .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
-      .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
-      .def("split", &split, return_value_policy<manage_new_object>())
-      .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
-      .def_readonly("degree", &bezier_linear_variable_t::degree_)
-      .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
-    ;
+    class_<bezier_linear_variable_t>
+    ("bezierVar", no_init)
+        .def("__init__", make_constructor(&wrapBezierLinearConstructor))
+        .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
+        .def("min", &bezier_linear_variable_t::min)
+        .def("max", &bezier_linear_variable_t::max)
+        //.def("__call__", &bezier_linear_control_t::operator())
+        .def("__call__", &bezier_linear_variable_t_operator_call, bp::return_value_policy<bp::manage_new_object>())
+        .def("evaluate", &bezier_linear_variable_t_evaluate, bp::return_value_policy<bp::manage_new_object>())
+        .def("derivate", &bezier_linear_variable_t::derivate)
+        .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
+        .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
+        .def("split", &split_py, return_value_policy<manage_new_object>())
+        .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
+        .def_readonly("degree", &bezier_linear_variable_t::degree_)
+        .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
+        ;
+
+
+    class_<quadratic_variable_t >
+        ("cost", no_init)
+        .add_property("A", &cost_t_quad)
+        .add_property("b", &cost_t_linear)
+        .add_property("c", &cost_t_constant)
+        ;
+
     /** END variable points bezier curve**/
     /** BEGIN polynomial curve function**/
     class_<polynomial_t , bases<curve_abc_t> >("polynomial",  init<>())
@@ -560,12 +552,14 @@ namespace curves
     /** END cubic_hermite_spline **/
     /** BEGIN curve constraints**/
     class_<curve_constraints_t>
-    ("curve_constraints", init<>())
-      .add_property("init_vel", &get_init_vel, &set_init_vel)
-      .add_property("init_acc", &get_init_acc, &set_init_acc)
-      .add_property("end_vel", &get_end_vel, &set_end_vel)
-      .add_property("end_acc", &get_end_acc, &set_end_acc)
-    ;
+        ("curve_constraints", init<int>())
+            .add_property("init_vel", &get_init_vel, &set_init_vel)
+            .add_property("init_acc", &get_init_acc, &set_init_acc)
+            .add_property("init_jerk", &get_init_jerk, &set_init_jerk)
+            .add_property("end_vel", &get_end_vel, &set_end_vel)
+            .add_property("end_acc", &get_end_acc, &set_end_acc)
+            .add_property("end_jerk", &get_end_jerk, &set_end_jerk)
+        ;
     /** END curve constraints**/
     /** BEGIN bernstein polynomial**/
     class_<bernstein_t>
@@ -582,5 +576,8 @@ namespace curves
     def("hermite_from_bezier", hermite_from_curve<cubic_hermite_spline_t, bezier_t>);
     def("hermite_from_polynomial", hermite_from_curve<cubic_hermite_spline_t, polynomial_t>);
     /** END curves conversion**/
+
+    optimization::python::exposeOptimization();
+
   } // End BOOST_PYTHON_MODULE
 } // namespace curves

@@ -1,7 +1,11 @@
 SET(${PY_NAME}_BINDINGS_SOURCES
   curves_python.cpp
+  optimization_python.cpp
+  optimization_python.h
   python_variables.cpp
   python_variables.h
+  namespace.cpp
+  namespace.h
   )
 
 ADD_LIBRARY(${PY_NAME} SHARED ${${PY_NAME}_BINDINGS_SOURCES})
@@ -19,3 +23,4 @@ ENDIF(APPLE)
 INSTALL(TARGETS ${PY_NAME} DESTINATION ${PYTHON_SITELIB})
 
 ADD_PYTHON_UNIT_TEST("python-curves" "python/test/test.py" "python")
+ADD_PYTHON_UNIT_TEST("python-optimization" "python/test/optimization.py" "python")

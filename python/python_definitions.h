@@ -1,5 +1,6 @@
 #include "curves/bezier_curve.h"
 #include "curves/linear_variable.h"
+#include "curves/quadratic_variable.h"
 
 #include <vector>
 
