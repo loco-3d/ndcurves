@@ -20,7 +20,7 @@ namespace curves {
 template <typename Point>
 struct curve_constraints {
   typedef Point point_t;
-  curve_constraints(const int dim = 3)
+  curve_constraints(const size_t dim = 3)
       :init_vel (point_t::Zero(dim))
       ,init_acc (point_t::Zero(dim))
       ,init_jerk(point_t::Zero(dim))
@@ -46,7 +46,7 @@ struct curve_constraints {
     point_t end_vel;
     point_t end_acc;
     point_t end_jerk;
-    int dim_;
+    size_t dim_;
 };
 }  // namespace curves
 #endif  //_CLASS_CUBICZEROVELACC

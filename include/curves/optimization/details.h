@@ -35,8 +35,9 @@ struct problem_data
     std::size_t numControlPoints; // total number of control Points (variables + waypoints) / DIM )
     std::size_t startVariableIndex; //before that index, variables are constant
     std::size_t numStateConstraints;
-    const int dim_;
     bezier_t* bezier;
+    const int dim_;
+
 
 
     problem_data(const problem_data& other)
@@ -303,7 +304,7 @@ void initInequalityMatrix
 }
 
 template<typename Point, typename Numeric, typename In >
-quadratic_variable<Numeric> bezier_product(In PointsBegin1, In PointsEnd1, In PointsBegin2, In PointsEnd2, const int Dim)
+quadratic_variable<Numeric> bezier_product(In PointsBegin1, In PointsEnd1, In PointsBegin2, In PointsEnd2, const int /*Dim*/)
 {
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
     unsigned int nPoints1 = (unsigned int)(std::distance(PointsBegin1,PointsEnd1)),
