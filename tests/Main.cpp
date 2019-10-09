@@ -364,7 +364,7 @@ void BezierDerivativeCurveConstraintTest(bool& error) {
   point_t a(1, 2, 3);
   point_t b(2, 3, 4);
   point_t c(3, 4, 5);
-  bezier_curve_t::curve_constraints_t constraints;
+  bezier_curve_t::curve_constraints_t constraints(3);
   constraints.init_vel = point_t(-1, -1, -1);
   constraints.init_acc = point_t(-2, -2, -2);
   constraints.end_vel = point_t(-10, -10, -10);
@@ -600,7 +600,7 @@ void ExactCubicVelocityConstraintsTest(bool& error) {
   std::string errmsg(
       "Error in ExactCubicVelocityConstraintsTest (1); while checking that given wayPoints are crossed (expected / "
       "obtained)");
-  spline_constraints_t constraints;
+  spline_constraints_t constraints(3);
   constraints.end_vel = point_t(0, 0, 0);
   constraints.init_vel = point_t(0, 0, 0);
   constraints.end_acc = point_t(0, 0, 0);
@@ -1269,7 +1269,7 @@ void curveAbcDimDynamicTest(bool& error) {
   std::string errmsg(
       "Error in ExactCubicVelocityConstraintsTest (1); while checking that given wayPoints are crossed (expected / "
       "obtained)");
-  spline_constraints_test_t constraints;
+  spline_constraints_test_t constraints(3);
   constraints.end_vel = point_t(0, 0, 0);
   constraints.init_vel = point_t(0, 0, 0);
   constraints.end_acc = point_t(0, 0, 0);
@@ -1398,7 +1398,7 @@ void serializationCurvesTest(bool& error) {
     for (double i = 0; i <= 1; i = i + 0.2) {
       waypoints.push_back(std::make_pair(i, point_t(i, i, i)));
     }
-    spline_constraints_t constraints;
+    spline_constraints_t constraints(3);
     constraints.end_vel = point_t(0.1, 0, 0);
     constraints.init_vel = point_t(0.2, 0, 0);
     constraints.end_acc = point_t(0.01, 0, 0);
@@ -1575,16 +1575,16 @@ var_pair_t setup_control_points(const std::size_t degree,
                           const constraint_flag flag,
                           const point_t& initPos = point_t(),
                           const point_t& endPos  = point_t(),
-                          const constraint_linear& constraints = constraint_linear(),
+                          const constraint_linear& constraints = constraint_linear(3),
                           const double totalTime = 1.)
 {
-    problem_definition_t pDef;
+    problem_definition_t pDef(3);
     pDef.curveConstraints = constraints;
     pDef.start = initPos; pDef.end = endPos;
     pDef.flag = flag;
     pDef.totalTime = totalTime;
     pDef.degree = degree;
-    problem_data_t pData = setup_control_points<point_t, 3, double>(pDef);
+    problem_data_t pData = setup_control_points<point_t, double,true>(pDef);
     return std::make_pair(pData.variables_,
                           std::make_pair(pData.startVariableIndex, pData.numVariables));
 }
@@ -1597,14 +1597,14 @@ enum vartype
 
 bool isVar(const linear_variable_t& var)
 {
-    return var.B() == linear_variable_t::matrix_dim_t::Identity() &&
-           var.c()== linear_variable_t::point_dim_t::Zero();
+    return ! var.isZero() && var.B() == linear_variable_t::matrix_dim_t::Identity(3,3) &&
+           var.c() == linear_variable_t::point_dim_t::Zero(3);
 }
 
 bool isConstant(const linear_variable_t& var)
 {
-    return var.B() == linear_variable_t::matrix_dim_t::Zero() &&
-           var.c() != linear_variable_t::point_dim_t::Zero();
+    return var.isZero() || var.B() == linear_variable_t::matrix_dim_t::Zero(3,3) &&
+           var.c() != linear_variable_t::point_dim_t::Zero(3);
 }
 
 /*bool isMixed(const linear_variable_t& var)
@@ -1677,7 +1677,7 @@ void BezierLinearProblemsetup_control_pointsNoConstraint(bool& error){
 constraint_linear makeConstraint()
 {
     point_t init_pos = point_t(1.,1.,1.);
-    constraint_linear cl;
+    constraint_linear cl(3);
     init_pos*=2;
     cl.init_vel = init_pos;
     init_pos*=2;
@@ -1972,7 +1972,7 @@ void BezierLinearProblemsetupLoadProblem(bool& /*error*/)
 {
     problem_definition_t pDef = loadproblem(path+"test.pb");
     //problem_data_t pData = setup_control_points<point_t, 3, double>(pDef);
-    generate_problem<point_t, 3, double>(pDef, VELOCITY);
+    generate_problem<point_t,double,true>(pDef, VELOCITY);
     //initInequalityMatrix<point_t,3,double>(pDef,pData,prob);
 }
 

@@ -62,9 +62,7 @@ spline_t make_end_spline(const Point& normal, const Point& from, const Numeric o
 /// \brief Compute end velocity : along landing normal and respecting time.
 spline_constraints_t compute_required_offset_velocity_acceleration(const spline_t& end_spline,
                                                                    const Time /*time_offset*/) {
-  spline_constraints_t constraints;
-  constraints.init_acc = Point::Zero(end_spline.dim());
-  constraints.init_vel = Point::Zero(end_spline.dim());
+  spline_constraints_t constraints(end_spline.dim());
   constraints.end_acc = end_spline.derivate(end_spline.min(), 2);
   constraints.end_vel = end_spline.derivate(end_spline.min(), 1);
   return constraints;

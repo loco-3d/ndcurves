@@ -18,13 +18,13 @@ class TestProblemDefinition(unittest.TestCase):
 
      #generate problem data
      def test_problem_definition(self):
-          c = curve_constraints()
+          c = curve_constraints(3)
           c.init_vel = matrix([0., 1., 1.]).transpose()
           c.end_vel = matrix([0., 1., 1.]).transpose()
           c.init_acc = matrix([0., 1., -1.]).transpose()
           c.end_acc = matrix([0., 0., 0]).transpose()
 
-          pD = problemDefinition()
+          pD = problemDefinition(3)
           pD.start
           pD.curveConstraints = c
           pD.start = array([[0.,0.,0.]]).T

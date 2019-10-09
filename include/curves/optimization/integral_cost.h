@@ -30,25 +30,25 @@ enum integral_cost_flag{
     FIFTH        = 0x005
 };
 
-template<typename Point, int Dim, typename Numeric>
+template<typename Point, typename Numeric>
 quadratic_variable<Numeric> compute_integral_cost_internal
-                    (const problem_data<Point, Dim, Numeric>& pData, const std::size_t num_derivate)
+                    (const problem_data<Point, Numeric>& pData, const std::size_t num_derivate)
 {
-    typedef bezier_curve<Numeric, Numeric, true,linear_variable<Dim, Numeric> > bezier_t;
+    typedef bezier_curve<Numeric, Numeric, true,linear_variable<Numeric> > bezier_t;
     typedef typename bezier_t::t_point_t t_point_t;
     typedef typename t_point_t::const_iterator cit_point_t;
     bezier_t acc = pData.bezier->compute_derivate(num_derivate);
     const t_point_t& wps = acc.waypoints();
-    return bezier_product<Point, Dim, Numeric, cit_point_t>
-            (wps.begin(),wps.end(),wps.begin(),wps.end());
+    return bezier_product<Point, Numeric, cit_point_t>
+            (wps.begin(),wps.end(),wps.begin(),wps.end(), pData.dim_);
 }
 
-template<typename Point, int Dim, typename Numeric>
+template<typename Point, typename Numeric>
 quadratic_variable<Numeric> compute_integral_cost
-                    (const problem_data<Point, Dim, Numeric>& pData, const integral_cost_flag flag)
+                    (const problem_data<Point, Numeric>& pData, const integral_cost_flag flag)
 {
     std::size_t size = (std::size_t)(flag) ;
-    return compute_integral_cost_internal<Point,Dim,Numeric>(pData, size);
+    return compute_integral_cost_internal<Point,Numeric>(pData, size);
 }
 
 } // namespace optimization

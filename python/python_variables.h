@@ -22,7 +22,7 @@
 namespace curves
 {
   static const int dim = 3;
-  typedef linear_variable<dim, real> linear_variable_3_t;
+  typedef linear_variable<real> linear_variable_3_t;
   typedef quadratic_variable<real> quadratic_variable_t;
   typedef bezier_curve  <real, real, true, linear_variable_3_t> bezier_linear_variable_t;
 

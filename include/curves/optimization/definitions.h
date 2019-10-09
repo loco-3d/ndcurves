@@ -37,7 +37,7 @@ enum constraint_flag{
 
 
 
-template<typename Point, int Dim, typename Numeric>
+template<typename Point, typename Numeric>
 struct quadratic_problem
 {
     Eigen::Matrix<Numeric,Eigen::Dynamic, Eigen::Dynamic> ineqMatrix;
@@ -46,7 +46,7 @@ struct quadratic_problem
 };
 
 
-template<typename Point, int Dim, typename Numeric>
+template<typename Point, typename Numeric>
 struct problem_definition
 {
     typedef Point  point_t;
@@ -54,20 +54,21 @@ struct problem_definition
     typedef curve_constraints<point_t> curve_constraints_t;
     typedef Eigen::Matrix< num_t , Eigen::Dynamic , 1> vector_x_t;
     typedef Eigen::Matrix< num_t , Eigen::Dynamic , Eigen::Dynamic> matrix_x_t;
-    typedef Eigen::Matrix< num_t , Eigen::Dynamic , Dim> matrix_dim_t;
+    typedef Eigen::Matrix< num_t , Eigen::Dynamic , Eigen::Dynamic> matrix_dim_t;
     typedef std::vector<matrix_dim_t, Eigen::aligned_allocator<matrix_dim_t> > T_matrix_dim_t;
     typedef std::vector<vector_x_t, Eigen::aligned_allocator<vector_x_t> > T_vector_x_t;
     typedef typename T_matrix_dim_t::const_iterator CIT_matrix_dim_t;
     typedef typename T_vector_x_t::const_iterator CIT_vector_x_t;
 
-    problem_definition()
+    problem_definition(const int dim)
         : flag(NONE)
-        , start(point_t::Zero(Dim))
-        , end(point_t::Zero(Dim))
-        , curveConstraints()
+        , start(point_t::Zero(dim))
+        , end(point_t::Zero(dim))
+        , curveConstraints(dim)
         , degree(5)
         , totalTime(1.)
-        , splitTimes_(vector_x_t::Zero(0)) {}
+        , splitTimes_(vector_x_t::Zero(0))
+        , dim_(dim){}
 
 
     constraint_flag flag;
@@ -79,6 +80,7 @@ struct problem_definition
     vector_x_t splitTimes_;
     T_matrix_dim_t inequalityMatrices_; // must be of size (splitTimes_ + 1)
     T_vector_x_t    inequalityVectors_;  // must be of size (splitTimes_ + 1)
+    const int dim_;
 };
 
 } // namespace optimization

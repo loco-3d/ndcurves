@@ -14,9 +14,10 @@ namespace optimization
   namespace python
   {
     static const int dim = 3;
-    typedef problem_definition<pointX_t, dim, real> problem_definition_t;
-    typedef problem_data<pointX_t, dim, real>problem_data_t;
-    typedef quadratic_problem<pointX_t, dim, real> quadratic_problem_t;
+    static const bool safe = true;
+    typedef problem_definition<pointX_t, real> problem_definition_t;
+    typedef problem_data<pointX_t, real>problem_data_t;
+    typedef quadratic_problem<pointX_t, real> quadratic_problem_t;
 
 
     void set_constraint(problem_definition_t &pDef, const curve_constraints_t& constraints)
@@ -30,7 +31,7 @@ namespace optimization
 
     problem_data_t setup_control_points_3_t(problem_definition_t &pDef)
     {
-        problem_data_t pData = setup_control_points<pointX_t,dim,real>(pDef);
+        problem_data_t pData = setup_control_points<pointX_t,real, safe>(pDef);
         return pData;//return new problem_data_t(pData);
     }
 
@@ -64,23 +65,23 @@ namespace optimization
 
     quadratic_problem_t generate_problem_3_t(const problem_definition_t &pDef, const quadratic_variable_t & c)
     {
-        return generate_problem<pointX_t,dim,real>(pDef, c);
+        return generate_problem<pointX_t,real, true>(pDef, c);
     }
 
     quadratic_problem_t generate_integral_problem_3_t(const problem_definition_t &pDef, const integral_cost_flag c)
     {
-        return generate_problem<problem_definition_t::point_t,dim,real>(pDef, c);
+        return generate_problem<problem_definition_t::point_t,real, true>(pDef, c);
     }
 
     void set_pd_flag(problem_definition_t* pDef, const int flag)
     {
         pDef->flag = (constraint_flag)(flag);
     }
-    void set_start(problem_definition_t* pDef, const point_t &val )
+    void set_start(problem_definition_t* pDef, const pointX_t &val )
     {
         pDef->start = val;
     }
-    void set_end(problem_definition_t* pDef, const point_t &val )
+    void set_end(problem_definition_t* pDef, const pointX_t &val )
     {
         pDef->end = val;
     }
@@ -105,11 +106,11 @@ namespace optimization
     {
         return pDef->flag;
     }
-    Eigen::Vector3d get_start(const problem_definition_t* pDef)
+    Eigen::VectorXd get_start(const problem_definition_t* pDef)
     {
         return pDef->start;
     }
-    Eigen::Vector3d get_end(const problem_definition_t* pDef)
+    Eigen::VectorXd get_end(const problem_definition_t* pDef)
     {
         return pDef->end;
     }
@@ -205,7 +206,7 @@ namespace optimization
 
 
         bp::class_<problem_definition_t>
-            ("problemDefinition", bp::init<>())
+            ("problemDefinition", bp::init<int>())
                 .add_property("flag", &get_pd_flag, &set_pd_flag)
                 .add_property("start", &get_start, &set_start)
                 .add_property("end", &get_end, &set_end)

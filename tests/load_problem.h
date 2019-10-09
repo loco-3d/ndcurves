@@ -32,14 +32,14 @@ typedef std::vector<WaypointOne> T_WaypointOne;
 namespace optimization
 {
 typedef curve_constraints<point_t> constraint_linear;
-typedef linear_variable<3, double> linear_variable_t;
+typedef linear_variable<double,true> linear_variable_t;
 typedef std::vector<linear_variable_t> T_linear_variable_t;
 typedef T_linear_variable_t::const_iterator CIT_linear_variable_t;
 typedef std::pair<std::size_t, std::size_t >   pair_size_t;
 typedef std::pair<T_linear_variable_t, pair_size_t > var_pair_t;
-typedef problem_data<point_t, 3, double> problem_data_t;
-typedef problem_definition<point_t, 3, double> problem_definition_t;
-typedef quadratic_problem<point_t, 3, double> problem_t;
+typedef problem_data<point_t, double> problem_data_t;
+typedef problem_definition<point_t, double> problem_definition_t;
+typedef quadratic_problem<point_t, double> problem_t;
 
 
 #define MAXBUFSIZE  ((int) 1e6)
@@ -84,7 +84,7 @@ Eigen::MatrixXd readMatrix(std::ifstream& infile)
 
 problem_definition_t loadproblem(const std::string& filename)
 {
-    problem_definition_t pDef;
+    problem_definition_t pDef(3);
     std::ifstream in (filename.c_str());
     if (!in.is_open())
         throw std::runtime_error("cant open filename");

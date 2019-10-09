@@ -20,21 +20,22 @@ namespace curves
 {
 namespace  optimization
 {
-template<typename Point, int Dim, typename Numeric>
+template<typename Point, typename Numeric, bool Safe = true>
 struct problem_data
 {
-     problem_data() : bezier(0){}
+     problem_data(const int dim) : bezier(0), dim_(dim){}
     ~problem_data() {if (bezier) delete bezier;}
 
-    typedef linear_variable<Dim, Numeric>     var_t;
+    typedef linear_variable<Numeric>     var_t;
     typedef std::vector<var_t>     T_var_t;
-    typedef bezier_curve<Numeric, Numeric, true, linear_variable<Dim, Numeric> > bezier_t;
+    typedef bezier_curve<Numeric, Numeric, true, linear_variable<Numeric> > bezier_t;
 
     std::vector<var_t> variables_; // includes constant variables
     std::size_t numVariables; // total number of variable (/ DIM for total size)
     std::size_t numControlPoints; // total number of control Points (variables + waypoints) / DIM )
     std::size_t startVariableIndex; //before that index, variables are constant
     std::size_t numStateConstraints;
+    const int dim_;
     bezier_t* bezier;
 
 
@@ -44,6 +45,7 @@ struct problem_data
         , numControlPoints(other.numControlPoints)
         , startVariableIndex(other.startVariableIndex)
         , numStateConstraints(other.numStateConstraints)
+        , dim_(other.dim_)
     {
         const bezier_t& b = *other.bezier;
         bezier = new bezier_t(b.waypoints().begin(), b.waypoints().end(),b.T_min_, b.T_max_, b.mult_T_);
@@ -62,42 +64,43 @@ inline std::size_t num_active_constraints(const constraint_flag& flag)
     return (flag & NONE) ? iCount-1 : iCount;
 }
 
-template <int Dim, typename Numeric, typename LinearVar>
+template <typename Numeric, typename LinearVar>
 LinearVar fill_with_zeros(const LinearVar& var,const std::size_t i,
                           const std::size_t startVariableIndex,
-                          const std::size_t numVariables)
+                          const std::size_t numVariables, const int Dim)
 {
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> matrix_t;
     typename LinearVar::matrix_dim_x_t B;
     B = matrix_t::Zero(Dim,numVariables*Dim);
-    if( startVariableIndex  <= i  && i<= startVariableIndex +numVariables-1 )
+    if( startVariableIndex  <= i  && i<= startVariableIndex +numVariables-1 && var.size() >0 )
         B.block(0,Dim*(i-startVariableIndex),Dim,Dim) = var.B();
     return LinearVar (B,var.c());
 }
 
 
-template <typename Point, int Dim, typename Numeric, typename Bezier, typename LinearVar>
-Bezier* compute_linear_control_points(const problem_data<Point, Dim, Numeric>& pData,
+template <typename Point, typename Numeric, typename Bezier, typename LinearVar>
+Bezier* compute_linear_control_points(const problem_data<Point, Numeric>& pData,
         const std::vector<LinearVar>& linearVars, const Numeric totalTime)
 {
     std::vector<LinearVar> res;
     // now need to fill all this with zeros...
     std::size_t totalvar = linearVars.size();
     for (std::size_t i = 0; i < totalvar; ++i)
-        res.push_back( fill_with_zeros<Dim, Numeric, LinearVar>(linearVars[i],i,
+        res.push_back( fill_with_zeros<Numeric, LinearVar>(linearVars[i],i,
                                                                 pData.startVariableIndex,
-                                                                pData.numVariables));
+                                                                pData.numVariables,
+                                                                pData.dim_));
     return new Bezier(res.begin(),res.end(), 0., totalTime);
 }
 
 
-template<typename Point, int Dim, typename Numeric>
-problem_data<Point, Dim, Numeric> setup_control_points(const problem_definition<Point, Dim, Numeric>& pDef)
+template<typename Point,typename Numeric, bool Safe>
+problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition<Point, Numeric>& pDef)
 {
     typedef Numeric num_t;
     typedef Point   point_t;
-    typedef linear_variable<Dim, Numeric>     var_t;
-    typedef problem_data<Point, Dim, Numeric> problem_data_t;
+    typedef linear_variable<Numeric>     var_t;
+    typedef problem_data<Point, Numeric> problem_data_t;
 
     const curve_constraints<Point>& constraints = pDef.curveConstraints;
     const std::size_t& degree = pDef.degree;
@@ -109,7 +112,7 @@ problem_data<Point, Dim, Numeric> setup_control_points(const problem_definition<
         throw std::runtime_error("In setup_control_points; too many constraints for the considered degree");
 
 
-    problem_data_t problemData;
+    problem_data_t problemData(pDef.dim_);
     typename problem_data_t::T_var_t& variables_ = problemData.variables_;
 
     std::size_t numConstants = 0;
@@ -146,7 +149,7 @@ problem_data<Point, Dim, Numeric> setup_control_points(const problem_definition<
     const std::size_t first_variable_idx = i;
     // variables
     for(; i + 4< numControlPoints; ++i)
-        variables_.push_back(var_t());
+        variables_.push_back(var_t::Zero(pDef.dim_));
     //end constraints
     if(flag & END_POS)
     {
@@ -165,7 +168,7 @@ problem_data<Point, Dim, Numeric> setup_control_points(const problem_definition<
                   ++numConstants;
                   ++i;
                 }else while(i<numControlPoints -3){
-                  variables_.push_back(var_t());
+                  variables_.push_back(var_t::Zero(pDef.dim_));
                   ++i;
                 }
                 variables_.push_back(var_t(acc));
@@ -173,7 +176,7 @@ problem_data<Point, Dim, Numeric> setup_control_points(const problem_definition<
             }
             else while(i<numControlPoints-2)
             {
-                variables_.push_back(var_t());
+                variables_.push_back(var_t::Zero(pDef.dim_));
                 ++i;
             }
             variables_.push_back(var_t(vel));
@@ -183,7 +186,7 @@ problem_data<Point, Dim, Numeric> setup_control_points(const problem_definition<
         {
             while(i<numControlPoints-1)
             {
-                variables_.push_back(var_t());
+                variables_.push_back(var_t::Zero(pDef.dim_));
                 ++i;
             }
         }
@@ -192,7 +195,7 @@ problem_data<Point, Dim, Numeric> setup_control_points(const problem_definition<
     }
     // add remaining variables (only if no end_pos constraints)
     for(; i<numControlPoints; ++i)
-        variables_.push_back(var_t());
+        variables_.push_back(var_t::Zero(pDef.dim_));
 
     assert(numControlPoints > numConstants);
     assert(numControlPoints == variables_.size());
@@ -202,7 +205,7 @@ problem_data<Point, Dim, Numeric> setup_control_points(const problem_definition<
     problemData.numVariables = numControlPoints-numConstants;
     problemData.startVariableIndex =first_variable_idx;
     problemData.numStateConstraints = numActiveConstraints - problemData.numVariables;
-    problemData.bezier = compute_linear_control_points<Point, Dim, Numeric,
+    problemData.bezier = compute_linear_control_points<Point, Numeric,
                                             bezier_curve<Numeric, Numeric, true,var_t>,
                                             var_t>(problemData, variables_,  pDef.totalTime);
     return problemData;
@@ -210,11 +213,11 @@ problem_data<Point, Dim, Numeric> setup_control_points(const problem_definition<
 
 
 // TODO assumes constant are inside constraints...
-template<typename Point, int Dim, typename Numeric>
+template<typename Point, typename Numeric>
 long compute_num_ineq_control_points
-(const problem_definition<Point, Dim, Numeric>& pDef, const problem_data<Point, Dim, Numeric> & pData)
+(const problem_definition<Point, Numeric>& pDef, const problem_data<Point, Numeric> & pData)
 {
-    typedef problem_definition<Point, Dim, Numeric> problem_definition_t;
+    typedef problem_definition<Point, Numeric> problem_definition_t;
     long rows(0);
     // rows depends on each constraint size, and the number of waypoints
     for (typename problem_definition_t::CIT_vector_x_t cit = pDef.inequalityVectors_.begin();
@@ -223,12 +226,12 @@ long compute_num_ineq_control_points
     return rows;
 }
 
-template<typename Point, int Dim, typename Numeric>
+template<typename Point, typename Numeric>
 std::vector<bezier_curve<Numeric, Numeric, true,
-            linear_variable<Dim, Numeric> > >
-split(const problem_definition<Point, Dim, Numeric>& pDef, problem_data<Point, Dim, Numeric> & pData)
+            linear_variable<Numeric> > >
+split(const problem_definition<Point, Numeric>& pDef, problem_data<Point, Numeric> & pData)
 {
-    typedef linear_variable<Dim, Numeric> linear_variable_t;
+    typedef linear_variable<Numeric> linear_variable_t;
     typedef bezier_curve< Numeric, Numeric, true,linear_variable_t> bezier_t;
     typedef std::vector<bezier_t> T_bezier_t;
 
@@ -249,22 +252,23 @@ split(const problem_definition<Point, Dim, Numeric>& pDef, problem_data<Point, D
     return res;
 }
 
-template<typename Point, int Dim, typename Numeric>
+template<typename Point, typename Numeric>
 void initInequalityMatrix
-(const problem_definition<Point, Dim, Numeric>& pDef, problem_data<Point, Dim, Numeric> & pData,
-    quadratic_problem<Point, Dim, Numeric>& prob)
+(const problem_definition<Point, Numeric>& pDef, problem_data<Point, Numeric> & pData,
+    quadratic_problem<Point, Numeric>& prob)
 {
-    typedef problem_definition<Point, Dim, Numeric> problem_definition_t;
+    const int& Dim = pData.dim_;
+    typedef problem_definition<Point, Numeric> problem_definition_t;
     typedef typename problem_definition_t::matrix_x_t matrix_x_t;
     typedef typename problem_definition_t::vector_x_t vector_x_t;
-    typedef bezier_curve<Numeric, Numeric, true, linear_variable<Dim, Numeric> >  bezier_t;
+    typedef bezier_curve<Numeric, Numeric, true, linear_variable<Numeric> >  bezier_t;
     typedef std::vector<bezier_t> T_bezier_t;
     typedef typename T_bezier_t::const_iterator CIT_bezier_t;
     typedef typename bezier_t::t_point_t t_point;
     typedef typename bezier_t::t_point_t::const_iterator cit_point;
 
     long cols =  pData.numVariables * Dim;
-    long rows = compute_num_ineq_control_points<Point, Dim, Numeric>(pDef, pData);
+    long rows = compute_num_ineq_control_points<Point, Numeric>(pDef, pData);
     prob.ineqMatrix = matrix_x_t::Zero(rows,cols);
     prob.ineqVector = vector_x_t::Zero(rows);
 
@@ -272,7 +276,7 @@ void initInequalityMatrix
         return;
 
     // compute sub-bezier curves
-    T_bezier_t beziers = split<Point, Dim, Numeric>(pDef,pData);
+    T_bezier_t beziers = split<Point, Numeric>(pDef,pData);
 
     assert(pDef.inequalityMatrices_.size() == pDef.inequalityVectors_.size());
     assert(pDef.inequalityMatrices_.size() == beziers.size());
@@ -298,8 +302,8 @@ void initInequalityMatrix
     assert (rows == currentRowIdx); // we filled all the constraints
 }
 
-template<typename Point, int Dim, typename Numeric, typename In >
-quadratic_variable<Numeric> bezier_product(In PointsBegin1, In PointsEnd1, In PointsBegin2, In PointsEnd2)
+template<typename Point, typename Numeric, typename In >
+quadratic_variable<Numeric> bezier_product(In PointsBegin1, In PointsEnd1, In PointsBegin2, In PointsEnd2, const int Dim)
 {
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
     unsigned int nPoints1 = (unsigned int)(std::distance(PointsBegin1,PointsEnd1)),

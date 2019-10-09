@@ -40,7 +40,7 @@ namespace curves
   /* End Template constructor bezier */
   /* Helper converter constraintsX -> constraints 3 */
   curve_constraints3_t convertToConstraints3(curve_constraints_t constraintsX){
-    curve_constraints3_t constraints3;
+    curve_constraints3_t constraints3(3);
     constraints3.init_vel =point3_t(constraintsX.init_vel);
     constraints3.init_acc = point3_t(constraintsX.init_acc);
     constraints3.end_vel = point3_t(constraintsX.end_vel);
@@ -236,62 +236,62 @@ namespace curves
   }
 
   /// For constraints XD
-  point_t get_init_vel(const curve_constraints_t& c)
+  pointX_t get_init_vel(const curve_constraints_t& c)
   {
     return c.init_vel;
   }
 
-  point_t get_init_acc(const curve_constraints_t& c)
+  pointX_t get_init_acc(const curve_constraints_t& c)
   {
     return c.init_acc;
   }
 
-  point_t get_init_jerk(const curve_constraints_t& c)
+  pointX_t get_init_jerk(const curve_constraints_t& c)
   {
       return c.init_jerk;
   }
 
-  point_t get_end_vel(const curve_constraints_t& c)
+  pointX_t get_end_vel(const curve_constraints_t& c)
   {
     return c.end_vel;
   }
 
-  point_t get_end_acc(const curve_constraints_t& c)
+  pointX_t get_end_acc(const curve_constraints_t& c)
   {
     return c.end_acc;
   }
 
-  point_t get_end_jerk(const curve_constraints_t& c)
+  pointX_t get_end_jerk(const curve_constraints_t& c)
   {
       return c.end_jerk;
   }
 
-  void set_init_vel(curve_constraints_t& c, const point_t& val)
+  void set_init_vel(curve_constraints_t& c, const pointX_t& val)
   {
     c.init_vel = val;
   }
 
-  void set_init_acc(curve_constraints_t& c, const point_t& val)
+  void set_init_acc(curve_constraints_t& c, const pointX_t& val)
   {
     c.init_acc = val;
   }
 
-  void set_init_jerk(curve_constraints_t& c, const point_t& val)
+  void set_init_jerk(curve_constraints_t& c, const pointX_t& val)
   {
       c.init_jerk = val;
   }
 
-  void set_end_vel(curve_constraints_t& c, const point_t& val)
+  void set_end_vel(curve_constraints_t& c, const pointX_t& val)
   {
     c.end_vel = val;
   }
 
-  void set_end_acc(curve_constraints_t& c, const point_t& val)
+  void set_end_acc(curve_constraints_t& c, const pointX_t& val)
   {
     c.end_acc = val;
   }
 
-  void set_end_jerk(curve_constraints_t& c, const point_t& val)
+  void set_end_jerk(curve_constraints_t& c, const pointX_t& val)
   {
       c.end_jerk = val;
   }
@@ -552,7 +552,7 @@ namespace curves
     /** END cubic_hermite_spline **/
     /** BEGIN curve constraints**/
     class_<curve_constraints_t>
-        ("curve_constraints", init<>())
+        ("curve_constraints", init<int>())
             .add_property("init_vel", &get_init_vel, &set_init_vel)
             .add_property("init_acc", &get_init_acc, &set_init_acc)
             .add_property("init_jerk", &get_init_jerk, &set_init_jerk)

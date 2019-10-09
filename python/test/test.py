@@ -76,7 +76,7 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(norm(prim0(t) - prim1(t * 3) / 3.) < __EPS)
         self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
         # testing bezier with constraints
-        c = curve_constraints()
+        c = curve_constraints(3)
         c.init_vel = matrix([0., 1., 1.]).transpose()
         c.end_vel = matrix([0., 1., 1.]).transpose()
         c.init_acc = matrix([0., 1., -1.]).transpose()
@@ -389,7 +389,7 @@ class TestCurves(unittest.TestCase):
         # - Functions : constructor, min, max, derivate
         waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
         time_waypoints = matrix([0., 1.]).transpose()
-        c = curve_constraints()
+        c = curve_constraints(3)
         c.init_vel = matrix([0., 1., 1.]).transpose()
         c.end_vel = matrix([0., 1., 1.]).transpose()
         c.init_acc = matrix([0., 1., 1.]).transpose()
