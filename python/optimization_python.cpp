@@ -6,6 +6,7 @@
 
 #include <boost/python.hpp>
 #include <boost/python/enum.hpp>
+#include <boost/python/bases.hpp>
 
 namespace curves
 {
@@ -17,16 +18,6 @@ namespace optimization
     typedef problem_definition<pointX_t, real> problem_definition_t;
     typedef problem_data<pointX_t, real>problem_data_t;
     typedef quadratic_problem<pointX_t, real> quadratic_problem_t;
-
-
-    void set_constraint(problem_definition_t &pDef, const curve_constraints_t& constraints)
-    {
-        pDef.curveConstraints = constraints;
-    }
-    curve_constraints_t get_constraint(problem_definition_t &pDef)
-    {
-        return pDef.curveConstraints;
-    }
 
     problem_data_t setup_control_points_t(problem_definition_t &pDef)
     {
@@ -78,11 +69,11 @@ namespace optimization
     }
     void set_start(problem_definition_t* pDef, const pointX_t &val )
     {
-        pDef->start = val;
+        pDef->init_pos = val;
     }
     void set_end(problem_definition_t* pDef, const pointX_t &val )
     {
-        pDef->end = val;
+        pDef->end_pos = val;
     }
     void set_degree(problem_definition_t* pDef, const std::size_t val )
     {
@@ -107,11 +98,11 @@ namespace optimization
     }
     Eigen::VectorXd get_start(const problem_definition_t* pDef)
     {
-        return pDef->start;
+        return pDef->init_pos;
     }
     Eigen::VectorXd get_end(const problem_definition_t* pDef)
     {
-        return pDef->end;
+        return pDef->end_pos;
     }
     std::size_t get_degree(const problem_definition_t* pDef)
     {
@@ -152,6 +143,12 @@ namespace optimization
     {
         const bezier_linear_variable_t& b = *pData->bezier;
         return new bezier_linear_variable_t(b.waypoints().begin(), b.waypoints().end(),b.min(), b.max(), b.mult_T_);
+    }
+
+
+    problem_definition_t* wrapProblemDefinitionConstructor(const curve_constraints_t* c)
+    {
+      return new problem_definition_t(*c);
     }
 
     void exposeOptimization()
@@ -204,15 +201,15 @@ namespace optimization
             ;
 
 
-        bp::class_<problem_definition_t>
+        bp::class_<problem_definition_t, bp::bases<curve_constraints_t> >
             ("problem_definition", bp::init<int>())
+                .def("__init__", bp::make_constructor(&wrapProblemDefinitionConstructor))
                 .add_property("flag", &get_pd_flag, &set_pd_flag)
-                .add_property("start", &get_start, &set_start)
-                .add_property("end", &get_end, &set_end)
+                .add_property("init_pos", &get_start, &set_start)
+                .add_property("end_pos", &get_end, &set_end)
                 .add_property("degree", &get_degree, &set_degree)
                 .add_property("totalTime", &get_total_time, &set_total_time)
                 .add_property("splits", &get_split_times, &set_split_time)
-                .add_property("curveConstraints", &get_constraint, &set_constraint)
                 .def("inequality", &get_ineq_at, bp::return_value_policy<bp::manage_new_object>())
                 .def("removeInequality", &del_ineq_at)
                 .def("addInequality", &add_ineq_at)

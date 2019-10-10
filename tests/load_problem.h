@@ -94,9 +94,9 @@ problem_definition_t loadproblem(const std::string& filename)
     pDef.totalTime =degTimeFlag[1];
     pDef.flag = (constraint_flag)(degTimeFlag[2]);
     //Then startpos then empty line
-    pDef.start = readMatrix(in);
+    pDef.init_pos = readMatrix(in);
     //Then endpos then empty line
-    pDef.end = readMatrix(in);
+    pDef.end_pos = readMatrix(in);
     //Then splittimes then empty line
     pDef.splitTimes_ = readMatrix(in);
     // The inequality matrices, empty line, inequality vector as many times

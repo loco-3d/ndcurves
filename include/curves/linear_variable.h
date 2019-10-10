@@ -12,6 +12,8 @@
 
 #include "curve_abc.h"
 #include "bezier_curve.h"
+#include "serialization/archive.hpp"
+#include "serialization/eigen-matrix.hpp"
 
 #include "MathDefs.h"
 
@@ -23,7 +25,7 @@
 namespace curves
 {
 template <typename Numeric=double, bool Safe=true>
-struct linear_variable
+struct linear_variable : public serialization::Serializable
 {
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
     typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> matrix_x_t;
@@ -94,9 +96,28 @@ struct linear_variable
 
     std::size_t size() const {return zero ? 0 : std::max(B_.cols(), c_.size()) ;}
 
+    Numeric norm() const
+    {
+        return isZero() ? 0 : (B_.norm() + c_.norm());
+    }
+
     const matrix_x_t& B() const {return B_;}
     const vector_x_t& c () const {return c_;}
     bool isZero () const {return zero;}
+
+
+    // Serialization of the class
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+      if (version) {
+        // Do something depending on version ?
+      }
+      ar& boost::serialization::make_nvp("B_", B_);
+      ar& boost::serialization::make_nvp("c_", c_);
+      ar& boost::serialization::make_nvp("zero", zero);
+    }
 
 private:
     matrix_x_t B_;

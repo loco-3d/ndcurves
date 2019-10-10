@@ -22,9 +22,9 @@
 namespace curves
 {
   static const int dim = 3;
-  typedef linear_variable<real> linear_variable_3_t;
+  typedef linear_variable<real, true> linear_variable_t;
   typedef quadratic_variable<real> quadratic_variable_t;
-  typedef bezier_curve  <real, real, true, linear_variable_3_t> bezier_linear_variable_t;
+  typedef bezier_curve  <real, real, true, linear_variable_t> bezier_linear_variable_t;
 
   /*linear variable control points*/
   bezier_linear_variable_t* wrapBezierLinearConstructor(const point_list_t& matrices, const point_list_t& vectors);
@@ -44,23 +44,11 @@ namespace curves
       matrix_x_t b() {return b_;}
   };
 
-  struct matrix_vector
-  {
-      matrix_vector() {}
-      matrix_vector(const Eigen::Ref<const matrix_x_t > A, const Eigen::Ref<const Eigen::VectorXd > b)
-          : A_(A), b_(b){}
-      matrix_x_t A_;
-      Eigen::VectorXd b_;
-      matrix_x_t A() {return A_;}
-      Eigen::VectorXd b() {return b_;}
-  };
-
-
   Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> cost_t_quad(const quadratic_variable_t& p);
   Eigen::Matrix<real, Eigen::Dynamic, 1> cost_t_linear(const quadratic_variable_t & p);
   real cost_t_constant(const quadratic_variable_t & p);
 
-  matrix_pair* wayPointsToLists(const bezier_linear_variable_t& self);
+  linear_variable_t *wayPointsToLists(const bezier_linear_variable_t& self);
 
   struct LinearBezierVector
   {
@@ -73,8 +61,16 @@ namespace curves
     }
   };
 
-  // does not include end time
-  LinearBezierVector* split_py(const bezier_linear_variable_t& self,  const vectorX_t& times);
+  struct BezierVector
+  {
+    std::vector<bezier_linear_variable_t> beziers_;
+    std::size_t size() {return beziers_.size();}
+    bezier_linear_variable_t* at(std::size_t i)
+    {
+      assert (i<size());
+      return new bezier_linear_variable_t(beziers_[i]);
+    }
+  };
 
 
   /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
@@ -103,12 +99,16 @@ namespace curves
   typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
   typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, bezier_t> piecewise_bezier_curve_t;
   typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+  typedef curves::piecewise_curve <real, real, true, linear_variable_t, std::vector<linear_variable_t>, bezier_linear_variable_t> piecewise_bezier_linear_curve_t;
   typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
 
   // Bezier 3
   typedef curves::bezier_curve  <real, real, true, Eigen::Vector3d> bezier3_t;
-
   typedef curves::Bern<double> bernstein_t;
+
+  // does not include end time
+  piecewise_bezier_linear_curve_t* split_py(const bezier_linear_variable_t& self,  const vectorX_t& times);
+  piecewise_bezier_curve_t* split_bezier(const bezier_t& self,  const vectorX_t& times);
 
   /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 } //namespace curve.
@@ -123,12 +123,13 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::curve_constraints_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_polynomial_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_bezier_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_cubic_hermite_curve_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_bezier_linear_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::exact_cubic_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::matrix_x_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::pointX_t)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::linear_variable_3_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::linear_variable_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::bezier_linear_variable_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::matrix_pair)
-EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::matrix_vector)
 
 
 #endif //_VARIABLES_PYTHON_BINDINGS

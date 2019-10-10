@@ -5,28 +5,28 @@
 
 namespace curves
 {
-  std::vector<linear_variable_3_t> matrix3DFromEigenArray(const point_list_t& matrices, const point_list_t& vectors)
+  std::vector<linear_variable_t> matrix3DFromEigenArray(const point_list_t& matrices, const point_list_t& vectors)
   {
     assert(vectors.cols() * 3  == matrices.cols() ) ;
-    std::vector<linear_variable_3_t> res;
+    std::vector<linear_variable_t> res;
     for(int i =0;i<vectors.cols();++i)
     {
-      res.push_back(linear_variable_3_t(matrices.block<3,3>(0,i*3), vectors.col(i)));
+      res.push_back(linear_variable_t(matrices.block<3,3>(0,i*3), vectors.col(i)));
     }
     return res;
   }
 
-  linear_variable_3_t fillWithZeros(const linear_variable_3_t& var, const std::size_t totalvar, const std::size_t i)
+  linear_variable_t fillWithZeros(const linear_variable_t& var, const std::size_t totalvar, const std::size_t i)
   {
-      linear_variable_3_t::matrix_x_t B(linear_variable_3_t::matrix_x_t::Zero(dim,totalvar*dim));
+      linear_variable_t::matrix_x_t B(linear_variable_t::matrix_x_t::Zero(dim,totalvar*dim));
       B.block(0,dim*i,dim,dim) = var.B();
-      return linear_variable_3_t (B,var.c());
+      return linear_variable_t (B,var.c());
   }
 
-  std::vector<linear_variable_3_t> computeLinearControlPoints(const point_list_t& matrices, const point_list_t& vectors)
+  std::vector<linear_variable_t> computeLinearControlPoints(const point_list_t& matrices, const point_list_t& vectors)
   {
-      std::vector<linear_variable_3_t> res;
-      std::vector<linear_variable_3_t> variables = matrix3DFromEigenArray(matrices, vectors);
+      std::vector<linear_variable_t> res;
+      std::vector<linear_variable_t> variables = matrix3DFromEigenArray(matrices, vectors);
       // now need to fill all this with zeros...
       std::size_t totalvar = variables.size();
       for (std::size_t i = 0; i < totalvar; ++i)
@@ -37,13 +37,13 @@ namespace curves
   /*linear variable control points*/
   bezier_linear_variable_t* wrapBezierLinearConstructor(const point_list_t& matrices, const point_list_t& vectors)
   {
-      std::vector<linear_variable_3_t> asVector = computeLinearControlPoints(matrices, vectors);
+      std::vector<linear_variable_t> asVector = computeLinearControlPoints(matrices, vectors);
       return new bezier_linear_variable_t(asVector.begin(), asVector.end()) ;
   }
 
   bezier_linear_variable_t* wrapBezierLinearConstructorBounds(const point_list_t& matrices, const point_list_t& vectors, const real T_min, const real T_max)
   {
-      std::vector<linear_variable_3_t> asVector = computeLinearControlPoints(matrices, vectors);
+      std::vector<linear_variable_t> asVector = computeLinearControlPoints(matrices, vectors);
       return new bezier_linear_variable_t(asVector.begin(), asVector.end(), T_min, T_max) ;
   }
 
@@ -64,7 +64,7 @@ namespace curves
   }
 
 
-  matrix_pair*
+  linear_variable_t*
           wayPointsToLists(const bezier_linear_variable_t& self)
   {
       typedef typename bezier_linear_variable_t::t_point_t t_point;
@@ -73,31 +73,45 @@ namespace curves
       // retrieve num variables.
       std::size_t dim = wps[0].B().cols();
       Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> matrices (dim,wps.size() * 3);
-      Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> vectors =
-              Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic>::Zero(3,wps.size());
+      Eigen::Matrix<real, Eigen::Dynamic, 1> vectors =
+              Eigen::Matrix<real, Eigen::Dynamic, 1>::Zero(3*wps.size());
       int i = 0;
       for(cit_point cit = wps.begin(); cit != wps.end(); ++cit, ++i)
       {
           matrices.block(0,i*3,dim,3) = cit->B().transpose();
-          vectors.block<3,1>(0,i)   =  cit->c();
+          vectors.segment<3>(i*3,i*3+2)   =  cit->c();
       }
-      matrix_pair* res (new matrix_pair(matrices, vectors));
-      //res->res = std::make_pair(matrices, vectors);
-      return res;
+      return new linear_variable_t(matrices.transpose(), vectors.transpose());
   }
 
+
   // does not include end time
-  LinearBezierVector* split_py(const bezier_linear_variable_t& self,  const vectorX_t& times)
+  piecewise_bezier_linear_curve_t* split_py(const bezier_linear_variable_t& self,  const vectorX_t& times)
   {
-      LinearBezierVector* res (new LinearBezierVector);
+      piecewise_bezier_linear_curve_t::t_curve_t curves;
       bezier_linear_variable_t current = self;
       for(int i = 0; i < times.rows(); ++i)
       {
           std::pair<bezier_linear_variable_t, bezier_linear_variable_t> pairsplit = current.split(times[i]);
-          res->beziers_.push_back(pairsplit.first);
+          curves.push_back(pairsplit.first);
           current = pairsplit.second;
       }
-      res->beziers_.push_back(current);
-      return res;
+      curves.push_back(current);
+      return new piecewise_bezier_linear_curve_t(curves);
+  }
+
+  // does not include end time
+  piecewise_bezier_curve_t* split_bezier(const bezier_t& self,  const vectorX_t& times)
+  {
+      piecewise_bezier_curve_t::t_curve_t curves;
+      bezier_t current = self;
+      for(int i = 0; i < times.rows(); ++i)
+      {
+          std::pair<bezier_t, bezier_t> pairsplit = current.split(times[i]);
+          curves.push_back(pairsplit.first);
+          current = pairsplit.second;
+      }
+      curves.push_back(current);
+      return new piecewise_bezier_curve_t(curves);
   }
 } // namespace curves
