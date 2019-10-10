@@ -600,6 +600,11 @@ class TestCurves(unittest.TestCase):
             so3Rot.derivate(3., 1)
         with self.assertRaises(ValueError):
             so3Rot.derivate(1., 0)
+        with self.assertRaises(ValueError):
+            test = SO3Linear(init_rot,end_rot,max,min)
+        with self.assertRaises(ValueError):
+            test = SO3Linear(init_rot,end_rot,-0.1,max)
+
 
     def test_se3_curve_linear(self):
         print("test SE3 Linear")
@@ -669,6 +674,11 @@ class TestCurves(unittest.TestCase):
             se3.derivate(3., 1)
         with self.assertRaises(ValueError):
             se3.derivate(1., 0)
+        with self.assertRaises(ValueError):
+            test = SE3Curve(init_pose,end_pose,max,min)
+        with self.assertRaises(ValueError):
+            test = SE3Curve(init_pose,end_pose,-0.1,max)
+
 
     def test_se3_from_translation_curve(self):
         print("test SE3 From translation curves")
