@@ -47,7 +47,7 @@ struct quadratic_problem
 
 
 template<typename Point, typename Numeric>
-struct problem_definition
+struct problem_definition : public curve_constraints<Point>
 {
     typedef Point  point_t;
     typedef Numeric  num_t;
@@ -60,20 +60,29 @@ struct problem_definition
     typedef typename T_vector_x_t::const_iterator CIT_vector_x_t;
 
     problem_definition(const int dim)
-        : flag(NONE)
-        , start(point_t::Zero(dim))
-        , end(point_t::Zero(dim))
-        , curveConstraints(dim)
+        : curve_constraints_t(dim)
+        , flag(NONE)
+        , init_pos(point_t::Zero(dim))
+        , end_pos(point_t::Zero(dim))
         , degree(5)
         , totalTime(1.)
         , splitTimes_(vector_x_t::Zero(0))
         , dim_(dim){}
 
+    problem_definition(const curve_constraints_t& parent)
+        : curve_constraints_t(parent)
+        , flag(NONE)
+        , init_pos(point_t::Zero(parent.dim_))
+        , end_pos(point_t::Zero(parent.dim_))
+        , degree(5)
+        , totalTime(1.)
+        , splitTimes_(vector_x_t::Zero(0))
+        , dim_(parent.dim_){}
+
 
     constraint_flag flag;
-    point_t start;
-    point_t end;
-    curve_constraints_t curveConstraints;
+    point_t init_pos;
+    point_t end_pos;
     std::size_t degree;
     num_t totalTime;
     vector_x_t splitTimes_;

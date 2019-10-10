@@ -18,17 +18,14 @@ class TestProblemDefinition(unittest.TestCase):
 
      #generate problem data
      def test_problem_definition(self):
-          c = curve_constraints(3)
-          c.init_vel = matrix([0., 1., 1.]).transpose()
-          c.end_vel = matrix([0., 1., 1.]).transpose()
-          c.init_acc = matrix([0., 1., -1.]).transpose()
-          c.end_acc = matrix([0., 0., 0]).transpose()
-
           pD = problem_definition(3)
-          pD.start
-          pD.curveConstraints = c
-          pD.start = array([[0.,0.,0.]]).T
-          pD.end = array([[1.,1.,1.]]).T
+          pD.init_pos
+          pD.init_vel = matrix([0., 1., 1.]).transpose()
+          pD.end_vel = matrix([0., 1., 1.]).transpose()
+          pD.init_acc = matrix([0., 1., -1.]).transpose()
+          pD.end_acc = matrix([0., 0., 0]).transpose()
+          pD.init_pos = array([[0.,0.,0.]]).T
+          pD.end_pos = array([[1.,1.,1.]]).T
           pD.flag = constraint_flag.INIT_VEL | constraint_flag.INIT_POS
 
           quadratic_problem = generate_integral_problem(pD,integral_cost_flag.ACCELERATION)
@@ -38,8 +35,8 @@ class TestProblemDefinition(unittest.TestCase):
           bezierLinear = problem.bezier()
           bezierFixed = bezierLinear.evaluate(array([zeros(12)]).T)
           self.assertTrue(bezierFixed.nbWaypoints == pD.degree + 1)
-          self.assertTrue(norm(bezierFixed(0.) - pD.start) <= 0.001)
-          self.assertTrue(norm(bezierFixed.derivate(0.0, 1) - c.init_vel) <= 0.001)
+          self.assertTrue(norm(bezierFixed(0.) - pD.init_pos) <= 0.001)
+          self.assertTrue(norm(bezierFixed.derivate(0.0, 1) - pD.init_vel) <= 0.001)
 
 if __name__ == '__main__':
     unittest.main()

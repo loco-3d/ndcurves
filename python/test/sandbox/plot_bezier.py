@@ -13,7 +13,7 @@ def plotControlPoints2D(bez, axes = [0,1], color = "r", ax = None):
         plt.scatter(x, y, color = color)
         
 def plotBezier2D(bez, axes = [0,1], step = 100., color = "b", showControlPoints = False, ax = None):
-    points1 = np.array([(bez(i / step * bez.max())[axes[0]], bez(i / step * bez.max())[axes[1]]) for i in range(int(step)+1)])
+    points1 = np.array([(bez(i / step * (bez.max() - bez.min()) + bez.min())[axes[0]], bez(i / step * (bez.max() - bez.min()) + bez.min())[axes[1]]) for i in range(int(step)+1)])
     x = points1[:, 0]
     y = points1[:, 1]
     if ax is None:        
@@ -37,7 +37,7 @@ def plotControlPoints(bez,color = "r", ax = None):
     ax.scatter (x, y, z, color = color)
         
 def plotBezier(bez, step = 100., color = "b", linewidth = 2., showControlPoints = False, ax = None):
-    points1 = np.array([(bez(i / step * bez.max())[0], bez(i / step * bez.max())[1], bez(i / step * bez.max())[2]) for i in range(int(step)+1)])
+    points1 = np.array([(bez(i / step * (bez.max() - bez.min()) + bez.min())[0], bez(i / step * (bez.max() - bez.min()) + bez.min())[1], bez(i / step * (bez.max() - bez.min()) + bez.min())[2]) for i in range(int(step)+1)])
     x = points1[:, 0]
     y = points1[:, 1]
     z = points1[:, 2]

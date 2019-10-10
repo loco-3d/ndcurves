@@ -2,7 +2,10 @@
 #include "archive_python_binding.h"
 #include "optimization_python.h"
 
+#include <vector>
 #include <boost/python.hpp>
+
+
 
 namespace curves
 {
@@ -170,17 +173,13 @@ namespace curves
   {
     return new piecewise_bezier_curve_t(bc);
   }
-  piecewise_bezier_curve_t* wrapPiecewiseBezierCurveEmptyConstructor()
+  piecewise_bezier_linear_curve_t*  wrapPiecewiseLinearBezierCurveConstructor(const bezier_linear_variable_t& bc)
   {
-    return new piecewise_bezier_curve_t();
+      return new piecewise_bezier_linear_curve_t(bc);
   }
   piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveConstructor(const cubic_hermite_spline_t& ch)
   {
     return new piecewise_cubic_hermite_curve_t(ch);
-  }
-  piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveEmptyConstructor()
-  {
-    return new piecewise_cubic_hermite_curve_t();
   }
   static piecewise_polynomial_curve_t discretPointToPolynomialC0(const pointX_list_t& points, const time_waypoints_t& time_points){
     t_pointX_t points_list = vectorFromEigenArray<pointX_list_t,t_pointX_t>(points);
@@ -312,18 +311,13 @@ namespace curves
       c.end_jerk = val;
   }
 
-  matrix_vector* bezier_linear_variable_t_operator_call(const bezier_linear_variable_t* b, const double t)
-  {
-      bezier_linear_variable_t::point_t p = b->operator ()(t);
-      matrix_vector* res = new matrix_vector(p.B(), p.c());
-      return res;
-  }
-
   bezier_t* bezier_linear_variable_t_evaluate(const bezier_linear_variable_t* b, const pointX_t& x)
   {
      return new bezier_t(evaluateLinear<bezier_t, bezier_linear_variable_t>(*b, x));
   }
 
+  bezier_t::piecewise_bezier_curve_t (bezier_t::*splitspe)(const bezier_t::vector_x_t&) const = &bezier_t::split;
+  bezier_linear_variable_t::piecewise_bezier_curve_t (bezier_linear_variable_t::*split_py)(const bezier_linear_variable_t::vector_x_t&) const = &bezier_linear_variable_t::split;
 
   /* End wrap exact cubic spline */
 
@@ -465,6 +459,7 @@ namespace curves
       .def("waypointAtIndex", &bezier_t::waypointAtIndex)
       .def_readonly("degree", &bezier_t::degree_)
       .def_readonly("nbWaypoints", &bezier_t::size_)
+      .def("split", splitspe)
       .def("saveAsText", &bezier_t::saveAsText<bezier_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&bezier_t::loadFromText<bezier_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&bezier_t::saveAsXML<bezier_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
@@ -481,31 +476,44 @@ namespace curves
         .def_readonly("b", &matrix_pair::b)
         ;
 
-    class_<matrix_vector>
-        ("matrix_vector", no_init)
-        .def_readonly("A", &matrix_vector::A)
-        .def_readonly("b", &matrix_vector::b)
-        ;
-
     class_<LinearBezierVector>
     ("bezierVarVector", no_init)
       .def_readonly("size", &LinearBezierVector::size)
       .def("at", &LinearBezierVector::at, return_value_policy<manage_new_object>())
     ;
+
+    class_<linear_variable_t>
+    ("linear_variable", init<>())
+        .def(init<linear_variable_t::vector_x_t>())
+        .def(init<linear_variable_t::matrix_x_t>())
+        .def(init<linear_variable_t::matrix_x_t, linear_variable_t::vector_x_t>())
+        .def(init<linear_variable_t::matrix_x_t, linear_variable_t::vector_x_t>())
+        .def("__call__", &linear_variable_t::operator())
+        .def(self += linear_variable_t())
+        .def(self -= linear_variable_t())
+        .def(self *= double())
+        .def(self /= double())
+        .def("B", &linear_variable_t::B, return_value_policy<copy_const_reference>())
+        .def("c", &linear_variable_t::c, return_value_policy<copy_const_reference>())
+        .def("size", &linear_variable_t::size)
+        .def("isZero", &linear_variable_t::isZero)
+        .def("norm", &linear_variable_t::norm)
+        ;
+
     class_<bezier_linear_variable_t>
-    ("bezierVar", no_init)
+    ("bezier_linear_variable", no_init)
         .def("__init__", make_constructor(&wrapBezierLinearConstructor))
         .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
         .def("min", &bezier_linear_variable_t::min)
         .def("max", &bezier_linear_variable_t::max)
-        //.def("__call__", &bezier_linear_control_t::operator())
-        .def("__call__", &bezier_linear_variable_t_operator_call, bp::return_value_policy<bp::manage_new_object>())
+        .def("__call__", &bezier_linear_variable_t::operator())
         .def("evaluate", &bezier_linear_variable_t_evaluate, bp::return_value_policy<bp::manage_new_object>())
         .def("derivate", &bezier_linear_variable_t::derivate)
         .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
         .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
-        .def("split", &split_py, return_value_policy<manage_new_object>())
+        .def("split", split_py)
         .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
+        .def("waypointAtIndex", &bezier_linear_variable_t::waypointAtIndex)
         .def_readonly("degree", &bezier_linear_variable_t::degree_)
         .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
         ;
@@ -584,6 +592,9 @@ namespace curves
            "Convert a piecewise polynomial curve to to a piecewise bezier curve")
       .def("convert_piecewise_curve_to_cubic_hermite", &piecewise_polynomial_curve_t::convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>,
            "Convert a piecewise polynomial curve to to a piecewise cubic hermite spline")
+      .def("curve_at_index",&piecewise_polynomial_curve_t::curve_at_index, return_value_policy<copy_const_reference>())
+      .def("curve_at_time" ,&piecewise_polynomial_curve_t::curve_at_time , return_value_policy<copy_const_reference>())
+      .def("num_curves" ,&piecewise_polynomial_curve_t::num_curves)
       .def("saveAsText", &piecewise_polynomial_curve_t::saveAsText<piecewise_polynomial_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&piecewise_polynomial_curve_t::loadFromText<piecewise_polynomial_curve_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&piecewise_polynomial_curve_t::saveAsXML<piecewise_polynomial_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
@@ -602,6 +613,9 @@ namespace curves
            "Convert a piecewise bezier curve to to a piecewise polynomial curve")
       .def("convert_piecewise_curve_to_cubic_hermite", &piecewise_bezier_curve_t::convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>,
            "Convert a piecewise bezier curve to to a piecewise cubic hermite spline")
+      .def("curve_at_index",&piecewise_bezier_curve_t::curve_at_index, return_value_policy<copy_const_reference>())
+      .def("curve_at_time" ,&piecewise_bezier_curve_t::curve_at_time , return_value_policy<copy_const_reference>())
+      .def("num_curves" ,&piecewise_bezier_curve_t::num_curves)
       .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&piecewise_bezier_curve_t::saveAsXML<piecewise_bezier_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
@@ -619,12 +633,31 @@ namespace curves
            "Convert a piecewise cubic hermite spline to to a piecewise polynomial curve")
       .def("convert_piecewise_curve_to_bezier", &piecewise_cubic_hermite_curve_t::convert_piecewise_curve_to_bezier<bezier_t>,
            "Convert a piecewise cubic hermite spline to to a piecewise bezier curve")
+      .def("curve_at_index",&piecewise_cubic_hermite_curve_t::curve_at_index, return_value_policy<copy_const_reference>())
+      .def("curve_at_time" ,&piecewise_cubic_hermite_curve_t::curve_at_time , return_value_policy<copy_const_reference>())
+      .def("num_curves" ,&piecewise_cubic_hermite_curve_t::num_curves)
       .def("saveAsText", &piecewise_cubic_hermite_curve_t::saveAsText<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&piecewise_cubic_hermite_curve_t::loadFromText<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&piecewise_cubic_hermite_curve_t::saveAsXML<piecewise_cubic_hermite_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
       .def("loadFromXML",&piecewise_cubic_hermite_curve_t::loadFromXML<piecewise_cubic_hermite_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
       .def("saveAsBinary",&piecewise_cubic_hermite_curve_t::saveAsBinary<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
       .def("loadFromBinary",&piecewise_cubic_hermite_curve_t::loadFromBinary<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
+      ;
+
+    class_<piecewise_bezier_linear_curve_t, bases<curve_abc_t> >
+    ("piecewise_bezier_linear_curve_t", init<>())
+      .def("__init__", make_constructor(&wrapPiecewiseLinearBezierCurveConstructor))
+      .def("add_curve", &piecewise_bezier_linear_curve_t::add_curve)
+      .def("is_continuous", &piecewise_bezier_linear_curve_t::is_continuous,"Check if the curve is continuous at the given order.")
+      .def("curve_at_index",&piecewise_bezier_linear_curve_t::curve_at_index, return_value_policy<copy_const_reference>())
+      .def("curve_at_time" ,&piecewise_bezier_linear_curve_t::curve_at_time , return_value_policy<copy_const_reference>())
+      .def("num_curves" ,&piecewise_bezier_linear_curve_t::num_curves)
+      .def("saveAsText", &piecewise_bezier_linear_curve_t::saveAsText<piecewise_bezier_linear_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
+      .def("loadFromText",&piecewise_bezier_linear_curve_t::loadFromText<piecewise_bezier_linear_curve_t>,bp::args("filename"),"Loads *this from a text file.")
+      .def("saveAsXML",&piecewise_bezier_linear_curve_t::saveAsXML<piecewise_bezier_linear_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+      .def("loadFromXML",&piecewise_bezier_linear_curve_t::loadFromXML<piecewise_bezier_linear_curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+      .def("saveAsBinary",&piecewise_bezier_linear_curve_t::saveAsBinary<piecewise_bezier_linear_curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
+      .def("loadFromBinary",&piecewise_bezier_linear_curve_t::loadFromBinary<piecewise_bezier_linear_curve_t>,bp::args("filename"),"Loads *this from a binary file.")
       ;
 
     /** END piecewise curve function **/
