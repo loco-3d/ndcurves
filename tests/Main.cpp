@@ -487,6 +487,11 @@ void cubicConversionTest(bool& error) {
   // std::cout<<"bezier to hermite \n";
   cubic_hermite_spline_t chs2 = hermite_from_curve<cubic_hermite_spline_t, bezier_curve_t>(bc0);
   CompareCurves<bezier_curve_t, cubic_hermite_spline_t>(bc0, chs2, errMsg1, error);
+
+  // Test : compute derivative of bezier => Convert it to polynomial
+  bezier_curve_t bc_der = bc0.compute_derivate(1);
+  polynomial_t pol_test = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc_der);
+  CompareCurves<bezier_curve_t, polynomial_t>(bc_der, pol_test, errMsg1, error);
 }
 
 /*Exact Cubic Function tests*/
@@ -1308,39 +1313,95 @@ void curveAbcDimDynamicTest(bool& error) {
   }
 }
 
-void piecewiseCurveConversionFromDiscretePointsTest(bool& error) {
-  std::string errMsg("piecewiseCurveConversionFromDiscretePointsTest, Error, value on curve is wrong : ");
-  point_t p0(0., 0., 0.);
-  point_t p1(1., 2., 3.);
-  point_t p2(4., 4., 4.);
-  point_t p3(10., 10., 10.);
-  point_t p_test_0_5 = (p0 + p1) / 2.0;
+void PiecewisePolynomialCurveFromDiscretePoints(bool& error)
+{
+  std::string errMsg("PiecewisePolynomialCurveFromDiscretePoints, Error, value on curve is wrong : ");
+  point_t p0(0.,0.,0.);
+  point_t p1(1.,2.,3.);
+  point_t p2(4.,4.,4.);
+  point_t p3(10.,10.,10.);
+  point_t d0(1.,1.,1.);
+  point_t d1(2.,2.,2.);
+  point_t d2(3.,3.,3.);
+  point_t d3(5.,5.,5.);
+  point_t dd0(1.5,1.5,1.5);
+  point_t dd1(2.5,2.5,2.5);
+  point_t dd2(3.5,3.5,3.5);
+  point_t dd3(5.5,5.5,5.5);
+  double t0 = 1.0;
+  double t1 = 1.5;
+  double t2 = 3.0;
+  double t3 = 10.0;
   t_pointX_t points;
   points.push_back(p0);
   points.push_back(p1);
   points.push_back(p2);
   points.push_back(p3);
-  double T_min = 1.0;
-  double T_max = 3.0;
-  double timestep = (T_max - T_min) / double(points.size() - 1);
+  t_pointX_t points_derivative;
+  points_derivative.push_back(d0);
+  points_derivative.push_back(d1);
+  points_derivative.push_back(d2);
+  points_derivative.push_back(d3);
+  t_pointX_t points_second_derivative;
+  points_second_derivative.push_back(dd0);
+  points_second_derivative.push_back(dd1);
+  points_second_derivative.push_back(dd2);
+  points_second_derivative.push_back(dd3);
   std::vector<double> time_points;
-  for(size_t i=0;i<points.size();++i)
-    time_points.push_back(T_min+double(i)*timestep);
-  piecewise_polynomial_curve_t ppc =
-      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points,time_points);
-  if (!ppc.is_continuous(0))
+  time_points.push_back(t0);
+  time_points.push_back(t1);
+  time_points.push_back(t2);
+  time_points.push_back(t3);
+
+  // Piecewise polynomial curve C0 => Linear interpolation between points
+  piecewise_polynomial_curve_t ppc_C0 =  piecewise_polynomial_curve_t::
+    convert_discrete_points_to_polynomial<polynomial_t>(points,time_points);
+  if (!ppc_C0.is_continuous(0))
   {
-    std::cout<<"piecewiseCurveConversionFromDiscretePointsTest, Error, piecewise curve is not C0"<<std::endl;
+    std::cout<<"PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C0"<<std::endl;
     error = true;
-    std::cout << "Error in piecewiseCurveConversionFromDiscretePointsTest" << std::endl;
+  }
+  for (std::size_t i=0; i<points.size(); i++)
+  {
+    ComparePoints(points[i], ppc_C0(time_points[i]), errMsg, error);
+  }
+  point_t pos_between_po_and_p1( (p1[0]+p0[0])/2.0, (p1[1]+p0[1])/2.0,(p1[2]+p0[2])/2.0 );
+  double time_between_po_and_p1 = (t0+t1)/2.0;
+  ComparePoints(pos_between_po_and_p1, ppc_C0(time_between_po_and_p1), errMsg, error);
+
+  // Piecewise polynomial curve C1
+  piecewise_polynomial_curve_t ppc_C1 =  piecewise_polynomial_curve_t::
+    convert_discrete_points_to_polynomial<polynomial_t>(points,
+                                                        points_derivative,
+                                                        time_points);
+  if (!ppc_C1.is_continuous(1))
+  {
+    std::cout<<"PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1"<<std::endl;
+    error = true;
+  }
+  for (std::size_t i=0; i<points.size(); i++)
+  {
+    ComparePoints(points[i], ppc_C1(time_points[i]), errMsg, error);
+    ComparePoints(points_derivative[i], ppc_C1.derivate(time_points[i],1), errMsg, error);
   }
 
-  ComparePoints(p0, ppc(T_min), errMsg, error);
-  ComparePoints(p_test_0_5, ppc(T_min + timestep / 2.0), errMsg, error);
-  ComparePoints(p1, ppc(T_min + timestep), errMsg, error);
-  ComparePoints(p2, ppc(T_min + 2 * timestep), errMsg, error);
-  ComparePoints(p3, ppc(T_max), errMsg, error);
-  // TODO : test with C1 and C2
+  // Piecewise polynomial curve C2
+  piecewise_polynomial_curve_t ppc_C2 =  piecewise_polynomial_curve_t::
+    convert_discrete_points_to_polynomial<polynomial_t>(points,
+                                                        points_derivative,
+                                                        points_second_derivative,
+                                                        time_points);
+  if (!ppc_C2.is_continuous(2))
+  {
+    std::cout<<"PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1"<<std::endl;
+    error = true;
+  }
+  for (std::size_t i=0; i<points.size(); i++)
+  {
+    ComparePoints(points[i], ppc_C2(time_points[i]), errMsg, error);
+    ComparePoints(points_derivative[i], ppc_C2.derivate(time_points[i],1), errMsg, error);
+    ComparePoints(points_second_derivative[i], ppc_C2.derivate(time_points[i],2), errMsg, error);
+  }
 }
 
 void serializationCurvesTest(bool& error) {
@@ -2209,7 +2270,7 @@ int main(int /*argc*/, char** /*argv[]*/)
   BezierSplitCurve(error);
   CubicHermitePairsPositionDerivativeTest(error);
   piecewiseCurveTest(error);
-  piecewiseCurveConversionFromDiscretePointsTest(error);
+  PiecewisePolynomialCurveFromDiscretePoints(error);
   toPolynomialConversionTest(error);
   cubicConversionTest(error);
   curveAbcDimDynamicTest(error);
