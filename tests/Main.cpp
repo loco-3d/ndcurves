@@ -8,9 +8,9 @@
 #include "curves/cubic_hermite_spline.h"
 #include "curves/piecewise_curve.h"
 #include "curves/optimization/definitions.h"
-
 #include "load_problem.h"
-
+#include "curves/so3_linear.h"
+#include "curves/se3_curve.h"
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -18,39 +18,47 @@
 
 using namespace std;
 
-namespace curves {
+namespace curves
+{
 typedef Eigen::Vector3d point_t;
 typedef Eigen::VectorXd pointX_t;
-typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_pointX_t;
-typedef curve_abc<double, double, true, pointX_t> curve_abc_t;
-typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
-typedef exact_cubic<double, double, true, pointX_t> exact_cubic_t;
-typedef exact_cubic<double, double, true, Eigen::Matrix<double, 1, 1> > exact_cubic_one;
-typedef bezier_curve<double, double, true, pointX_t> bezier_curve_t;
-typedef cubic_hermite_spline<double, double, true, pointX_t> cubic_hermite_spline_t;
-typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
-typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
-typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t>
-    piecewise_cubic_hermite_curve_t;
+typedef Eigen::Quaternion<double> quaternion_t;
+typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
+typedef curve_abc  <double, double, true, pointX_t> curve_abc_t;
+typedef polynomial  <double, double, true, pointX_t, t_pointX_t> polynomial_t;
+typedef exact_cubic <double, double, true, pointX_t> exact_cubic_t;
+typedef exact_cubic   <double, double, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
+typedef bezier_curve  <double, double, true, pointX_t> bezier_curve_t;
+typedef cubic_hermite_spline <double, double, true, pointX_t> cubic_hermite_spline_t;
+typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
+typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
+typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
 typedef exact_cubic_t::spline_constraints spline_constraints_t;
 typedef std::pair<double, pointX_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
-typedef Eigen::Matrix<double, 1, 1> point_one;
+typedef Eigen::Matrix<double,1,1> point_one;
 typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
 typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
-typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
+typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
+typedef SO3Linear  <double, double, true> SO3Linear_t;
+typedef SE3Curve  <double, double, true> SE3Curve_t;
+typedef Eigen::Transform<double,3,Eigen::Affine> transform_t;
 
 const double margin = 1e-3;
-bool QuasiEqual(const double a, const double b) { return std::fabs(a - b) < margin; }
-bool QuasiEqual(const point_t a, const point_t b) {
+bool QuasiEqual(const double a, const double b)
+{
+  return std::fabs(a-b)<margin;
+}
+bool QuasiEqual(const point_t a, const point_t b)
+{
   bool equal = true;
-  for (size_t i = 0; i < 3; ++i) {
-    equal = equal && QuasiEqual(a[i], b[i]);
+  for(size_t i = 0 ; i < 3 ; ++i){
+    equal = equal && QuasiEqual(a[i],b[i]);
   }
   return equal;
 }
-}  // End namespace curves
+} // End namespace curves
 
 using namespace curves;
 
@@ -1316,11 +1324,13 @@ void piecewiseCurveConversionFromDiscretePointsTest(bool& error) {
   double T_max = 3.0;
   double timestep = (T_max - T_min) / double(points.size() - 1);
   std::vector<double> time_points;
-  for (size_t i = 0; i < points.size(); ++i) time_points.push_back(T_min + (double)(i) * timestep);
+  for(size_t i=0;i<points.size();++i)
+    time_points.push_back(T_min+double(i)*timestep);
   piecewise_polynomial_curve_t ppc =
-      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points, time_points);
-  if (!ppc.is_continuous(0)) {
-    std::cout << "piecewiseCurveConversionFromDiscretePointsTest, Error, piecewise curve is not C0" << std::endl;
+      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points,time_points);
+  if (!ppc.is_continuous(0))
+  {
+    std::cout<<"piecewiseCurveConversionFromDiscretePointsTest, Error, piecewise curve is not C0"<<std::endl;
     error = true;
     std::cout << "Error in piecewiseCurveConversionFromDiscretePointsTest" << std::endl;
   }
@@ -1561,6 +1571,204 @@ void polynomialFromBoundaryConditions(bool& error) {
   } catch (invalid_argument e) {
   }
 }
+
+
+void so3LinearTest(bool& error){
+  quaternion_t q0(1,0,0,0);
+  quaternion_t q1(0.7071,0.7071,0,0);
+  SO3Linear_t so3Traj(q0,q1,0.,1.5);
+
+  if(so3Traj.min() != 0 ){
+    error=true;
+    std::cout<<"Min bound not respected"<<std::endl;
+  }
+  if(so3Traj.max() != 1.5 ){
+    error=true;
+    std::cout<<"Max bound not respected"<<std::endl;
+  }
+  if(!so3Traj.computeAsQuaternion(0).isApprox(q0)){
+    error=true;
+    std::cout<<"evaluate at t=0 is not the init quaternion"<<std::endl;
+  }
+  if(so3Traj(0) != q0.toRotationMatrix()){
+    error=true;
+    std::cout<<"evaluate at t=0 is not the init rotation"<<std::endl;
+  }
+  if(!so3Traj.computeAsQuaternion(1.5).isApprox(q1)){
+    error=true;
+    std::cout<<"evaluate at t=max is not the final quaternion"<<std::endl;
+  }
+  if(so3Traj(1.5) != q1.toRotationMatrix()){
+    error=true;
+    std::cout<<"evaluate at t=max is not the final rotation"<<std::endl;
+  }
+  //check derivatives :
+  if(so3Traj.derivate(0,1) != so3Traj.derivate(1.,1)){
+    error=true;
+    std::cout<<"first order derivative should be constant."<<std::endl;
+  }
+  if(so3Traj.derivate(0,2) != point_t::Zero(3)){
+    error=true;
+    std::cout<<"second order derivative should be null"<<std::endl;
+  }
+  // check if errors are correctly raised :
+  try{
+    so3Traj(-0.1);
+    error = true;
+    std::cout<<"SO3Linear: calling () with t < tmin should raise an invalid_argument error"<<std::endl;
+  }catch(std::invalid_argument e){  }
+  try{
+    so3Traj(1.7);
+    error = true;
+    std::cout<<"SO3Linear: calling () with t > tmin should raise an invalid_argument error"<<std::endl;
+  }catch(std::invalid_argument e){  }
+  try{
+    so3Traj.derivate(0,0);
+    error = true;
+    std::cout<<"SO3Linear: calling derivate with order = 0 should raise an invalid_argument error"<<std::endl;
+  }catch(std::invalid_argument e){  }
+}
+
+void se3CurveTest(bool& error){
+  quaternion_t q0(1,0,0,0);
+  quaternion_t q1(0.,1.,0,0);
+  pointX_t p0 = point_t(1.,1.5,-2.);
+  pointX_t p1 = point_t(3.,0,1.);
+
+  double min = 0.5,max = 2.;
+
+  // constructor from init/end position/rotation : automatically create a linear interpolation for position and slerp for rotation
+  SE3Curve_t cLinear(p0,p1,q0,q1,min,max);
+  transform_t transformInit = cLinear(min);
+  transform_t transformEnd = cLinear(max);
+  transform_t transformMid = cLinear((max+min)/2.);
+  if(! transformInit.translation().isApprox(p0)){
+    error=true;
+    std::cout<<"Init position of the curve is not correct."<<std::endl;
+  }
+  if(! transformInit.rotation().isApprox(q0.toRotationMatrix())){
+    error=true;
+    std::cout<<"Init rotation of the curve is not correct."<<std::endl;
+  }
+  if(! transformEnd.translation().isApprox(p1)){
+    error=true;
+    std::cout<<"End position of the curve is not correct."<<std::endl;
+  }
+  if(! transformEnd.rotation().isApprox(q1.toRotationMatrix())){
+    error=true;
+    std::cout<<"End rotation of the curve is not correct."<<std::endl;
+  }
+  quaternion_t qMid(sqrt(2.)/2.,sqrt(2.)/2.,0,0);
+  point_t pMid = (p0+p1)/2.;
+  if(! transformMid.translation().isApprox(pMid)){
+    error=true;
+    std::cout<<"Mid position of the curve is not correct."<<std::endl;
+  }
+  if(! transformMid.rotation().isApprox(qMid.toRotationMatrix())){
+    error=true;
+    std::cout<<"Mid rotation of the curve is not correct."<<std::endl;
+  }
+
+  //constructor with specific translation curve
+  SE3Curve_t cBezier;
+  { // inner scope to check what happen when translation_bezier is out of scope
+    point_t a(1,2,3);
+    point_t b(2,3,4);
+    point_t c(3,4,5);
+    point_t d(3,6,7);
+    std::vector<point_t> params;
+    params.push_back(a);params.push_back(b);params.push_back(c);params.push_back(d);
+    bezier_curve_t* translation_bezier = new bezier_curve_t(params.begin(),params.end(),min,max);
+    cBezier = SE3Curve_t(translation_bezier,q0.toRotationMatrix(),q1.toRotationMatrix());
+    p0 = (*translation_bezier)(min);
+    p1 = (*translation_bezier)(max);
+    pMid = (*translation_bezier)((max+min)/2.);
+    if(cBezier.min() != min){
+      error = true;
+      std::cout<<"SE3 constructor from translation bezier do not respect the min time interval"<<std::endl;
+    }
+    if(cBezier.max() != max){
+      error = true;
+      std::cout<<"SE3 constructor from translation bezier do not respect the max time interval"<<std::endl;
+    }
+    double t = min;
+    while(t<max){
+      if(!cBezier(t).translation().isApprox((*translation_bezier)(t))){
+        error = true;
+        std::cout<<"SE3 translation is not equivalent to bezier for t = "<<t<<std::endl;
+      }
+      t += 0.1;
+    }
+    // check the derivatives for translation:
+    for(size_t i = 1 ; i < 3 ; i++){
+      t = min;
+      while(t<max){
+        if(!cBezier.derivate(t,i).head<3>().isApprox(translation_bezier->derivate(t,i))){
+          error = true;
+          std::cout<<"SE3 curve derivative is not equivalent to bezier for t = "<<t<<" and order = "<<i<<std::endl;
+        }
+        t += 0.1;
+      }
+    }
+  }
+  // check the rotation
+  transformInit = cBezier(min);
+  transformEnd = cBezier(max);
+  transformMid = cBezier((max+min)/2.);
+  if(! transformInit.translation().isApprox(p0)){
+    error=true;
+    std::cout<<"Init position of the curve is not correct."<<std::endl;
+  }
+  if(! transformInit.rotation().isApprox(q0.toRotationMatrix())){
+    error=true;
+    std::cout<<"Init rotation of the curve is not correct."<<std::endl;
+  }
+  if(! transformEnd.translation().isApprox(p1)){
+    error=true;
+    std::cout<<"End position of the curve is not correct."<<std::endl;
+  }
+  if(! transformEnd.rotation().isApprox(q1.toRotationMatrix())){
+    error=true;
+    std::cout<<"End rotation of the curve is not correct."<<std::endl;
+  }
+  if(! transformMid.translation().isApprox(pMid)){
+    error=true;
+    std::cout<<"Mid position of the curve is not correct."<<std::endl;
+  }
+  if(! transformMid.rotation().isApprox(qMid.toRotationMatrix())){
+    error=true;
+    std::cout<<"Mid rotation of the curve is not correct."<<std::endl;
+  }
+
+  //check derivatives for rotation:
+  if(cBezier.derivate(min,1).tail<3>() != cBezier.derivate(max,1).tail<3>()){
+    error=true;
+    std::cout<<"SE3 curve : first order derivative for rotation should be constant."<<std::endl;
+  }
+  if(cBezier.derivate(min,2).tail<3>() != point_t::Zero(3)){
+    error=true;
+    std::cout<<"SE3 curve : second order derivative for rotation should be null"<<std::endl;
+  }
+
+  // check if errors are correctly raised
+  try{
+    cBezier(0.1);
+    error = true;
+    std::cout<<"SE3 curve: calling () with t < tmin should raise an invalid_argument error"<<std::endl;
+  }catch(std::invalid_argument e){  }
+  try{
+    cBezier(2.3);
+    error = true;
+    std::cout<<"SE3 curve: calling () with t > tmin should raise an invalid_argument error"<<std::endl;
+  }catch(std::invalid_argument e){  }
+  try{
+    cBezier.derivate(0.6,0);
+    error = true;
+    std::cout<<"SE3 curve: calling derivate with order = 0 should raise an invalid_argument error"<<std::endl;
+  }catch(std::invalid_argument e){  }
+}
+
+
 
 /**
  * @brief BezierLinearProblemTests test the generation of linear / quadratic problems with
@@ -1976,7 +2184,9 @@ void BezierLinearProblemsetupLoadProblem(bool& /*error*/)
     //initInequalityMatrix<point_t,3,double>(pDef,pData,prob);
 }
 
-int main(int /*argc*/, char** /*argv[]*/) {
+
+int main(int /*argc*/, char** /*argv[]*/)
+{
   std::cout << "performing tests... \n";
   bool error = false;
   PolynomialCubicFunctionTest(error);
@@ -2005,12 +2215,17 @@ int main(int /*argc*/, char** /*argv[]*/) {
   curveAbcDimDynamicTest(error);
   serializationCurvesTest(error);
   polynomialFromBoundaryConditions(error);
+  so3LinearTest(error);
+  se3CurveTest(error);
   BezierLinearProblemsetup_control_pointsNoConstraint(error);
   BezierLinearProblemsetup_control_pointsVarCombinatorialInit(error);
   BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(error);
   BezierLinearProblemsetup_control_pointsVarCombinatorialMix(error);
   BezierLinearProblemsetupLoadProblem(error);
-  if (error) {
+
+
+  if(error)
+  {
     std::cout << "There were some errors\n";
     return -1;
   } else {

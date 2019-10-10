@@ -2,13 +2,13 @@
 #include "archive_python_binding.h"
 #include "optimization_python.h"
 
-#include <vector>
+#include <boost/python.hpp>
 
 namespace curves
 {
   using namespace boost::python;
 
-  /* base wrap of curve_abc : must implement all pure virtual method of curve_abc */
+  /* base wrap of curve_abc and others parent abstract class: must implement all pure virtual methods */
   struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t>
   {
       point_t operator()(const real) { return this->get_override("operator()")();}
@@ -18,7 +18,6 @@ namespace curves
       real max() { return this->get_override("max")();}
 
   };
-
   struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t>
   {
       point_t operator()(const real) { return this->get_override("operator()")();}
@@ -28,7 +27,15 @@ namespace curves
       real max() { return this->get_override("max")();}
 
   };
+  struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t>
+  {
+      point_t operator()(const real) { return this->get_override("operator()")();}
+      point_t derivate(const real, const std::size_t) { return this->get_override("derivate")();}
+      std::size_t dim() { return this->get_override("dim")();}
+      real min() { return this->get_override("min")();}
+      real max() { return this->get_override("max")();}
 
+  };
   /* end base wrap of curve_abc */
 
   /* Template constructor bezier */
@@ -320,6 +327,65 @@ namespace curves
 
   /* End wrap exact cubic spline */
 
+  /* Wrap SO3Linear */
+  SO3Linear_t* wrapSO3LinearConstructorFromQuaternion(const quaternion_t& init_rot, const quaternion_t& end_rot, const real min, const real max)
+  {
+    return new SO3Linear_t(init_rot,end_rot, min, max);
+  }
+
+  SO3Linear_t* wrapSO3LinearConstructorFromMatrix(const matrix3_t& init_rot, const matrix3_t& end_rot, const real min, const real max)
+  {
+    return new SO3Linear_t(init_rot,end_rot, min, max);
+  }
+
+  /* End wrap SO3Linear */
+
+  /* Wrap SE3Curves */
+  SE3Curve_t* wrapSE3CurveFromTransform(const matrix4_t& init_pose, const matrix4_t& end_pose, const real min, const real max)
+  {
+    return new SE3Curve_t(transform_t(init_pose),transform_t(end_pose), min, max);
+  }
+
+
+  SE3Curve_t* wrapSE3CurveFromBezier3Translation(bezier3_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
+  {
+    bezier_t* translation = new bezier_t(translation_curve.waypoints().begin(),translation_curve.waypoints().end(),translation_curve.min(),translation_curve.max());
+    return new SE3Curve_t(translation,init_rot,end_rot);
+  }
+
+  SE3Curve_t* wrapSE3CurveFromTranslation(curve_abc_t& translation_curve,const matrix3_t& init_rot, const matrix3_t& end_rot )
+  {
+    return new SE3Curve_t(&translation_curve,init_rot,end_rot);
+  }
+
+
+  SE3Curve_t* wrapSE3CurveFromTwoCurves(curve_abc_t& translation_curve, curve_rotation_t& rotation_curve)
+  {
+    return new SE3Curve_t(&translation_curve,&rotation_curve);
+  }
+
+
+  matrix4_t se3Return(const SE3Curve_t& curve, const real t)
+  {
+    return curve(t).matrix();
+  }
+
+  pointX_t se3ReturnDerivate(const SE3Curve_t& curve, const real t, const std::size_t order)
+  {
+    return curve.derivate(t,order);
+  }
+
+  matrix3_t se3returnRotation(const SE3Curve_t& curve, const real t)
+  {
+    return curve(t).rotation();
+  }
+
+  pointX_t se3returnTranslation(const SE3Curve_t& curve, const real t)
+  {
+    return pointX_t(curve(t).translation());
+  }
+
+  /* End wrap SE3Curves */
 
   // TO DO : Replace all load and save function for serialization in class by using 
   //         SerializableVisitor in archive_python_binding.
@@ -331,6 +397,10 @@ namespace curves
     eigenpy::enableEigenPySpecific<pointX_list_t,pointX_list_t>();
     eigenpy::enableEigenPySpecific<coeff_t,coeff_t>();
     eigenpy::enableEigenPySpecific<point_list_t,point_list_t>();
+    eigenpy::enableEigenPySpecific<matrix3_t,matrix3_t>();
+    eigenpy::enableEigenPySpecific<matrix4_t,matrix4_t>();
+    //eigenpy::enableEigenPySpecific<quaternion_t,quaternion_t>();
+    eigenpy::exposeQuaternion();
     /*eigenpy::exposeAngleAxis();
     eigenpy::exposeQuaternion();*/
     /** END eigenpy init**/
@@ -356,6 +426,13 @@ namespace curves
         .def("dim", pure_virtual(&curve_3_t::dim),"Get the dimension of the curve.")
         ;
 
+    class_<CurveRotationWrapper,boost::noncopyable, bases<curve_abc_t> >("curve_rotation",no_init)
+        .def("__call__", pure_virtual(&curve_rotation_t::operator()),"Evaluate the curve at the given time.",args("self","t"))
+        .def("derivate", pure_virtual(&curve_rotation_t::derivate),"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
+        .def("min", pure_virtual(&curve_rotation_t::min), "Get the LOWER bound on interval definition of the curve.")
+        .def("max", pure_virtual(&curve_rotation_t::max),"Get the HIGHER bound on interval definition of the curve.")
+        .def("dim", pure_virtual(&curve_rotation_t::dim),"Get the dimension of the curve.")
+        ;
 
     /** BEGIN bezier3 curve**/
     class_<bezier3_t, bases<curve_3_t> >("bezier3", init<>())
@@ -598,6 +675,69 @@ namespace curves
     ;
     /** END bernstein polynomial**/
 
+    /** BEGIN SO3 Linear**/
+    class_<SO3Linear_t, bases<curve_rotation_t> >("SO3Linear",  init<>())
+      .def("__init__", make_constructor(&wrapSO3LinearConstructorFromMatrix,default_call_policies(),args("init_rotation","end_rotation","min","max")),"Create a SO3 Linear curve between two rotations, defined for t \in [min,max]."
+     " The input rotations are expressed as 3x3 matrix.")
+      .def("__init__", make_constructor(&wrapSO3LinearConstructorFromQuaternion,default_call_policies(),args("init_rotation","end_rotation","min","max")),"Create a SO3 Linear curve between two rotations, defined for t \in [min,max]."
+         " The input rotations are expressed as Quaternions.")
+      .def("computeAsQuaternion",&SO3Linear_t::computeAsQuaternion,"Output the quaternion of the rotation at the given time. This rotation is obtained by a Spherical Linear Interpolation between the initial and final rotation.")
+//      .def("saveAsText", &SO3Linear_t::saveAsText<SO3Linear_t>,bp::args("filename"),"Saves *this inside a text file.")
+//      .def("loadFromText",&SO3Linear_t::loadFromText<SO3Linear_t>,bp::args("filename"),"Loads *this from a text file.")
+//      .def("saveAsXML",&SO3Linear_t::saveAsXML<SO3Linear_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+//      .def("loadFromXML",&SO3Linear_t::loadFromXML<SO3Linear_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+//      .def("saveAsBinary",&SO3Linear_t::saveAsBinary<SO3Linear_t>,bp::args("filename"),"Saves *this inside a binary file.")
+//      .def("loadFromBinary",&SO3Linear_t::loadFromBinary<SO3Linear_t>,bp::args("filename"),"Loads *this from a binary file.")
+       ;
+
+    /** END  SO3 Linear**/
+    /** BEGIN SE3 Curve**/
+    class_<SE3Curve_t, bases<curve_abc_t> >("SE3Curve",  init<>())
+      .def("__init__",
+       make_constructor(&wrapSE3CurveFromTransform,default_call_policies(),
+       args("init_transform","end_transform","min","max")),
+     "Create a SE3 curve between two transform, defined for t \in [min,max]."
+     " Using linear interpolation for translation and slerp for rotation between init and end."
+     " The input transform are expressed as 4x4 matrix.")
+      .def("__init__",
+       make_constructor(&wrapSE3CurveFromTwoCurves,
+       default_call_policies(),
+       args("translation_curve","rotation_curve")),
+       "Create a SE3 curve from a translation curve and a rotation one."
+        "The translation curve should be of dimension 3 and the rotation one should output 3x3 matrix"
+        "Both curves should have the same time bounds.")
+        .def("__init__",
+         make_constructor(&wrapSE3CurveFromTranslation,
+         default_call_policies(),
+         args("translation_curve","init_rotation","end_rotation")),
+         "Create a SE3 curve from a translation curve and two rotation"
+          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
+          "The orientation along the SE3Curve will be a slerp between the two given rotations."
+          "The orientations should be represented as 3x3 rotation matrix")
+        .def("__init__",
+         make_constructor(&wrapSE3CurveFromBezier3Translation,
+         default_call_policies(),
+         args("translation_curve","init_rotation","end_rotation")),
+         "Create a SE3 curve from a translation curve and two rotation"
+          "The translation curve should be of dimension 3, the time definition of the SE3curve will the same as the translation curve."
+          "The orientation along the SE3Curve will be a slerp between the two given rotations."
+          "The orientations should be represented as 3x3 rotation matrix")
+        .def("rotation", &se3returnRotation,"Output the rotation (as a 3x3 matrix) at the given time.",args("self","time"))
+        .def("translation", &se3returnTranslation,"Output the rotation (as a vector 3) at the given time.",args("self","time"))
+        .def("__call__", &se3Return,"Evaluate the curve at the given time.",args("self","t"))
+        .def("derivate", &se3ReturnDerivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
+        .def("min", &SE3Curve_t::min, "Get the LOWER bound on interval definition of the curve.")
+        .def("max", &SE3Curve_t::max,"Get the HIGHER bound on interval definition of the curve.")
+        .def("dim", &SE3Curve_t::dim,"Get the dimension of the curve.")
+//        .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>,bp::args("filename"),"Saves *this inside a text file.")
+//        .def("loadFromText",&SE3Curve_t::loadFromText<SE3Curve_t>,bp::args("filename"),"Loads *this from a text file.")
+//        .def("saveAsXML",&SE3Curve_t::saveAsXML<SE3Curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
+//        .def("loadFromXML",&SE3Curve_t::loadFromXML<SE3Curve_t>,bp::args("filename","tag_name"),"Loads *this from a XML file.")
+//        .def("saveAsBinary",&SE3Curve_t::saveAsBinary<SE3Curve_t>,bp::args("filename"),"Saves *this inside a binary file.")
+//        .def("loadFromBinary",&SE3Curve_t::loadFromBinary<SE3Curve_t>,bp::args("filename"),"Loads *this from a binary file.")
+        ;
+
+    /** END SE3 Curve**/
     /** BEGIN curves conversion**/
     def("polynomial_from_bezier", polynomial_from_curve<polynomial_t,bezier_t>);
     def("polynomial_from_hermite", polynomial_from_curve<polynomial_t,cubic_hermite_spline_t>);

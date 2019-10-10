@@ -7,10 +7,12 @@
 #include "curves/bernstein.h"
 #include "curves/cubic_hermite_spline.h"
 #include "curves/piecewise_curve.h"
-
+#include "curves/so3_linear.h"
+#include "curves/se3_curve.h"
 #include "python_definitions.h"
 #include <eigenpy/memory.hpp>
 #include <eigenpy/eigenpy.hpp>
+#include <eigenpy/geometry.hpp>
 #include <Eigen/Dense>
 
 #include <vector>
@@ -93,21 +95,27 @@ namespace curves
   typedef curves::curve_constraints<point3_t> curve_constraints3_t;
   typedef std::pair<real, pointX_t> waypoint_t;
   typedef std::vector<waypoint_t> t_waypoint_t;
+  typedef Eigen::Matrix<real,3, 3> matrix3_t;
+  typedef Eigen::Matrix<real,4, 4> matrix4_t;
+  typedef Eigen::Transform<double,3,Eigen::Affine> transform_t;
+  typedef Eigen::Quaternion<real> quaternion_t;
+
 
   // Curves
   typedef curve_abc<real, real, true, pointX_t> curve_abc_t; // generic class of curve
   typedef curve_abc<real, real, true, point3_t> curve_3_t; // generic class of curve of size 3
+  typedef curve_abc<real, real, true, matrix3_t,point3_t> curve_rotation_t; // templated class used for the rotation (return dimension are fixed)
   typedef curves::cubic_hermite_spline <real, real, true, pointX_t> cubic_hermite_spline_t;
   typedef curves::bezier_curve  <real, real, true, pointX_t> bezier_t;
+  typedef curves::bezier_curve  <real, real, true, Eigen::Vector3d> bezier3_t;
   typedef curves::polynomial  <real, real, true, pointX_t, t_pointX_t> polynomial_t;
   typedef polynomial_t::coeff_t coeff_t;
   typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
   typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, bezier_t> piecewise_bezier_curve_t;
   typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
   typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
-
-  // Bezier 3
-  typedef curves::bezier_curve  <real, real, true, Eigen::Vector3d> bezier3_t;
+  typedef SO3Linear  <double, double, true> SO3Linear_t;
+  typedef SE3Curve  <double, double, true> SE3Curve_t;
 
   typedef curves::Bern<double> bernstein_t;
 
@@ -125,6 +133,8 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_polynomial_curv
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_bezier_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_cubic_hermite_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::exact_cubic_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::SO3Linear_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::SE3Curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::matrix_x_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::pointX_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::linear_variable_3_t)

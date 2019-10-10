@@ -1,15 +1,16 @@
 import os
 import unittest
 
-from numpy import array_equal, isclose, matrix, random
+from math import sqrt
+import numpy as np
+from numpy import matrix, array_equal, isclose,random,zeros
 from numpy.linalg import norm
-
 
 from curves import (bezier_from_hermite, bezier_from_polynomial, hermite_from_polynomial,
                     hermite_from_bezier, polynomial_from_hermite, polynomial_from_bezier,
                     cubic_hermite_spline, curve_constraints, exact_cubic, bezier,bezier3,
                     piecewise_bezier_curve, piecewise_cubic_hermite_curve,
-                    piecewise_polynomial_curve, polynomial
+                    piecewise_polynomial_curve, polynomial,SO3Linear,SE3Curve,Quaternion
                     )
 
 class TestCurves(unittest.TestCase):
@@ -555,6 +556,270 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(norm(pc_bc(0.3) - pc(0.3)) < __EPS)
         return
 
+
+    def test_so3_linear(self):
+        print "test SO3 Linear"
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        min = 0.2
+        max = 1.5
+
+        so3Rot = SO3Linear(init_rot,end_rot,min,max)
+        so3Quat = SO3Linear(init_quat,end_quat,min,max)
+        self.assertEqual(so3Rot.min(),min)
+        self.assertEqual(so3Rot.max(),max)
+        self.assertEqual(so3Quat.min(),min)
+        self.assertEqual(so3Quat.max(),max)
+        self.assertTrue(isclose(so3Rot(min),init_rot).all())
+        self.assertTrue(isclose(so3Rot(max),end_rot).all())
+        self.assertTrue(isclose(so3Quat(min),init_rot).all())
+        self.assertTrue(isclose(so3Quat(max),end_rot).all())
+        self.assertEqual(so3Rot.computeAsQuaternion(min),init_quat)
+        self.assertEqual(so3Rot.computeAsQuaternion(max),end_quat)
+        self.assertEqual(so3Quat.computeAsQuaternion(min),init_quat)
+        self.assertEqual(so3Quat.computeAsQuaternion(max),end_quat)
+        t = min
+        while t < max:
+          self.assertTrue(isclose(so3Quat(t),so3Rot(t)).all())
+          t += 0.01
+        # check the derivatives :
+        vel =  matrix([[ 1.20830487],[ 0.  ], [ 0. ]])
+        zeros3 = matrix(zeros(3)).T
+        t = min
+        while t < max:
+          self.assertTrue(isclose(so3Quat.derivate(t,1),vel).all())
+          self.assertTrue(isclose(so3Rot.derivate(t,1),vel).all())
+          t += 0.01
+        for i in range(2,5):
+          t = min
+          while t < max:
+            self.assertTrue(isclose(so3Quat.derivate(t,i),zeros3).all())
+            self.assertTrue(isclose(so3Rot.derivate(t,i),zeros3).all())
+            t += 0.01
+
+        # check that errors are correctly raised when necessary :
+        try:
+          so3Rot(0.)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot(-0.1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot(3)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot.derivate(0,1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot.derivate(3.,1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          so3Rot.derivate(1.,0)
+          self.assertTrue(False)
+        except:
+          pass
+
+    def test_se3_curve_linear(self):
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        init_translation = matrix([1,1.2,-0.6]).T
+        end_translation = matrix([2.3,0,0.9]).T
+        init_pose = matrix(np.identity(4))
+        end_pose = matrix(np.identity(4))
+        init_pose[:3,:3] = init_rot
+        end_pose[:3,:3] = end_rot
+        init_pose[:3,3] = init_translation
+        end_pose[:3,3] = end_translation
+        min = 0.2
+        max = 1.5
+        se3 = SE3Curve(init_pose,end_pose,min,max)
+        p = se3(min)
+        self.assertEqual(p.shape[0],4)
+        self.assertEqual(p.shape[1],4)
+        self.assertEqual(se3.min(),min)
+        self.assertEqual(se3.max(),max)
+        self.assertTrue(isclose(se3(min),init_pose).all())
+        self.assertTrue(isclose(se3(max),end_pose).all())
+        self.assertTrue(isclose(se3.rotation(min),init_rot).all())
+        self.assertTrue(isclose(se3.translation(min),init_translation).all())
+        self.assertTrue(isclose(se3.rotation(max),end_rot).all())
+        self.assertTrue(isclose(se3.translation(max),end_translation).all())
+        # check value of derivative (should be constant here)
+        d = se3.derivate(min,1)
+        self.assertEqual(d.shape[0],6)
+        self.assertEqual(d.shape[1],1)
+        self.assertTrue(isclose(d[0:3],((end_translation-init_translation)/(max-min))).all())
+        self.assertTrue(isclose(d[3],1.20830487))
+        self.assertTrue(isclose(d[4:6],matrix([0,0]).T).all())
+        self.assertTrue(isclose(d,se3.derivate(0.5,1)).all())
+        self.assertTrue(isclose(d,se3.derivate(max,1)).all())
+        self.assertTrue(isclose(se3.derivate(min,2),matrix(zeros(6)).T).all())
+        self.assertTrue(isclose(se3.derivate(min,3),matrix(zeros(6)).T).all())
+        # check that errors are correctly raised when necessary :
+        try:
+          se3(0.)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3(-0.1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3(3)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3.derivate(0,1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3.derivate(3.,1)
+          self.assertTrue(False)
+        except:
+          pass
+        try:
+          se3.derivate(1.,0)
+          self.assertTrue(False)
+        except:
+          pass
+
+    def test_se3_from_translation_curve(self):
+      init_quat = Quaternion.Identity()
+      end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
+      init_rot = init_quat.matrix()
+      end_rot = end_quat.matrix()
+      waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+      min = 0.2
+      max = 1.5
+      translation = bezier(waypoints,min,max)
+      # test with bezier
+      se3 = SE3Curve(translation,init_rot,end_rot)
+      self.assertEqual(se3.min(),min)
+      self.assertEqual(se3.max(),max)
+      pmin = se3(min)
+      pmax = se3(max)
+      self.assertTrue(isclose(pmin[:3,:3],init_rot).all())
+      self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
+      self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
+      self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
+      t = min
+      while t < max:
+        self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
+        self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
+        t += 0.02
+
+      # test with bezier3
+      translation = bezier3(waypoints,min,max)
+      se3 = SE3Curve(translation,init_rot,end_rot)
+      self.assertEqual(se3.min(),min)
+      self.assertEqual(se3.max(),max)
+      pmin = se3(min)
+      pmax = se3(max)
+      self.assertTrue(isclose(pmin[:3,:3],init_rot).all())
+      self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
+      self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
+      self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
+      t = min
+      while t < max:
+        self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
+        self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
+        t += 0.02
+
+      # test with piecewise polynomial
+      N = 7
+      points = matrix(random.rand(3,N))
+      points_derivative = matrix(random.rand(3,N))
+      points_second_derivative = matrix(random.rand(3,N))
+      time_points = matrix(random.rand(N)).T
+      time_points.sort(0)
+      translation =piecewise_polynomial_curve.FromPointsList(points,time_points)
+      min = translation.min()
+      max = translation.max()
+      se3 = SE3Curve(translation,init_rot,end_rot)
+      self.assertEqual(se3.min(),min)
+      self.assertEqual(se3.max(),max)
+      pmin = se3(min)
+      pmax = se3(max)
+      self.assertTrue(isclose(pmin[:3,:3],init_rot).all())
+      self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
+      self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
+      self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
+      t = min
+      while t < max:
+        self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
+        self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
+        t += 0.02
+
+    def test_se3_from_curves(self):
+      init_quat = Quaternion.Identity()
+      end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
+      init_rot = init_quat.matrix()
+      end_rot = end_quat.matrix()
+      waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+      min = 0.2
+      max = 1.5
+      translation = bezier(waypoints,min,max)
+      rotation = SO3Linear(init_rot,end_rot,min,max)
+      se3 = SE3Curve(translation,rotation)
+      self.assertEqual(se3.min(),min)
+      self.assertEqual(se3.max(),max)
+      pmin = se3(min)
+      pmax = se3(max)
+      self.assertTrue(isclose(pmin[:3,:3],init_rot).all())
+      self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
+      self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
+      self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
+      t = min
+      while t < max:
+        self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
+        self.assertTrue(isclose(se3(t)[0:3,0:3],rotation(t)).all())
+        self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
+        self.assertTrue(isclose(se3.derivate(t,1)[3:6],rotation.derivate(t,1)).all())
+        t += 0.02
+
+      # check if errors are correctly raised :
+      rotation = SO3Linear(init_rot,end_rot,min+0.2,max)
+      try:
+        se3 = SE3Curve(translation,rotation)
+        self.assertTrue(False)
+      except:
+        pass
+      rotation = SO3Linear(init_rot,end_rot,min-0.1,max)
+      try:
+        se3 = SE3Curve(translation,rotation)
+        self.assertTrue(False)
+      except:
+        pass
+      rotation = SO3Linear(init_rot,end_rot,min,max+0.5)
+      try:
+        se3 = SE3Curve(translation,rotation)
+        self.assertTrue(False)
+      except:
+        pass
+      rotation = SO3Linear(init_rot,end_rot,min,max-0.1)
+      try:
+        se3 = SE3Curve(translation,rotation)
+        self.assertTrue(False)
+      except:
+        pass
 
 if __name__ == '__main__':
     unittest.main()
