@@ -99,16 +99,12 @@ namespace curves
   typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
   typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, bezier_t> piecewise_bezier_curve_t;
   typedef curves::piecewise_curve <real, real, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
-  typedef curves::piecewise_curve <real, real, true, linear_variable_t, std::vector<linear_variable_t>, bezier_linear_variable_t> piecewise_bezier_linear_curve_t;
+  typedef curves::piecewise_curve <real, real, true, linear_variable_t, std::vector<linear_variable_t, Eigen::aligned_allocator<linear_variable_t> >, bezier_linear_variable_t> piecewise_bezier_linear_curve_t;
   typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
 
   // Bezier 3
   typedef curves::bezier_curve  <real, real, true, Eigen::Vector3d> bezier3_t;
   typedef curves::Bern<double> bernstein_t;
-
-  // does not include end time
-  piecewise_bezier_linear_curve_t* split_py(const bezier_linear_variable_t& self,  const vectorX_t& times);
-  piecewise_bezier_curve_t* split_bezier(const bezier_t& self,  const vectorX_t& times);
 
   /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 } //namespace curve.

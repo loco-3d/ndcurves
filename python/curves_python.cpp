@@ -297,6 +297,8 @@ namespace curves
      return new bezier_t(evaluateLinear<bezier_t, bezier_linear_variable_t>(*b, x));
   }
 
+  bezier_t::piecewise_bezier_curve_t (bezier_t::*splitspe)(const bezier_t::vector_x_t&) const = &bezier_t::split;
+  bezier_linear_variable_t::piecewise_bezier_curve_t (bezier_linear_variable_t::*split_py)(const bezier_linear_variable_t::vector_x_t&) const = &bezier_linear_variable_t::split;
 
   /* End wrap exact cubic spline */
 
@@ -359,7 +361,7 @@ namespace curves
       .def("waypointAtIndex", &bezier_t::waypointAtIndex)
       .def_readonly("degree", &bezier_t::degree_)
       .def_readonly("nbWaypoints", &bezier_t::size_)
-      .def("split", &split_bezier, return_value_policy<manage_new_object>())
+      .def("split", splitspe)
       .def("saveAsText", &bezier_t::saveAsText<bezier_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&bezier_t::loadFromText<bezier_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&bezier_t::saveAsXML<bezier_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
@@ -411,7 +413,7 @@ namespace curves
         .def("derivate", &bezier_linear_variable_t::derivate)
         .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
         .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
-        .def("split", &split_py, return_value_policy<manage_new_object>())
+        .def("split", split_py)
         .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
         .def("waypointAtIndex", &bezier_linear_variable_t::waypointAtIndex)
         .def_readonly("degree", &bezier_linear_variable_t::degree_)

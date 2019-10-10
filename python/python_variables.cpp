@@ -84,34 +84,4 @@ namespace curves
       return new linear_variable_t(matrices.transpose(), vectors.transpose());
   }
 
-
-  // does not include end time
-  piecewise_bezier_linear_curve_t* split_py(const bezier_linear_variable_t& self,  const vectorX_t& times)
-  {
-      piecewise_bezier_linear_curve_t::t_curve_t curves;
-      bezier_linear_variable_t current = self;
-      for(int i = 0; i < times.rows(); ++i)
-      {
-          std::pair<bezier_linear_variable_t, bezier_linear_variable_t> pairsplit = current.split(times[i]);
-          curves.push_back(pairsplit.first);
-          current = pairsplit.second;
-      }
-      curves.push_back(current);
-      return new piecewise_bezier_linear_curve_t(curves);
-  }
-
-  // does not include end time
-  piecewise_bezier_curve_t* split_bezier(const bezier_t& self,  const vectorX_t& times)
-  {
-      piecewise_bezier_curve_t::t_curve_t curves;
-      bezier_t current = self;
-      for(int i = 0; i < times.rows(); ++i)
-      {
-          std::pair<bezier_t, bezier_t> pairsplit = current.split(times[i]);
-          curves.push_back(pairsplit.first);
-          current = pairsplit.second;
-      }
-      curves.push_back(current);
-      return new piecewise_bezier_curve_t(curves);
-  }
 } // namespace curves
