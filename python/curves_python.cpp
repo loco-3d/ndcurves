@@ -4,9 +4,16 @@
 
 #include <boost/python.hpp>
 
+#ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+#include <pinocchio/spatial/se3.hpp>
+#include <pinocchio/spatial/motion.hpp>
+#endif //CURVES_WITH_PINOCCHIO_SUPPORT
+
 namespace curves
 {
   using namespace boost::python;
+
+
 
   /* base wrap of curve_abc and others parent abstract class: must implement all pure virtual methods */
   struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t>
@@ -364,7 +371,26 @@ namespace curves
     return new SE3Curve_t(&translation_curve,&rotation_curve);
   }
 
+  #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+  typedef pinocchio::SE3Tpl<real,0> SE3_t;
+  typedef pinocchio::MotionTpl<real,0> Motion_t;
 
+  SE3Curve_t* wrapSE3CurveFromSE3Pinocchio(const SE3_t& init_pose, const SE3_t& end_pose, const real min, const real max)
+  {
+
+    return new SE3Curve_t(transform_t(init_pose.toHomogeneousMatrix()),transform_t(end_pose.toHomogeneousMatrix()), min, max);
+  }
+
+  SE3_t se3Return(const SE3Curve_t& curve, const real t)
+  {
+    return SE3_t(curve(t).matrix());
+  }
+
+  Motion_t se3ReturnDerivate(const SE3Curve_t& curve, const real t, const std::size_t order)
+  {
+    return Motion_t(curve.derivate(t,order));
+  }
+  #else
   matrix4_t se3Return(const SE3Curve_t& curve, const real t)
   {
     return curve(t).matrix();
@@ -374,6 +400,8 @@ namespace curves
   {
     return curve.derivate(t,order);
   }
+  #endif //CURVES_WITH_PINOCCHIO_SUPPORT
+
 
   matrix3_t se3returnRotation(const SE3Curve_t& curve, const real t)
   {
@@ -729,6 +757,13 @@ namespace curves
         .def("min", &SE3Curve_t::min, "Get the LOWER bound on interval definition of the curve.")
         .def("max", &SE3Curve_t::max,"Get the HIGHER bound on interval definition of the curve.")
         .def("dim", &SE3Curve_t::dim,"Get the dimension of the curve.")
+        #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+        .def("__init__",
+         make_constructor(&wrapSE3CurveFromSE3Pinocchio,default_call_policies(),
+         args("init_SE3","end_SE3","min","max")),
+       "Create a SE3 curve between two SE3 objects from Pinocchio, defined for t \in [min,max]."
+       " Using linear interpolation for translation and slerp for rotation between init and end.")
+        #endif //CURVES_WITH_PINOCCHIO_SUPPORT
 //        .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>,bp::args("filename"),"Saves *this inside a text file.")
 //        .def("loadFromText",&SE3Curve_t::loadFromText<SE3Curve_t>,bp::args("filename"),"Loads *this from a text file.")
 //        .def("saveAsXML",&SE3Curve_t::saveAsXML<SE3Curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
