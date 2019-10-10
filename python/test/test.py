@@ -443,6 +443,24 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(norm(a(0.3) - a_bc(0.3)) < __EPS)
         return
 
+    def test_conversion_piecewise_curves(self):
+        __EPS = 1e-6
+        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        a = bezier(waypoints, 0., 1.)
+        b = bezier(waypoints, 1., 2.)
+        pc = piecewise_bezier_curve(a)
+        pc.add_curve(b)
+        # Convert to piecewise polynomial
+        pc_pol = pc.convert_piecewise_curve_to_polynomial()
+        self.assertTrue(norm(pc_pol(0.3) - pc(0.3)) < __EPS)
+        # Convert to piecewise cubic hermite
+        pc_chs = pc.convert_piecewise_curve_to_cubic_hermite()
+        self.assertTrue(norm(pc_chs(0.3) - pc(0.3)) < __EPS)
+        # Convert to piecewise bezier
+        pc_bc = pc_chs.convert_piecewise_curve_to_bezier()
+        self.assertTrue(norm(pc_bc(0.3) - pc(0.3)) < __EPS)
+        return
+
 
 if __name__ == '__main__':
     unittest.main()

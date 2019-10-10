@@ -485,6 +485,10 @@ namespace curves
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous,"Check if the curve is continuous at the given order.")
+      .def("convert_piecewise_curve_to_bezier", &piecewise_polynomial_curve_t::convert_piecewise_curve_to_bezier<bezier_t>,
+           "Convert a piecewise polynomial curve to to a piecewise bezier curve")
+      .def("convert_piecewise_curve_to_cubic_hermite", &piecewise_polynomial_curve_t::convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>,
+           "Convert a piecewise polynomial curve to to a piecewise cubic hermite spline")
       .def("saveAsText", &piecewise_polynomial_curve_t::saveAsText<piecewise_polynomial_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&piecewise_polynomial_curve_t::loadFromText<piecewise_polynomial_curve_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&piecewise_polynomial_curve_t::saveAsXML<piecewise_polynomial_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
@@ -499,6 +503,10 @@ namespace curves
       .def("compute_derivate",&piecewise_polynomial_curve_t::compute_derivate,"Return a piecewise_polynomial curve which is the derivate of this.",args("self","order"))
       .def("add_curve", &piecewise_bezier_curve_t::add_curve)
       .def("is_continuous", &piecewise_bezier_curve_t::is_continuous)
+      .def("convert_piecewise_curve_to_polynomial", &piecewise_bezier_curve_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
+           "Convert a piecewise bezier curve to to a piecewise polynomial curve")
+      .def("convert_piecewise_curve_to_cubic_hermite", &piecewise_bezier_curve_t::convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>,
+           "Convert a piecewise bezier curve to to a piecewise cubic hermite spline")
       .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&piecewise_bezier_curve_t::saveAsXML<piecewise_bezier_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
@@ -512,6 +520,10 @@ namespace curves
       .def("__init__", make_constructor(&wrapPiecewiseCubicHermiteCurveConstructor))
       .def("add_curve", &piecewise_cubic_hermite_curve_t::add_curve)
       .def("is_continuous", &piecewise_cubic_hermite_curve_t::is_continuous)
+      .def("convert_piecewise_curve_to_polynomial", &piecewise_cubic_hermite_curve_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
+           "Convert a piecewise cubic hermite spline to to a piecewise polynomial curve")
+      .def("convert_piecewise_curve_to_bezier", &piecewise_cubic_hermite_curve_t::convert_piecewise_curve_to_bezier<bezier_t>,
+           "Convert a piecewise cubic hermite spline to to a piecewise bezier curve")
       .def("saveAsText", &piecewise_cubic_hermite_curve_t::saveAsText<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Saves *this inside a text file.")
       .def("loadFromText",&piecewise_cubic_hermite_curve_t::loadFromText<piecewise_cubic_hermite_curve_t>,bp::args("filename"),"Loads *this from a text file.")
       .def("saveAsXML",&piecewise_cubic_hermite_curve_t::saveAsXML<piecewise_cubic_hermite_curve_t>,bp::args("filename","tag_name"),"Saves *this inside a XML file.")
