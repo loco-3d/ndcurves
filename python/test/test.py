@@ -6,12 +6,15 @@ import numpy as np
 from numpy import matrix, array_equal, isclose,random,zeros
 from numpy.linalg import norm
 
-from curves import (bezier_from_hermite, bezier_from_polynomial, hermite_from_polynomial,
+from curves import (CURVES_WITH_PINOCCHIO_SUPPORT,bezier_from_hermite, bezier_from_polynomial, hermite_from_polynomial,
                     hermite_from_bezier, polynomial_from_hermite, polynomial_from_bezier,
                     cubic_hermite_spline, curve_constraints, exact_cubic, bezier,bezier3,
                     piecewise_bezier_curve, piecewise_cubic_hermite_curve,
                     piecewise_polynomial_curve, polynomial,SO3Linear,SE3Curve,Quaternion
                     )
+
+if CURVES_WITH_PINOCCHIO_SUPPORT:
+  from pinocchio import SE3,Motion
 
 class TestCurves(unittest.TestCase):
     # def print_str(self, inStr):
@@ -632,6 +635,7 @@ class TestCurves(unittest.TestCase):
           pass
 
     def test_se3_curve_linear(self):
+        print "test SE3 Linear"
         init_quat = Quaternion.Identity()
         end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
         init_rot = init_quat.matrix()
@@ -648,18 +652,34 @@ class TestCurves(unittest.TestCase):
         max = 1.5
         se3 = SE3Curve(init_pose,end_pose,min,max)
         p = se3(min)
+        if CURVES_WITH_PINOCCHIO_SUPPORT:
+          self.assertTrue(isinstance(se3.evaluateAsSE3(min),SE3))
+          init_pose = SE3(init_pose)
+          end_pose = SE3(end_pose)
+          self.assertTrue(se3.evaluateAsSE3(min).isApprox(init_pose,1e-6))
+          self.assertTrue(se3.evaluateAsSE3(max).isApprox(end_pose,1e-6))
         self.assertEqual(p.shape[0],4)
         self.assertEqual(p.shape[1],4)
-        self.assertEqual(se3.min(),min)
-        self.assertEqual(se3.max(),max)
         self.assertTrue(isclose(se3(min),init_pose).all())
         self.assertTrue(isclose(se3(max),end_pose).all())
+        self.assertEqual(se3.min(),min)
+        self.assertEqual(se3.max(),max)
         self.assertTrue(isclose(se3.rotation(min),init_rot).all())
         self.assertTrue(isclose(se3.translation(min),init_translation).all())
         self.assertTrue(isclose(se3.rotation(max),end_rot).all())
         self.assertTrue(isclose(se3.translation(max),end_translation).all())
         # check value of derivative (should be constant here)
         d = se3.derivate(min,1)
+        if CURVES_WITH_PINOCCHIO_SUPPORT:
+          motion = se3.derivateAsMotion(min,1)
+          self.assertTrue(isinstance(motion,Motion))
+          self.assertTrue(isclose(motion.linear,((end_translation-init_translation)/(max-min))).all())
+          self.assertTrue(isclose(motion.angular[0],1.20830487))
+          self.assertTrue(isclose(motion.angular[1:3],matrix([0,0]).T).all())
+          self.assertTrue(d.isApprox(se3.derivateAsMotion(0.5,1),1e-6))
+          self.assertTrue(d.isApprox(se3.derivateAsMotion(max,1),1e-6))
+          self.assertTrue(se3.derivateAsMotion(min,2).isApprox(Motion.Zero(),1e-6))
+          self.assertTrue(se3.derivateAsMotion(min,3).isApprox(Motion.Zero(),1e-6))
         self.assertEqual(d.shape[0],6)
         self.assertEqual(d.shape[1],1)
         self.assertTrue(isclose(d[0:3],((end_translation-init_translation)/(max-min))).all())
@@ -702,6 +722,7 @@ class TestCurves(unittest.TestCase):
           pass
 
     def test_se3_from_translation_curve(self):
+      print "test SE3 From translation curves"
       init_quat = Quaternion.Identity()
       end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
       init_rot = init_quat.matrix()
@@ -720,8 +741,18 @@ class TestCurves(unittest.TestCase):
       self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
       self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
       self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
+      if CURVES_WITH_PINOCCHIO_SUPPORT:
+        pminSE3 = se3.evaluateAsSE3(min)
+        pmaxSE3 = se3.evaluateAsSE3(max)
+        self.assertTrue(isclose(pminSE3.rotation,init_rot).all())
+        self.assertTrue(isclose(pmaxSE3.rotation,end_rot).all())
+        self.assertTrue(isclose(pminSE3.translation,translation(min)).all())
+        self.assertTrue(isclose(pmaxSE3.translation,translation(max)).all())
       t = min
       while t < max:
+        if CURVES_WITH_PINOCCHIO_SUPPORT:
+          self.assertTrue(isclose(se3.evaluateAsSE3(t).translation,translation(t)).all())
+          self.assertTrue(isclose(se3.derivateAsMotion(t,1).linear,translation.derivate(t,1)).all())
         self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
         self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
         t += 0.02
@@ -737,8 +768,18 @@ class TestCurves(unittest.TestCase):
       self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
       self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
       self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
+      if CURVES_WITH_PINOCCHIO_SUPPORT:
+        pminSE3 = se3.evaluateAsSE3(min)
+        pmaxSE3 = se3.evaluateAsSE3(max)
+        self.assertTrue(isclose(pminSE3.rotation,init_rot).all())
+        self.assertTrue(isclose(pmaxSE3.rotation,end_rot).all())
+        self.assertTrue(isclose(pminSE3.translation,translation(min)).all())
+        self.assertTrue(isclose(pmaxSE3.translation,translation(max)).all())
       t = min
       while t < max:
+        if CURVES_WITH_PINOCCHIO_SUPPORT:
+          self.assertTrue(isclose(se3.evaluateAsSE3(t).translation,translation(t)).all())
+          self.assertTrue(isclose(se3.derivateAsMotion(t,1).linear,translation.derivate(t,1)).all())
         self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
         self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
         t += 0.02
@@ -762,13 +803,24 @@ class TestCurves(unittest.TestCase):
       self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
       self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
       self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
+      if CURVES_WITH_PINOCCHIO_SUPPORT:
+        pminSE3 = se3.evaluateAsSE3(min)
+        pmaxSE3 = se3.evaluateAsSE3(max)
+        self.assertTrue(isclose(pminSE3.rotation,init_rot).all())
+        self.assertTrue(isclose(pmaxSE3.rotation,end_rot).all())
+        self.assertTrue(isclose(pminSE3.translation,translation(min)).all())
+        self.assertTrue(isclose(pmaxSE3.translation,translation(max)).all())
       t = min
       while t < max:
+        if CURVES_WITH_PINOCCHIO_SUPPORT:
+          self.assertTrue(isclose(se3.evaluateAsSE3(t).translation,translation(t)).all())
+          self.assertTrue(isclose(se3.derivateAsMotion(t,1).linear,translation.derivate(t,1)).all())
         self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
         self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
         t += 0.02
 
     def test_se3_from_curves(self):
+      print "test SE3 from curves"
       init_quat = Quaternion.Identity()
       end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
       init_rot = init_quat.matrix()
@@ -787,8 +839,20 @@ class TestCurves(unittest.TestCase):
       self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
       self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
       self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
+      if CURVES_WITH_PINOCCHIO_SUPPORT:
+        pminSE3 = se3.evaluateAsSE3(min)
+        pmaxSE3 = se3.evaluateAsSE3(max)
+        self.assertTrue(isclose(pminSE3.rotation,init_rot).all())
+        self.assertTrue(isclose(pmaxSE3.rotation,end_rot).all())
+        self.assertTrue(isclose(pminSE3.translation,translation(min)).all())
+        self.assertTrue(isclose(pmaxSE3.translation,translation(max)).all())
       t = min
       while t < max:
+        if CURVES_WITH_PINOCCHIO_SUPPORT:
+          self.assertTrue(isclose(se3.evaluateAsSE3(t).translation,translation(t)).all())
+          self.assertTrue(isclose(se3.evaluateAsSE3(t).rotation,rotation(t)).all())
+          self.assertTrue(isclose(se3.derivateAsMotion(t,1).linear,translation.derivate(t,1)).all())
+          self.assertTrue(isclose(se3.derivateAsMotion(t,1).angular,rotation.derivate(t,1)).all())
         self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
         self.assertTrue(isclose(se3(t)[0:3,0:3],rotation(t)).all())
         self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
@@ -820,6 +884,78 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(False)
       except:
         pass
+
+    if CURVES_WITH_PINOCCHIO_SUPPORT:
+      def test_se3_curve_linear_pinocchio(self):
+          print "test SE3 Linear pinocchio"
+          init_quat = Quaternion.Identity()
+          end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
+          init_rot = init_quat.matrix()
+          end_rot = end_quat.matrix()
+          init_translation = matrix([0.2,-0.7,0.6]).T
+          end_translation = matrix([3.6,-2.2,-0.9]).T
+          init_pose = SE3.Identity()
+          end_pose = SE3.Identity()
+          init_pose.rotation = init_rot
+          end_pose.rotation = end_rot
+          init_pose.translation = init_translation
+          end_pose.translation = end_translation
+          min = 0.7
+          max = 12.
+          se3 = SE3Curve(init_pose,end_pose,min,max)
+          p = se3.evaluateAsSE3(min)
+          self.assertTrue(isinstance(p,SE3))
+          self.assertTrue(se3.evaluateAsSE3(min).isApprox(init_pose,1e-6))
+          self.assertTrue(se3.evaluateAsSE3(max).isApprox(end_pose,1e-6))
+          self.assertEqual(se3.min(),min)
+          self.assertEqual(se3.max(),max)
+          self.assertTrue(isclose(se3.rotation(min),init_rot).all())
+          self.assertTrue(isclose(se3.translation(min),init_translation).all())
+          self.assertTrue(isclose(se3.rotation(max),end_rot).all())
+          self.assertTrue(isclose(se3.translation(max),end_translation).all())
+          # check value of derivative (should be constant here)
+          d = se3.derivateAsMotion(min,1)
+          self.assertTrue(isinstance(d,Motion))
+          self.assertTrue(isclose(d.linear,((end_translation-init_translation)/(max-min))).all())
+          self.assertTrue(isclose(d.angular[0],0.139009))
+          self.assertTrue(isclose(d.angular[1:3],matrix([0,0]).T).all())
+          self.assertTrue(d.isApprox(se3.derivateAsMotion((min + max)/2.,1),1e-6))
+          self.assertTrue(d.isApprox(se3.derivateAsMotion(max,1),1e-6))
+          self.assertTrue(se3.derivateAsMotion(min,2).isApprox(Motion.Zero(),1e-6))
+          self.assertTrue(se3.derivateAsMotion(min,3).isApprox(Motion.Zero(),1e-6))
+          # check that errors are correctly raised when necessary :
+          try:
+            se3(0.)
+            self.assertTrue(False)
+          except:
+            pass
+          try:
+            se3(-0.1)
+            self.assertTrue(False)
+          except:
+            pass
+          try:
+            se3(3)
+            self.assertTrue(False)
+          except:
+            pass
+          try:
+            se3.derivate(0,1)
+            self.assertTrue(False)
+          except:
+            pass
+          try:
+            se3.derivate(3.,1)
+            self.assertTrue(False)
+          except:
+            pass
+          try:
+            se3.derivate(1.,0)
+            self.assertTrue(False)
+          except:
+            pass
+
+
 
 if __name__ == '__main__':
     unittest.main()
