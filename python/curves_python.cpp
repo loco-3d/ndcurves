@@ -784,5 +784,12 @@ namespace curves
 
     optimization::python::exposeOptimization();
 
+
+    #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+      scope().attr("CURVES_WITH_PINOCCHIO_SUPPORT") = true;
+    #else
+      scope().attr("CURVES_WITH_PINOCCHIO_SUPPORT") = false;
+    #endif
+
   } // End BOOST_PYTHON_MODULE
 } // namespace curves
