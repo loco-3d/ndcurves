@@ -119,6 +119,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
       throw std::invalid_argument(
           "Can not add new Polynom to PiecewiseCurve : time discontinuity between T_max_ and pol.min()");
     }
+    if(cf.dim() != dim_){
+      throw std::invalid_argument(
+          "All the curves in a piecewiseCurve should have the same dimension");
+    }
     curves_.push_back(cf);
     size_ = curves_.size();
     T_max_ = cf.max();
