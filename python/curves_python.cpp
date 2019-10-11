@@ -381,16 +381,17 @@ namespace curves
     return new SE3Curve_t(transform_t(init_pose.toHomogeneousMatrix()),transform_t(end_pose.toHomogeneousMatrix()), min, max);
   }
 
-  SE3_t se3Return(const SE3Curve_t& curve, const real t)
+  SE3_t se3ReturnPinocchio(const SE3Curve_t& curve, const real t)
   {
     return SE3_t(curve(t).matrix());
   }
 
-  Motion_t se3ReturnDerivate(const SE3Curve_t& curve, const real t, const std::size_t order)
+  Motion_t se3ReturnDerivatePinocchio(const SE3Curve_t& curve, const real t, const std::size_t order)
   {
     return Motion_t(curve.derivate(t,order));
   }
-  #else
+  #endif //CURVES_WITH_PINOCCHIO_SUPPORT
+
   matrix4_t se3Return(const SE3Curve_t& curve, const real t)
   {
     return curve(t).matrix();
@@ -400,8 +401,6 @@ namespace curves
   {
     return curve.derivate(t,order);
   }
-  #endif //CURVES_WITH_PINOCCHIO_SUPPORT
-
 
   matrix3_t se3returnRotation(const SE3Curve_t& curve, const real t)
   {
@@ -752,8 +751,8 @@ namespace curves
           "The orientations should be represented as 3x3 rotation matrix")
         .def("rotation", &se3returnRotation,"Output the rotation (as a 3x3 matrix) at the given time.",args("self","time"))
         .def("translation", &se3returnTranslation,"Output the rotation (as a vector 3) at the given time.",args("self","time"))
-        .def("__call__", &se3Return,"Evaluate the curve at the given time.",args("self","t"))
-        .def("derivate", &se3ReturnDerivate,"Evaluate the derivative of order N of curve at time t.",args("self","t","N"))
+        .def("__call__", &se3Return,"Evaluate the curve at the given time. Return as an homogeneous matrix",args("self","t"))
+        .def("derivate", &se3ReturnDerivate,"Evaluate the derivative of order N of curve at time t. Return as a vector 6",args("self","t","N"))
         .def("min", &SE3Curve_t::min, "Get the LOWER bound on interval definition of the curve.")
         .def("max", &SE3Curve_t::max,"Get the HIGHER bound on interval definition of the curve.")
         .def("dim", &SE3Curve_t::dim,"Get the dimension of the curve.")
@@ -763,6 +762,8 @@ namespace curves
          args("init_SE3","end_SE3","min","max")),
        "Create a SE3 curve between two SE3 objects from Pinocchio, defined for t \in [min,max]."
        " Using linear interpolation for translation and slerp for rotation between init and end.")
+        .def("evaluateAsSE3", &se3Return,"Evaluate the curve at the given time. Return as a pinocchio.SE3 object",args("self","t"))
+        .def("derivateAsMotion", &se3ReturnDerivate,"Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",args("self","t","N"))
         #endif //CURVES_WITH_PINOCCHIO_SUPPORT
 //        .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>,bp::args("filename"),"Saves *this inside a text file.")
 //        .def("loadFromText",&SE3Curve_t::loadFromText<SE3Curve_t>,bp::args("filename"),"Loads *this from a text file.")
