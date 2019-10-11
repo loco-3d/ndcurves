@@ -39,7 +39,7 @@ template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
           typename T_Point = std::vector<Point, Eigen::aligned_allocator<Point> >,
           typename SplineBase = polynomial<Time, Numeric, Safe, Point, T_Point> >
-struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point, T_Point, SplineBase> {
+struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   typedef Point point_t;
   typedef T_Point t_point_t;
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
@@ -53,8 +53,8 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point, T_Point,
   typedef curve_constraints<Point> spline_constraints;
 
   typedef exact_cubic<Time, Numeric, Safe, Point, T_Point, SplineBase> exact_cubic_t;
-  typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, SplineBase> piecewise_curve_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
+  typedef piecewise_curve<Time, Numeric, Safe, Point> piecewise_curve_t;
 
   /* Constructors - destructors */
  public:
