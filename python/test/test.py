@@ -6,20 +6,15 @@ import numpy as np
 from numpy import matrix, array_equal, isclose,random,zeros
 from numpy.linalg import norm
 
-from curves import (bezier_from_hermite, bezier_from_polynomial, hermite_from_polynomial,
+from curves import (CURVES_WITH_PINOCCHIO_SUPPORT,bezier_from_hermite, bezier_from_polynomial, hermite_from_polynomial,
                     hermite_from_bezier, polynomial_from_hermite, polynomial_from_bezier,
                     cubic_hermite_spline, curve_constraints, exact_cubic, bezier,bezier3,
                     piecewise_bezier_curve, piecewise_cubic_hermite_curve,
                     piecewise_polynomial_curve, polynomial,SO3Linear,SE3Curve,Quaternion
                     )
 
-try:
+if CURVES_WITH_PINOCCHIO_SUPPORT:
   from pinocchio import SE3,Motion
-  CURVES_WITH_PINOCCHIO_SUPPORT=True
-except ImportError:
-  CURVES_WITH_PINOCCHIO_SUPPORT=False
-  pass
-
 
 class TestCurves(unittest.TestCase):
     # def print_str(self, inStr):
