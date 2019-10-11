@@ -102,9 +102,6 @@ namespace curves
   typedef curves::exact_cubic  <real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
   typedef SO3Linear  <double, double, true> SO3Linear_t;
   typedef SE3Curve  <double, double, true> SE3Curve_t;
-
-  // Bezier 3
-  typedef curves::bezier_curve  <real, real, true, Eigen::Vector3d> bezier3_t;
   typedef curves::Bern<double> bernstein_t;
 
   /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
