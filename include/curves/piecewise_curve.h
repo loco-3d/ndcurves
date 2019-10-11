@@ -10,6 +10,7 @@
 
 #include "curve_abc.h"
 #include "curve_conversion.h"
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 namespace curves {
 /// \class PiecewiseCurve.
@@ -34,6 +35,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_t; // parent class
   typedef boost::shared_ptr<curve_t> curve_ptr_t;
   typedef typename std::vector<curve_t> t_curve_t;
+  typedef typename std::vector<curve_ptr_t> t_curve_ptr_t;
   typedef typename std::vector<Time> t_time_t;
   typedef piecewise_curve<Time, Numeric, Safe, Point,Point_derivate> piecewise_curve_t;
  public:
@@ -77,7 +79,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
       // std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
       throw std::out_of_range("can't evaluate piecewise curve, out of range");
     }
-    return curves_.at(find_interval(t))(t);
+    return (*curves_.at(find_interval(t)))(t);
   }
 
   ///  \brief Evaluate the derivative of order N of curve at time t.
@@ -90,7 +92,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       throw std::invalid_argument("can't evaluate piecewise curve, out of range");
     }
-    return (curves_.at(find_interval(t))).derivate(t, order);
+    return (*curves_.at(find_interval(t))).derivate(t, order);
   }
 
   /**
@@ -98,10 +100,11 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
    * @param order order of derivative
    * @return
    */
-  piecewise_curve<Time, Numeric, Safe, point_derivate_t, std::vector<point_derivate_t, Eigen::aligned_allocator<Point> >, Curve> compute_derivate(const std::size_t order) const {
-    piecewise_curve<Time, Numeric, Safe, point_derivate_t,  std::vector<point_derivate_t, Eigen::aligned_allocator<Point> >, Curve> res;
-    for (typename t_curve_t::const_iterator itc = curves_.begin(); itc < curves_.end(); ++itc) {
-      res.add_curve(itc->compute_derivate(order));
+  piecewise_curve_t compute_derivate(const std::size_t order) const {
+    piecewise_curve_t res;
+    for (typename t_curve_ptr_t::const_iterator itc = curves_.begin(); itc < curves_.end(); ++itc)
+    {
+      res.add_curve((*itc)->compute_derivate(order));
     }
     return res;
   }
@@ -125,7 +128,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
       throw std::invalid_argument(
           "All the curves in a piecewiseCurve should have the same dimension");
     }
-    curves_.push_back(cf);
+    curves_.push_back(boost::make_shared<curve_t>(cf));
     size_ = curves_.size();
     T_max_ = cf.max();
     if (size_ == 1) {
@@ -147,10 +150,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     if(order ==0){
       point_t value_end, value_start;
       while (isContinuous && i < (size_ - 1)) {
-        curve_t current = curves_.at(i);
-        curve_t next = curves_.at(i + 1);
-        value_end = current(current.max());
-        value_start = next(next.min());
+        curve_ptr_t current = curves_.at(i);
+        curve_ptr_t next = curves_.at(i + 1);
+        value_end = (*current)(current->max());
+        value_start = (*next)(next->min());
         if (!value_end.isApprox(value_start,MARGIN)) {
           isContinuous = false;
         }
@@ -159,10 +162,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     }else{
       point_derivate_t value_end, value_start;
       while (isContinuous && i < (size_ - 1)) {
-        curve_t current = curves_.at(i);
-        curve_t next = curves_.at(i + 1);
-        value_end = current.derivate(current.max(), order);
-        value_start = next.derivate(next.min(), order);
+        curve_ptr_t current = curves_.at(i);
+        curve_ptr_t next = curves_.at(i + 1);
+        value_end = current->derivate(current->max(), order);
+        value_start = next->derivate(next->min(), order);
         if (!value_end.isApprox(value_start,MARGIN)) {
           isContinuous = false;
         }
@@ -362,7 +365,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
 
   /* Attributes */
   std::size_t dim_;       // Dim of curve
-  t_curve_t curves_;      // for curves 0/1/2 : [ curve0, curve1, curve2 ]
+  t_curve_ptr_t curves_;  // for curves 0/1/2 : [ curve0, curve1, curve2 ]
   t_time_t time_curves_;  // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
   std::size_t size_;      // Number of segments in piecewise curve = size of curves_
   Time T_min_, T_max_;
