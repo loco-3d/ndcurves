@@ -126,12 +126,12 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
     curves_.push_back(cf);
     size_ = curves_.size();
     T_max_ = cf.max();
-    time_curves_.push_back(T_max_);
     if (size_ == 1) {
       // First curve added
       time_curves_.push_back(cf.min());
       T_min_ = cf.min();
     }
+    time_curves_.push_back(T_max_);
   }
 
   ///  \brief Check if the curve is continuous of order given.
