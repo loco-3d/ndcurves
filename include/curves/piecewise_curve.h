@@ -41,17 +41,17 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
   /// \brief Constructor.
   /// Initialize a piecewise curve by giving the first curve.
-  /// \param pol   : a polynomial curve.
+  /// \param cf   : a curve.
   ///
   piecewise_curve(const curve_t& cf) {
-    dim_ = cf(cf.min()).size();
+    dim_ = cf.dim();
     size_ = 0;
     add_curve(cf);
   }
 
   piecewise_curve(const t_curve_t list_curves) {
     if (list_curves.size() != 0) {
-      dim_ = list_curves[0](list_curves[0].min()).size();
+      dim_ = list_curves[0].dim();
     }
     size_ = 0;
     for (std::size_t i = 0; i < list_curves.size(); i++) {
@@ -111,10 +111,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param cf : curve to add.
   ///
   void add_curve(const curve_t& cf) {
-    if (size_ == 0 && dim_ == 0) {
-      dim_ = cf(cf.min()).size();
+    if (size_ == 0 && dim_ == 0) { // first curve added
+      dim_ = cf.dim();
     }
-    // Check time continuity : Beginning time of pol must be equal to T_max_ of actual piecewise curve.
+    // Check time continuity : Beginning time of cf must be equal to T_max_ of actual piecewise curve.
     if (size_ != 0 && !(fabs(cf.min() - T_max_) < MARGIN)) {
       throw std::invalid_argument(
           "Can not add new Polynom to PiecewiseCurve : time discontinuity between T_max_ and pol.min()");
