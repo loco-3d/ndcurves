@@ -6,3 +6,4 @@ build-rel/
 .*~
 *.user
 *.pyc
+*.ipynb_checkpoints

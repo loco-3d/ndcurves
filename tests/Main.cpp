@@ -1847,9 +1847,8 @@ var_pair_t setup_control_points(const std::size_t degree,
                           const constraint_linear& constraints = constraint_linear(3),
                           const double totalTime = 1.)
 {
-    problem_definition_t pDef(3);
-    pDef.curveConstraints = constraints;
-    pDef.start = initPos; pDef.end = endPos;
+    problem_definition_t pDef(constraints);
+    pDef.init_pos = initPos; pDef.end_pos = endPos;
     pDef.flag = flag;
     pDef.totalTime = totalTime;
     pDef.degree = degree;

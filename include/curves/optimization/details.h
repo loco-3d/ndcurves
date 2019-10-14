@@ -103,7 +103,6 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
     typedef linear_variable<Numeric>     var_t;
     typedef problem_data<Point, Numeric> problem_data_t;
 
-    const curve_constraints<Point>& constraints = pDef.curveConstraints;
     const std::size_t& degree = pDef.degree;
     const constraint_flag& flag = pDef.flag;
 
@@ -120,26 +119,26 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
     std::size_t i =0;
     if(flag & INIT_POS)
     {
-        variables_.push_back(var_t(pDef.start));
+        variables_.push_back(var_t(pDef.init_pos));
         ++numConstants;
         ++i;
         if(flag & INIT_VEL)
         {
-            point_t vel = pDef.start + (constraints.init_vel / (num_t)degree) / pDef.totalTime;
+            point_t vel = pDef.init_pos + (pDef.init_vel / (num_t)degree) / pDef.totalTime;
             variables_.push_back(var_t(vel));
             ++numConstants;
             ++i;
             if(flag & INIT_ACC)
             {
-                point_t acc = (constraints.init_acc / (num_t)(degree * (degree-1)))
+                point_t acc = (pDef.init_acc / (num_t)(degree * (degree-1)))
                         / (pDef.totalTime *  pDef.totalTime)
-                        + 2* vel- pDef.start;;
+                        + 2* vel- pDef.init_pos;;
                 variables_.push_back(var_t(acc));
                 ++numConstants;
                 ++i;
                 if(flag & INIT_JERK){
-                  point_t jerk = constraints.init_jerk*pDef.totalTime*pDef.totalTime*pDef.totalTime/(num_t)(degree*(degree-1)*(degree-2))
-                  + 3*acc -3*vel +pDef.start;
+                  point_t jerk = pDef.init_jerk*pDef.totalTime*pDef.totalTime*pDef.totalTime/(num_t)(degree*(degree-1)*(degree-2))
+                  + 3*acc -3*vel +pDef.init_pos;
                   variables_.push_back(var_t(jerk));
                   ++numConstants;
                   ++i;
@@ -156,15 +155,15 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
     {
         if(flag & END_VEL)
         {
-            point_t vel = pDef.end - (constraints.end_vel  / (num_t)degree) / pDef.totalTime;
+            point_t vel = pDef.end_pos - (pDef.end_vel  / (num_t)degree) / pDef.totalTime;
             if(flag & END_ACC)
             {
-                point_t acc = (constraints.end_acc  / (num_t)(degree * (degree-1)))
+                point_t acc = (pDef.end_acc  / (num_t)(degree * (degree-1)))
                         / (pDef.totalTime) * (pDef.totalTime)
-                        + 2* vel - pDef.end;
+                        + 2* vel - pDef.end_pos;
                 if(flag & END_JERK){
-                  point_t jerk = -constraints.end_jerk*pDef.totalTime*pDef.totalTime*pDef.totalTime/(num_t)(degree*(degree-1)*(degree-2))
-                  + 3*acc -3*vel + pDef.end;
+                  point_t jerk = -pDef.end_jerk*pDef.totalTime*pDef.totalTime*pDef.totalTime/(num_t)(degree*(degree-1)*(degree-2))
+                  + 3*acc -3*vel + pDef.end_pos;
                   variables_.push_back(var_t(jerk));
                   ++numConstants;
                   ++i;
@@ -191,7 +190,7 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
                 ++i;
             }
         }
-        variables_.push_back(var_t(pDef.end));
+        variables_.push_back(var_t(pDef.end_pos));
         ++numConstants; ++i;
     }
     // add remaining variables (only if no end_pos constraints)

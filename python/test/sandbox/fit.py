@@ -18,25 +18,27 @@ from qp import to_least_square, quadprog_solve_qp
 #points given as pairs (pt, t)
 #does not try to fit anything
 def default_fit(degree, ptsTime, dim = 3, totalTime =1., constraintFlag = constraint_flag.NONE, curveConstraints = None):
-    pD = problem_definition(dim)
+    pD = None
+    if curveConstraints is None:
+        pD = problem_definition(dim)        
+    else:
+        pD = problem_definition(curveConstraints)       
     #set initial and goal positions to the ones of the list (might not be used if constraints do not correspond)
-    pD.start = array([ptsTime[0][0]]).T
-    pD.end   = array([ptsTime[-1][0]]).T
+    pD.init_pos = array([ptsTime[0][0]]).T
+    pD.end_pos   = array([ptsTime[-1][0]]).T
     #assign curve constraints
     pD.totalTime = totalTime
     pD.degree = degree
     pD.flag = constraintFlag
     problem = setup_control_points(pD)
     bezierLinear = problem.bezier()
-    if curveConstraints is not None:
-        pD.curveConstraints = curveConstraints
     pD.totalTime = totalTime
     pD.degree = degree
     problem = setup_control_points(pD)
     bezierLinear = problem.bezier()
 
     allsEvals = [(bezierLinear(time), pt) for (pt,time) in ptsTime]
-    allLeastSquares = [to_least_square(el.A, el.b + pt) for (el, pt) in  allsEvals]
+    allLeastSquares = [to_least_square(el.B(), el.c() + pt) for (el, pt) in  allsEvals]
     Ab = [sum(x) for x in zip(*allLeastSquares)]
     
     res = quadprog_solve_qp(Ab[0] + identity(problem.numVariables * dim) * 0.0001, Ab[1])
@@ -77,7 +79,7 @@ if __name__ == '__main__':
     plot_fit_and_original(ax)
             
     
-    bFit = default_fit(degree-1, ptsTime, dim = dim, constraintFlag = constraint_flag.INIT_VEL | constraint_flag.INIT_POS, curveConstraints = c)    
+    bFit = default_fit(degree-1, ptsTime, dim = dim, constraintFlag = constraint_flag.END_POS | constraint_flag.INIT_POS, curveConstraints = c)    
     ax = fig.add_subplot(223, projection="3d")    
     plot_fit_and_original(ax)
     

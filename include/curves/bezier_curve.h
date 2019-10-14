@@ -12,6 +12,7 @@
 #include "curve_abc.h"
 #include "bernstein.h"
 #include "curve_constraint.h"
+#include "piecewise_curve.h"
 
 #include "MathDefs.h"
 
@@ -30,12 +31,15 @@ template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
 struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   typedef Point point_t;
+  typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
+  typedef Eigen::Ref<const vector_x_t> vector_x_ref_t;
   typedef Time time_t;
   typedef Numeric num_t;
   typedef curve_constraints<point_t> curve_constraints_t;
   typedef std::vector<point_t, Eigen::aligned_allocator<point_t> > t_point_t;
   typedef typename t_point_t::const_iterator cit_point_t;
   typedef bezier_curve<Time, Numeric, Safe, Point> bezier_curve_t;
+  typedef piecewise_curve <Time, Numeric, Safe, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
 
   /* Constructors - destructors */
  public:
@@ -292,12 +296,13 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return new_pts;
   }
 
+
   /// \brief Split the bezier curve in 2 at time t.
   /// \param t : list of points.
   /// \param u : unNormalized time.
   /// \return pair containing the first element of both bezier curve obtained.
   ///
-  std::pair<bezier_curve_t, bezier_curve_t> split(const Numeric t) {
+  std::pair<bezier_curve_t, bezier_curve_t> split(const Numeric t) const {
     check_conditions();
     if (fabs(t - T_max_) < MARGIN) {
       throw std::runtime_error("can't split curve, interval range is equal to original curve");
@@ -318,6 +323,27 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     bezier_curve_t c_second(wps_second.begin(), wps_second.end(), t, T_max_, mult_T_);
     return std::make_pair(c_first, c_second);
   }
+
+
+  /// \brief Split the bezier curve in several curves, all accessible
+  /// within a piecewise_bezier_curve_t.
+  /// \param times : list of times of size n.
+  /// \return a piecewise_bezier_curve_t comprising n+1 curves
+  ///
+  piecewise_bezier_curve_t split(const vector_x_t& times) const
+  {
+      typename piecewise_bezier_curve_t::t_curve_t curves;
+      bezier_curve_t current = *this;
+      for(int i = 0; i < times.rows(); ++i)
+      {
+          std::pair<bezier_curve_t, bezier_curve_t> pairsplit = current.split(times[i]);
+          curves.push_back(pairsplit.first);
+          current = pairsplit.second;
+      }
+      curves.push_back(current);
+      return piecewise_bezier_curve_t(curves);
+  }
+
 
   /// \brief Extract a bezier curve defined between \f$[t_1,t_2]\f$ from the actual bezier curve
   ///        defined between \f$[T_{min},T_{max}]\f$ with \f$T_{min} \leq t_1 \leq t_2 \leq T_{max}\f$.
