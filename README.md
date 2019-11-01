@@ -11,12 +11,12 @@ To do so, tools are provided to:
 > - create **exact** splines of arbitrary order (that pass exactly by an arbitrary number waypoints)
 > - constrain initial / end velocities and acceleration for the spline.
 > - constrain take-off and landing phases to follow a straight line along a given normal (to avoid undesired collisions between the effector and the contact surface)
-> - automatically handle 3d rotation of the effector.
+> - create curves in SO3
+> - support partial symbolic differentiation of curves. You can represent control points as linear variables, and integrate / differentiate those variable curves. You can also compute the cross product of two curves, which is relevant for centroidal dynamics.
+
 
 The library is template-based, thus generic:  the curves can be of any dimension, and can be implemented in double, float  ...
 
-While a Bezier curve implementation is provided, the main interest
-of this library is to create spline curves of arbitrary order
 
 ----------
 Example of use for and end-effector trajectory
