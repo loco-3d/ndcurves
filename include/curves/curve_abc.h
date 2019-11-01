@@ -17,20 +17,16 @@
 
 #include <functional>
 
-
-namespace curves
-{
+namespace curves {
 /// \struct curve_abc.
 /// \brief Represents a curve of dimension Dim.
 /// If value of parameter Safe is false, no verification is made on the evaluation of the curve.
-template<typename Time= double, typename Numeric=Time, bool Safe=false,
-         typename Point= Eigen::Matrix<Numeric, Eigen::Dynamic, 1> , typename Point_derivate = Point>
-struct  curve_abc : std::unary_function<Time, Point>,
-                    public serialization::Serializable
-{
-  typedef Point   point_t;
-  typedef Point_derivate   point_derivate_t;
-  typedef Time    time_t;
+template <typename Time = double, typename Numeric = Time, bool Safe = false,
+          typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, typename Point_derivate = Point>
+struct curve_abc : std::unary_function<Time, Point>, public serialization::Serializable {
+  typedef Point point_t;
+  typedef Point_derivate point_derivate_t;
+  typedef Time time_t;
 
   /* Constructors - destructors */
  public:
