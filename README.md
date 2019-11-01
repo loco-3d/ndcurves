@@ -1,4 +1,4 @@
-Spline
+Curves
 ===================
 
 [![Pipeline status](https://gepgitlab.laas.fr/loco-3d/curves/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/loco-3d/curves/commits/master)
