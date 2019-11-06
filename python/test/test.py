@@ -2,8 +2,9 @@ import os
 import unittest
 from math import sqrt
 
+import eigenpy
 import numpy as np
-from numpy import array_equal, isclose, matrix, random, zeros
+from numpy import array, array_equal, isclose, random, zeros
 from numpy.linalg import norm
 
 from curves import (CURVES_WITH_PINOCCHIO_SUPPORT, Quaternion, SE3Curve, SO3Linear, bezier, bezier3,
@@ -11,6 +12,8 @@ from curves import (CURVES_WITH_PINOCCHIO_SUPPORT, Quaternion, SE3Curve, SO3Line
                     hermite_from_bezier, hermite_from_polynomial, piecewise_bezier_curve,
                     piecewise_cubic_hermite_curve, piecewise_polynomial_curve, polynomial, polynomial_from_bezier,
                     polynomial_from_hermite)
+
+eigenpy.switchToNumpyArray()
 
 if CURVES_WITH_PINOCCHIO_SUPPORT:
     from pinocchio import SE3, Motion
@@ -27,23 +30,23 @@ class TestCurves(unittest.TestCase):
         # - Functions : constructor, min, max, derivate,compute_derivate, compute_primitive
         # - Variables : degree, nbWayPoints
         __EPS = 1e-6
-        waypoints = matrix([[1., 2., 3.]]).T
+        waypoints = array([[1., 2., 3.]]).T
         a = bezier(waypoints, 0., 2.)
         t = 0.
         while t < 2.:
-            self.assertTrue(norm(a(t) - matrix([1., 2., 3.]).T) < __EPS)
+            self.assertTrue(norm(a(t) - array([1., 2., 3.]).T) < __EPS)
             t += 0.1
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        # time_waypoints = matrix([0., 1.]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        # time_waypoints = array([0., 1.]).transpose()
         # Create bezier6 and bezier
         a = bezier(waypoints, 0., 3.)
         # Test waypoints
         self.assertTrue(a.nbWaypoints == 2)
         for i in range(0, a.nbWaypoints):
             if i == 0:
-                self.assertTrue((a.waypointAtIndex(0) == matrix([1., 2., 3.]).transpose()).all())
+                self.assertTrue((a.waypointAtIndex(0) == array([1., 2., 3.])).all())
             elif i == 1:
-                self.assertTrue((a.waypointAtIndex(1) == matrix([4., 5., 6.]).transpose()).all())
+                self.assertTrue((a.waypointAtIndex(1) == array([4., 5., 6.])).all())
         # self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
         # self.print_str(("test 1")
@@ -51,7 +54,7 @@ class TestCurves(unittest.TestCase):
         a.min()
         a.max()
         a(0.4)
-        self.assertTrue((a(a.min()) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((a(a.min()) == array([1., 2., 3.])).all())
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         a = a.compute_derivate(100)
@@ -60,15 +63,15 @@ class TestCurves(unittest.TestCase):
         for i in range(10):
             t = float(i) / 10.
             self.assertTrue((a(t) == prim.derivate(t, 1)).all())
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # Check primitive and derivate - order 2
         prim = a.compute_primitive(2)
         for i in range(10):
             t = float(i) / 10.
             self.assertTrue((a(t) == prim.derivate(t, 2)).all())
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # Create new bezier curve
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
         a0 = bezier(waypoints)
         a1 = bezier(waypoints, 0., 3.)
         prim0 = a0.compute_primitive(1)
@@ -80,33 +83,33 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(norm(a0.derivate(t, 1) - a1.derivate(3 * t, 1) * 3.) < __EPS)
             self.assertTrue(norm(a0.derivate(t, 2) - a1.derivate(3 * t, 2) * 9.) < __EPS)
             self.assertTrue(norm(prim0(t) - prim1(t * 3) / 3.) < __EPS)
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # testing bezier with constraints
         c = curve_constraints(3)
-        c.init_vel = matrix([0., 1., 1.]).transpose()
-        c.end_vel = matrix([0., 1., 1.]).transpose()
-        c.init_acc = matrix([0., 1., -1.]).transpose()
-        c.end_acc = matrix([0., 100., 1.]).transpose()
+        c.init_vel = array([[0., 1., 1.]]).transpose()
+        c.end_vel = array([[0., 1., 1.]]).transpose()
+        c.init_acc = array([[0., 1., -1.]]).transpose()
+        c.end_acc = array([[0., 100., 1.]]).transpose()
         # Check derivate with constraints
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, c)
         self.assertTrue(norm(a.derivate(0, 1) - c.init_vel) < 1e-10)
         self.assertTrue(norm(a.derivate(1, 2) - c.end_acc) < 1e-10)
 
         # Test serialization : bezier 3
         a.saveAsText("serialization_curve.test")
-        # waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        # waypoints = array([[0,0,0,], [0,0,0,]]).transpose()
         b = bezier()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
 
         # Bezier dim 4
-        waypoints = matrix([[1., 2., 3., 4.]]).T
+        waypoints = array([[1., 2., 3., 4.]]).T
         a = bezier(waypoints, 0., 2.)
         # Test serialization : bezier of dim 4
         a.saveAsText("serialization_curve.test")
-        # waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        # waypoints = array([[0,0,0,], [0,0,0,]]).transpose()
         b = bezier()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
@@ -119,23 +122,23 @@ class TestCurves(unittest.TestCase):
         # - Functions : constructor, min, max, derivate,compute_derivate, compute_primitive
         # - Variables : degree, nbWayPoints
         __EPS = 1e-6
-        waypoints = matrix([[1., 2., 3.]]).T
+        waypoints = array([[1., 2., 3.]]).T
         a = bezier3(waypoints, 0., 2.)
         t = 0.
         while t < 2.:
-            self.assertTrue(norm(a(t) - matrix([1., 2., 3.]).T) < __EPS)
+            self.assertTrue(norm(a(t) - array([1., 2., 3.]).T) < __EPS)
             t += 0.1
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        # time_waypoints = matrix([0., 1.]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        # time_waypoints = array([[0., 1.]]).transpose()
         # Create bezier6 and bezier
         a = bezier3(waypoints, 0., 3.)
         # Test waypoints
         self.assertTrue(a.nbWaypoints == 2)
         for i in range(0, a.nbWaypoints):
             if i == 0:
-                self.assertTrue((a.waypointAtIndex(0) == matrix([1., 2., 3.]).transpose()).all())
+                self.assertTrue((a.waypointAtIndex(0) == array([1., 2., 3.])).all())
             elif i == 1:
-                self.assertTrue((a.waypointAtIndex(1) == matrix([4., 5., 6.]).transpose()).all())
+                self.assertTrue((a.waypointAtIndex(1) == array([4., 5., 6.])).all())
         # self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
         # self.print_str(("test 1")
@@ -143,7 +146,7 @@ class TestCurves(unittest.TestCase):
         a.min()
         a.max()
         a(0.4)
-        self.assertTrue((a(a.min()) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((a(a.min()) == array([1., 2., 3.])).all())
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         a = a.compute_derivate(100)
@@ -152,15 +155,15 @@ class TestCurves(unittest.TestCase):
         for i in range(10):
             t = float(i) / 10.
             self.assertTrue((a(t) == prim.derivate(t, 1)).all())
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # Check primitive and derivate - order 2
         prim = a.compute_primitive(2)
         for i in range(10):
             t = float(i) / 10.
             self.assertTrue((a(t) == prim.derivate(t, 2)).all())
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # Create new bezier curve
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
         a0 = bezier3(waypoints)
         a1 = bezier3(waypoints, 0., 3.)
         prim0 = a0.compute_primitive(1)
@@ -172,33 +175,33 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(norm(a0.derivate(t, 1) - a1.derivate(3 * t, 1) * 3.) < __EPS)
             self.assertTrue(norm(a0.derivate(t, 2) - a1.derivate(3 * t, 2) * 9.) < __EPS)
             self.assertTrue(norm(prim0(t) - prim1(t * 3) / 3.) < __EPS)
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # testing bezier with constraints
         c = curve_constraints(3)
-        c.init_vel = matrix([0., 1., 1.]).transpose()
-        c.end_vel = matrix([0., 1., 1.]).transpose()
-        c.init_acc = matrix([0., 1., -1.]).transpose()
-        c.end_acc = matrix([0., 100., 1.]).transpose()
+        c.init_vel = array([[0., 1., 1.]]).transpose()
+        c.end_vel = array([[0., 1., 1.]]).transpose()
+        c.init_acc = array([[0., 1., -1.]]).transpose()
+        c.end_acc = array([[0., 100., 1.]]).transpose()
         # Check derivate with constraints
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier3(waypoints, c)
         self.assertTrue(norm(a.derivate(0, 1) - c.init_vel) < 1e-10)
         self.assertTrue(norm(a.derivate(1, 2) - c.end_acc) < 1e-10)
 
         # Test serialization : bezier 3
         a.saveAsText("serialization_curve.test")
-        # waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        # waypoints = array([[0,0,0,], [0,0,0,]]).transpose()
         b = bezier3()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
 
         # Bezier dim 4
-        waypoints = matrix([[1., 2., 3., 4.]]).T
+        waypoints = array([[1., 2., 3., 4.]]).T
         a = bezier(waypoints, 0., 2.)
         # Test serialization : bezier of dim 4
         a.saveAsText("serialization_curve.test")
-        # waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        # waypoints = array([[0,0,0,], [0,0,0,]]).transpose()
         b = bezier()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
@@ -209,7 +212,7 @@ class TestCurves(unittest.TestCase):
         print("test_polynomial")
         # To test :
         # - Functions : constructor, min, max, derivate, serialize, deserialize
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = polynomial(waypoints)  # Defined on [0.,1.]
         a = polynomial(waypoints, -1., 3.)  # Defined on [-1.,3.]
         a.min()
@@ -217,10 +220,10 @@ class TestCurves(unittest.TestCase):
         a(0.4)
         # Test get coefficient at degree
         self.assertTrue((a.coeff() == waypoints).all())
-        self.assertTrue((a.coeffAtDegree(0) == matrix([1., 2., 3.]).transpose()).all())
-        self.assertTrue((a.coeffAtDegree(1) == matrix([4., 5., 6.]).transpose()).all())
+        self.assertTrue((a.coeffAtDegree(0) == array([1., 2., 3.])).all())
+        self.assertTrue((a.coeffAtDegree(1) == array([4., 5., 6.])).all())
         # Other tests
-        self.assertTrue((a(a.min()) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((a(a.min()) == array([1., 2., 3.])).all())
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         a_derivated = a.compute_derivate(1)
@@ -234,17 +237,18 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_polynomial_from_boundary_condition(self):
-        p0 = matrix([1., 3., -2.]).T
-        p1 = matrix([0.6, 2., 2.5]).T
-        dp0 = matrix([-6., 2., -1.]).T
-        dp1 = matrix([10., 10., 10.]).T
-        ddp0 = matrix([1., -7., 4.5]).T
-        ddp1 = matrix([6., -1., -4]).T
+        p0 = array([[1., 3., -2.]]).T
+        p1 = array([[0.6, 2., 2.5]]).T
+        dp0 = array([[-6., 2., -1.]]).T
+        dp1 = array([[10., 10., 10.]]).T
+        ddp0 = array([[1., -7., 4.5]]).T
+        ddp1 = array([[6., -1., -4]]).T
         min = 1.
         max = 2.5
         polC0 = polynomial(p0, p1, min, max)
         self.assertEqual(polC0.min(), min)
         self.assertEqual(polC0.max(), max)
+        print('-------', polC0(min), p0)
         self.assertTrue(array_equal(polC0(min), p0))
         self.assertTrue(array_equal(polC0(max), p1))
         self.assertTrue(array_equal(polC0((min + max) / 2.), 0.5 * p0 + 0.5 * p1))
@@ -287,9 +291,9 @@ class TestCurves(unittest.TestCase):
 
     def test_cubic_hermite_spline(self):
         print("test_cubic_hermite_spline")
-        points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        time_points = matrix([0., 1.]).transpose()
+        points = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        tangents = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        time_points = array([[0., 1.]]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points)
         a.min()
         a.max()
@@ -303,9 +307,9 @@ class TestCurves(unittest.TestCase):
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
         # test dim 4
-        points = matrix([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
-        tangents = matrix([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
-        time_points = matrix([0., 1.]).transpose()
+        points = array([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
+        tangents = array([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
+        time_points = array([[0., 1.]]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points)
         a.min()
         a.max()
@@ -324,9 +328,9 @@ class TestCurves(unittest.TestCase):
         print("test_piecewise_polynomial_curve")
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous, serialize, deserialize
-        waypoints0 = matrix([[0., 0., 0.]]).transpose()
-        waypoints1 = matrix([[1., 1., 1.]]).transpose()
-        waypoints2 = matrix([[1., 1., 1.], [1., 1., 1.]]).transpose()
+        waypoints0 = array([[0., 0., 0.]]).transpose()
+        waypoints1 = array([[1., 1., 1.]]).transpose()
+        waypoints2 = array([[1., 1., 1.], [1., 1., 1.]]).transpose()
         polynomial(waypoints0, 0., 0.1)
         a = polynomial(waypoints1, 0., 1.)
         b = polynomial(waypoints2, 1., 3.)
@@ -335,7 +339,7 @@ class TestCurves(unittest.TestCase):
         pc.min()
         pc.max()
         pc(0.4)
-        self.assertTrue((pc(pc.min()) == matrix([1., 1., 1.]).transpose()).all())
+        self.assertTrue((pc(pc.min()) == array([[1., 1., 1.]]).transpose()).all())
         self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
@@ -350,10 +354,10 @@ class TestCurves(unittest.TestCase):
 
     def test_piecewise_from_points_list(self):
         N = 7
-        points = matrix(random.rand(3, N))
-        points_derivative = matrix(random.rand(3, N))
-        points_second_derivative = matrix(random.rand(3, N))
-        time_points = matrix(random.rand(N)).T
+        points = array(random.rand(3, N))
+        points_derivative = array(random.rand(3, N))
+        points_second_derivative = array(random.rand(3, N))
+        time_points = array(random.rand(1, N)).T
         time_points.sort(0)
         polC0 = piecewise_polynomial_curve.FromPointsList(points, time_points)
         self.assertEqual(polC0.min(), time_points[0, 0])
@@ -410,7 +414,7 @@ class TestCurves(unittest.TestCase):
     def test_piecewise_bezier_curve(self):
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, 0., 1.)
         b = bezier(waypoints, 1., 2.)
         pc = piecewise_bezier_curve(a)
@@ -418,7 +422,7 @@ class TestCurves(unittest.TestCase):
         pc.min()
         pc.max()
         pc(0.4)
-        self.assertTrue((pc(pc.min()) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((pc(pc.min()) == array([1., 2., 3.])).all())
         self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
@@ -435,10 +439,10 @@ class TestCurves(unittest.TestCase):
         print("test_piecewise_cubic_hermite_curve")
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous
-        points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        tangents = matrix([[2., 2., 2.], [4., 4., 4.]]).transpose()
-        time_points0 = matrix([0., 1.]).transpose()
-        time_points1 = matrix([1., 2.]).transpose()
+        points = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        tangents = array([[2., 2., 2.], [4., 4., 4.]]).transpose()
+        time_points0 = array([[0., 1.]]).transpose()
+        time_points1 = array([[1., 2.]]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points0)
         b = cubic_hermite_spline(points, tangents, time_points1)
         pc = piecewise_cubic_hermite_curve(a)
@@ -446,7 +450,7 @@ class TestCurves(unittest.TestCase):
         pc.min()
         pc.max()
         pc(0.4)
-        self.assertTrue((pc(0.) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((pc(0.) == array([1., 2., 3.])).all())
         self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
@@ -463,8 +467,8 @@ class TestCurves(unittest.TestCase):
         print("test_exact_cubic")
         # To test :
         # - Functions : constructor, min, max, derivate, getNumberSplines, getSplineAt
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        time_waypoints = matrix([0., 1.]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        time_waypoints = array([[0., 1.]]).transpose()
         a = exact_cubic(waypoints, time_waypoints)
         a.min()
         a.max()
@@ -485,13 +489,13 @@ class TestCurves(unittest.TestCase):
         print("test_exact_cubic_constraint")
         # To test :
         # - Functions : constructor, min, max, derivate
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        time_waypoints = matrix([0., 1.]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        time_waypoints = array([[0., 1.]]).transpose()
         c = curve_constraints(3)
-        c.init_vel = matrix([0., 1., 1.]).transpose()
-        c.end_vel = matrix([0., 1., 1.]).transpose()
-        c.init_acc = matrix([0., 1., 1.]).transpose()
-        c.end_acc = matrix([0., 1., 1.]).transpose()
+        c.init_vel = array([[0., 1., 1.]]).transpose()
+        c.end_vel = array([[0., 1., 1.]]).transpose()
+        c.init_acc = array([[0., 1., 1.]]).transpose()
+        c.end_acc = array([[0., 1., 1.]]).transpose()
         c.init_vel
         c.end_vel
         c.init_acc
@@ -501,15 +505,15 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_cubic_hermite_spline_2(self):
-        points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        tangents = matrix([[2., 2., 2.], [4., 4., 4.]]).transpose()
-        time_points = matrix([0., 1.]).transpose()
+        points = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        tangents = array([[2., 2., 2.], [4., 4., 4.]]).transpose()
+        time_points = array([[0., 1.]]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points)
         a.min()
         a.max()
         a(0.4)
-        self.assertTrue((a(0.) == matrix([1., 2., 3.]).transpose()).all())
-        self.assertTrue((a.derivate(0., 1) == matrix([2., 2., 2.]).transpose()).all())
+        self.assertTrue((a(0.) == array([1., 2., 3.])).all())
+        self.assertTrue((a.derivate(0., 1) == array([[2., 2., 2.]]).transpose()).all())
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         return
@@ -517,7 +521,7 @@ class TestCurves(unittest.TestCase):
     def test_conversion_curves(self):
         print("test_conversion_curves")
         __EPS = 1e-6
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints)
         # converting bezier to polynomial
         a_pol = polynomial_from_bezier(a)
@@ -543,7 +547,7 @@ class TestCurves(unittest.TestCase):
 
     def test_conversion_piecewise_curves(self):
         __EPS = 1e-6
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, 0., 1.)
         b = bezier(waypoints, 1., 2.)
         pc = piecewise_bezier_curve(a)
@@ -587,8 +591,8 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(isclose(so3Quat(t), so3Rot(t)).all())
             t += 0.01
         # check the derivatives :
-        vel = matrix([[1.20830487], [0.], [0.]])
-        zeros3 = matrix(zeros(3)).T
+        vel = array([1.20830487, 0., 0.])
+        zeros3 = zeros((3, 1))
         t = min
         while t < max:
             self.assertTrue(isclose(so3Quat.derivate(t, 1), vel).all())
@@ -639,10 +643,10 @@ class TestCurves(unittest.TestCase):
         end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
         init_rot = init_quat.matrix()
         end_rot = end_quat.matrix()
-        init_translation = matrix([1, 1.2, -0.6]).T
-        end_translation = matrix([2.3, 0, 0.9]).T
-        init_pose = matrix(np.identity(4))
-        end_pose = matrix(np.identity(4))
+        init_translation = array([1, 1.2, -0.6]).T
+        end_translation = array([2.3, 0, 0.9]).T
+        init_pose = array(np.identity(4))
+        end_pose = array(np.identity(4))
         init_pose[:3, :3] = init_rot
         end_pose[:3, :3] = end_rot
         init_pose[:3, 3] = init_translation
@@ -674,20 +678,20 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(isinstance(motion, Motion))
             self.assertTrue(isclose(motion.linear, ((end_translation - init_translation) / (max - min))).all())
             self.assertTrue(isclose(motion.angular[0], 1.20830487))
-            self.assertTrue(isclose(motion.angular[1:3], matrix([0, 0]).T).all())
+            self.assertTrue(isclose(motion.angular[1:3], array([0, 0]).T).all())
             self.assertTrue(d.isApprox(se3.derivateAsMotion(0.5, 1), 1e-6))
             self.assertTrue(d.isApprox(se3.derivateAsMotion(max, 1), 1e-6))
             self.assertTrue(se3.derivateAsMotion(min, 2).isApprox(Motion.Zero(), 1e-6))
             self.assertTrue(se3.derivateAsMotion(min, 3).isApprox(Motion.Zero(), 1e-6))
         self.assertEqual(d.shape[0], 6)
-        self.assertEqual(d.shape[1], 1)
+        # self.assertEqual(d.shape[1], 1)
         self.assertTrue(isclose(d[0:3], ((end_translation - init_translation) / (max - min))).all())
         self.assertTrue(isclose(d[3], 1.20830487))
-        self.assertTrue(isclose(d[4:6], matrix([0, 0]).T).all())
+        self.assertTrue(isclose(d[4:6], array([0, 0]).T).all())
         self.assertTrue(isclose(d, se3.derivate(0.5, 1)).all())
         self.assertTrue(isclose(d, se3.derivate(max, 1)).all())
-        self.assertTrue(isclose(se3.derivate(min, 2), matrix(zeros(6)).T).all())
-        self.assertTrue(isclose(se3.derivate(min, 3), matrix(zeros(6)).T).all())
+        self.assertTrue(isclose(se3.derivate(min, 2), zeros((6, 1))).all())
+        self.assertTrue(isclose(se3.derivate(min, 3), zeros((6, 1))).all())
         # check that errors are correctly raised when necessary :
         try:
             se3(0.)
@@ -726,7 +730,7 @@ class TestCurves(unittest.TestCase):
         end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
         init_rot = init_quat.matrix()
         end_rot = end_quat.matrix()
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
         min = 0.2
         max = 1.5
         translation = bezier(waypoints, min, max)
@@ -785,10 +789,10 @@ class TestCurves(unittest.TestCase):
 
         # test with piecewise polynomial
         N = 7
-        points = matrix(random.rand(3, N))
-        # points_derivative = matrix(random.rand(3, N))
-        # points_second_derivative = matrix(random.rand(3, N))
-        time_points = matrix(random.rand(N)).T
+        points = array(random.rand(3, N))
+        # points_derivative = array(random.rand(3, N))
+        # points_second_derivative = array(random.rand(3, N))
+        time_points = array(random.rand(1, N)).T
         time_points.sort(0)
         translation = piecewise_polynomial_curve.FromPointsList(points, time_points)
         min = translation.min()
@@ -824,7 +828,7 @@ class TestCurves(unittest.TestCase):
         end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
         init_rot = init_quat.matrix()
         end_rot = end_quat.matrix()
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
         min = 0.2
         max = 1.5
         translation = bezier(waypoints, min, max)
@@ -892,8 +896,8 @@ class TestCurves(unittest.TestCase):
             end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
             init_rot = init_quat.matrix()
             end_rot = end_quat.matrix()
-            init_translation = matrix([0.2, -0.7, 0.6]).T
-            end_translation = matrix([3.6, -2.2, -0.9]).T
+            init_translation = array([0.2, -0.7, 0.6]).T
+            end_translation = array([3.6, -2.2, -0.9]).T
             init_pose = SE3.Identity()
             end_pose = SE3.Identity()
             init_pose.rotation = init_rot
@@ -918,7 +922,7 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(isinstance(d, Motion))
             self.assertTrue(isclose(d.linear, ((end_translation - init_translation) / (max - min))).all())
             self.assertTrue(isclose(d.angular[0], 0.139009))
-            self.assertTrue(isclose(d.angular[1:3], matrix([0, 0]).T).all())
+            self.assertTrue(isclose(d.angular[1:3], array([0, 0]).T).all())
             self.assertTrue(d.isApprox(se3.derivateAsMotion((min + max) / 2., 1), 1e-6))
             self.assertTrue(d.isApprox(se3.derivateAsMotion(max, 1), 1e-6))
             self.assertTrue(se3.derivateAsMotion(min, 2).isApprox(Motion.Zero(), 1e-6))
