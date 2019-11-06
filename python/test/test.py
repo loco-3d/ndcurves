@@ -195,11 +195,11 @@ class TestCurves(unittest.TestCase):
 
         # Bezier dim 4
         waypoints = matrix([[1., 2., 3., 4.]]).T
-        a = bezier3(waypoints, 0., 2.)
+        a = bezier(waypoints, 0., 2.)
         # Test serialization : bezier of dim 4
         a.saveAsText("serialization_curve.test")
         # waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
-        b = bezier3()
+        b = bezier()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
