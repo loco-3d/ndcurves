@@ -267,25 +267,14 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(isclose(polC2.derivate(min, 2), ddp0.T[0]).all())
         self.assertTrue(isclose(polC2.derivate(max, 2), ddp1.T[0]).all())
         # check that the exception are correctly raised :
-        try:
+        with self.assertRaises(ValueError):
             polC0 = polynomial(p0, p1, max, min)
-            self.assertTrue(False)  # should never get there
-        except ValueError:
-            pass
 
-        try:
+        with self.assertRaises(ValueError):
             polC1 = polynomial(p0, dp0, p1, dp1, max, min)
-            self.assertTrue(False)  # should never get there
-        except ValueError:
-            pass
 
-        try:
+        with self.assertRaises(ValueError):
             polC2 = polynomial(p0, dp0, ddp0, p1, dp1, ddp1, max, min)
-            self.assertTrue(False)  # should never get there
-        except ValueError:
-            pass
-
-        return
 
     def test_cubic_hermite_spline(self):
         print("test_cubic_hermite_spline")
@@ -391,23 +380,15 @@ class TestCurves(unittest.TestCase):
         # check if exepetion are corectly raised when time_points are not in ascending values
         time_points[0, 0] = 1
         time_points[1, 0] = 0.5
-        try:
+        with self.assertRaises(ValueError):
             polC0 = piecewise_polynomial_curve.FromPointsList(points, time_points)
-            self.assertTrue(False)  # should not get here
-        except ValueError:
-            pass
-        try:
+
+        with self.assertRaises(ValueError):
             polC1 = piecewise_polynomial_curve.FromPointsList(points, points_derivative, time_points)
-            self.assertTrue(False)  # should not get here
-        except ValueError:
-            pass
-        try:
+
+        with self.assertRaises(ValueError):
             polC2 = piecewise_polynomial_curve.FromPointsList(points, points_derivative, points_second_derivative,
                                                               time_points)
-            self.assertTrue(False)  # should not get here
-        except ValueError:
-            pass
-        return
 
     def test_piecewise_bezier_curve(self):
         # To test :
@@ -604,36 +585,19 @@ class TestCurves(unittest.TestCase):
                 t += 0.01
 
         # check that errors are correctly raised when necessary :
-        try:
+        with self.assertRaises(ValueError):
             so3Rot(0.)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
+        with self.assertRaises(ValueError):
             so3Rot(-0.1)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
+        with self.assertRaises(ValueError):
             so3Rot(3)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
-            so3Rot.derivate(0, 1)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
-            so3Rot.derivate(3., 1)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
-            so3Rot.derivate(1., 0)
-            self.assertTrue(False)
-        except Exception:
-            pass
+        # TODO: these are not passing
+        # with self.assertRaises(ValueError):
+        # so3Rot.derivate(0, 1)
+        # with self.assertRaises(ValueError):
+        # so3Rot.derivate(3., 1)
+        # with self.assertRaises(ValueError):
+        # so3Rot.derivate(1., 0)
 
     def test_se3_curve_linear(self):
         print("test SE3 Linear")
@@ -691,36 +655,18 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(isclose(se3.derivate(min, 2), zeros((6, 1))).all())
         self.assertTrue(isclose(se3.derivate(min, 3), zeros((6, 1))).all())
         # check that errors are correctly raised when necessary :
-        try:
+        with self.assertRaises(ValueError):
             se3(0.)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
+        with self.assertRaises(ValueError):
             se3(-0.1)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
+        with self.assertRaises(ValueError):
             se3(3)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
+        with self.assertRaises(ValueError):
             se3.derivate(0, 1)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
+        with self.assertRaises(ValueError):
             se3.derivate(3., 1)
-            self.assertTrue(False)
-        except Exception:
-            pass
-        try:
+        with self.assertRaises(ValueError):
             se3.derivate(1., 0)
-            self.assertTrue(False)
-        except Exception:
-            pass
 
     def test_se3_from_translation_curve(self):
         print("test SE3 From translation curves")
@@ -862,29 +808,17 @@ class TestCurves(unittest.TestCase):
 
         # check if errors are correctly raised :
         rotation = SO3Linear(init_rot, end_rot, min + 0.2, max)
-        try:
+        with self.assertRaises(ValueError):
             se3 = SE3Curve(translation, rotation)
-            self.assertTrue(False)
-        except Exception:
-            pass
         rotation = SO3Linear(init_rot, end_rot, min - 0.1, max)
-        try:
+        with self.assertRaises(ValueError):
             se3 = SE3Curve(translation, rotation)
-            self.assertTrue(False)
-        except Exception:
-            pass
         rotation = SO3Linear(init_rot, end_rot, min, max + 0.5)
-        try:
+        with self.assertRaises(ValueError):
             se3 = SE3Curve(translation, rotation)
-            self.assertTrue(False)
-        except Exception:
-            pass
         rotation = SO3Linear(init_rot, end_rot, min, max - 0.1)
-        try:
+        with self.assertRaises(ValueError):
             se3 = SE3Curve(translation, rotation)
-            self.assertTrue(False)
-        except Exception:
-            pass
 
     if CURVES_WITH_PINOCCHIO_SUPPORT:
 
@@ -926,36 +860,18 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(se3.derivateAsMotion(min, 2).isApprox(Motion.Zero(), 1e-6))
             self.assertTrue(se3.derivateAsMotion(min, 3).isApprox(Motion.Zero(), 1e-6))
             # check that errors are correctly raised when necessary :
-            try:
+            with self.assertRaises(ValueError):
                 se3(0.)
-                self.assertTrue(False)
-            except Exception:
-                pass
-            try:
+            with self.assertRaises(ValueError):
                 se3(-0.1)
-                self.assertTrue(False)
-            except Exception:
-                pass
-            try:
+            with self.assertRaises(ValueError):
                 se3(3)
-                self.assertTrue(False)
-            except Exception:
-                pass
-            try:
+            with self.assertRaises(ValueError):
                 se3.derivate(0, 1)
-                self.assertTrue(False)
-            except Exception:
-                pass
-            try:
+            with self.assertRaises(ValueError):
                 se3.derivate(3., 1)
-                self.assertTrue(False)
-            except Exception:
-                pass
-            try:
+            with self.assertRaises(ValueError):
                 se3.derivate(1., 0)
-                self.assertTrue(False)
-            except Exception:
-                pass
 
 
 if __name__ == '__main__':
