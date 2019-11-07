@@ -592,12 +592,12 @@ class TestCurves(unittest.TestCase):
         with self.assertRaises(ValueError):
             so3Rot(3)
         # TODO: these are not passing
-        # with self.assertRaises(ValueError):
-        # so3Rot.derivate(0, 1)
-        # with self.assertRaises(ValueError):
-        # so3Rot.derivate(3., 1)
-        # with self.assertRaises(ValueError):
-        # so3Rot.derivate(1., 0)
+        with self.assertRaises(ValueError):
+            so3Rot.derivate(0, 1)
+        with self.assertRaises(ValueError):
+            so3Rot.derivate(3., 1)
+        with self.assertRaises(ValueError):
+            so3Rot.derivate(1., 0)
 
     def test_se3_curve_linear(self):
         print("test SE3 Linear")
