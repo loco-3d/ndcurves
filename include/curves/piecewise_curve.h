@@ -202,7 +202,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     piecewise_curve_t pc_res;
     // Convert and add all other curves (segments)
     for (std::size_t i = 0; i < size_; i++) {
-      pc_res.add_curve(bezier_from_curve<Bezier, curve_ptr_t>(curves_.at(i)));
+      pc_res.add_curve(bezier_from_curve<Bezier>(*curves_.at(i)));
     }
     return pc_res;
   }
@@ -217,7 +217,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     piecewise_curve_t pc_res;
     // Convert and add all other curves (segments)
     for (std::size_t i = 0; i < size_; i++) {
-      pc_res.add_curve(hermite_from_curve<Hermite, curve_ptr_t>(curves_.at(i)));
+      pc_res.add_curve(hermite_from_curve<Hermite>(*curves_.at(i)));
     }
     return pc_res;
   }
@@ -232,7 +232,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     piecewise_curve_t pc_res;
     // Convert and add all other curves (segments)
     for (std::size_t i = 0; i < size_; i++) {
-      pc_res.add_curve(polynomial_from_curve<Polynomial, curve_ptr_t>(curves_.at(i)));
+      pc_res.add_curve(polynomial_from_curve<Polynomial>(*curves_.at(i)));
     }
     return pc_res;
   }
