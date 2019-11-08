@@ -70,6 +70,10 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$, upper bound of time range.
   virtual time_t max() const = 0;
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const =0;
+
   std::pair<time_t, time_t> timeRange() { return std::make_pair(min(), max()); }
   /*Helpers*/
 

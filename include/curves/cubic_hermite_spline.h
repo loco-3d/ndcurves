@@ -325,6 +325,9 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$, upper bound of time range.
   Time virtual max() const { return time_control_points_.back(); }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const {return degree_;}
   /*Helpers*/
 
   /*Attributes*/
