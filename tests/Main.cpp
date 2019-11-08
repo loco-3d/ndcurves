@@ -437,7 +437,7 @@ void toPolynomialConversionTest(bool& error) {
   bezier_curve_t::num_t T_min = 1.0;
   bezier_curve_t::num_t T_max = 3.0;
   bezier_curve_t bc(control_points.begin(), control_points.end(), T_min, T_max);
-  polynomial_t pol = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc);
+  polynomial_t pol = polynomial_from_curve<polynomial_t>(bc);
   CompareCurves<polynomial_t, bezier_curve_t>(pol, bc, errMsg, error);
 }
 
@@ -467,37 +467,37 @@ void cubicConversionTest(bool& error) {
   // hermite to bezier
   // std::cout<<"======================= \n";
   // std::cout<<"hermite to bezier \n";
-  bezier_curve_t bc0 = bezier_from_curve<bezier_curve_t, cubic_hermite_spline_t>(chs0);
+  bezier_curve_t bc0 = bezier_from_curve<bezier_curve_t>(chs0);
   CompareCurves<cubic_hermite_spline_t, bezier_curve_t>(chs0, bc0, errMsg0, error);
   // hermite to pol
   // std::cout<<"======================= \n";
   // std::cout<<"hermite to polynomial \n";
-  polynomial_t pol0 = polynomial_from_curve<polynomial_t, cubic_hermite_spline_t>(chs0);
+  polynomial_t pol0 = polynomial_from_curve<polynomial_t>(chs0);
   CompareCurves<cubic_hermite_spline_t, polynomial_t>(chs0, pol0, errMsg0, error);
   // pol to hermite
   // std::cout<<"======================= \n";
   // std::cout<<"polynomial to hermite \n";
-  cubic_hermite_spline_t chs1 = hermite_from_curve<cubic_hermite_spline_t, polynomial_t>(pol0);
+  cubic_hermite_spline_t chs1 = hermite_from_curve<cubic_hermite_spline_t>(pol0);
   CompareCurves<polynomial_t, cubic_hermite_spline_t>(pol0, chs1, errMsg2, error);
   // pol to bezier
   // std::cout<<"======================= \n";
   // std::cout<<"polynomial to bezier \n";
-  bezier_curve_t bc1 = bezier_from_curve<bezier_curve_t, polynomial_t>(pol0);
+  bezier_curve_t bc1 = bezier_from_curve<bezier_curve_t>(pol0);
   CompareCurves<bezier_curve_t, polynomial_t>(bc1, pol0, errMsg2, error);
   // Bezier to pol
   // std::cout<<"======================= \n";
   // std::cout<<"bezier to polynomial \n";
-  polynomial_t pol1 = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc0);
+  polynomial_t pol1 = polynomial_from_curve<polynomial_t>(bc0);
   CompareCurves<bezier_curve_t, polynomial_t>(bc0, pol1, errMsg1, error);
   // bezier => hermite
   // std::cout<<"======================= \n";
   // std::cout<<"bezier to hermite \n";
-  cubic_hermite_spline_t chs2 = hermite_from_curve<cubic_hermite_spline_t, bezier_curve_t>(bc0);
+  cubic_hermite_spline_t chs2 = hermite_from_curve<cubic_hermite_spline_t>(bc0);
   CompareCurves<bezier_curve_t, cubic_hermite_spline_t>(bc0, chs2, errMsg1, error);
 
   // Test : compute derivative of bezier => Convert it to polynomial
   bezier_curve_t bc_der = bc0.compute_derivate(1);
-  polynomial_t pol_test = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc_der);
+  polynomial_t pol_test = polynomial_from_curve<polynomial_t>(bc_der);
   CompareCurves<bezier_curve_t, polynomial_t>(bc_der, pol_test, errMsg1, error);
 }
 
@@ -1197,13 +1197,13 @@ void piecewiseCurveTest(bool& error) {
       error = true;
     }
     // CONVERT PIECEWISE POLYNOMIAL CURVES TO BEZIER AND HERMITE
-//    std::string errmsg5("in piecewise polynomial curve test, Error while checking piecewise curve conversion");
-//    piecewise_curve_t pc_bezier = pc.convert_piecewise_curve_to_bezier<bezier_curve_t>();
-//    CompareCurves<piecewise_curve_t, piecewise_curve_t>(pc, pc_bezier, errmsg5, error);
-//    piecewise_curve_t pc_hermite = pc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
-//    CompareCurves<piecewise_curve_t, piecewise_curve_t>(pc, pc_hermite, errmsg5, error);
-//    piecewise_curve_t pc_polynomial_same = pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
-//    CompareCurves<piecewise_curve_t, piecewise_curve_t>(pc, pc_polynomial_same, errmsg5, error);
+    std::string errmsg5("in piecewise polynomial curve test, Error while checking piecewise curve conversion");
+    piecewise_curve_t pc_bezier = pc.convert_piecewise_curve_to_bezier<bezier_curve_t>();
+    CompareCurves<piecewise_curve_t, piecewise_curve_t>(pc, pc_bezier, errmsg5, error);
+    piecewise_curve_t pc_hermite = pc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    CompareCurves<piecewise_curve_t, piecewise_curve_t>(pc, pc_hermite, errmsg5, error);
+    piecewise_curve_t pc_polynomial_same = pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
+    CompareCurves<piecewise_curve_t, piecewise_curve_t>(pc, pc_polynomial_same, errmsg5, error);
 
     // compare compute_derivate and derivate results :
 
@@ -1266,7 +1266,7 @@ void curveAbcDimDynamicTest(bool& error) {
     error = false;
   }
   // BEZIER
-  bezier_curve_test_t bc = bezier_from_curve<bezier_curve_test_t, polynomial_test_t>(pol);
+  bezier_curve_test_t bc = bezier_from_curve<bezier_curve_test_t>(pol);
   try {
     bc(0);
     bc(1);
@@ -1274,7 +1274,7 @@ void curveAbcDimDynamicTest(bool& error) {
     error = false;
   }
   // CUBIC HERMITE
-  cubic_hermite_spline_test_t chs = hermite_from_curve<cubic_hermite_spline_test_t, polynomial_test_t>(pol);
+  cubic_hermite_spline_test_t chs = hermite_from_curve<cubic_hermite_spline_test_t>(pol);
   try {
     chs(0);
     chs(1);
@@ -1440,13 +1440,13 @@ void serializationCurvesTest(bool& error) {
     pol_test.loadFromText<polynomial_t>(fileName1);
     CompareCurves<polynomial_t, polynomial_t>(pol1, pol_test, errMsg1, error);
     // Test serialization on Bezier
-    bezier_curve_t bc = bezier_from_curve<bezier_curve_t, polynomial_t>(pol1);
+    bezier_curve_t bc = bezier_from_curve<bezier_curve_t>(pol1);
     bc.saveAsText<bezier_curve_t>(fileName);
     bezier_curve_t bc_test;
     bc_test.loadFromText<bezier_curve_t>(fileName);
     CompareCurves<polynomial_t, bezier_curve_t>(pol1, bc_test, errMsg2, error);
     // Test serialization on Cubic Hermite
-    cubic_hermite_spline_t chs = hermite_from_curve<cubic_hermite_spline_t, polynomial_t>(pol1);
+    cubic_hermite_spline_t chs = hermite_from_curve<cubic_hermite_spline_t>(pol1);
     chs.saveAsText<cubic_hermite_spline_t>(fileName);
     cubic_hermite_spline_t chs_test;
     chs_test.loadFromText<cubic_hermite_spline_t>(fileName);
@@ -1462,17 +1462,17 @@ void serializationCurvesTest(bool& error) {
     CompareCurves<piecewise_curve_t, piecewise_curve_t>(ppc, ppc_test_binary, errMsg4, error);
 
     // Test serialization on Piecewise Bezier curve
-//    piecewise_curve_t pbc = ppc.convert_piecewise_curve_to_bezier<bezier_curve_t>();
-//    pbc.saveAsText<piecewise_curve_t>(fileName);
-//    piecewise_curve_t pbc_test;
-//    pbc_test.loadFromText<piecewise_curve_t>(fileName);
-//    CompareCurves<piecewise_curve_t, piecewise_curve_t>(ppc, pbc_test, errMsg4, error);
-//    // Test serialization on Piecewise Cubic Hermite curve
-//    piecewise_curve_t pchc = ppc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
-//    pchc.saveAsText<piecewise_curve_t>(fileName);
-//    piecewise_curve_t pchc_test;
-//    pchc_test.loadFromText<piecewise_curve_t>(fileName);
-//    CompareCurves<piecewise_curve_t, piecewise_curve_t>(ppc, pchc_test, errMsg4, error);
+    piecewise_curve_t pbc = ppc.convert_piecewise_curve_to_bezier<bezier_curve_t>();
+    pbc.saveAsText<piecewise_curve_t>(fileName);
+    piecewise_curve_t pbc_test;
+    pbc_test.loadFromText<piecewise_curve_t>(fileName);
+    CompareCurves<piecewise_curve_t, piecewise_curve_t>(ppc, pbc_test, errMsg4, error);
+    // Test serialization on Piecewise Cubic Hermite curve
+    piecewise_curve_t pchc = ppc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    pchc.saveAsText<piecewise_curve_t>(fileName);
+    piecewise_curve_t pchc_test;
+    pchc_test.loadFromText<piecewise_curve_t>(fileName);
+    CompareCurves<piecewise_curve_t, piecewise_curve_t>(ppc, pchc_test, errMsg4, error);
     // Test serialization on exact cubic
     curves::T_Waypoint waypoints;
     for (double i = 0; i <= 1; i = i + 0.2) {
