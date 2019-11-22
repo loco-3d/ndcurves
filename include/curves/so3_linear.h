@@ -99,6 +99,10 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   ///  \param order : order of derivative.
   ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
   virtual point3_t derivate(const time_t t, const std::size_t order) const {
+    if ((t < T_min_ || t > T_max_) && Safe) {
+      throw std::invalid_argument(
+          "error in SO3_linear : time t to evaluate derivative should be in range [Tmin, Tmax] of the curve");
+    }
     if (order > 1 || t > T_max_ || t < T_min_) {
       return point3_t::Zero(3);
     } else if (order == 1) {
