@@ -786,10 +786,10 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(isclose(so3Rot(max), end_rot).all())
         self.assertTrue(isclose(so3Quat(min), init_rot).all())
         self.assertTrue(isclose(so3Quat(max), end_rot).all())
-        self.assertEqual(so3Rot.computeAsQuaternion(min), init_quat)
-        self.assertEqual(so3Rot.computeAsQuaternion(max), end_quat)
-        self.assertEqual(so3Quat.computeAsQuaternion(min), init_quat)
-        self.assertEqual(so3Quat.computeAsQuaternion(max), end_quat)
+        self.assertTrue(so3Rot.computeAsQuaternion(min).isApprox(init_quat))
+        self.assertTrue(so3Rot.computeAsQuaternion(max).isApprox(end_quat))
+        self.assertTrue(so3Quat.computeAsQuaternion(min).isApprox(init_quat))
+        self.assertTrue(so3Quat.computeAsQuaternion(max).isApprox(end_quat))
         t = min
         while t < max:
             self.assertTrue(isclose(so3Quat(t), so3Rot(t)).all())
