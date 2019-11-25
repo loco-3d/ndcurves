@@ -150,8 +150,8 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     }
     ar>> boost::serialization::make_nvp("dim", dim_);
     matrix3_t init,end;
-    ar >> boost::serialization::make_nvp("init_rot", init);
-    ar >> boost::serialization::make_nvp("end_rot", end);
+    ar >> boost::serialization::make_nvp("init_rotation", init);
+    ar >> boost::serialization::make_nvp("end_rotation", end);
     init_rot_ = quaternion_t(init);
     end_rot_ = quaternion_t(end);
     ar >> boost::serialization::make_nvp("angular_vel", angular_vel_);
