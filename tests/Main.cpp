@@ -63,16 +63,18 @@ ostream& operator<<(ostream& os, const point_t& pt) {
   return os;
 }
 
-void ComparePoints(const Eigen::VectorXd& pt1, const Eigen::VectorXd& pt2, const std::string& errmsg, bool& error,
-                   bool notequal = false) {
-  if (!QuasiEqual((pt1 - pt2).norm(), 0.0) && !notequal) {
+
+
+void ComparePoints(const Eigen::MatrixXd& pt1, const Eigen::MatrixXd& pt2, const std::string& errmsg, bool& error,
+                   double prec = Eigen::NumTraits<double>::dummy_precision() ,bool notequal = false) {
+  if (!pt1.isApprox(pt2,prec) && !(pt1.isZero(prec) && pt2.isZero(prec)) && !notequal) {
     error = true;
-    std::cout << errmsg << pt1.transpose() << " ; " << pt2.transpose() << std::endl;
+    std::cout << errmsg << pt1 << " ; " << pt2 << std::endl;
   }
 }
 
 template <typename curve1, typename curve2>
-void CompareCurves(curve1 c1, curve2 c2, const std::string& errMsg, bool& error) {
+void CompareCurves(curve1 c1, curve2 c2, const std::string& errMsg, bool& error ,double prec = Eigen::NumTraits<double>::dummy_precision()) {
   double T_min = c1.min();
   double T_max = c1.max();
   if (!QuasiEqual(T_min, c2.min()) || !QuasiEqual(T_max, c2.max())) {
@@ -81,12 +83,12 @@ void CompareCurves(curve1 c1, curve2 c2, const std::string& errMsg, bool& error)
     error = true;
   } else {
     // derivative in T_min and T_max
-    ComparePoints(c1.derivate(T_min, 1), c2.derivate(T_min, 1), errMsg, error, false);
-    ComparePoints(c1.derivate(T_max, 1), c2.derivate(T_max, 1), errMsg, error, false);
+    ComparePoints(c1.derivate(T_min, 1), c2.derivate(T_min, 1), errMsg, error,prec, false);
+    ComparePoints(c1.derivate(T_max, 1), c2.derivate(T_max, 1), errMsg, error,prec, false);
     // Test values on curves
     for (double i = T_min; i < T_max; i += 0.02) {
-      ComparePoints(c1(i), c2(i), errMsg, error, false);
-      ComparePoints(c1(i), c2(i), errMsg, error, false);
+      ComparePoints(c1(i), c2(i), errMsg, error,prec, false);
+      ComparePoints(c1(i), c2(i), errMsg, error,prec, false);
     }
   }
 }
@@ -583,11 +585,11 @@ void ExactCubicOneDimTest(bool& error) {
 }
 
 void CheckWayPointConstraint(const std::string& errmsg, const double step, const curves::T_Waypoint&,
-                             const exact_cubic_t* curve, bool& error) {
+                             const exact_cubic_t* curve, bool& error, double prec = Eigen::NumTraits<double>::dummy_precision()) {
   point_t res1;
   for (double i = 0; i <= 1; i = i + step) {
     res1 = (*curve)(i);
-    ComparePoints(point_t(i, i, i), res1, errmsg, error);
+    ComparePoints(point_t(i, i, i), res1, errmsg, error,prec);
   }
 }
 
@@ -620,10 +622,10 @@ void ExactCubicVelocityConstraintsTest(bool& error) {
   std::string errmsg3(
       "Error in ExactCubicVelocityConstraintsTest (2); while checking derivative (expected / obtained)");
   // now check derivatives
-  ComparePoints(constraints.init_vel, exactCubic.derivate(0, 1), errmsg3, error);
-  ComparePoints(constraints.end_vel, exactCubic.derivate(1, 1), errmsg3, error);
-  ComparePoints(constraints.init_acc, exactCubic.derivate(0, 2), errmsg3, error);
-  ComparePoints(constraints.end_acc, exactCubic.derivate(1, 2), errmsg3, error);
+  ComparePoints(constraints.init_vel, exactCubic.derivate(0, 1), errmsg3, error,1e-10);
+  ComparePoints(constraints.end_vel, exactCubic.derivate(1, 1), errmsg3, error,1e-10);
+  ComparePoints(constraints.init_acc, exactCubic.derivate(0, 2), errmsg3, error,1e-10);
+  ComparePoints(constraints.end_acc, exactCubic.derivate(1, 2), errmsg3, error,1e-10);
   constraints.end_vel = point_t(1, 2, 3);
   constraints.init_vel = point_t(-1, -2, -3);
   constraints.end_acc = point_t(4, 5, 6);
@@ -632,14 +634,14 @@ void ExactCubicVelocityConstraintsTest(bool& error) {
       "Error in ExactCubicVelocityConstraintsTest (3); while checking that given wayPoints are crossed (expected / "
       "obtained)");
   exact_cubic_t exactCubic2(waypoints.begin(), waypoints.end(), constraints);
-  CheckWayPointConstraint(errmsg2, 0.2, waypoints, &exactCubic2, error);
+  CheckWayPointConstraint(errmsg2, 0.2, waypoints, &exactCubic2, error,1e-10);
   std::string errmsg4(
       "Error in ExactCubicVelocityConstraintsTest (4); while checking derivative (expected / obtained)");
   // now check derivatives
-  ComparePoints(constraints.init_vel, exactCubic2.derivate(0, 1), errmsg4, error);
-  ComparePoints(constraints.end_vel, exactCubic2.derivate(1, 1), errmsg4, error);
-  ComparePoints(constraints.init_acc, exactCubic2.derivate(0, 2), errmsg4, error);
-  ComparePoints(constraints.end_acc, exactCubic2.derivate(1, 2), errmsg4, error);
+  ComparePoints(constraints.init_vel, exactCubic2.derivate(0, 1), errmsg4, error,1e-10);
+  ComparePoints(constraints.end_vel, exactCubic2.derivate(1, 1), errmsg4, error,1e-10);
+  ComparePoints(constraints.init_acc, exactCubic2.derivate(0, 2), errmsg4, error,1e-10);
+  ComparePoints(constraints.end_acc, exactCubic2.derivate(1, 2), errmsg4, error,1e-10);
 }
 
 template <typename CurveType>
