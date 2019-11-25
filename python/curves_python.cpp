@@ -858,17 +858,18 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
       .def("computeAsQuaternion", &SO3Linear_t::computeAsQuaternion,
            "Output the quaternion of the rotation at the given time. This rotation is obtained by a Spherical Linear "
            "Interpolation between the initial and final rotation.")
-      //      .def("saveAsText", &SO3Linear_t::saveAsText<SO3Linear_t>,bp::args("filename"),"Saves *this inside a text
-      //      file.") .def("loadFromText",&SO3Linear_t::loadFromText<SO3Linear_t>,bp::args("filename"),"Loads *this
-      //      from a text file.")
-      //      .def("saveAsXML",&SO3Linear_t::saveAsXML<SO3Linear_t>,bp::args("filename","tag_name"),"Saves *this inside
-      //      a XML file.")
-      //      .def("loadFromXML",&SO3Linear_t::loadFromXML<SO3Linear_t>,bp::args("filename","tag_name"),"Loads *this
-      //      from a XML file.")
-      //      .def("saveAsBinary",&SO3Linear_t::saveAsBinary<SO3Linear_t>,bp::args("filename"),"Saves *this inside a
-      //      binary file.")
-      //      .def("loadFromBinary",&SO3Linear_t::loadFromBinary<SO3Linear_t>,bp::args("filename"),"Loads *this from a
-      //      binary file.")
+      .def("saveAsText", &SO3Linear_t::saveAsText<SO3Linear_t>,bp::args("filename"),
+      "Saves *this inside a text file.")
+      .def("loadFromText",&SO3Linear_t::loadFromText<SO3Linear_t>,bp::args("filename"),
+      "Loads *this from a text file.")
+      .def("saveAsXML",&SO3Linear_t::saveAsXML<SO3Linear_t>,bp::args("filename","tag_name"),
+      "Saves *this inside a XML file.")
+      .def("loadFromXML",&SO3Linear_t::loadFromXML<SO3Linear_t>,bp::args("filename","tag_name"),
+      "Loads *this from a XML file.")
+      .def("saveAsBinary",&SO3Linear_t::saveAsBinary<SO3Linear_t>,bp::args("filename"),
+      "Saves *this inside a binary file.")
+      .def("loadFromBinary",&SO3Linear_t::loadFromBinary<SO3Linear_t>,bp::args("filename"),
+      "Loads *this from a binary file.")
       ;
 
   /** END  SO3 Linear**/
