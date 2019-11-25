@@ -7,6 +7,10 @@
 #include <Eigen/Geometry>
 #include <boost/math/constants/constants.hpp>
 
+#include <boost/serialization/split_free.hpp>
+#include <boost/serialization/vector.hpp>
+
+
 namespace curves {
 
 /// \class SO3Linear.
@@ -122,6 +126,11 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$ upper bound of time range.
   time_t max() const { return T_max_; }
+  matrix3_t getInitRotation()const {return init_rot_.toRotationMatrix();}
+  matrix3_t getEndRotation()const {return end_rot_.toRotationMatrix();}
+  matrix3_t getInitRotation() {return init_rot_.toRotationMatrix();}
+  matrix3_t getEndRotation() {return end_rot_.toRotationMatrix();}
+
   /*Helpers*/
 
   /*Attributes*/
@@ -135,17 +144,38 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
+  void load(Archive& ar, const unsigned int version) {
     if (version) {
       // Do something depending on version ?
     }
-    ar& boost::serialization::make_nvp("dim", dim_);
-    ar& boost::serialization::make_nvp("init_rot", init_rot_);
-    ar& boost::serialization::make_nvp("end_rot", end_rot_);
-    ar& boost::serialization::make_nvp("angular_vel", angular_vel_);
-    ar& boost::serialization::make_nvp("T_min", T_min_);
-    ar& boost::serialization::make_nvp("T_max", T_max_);
+    ar>> boost::serialization::make_nvp("dim", dim_);
+    matrix3_t init,end;
+    ar >> boost::serialization::make_nvp("init_rot", init);
+    ar >> boost::serialization::make_nvp("end_rot", end);
+    init_rot_ = quaternion_t(init);
+    end_rot_ = quaternion_t(end);
+    ar >> boost::serialization::make_nvp("angular_vel", angular_vel_);
+    ar >> boost::serialization::make_nvp("T_min", T_min_);
+    ar >> boost::serialization::make_nvp("T_max", T_max_);
+
   }
+
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const {
+    if (version) {
+      // Do something depending on version ?
+    }
+    ar<< boost::serialization::make_nvp("dim", dim_);
+    matrix3_t init_matrix(getInitRotation());
+    matrix3_t end_matrix(getEndRotation());
+    ar<< boost::serialization::make_nvp("init_rotation", init_matrix);
+    ar<< boost::serialization::make_nvp("end_rotation", end_matrix);
+    ar<< boost::serialization::make_nvp("angular_vel", angular_vel_);
+    ar<< boost::serialization::make_nvp("T_min", T_min_);
+    ar<< boost::serialization::make_nvp("T_max", T_max_);
+  }
+
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
 
   /// \brief Log: SO3 -> so3.
   ///
