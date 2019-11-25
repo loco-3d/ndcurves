@@ -158,6 +158,14 @@ piecewise_bezier_linear_curve_t* wrapPiecewiseLinearBezierCurveConstructor(const
 piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveConstructor(const cubic_hermite_spline_t& ch) {
   return new piecewise_cubic_hermite_curve_t(ch);
 }
+
+piecewise_SE3_curve_t* wrapPiecewiseSE3Constructor(const SE3Curve_t& curve) {
+  return new piecewise_SE3_curve_t(curve);
+}
+
+piecewise_SE3_curve_t* wrapPiecewiseSE3EmptyConstructor() {
+  return new piecewise_SE3_curve_t();
+}
 static piecewise_polynomial_curve_t discretPointToPolynomialC0(const pointX_list_t& points,
                                                                const time_waypoints_t& time_points) {
   t_pointX_t points_list = vectorFromEigenArray<pointX_list_t, t_pointX_t>(points);
@@ -673,6 +681,30 @@ BOOST_PYTHON_MODULE(curves) {
            bp::args("filename"), "Saves *this inside a binary file.")
       .def("loadFromBinary", &piecewise_bezier_linear_curve_t::loadFromBinary<piecewise_bezier_linear_curve_t>,
            bp::args("filename"), "Loads *this from a binary file.");
+
+class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3", init<>())
+      .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor))
+      .def("__init__", make_constructor(&wrapPiecewiseSE3EmptyConstructor))
+//      .def("compute_derivate", &piecewise_SE3_curve_t::compute_derivate,
+//           "Return a piecewise_polynomial curve which is the derivate of this.", args("self", "order"))
+      .def("add_curve", &piecewise_SE3_curve_t::add_curve)
+//      .def("is_continuous", &piecewise_SE3_curve_t::is_continuous)
+      .def("curve_at_index", &piecewise_SE3_curve_t::curve_at_index, return_value_policy<copy_const_reference>())
+      .def("curve_at_time", &piecewise_SE3_curve_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("num_curves", &piecewise_SE3_curve_t::num_curves)
+//      .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>, bp::args("filename"),
+//           "Saves *this inside a text file.")
+//      .def("loadFromText", &piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>, bp::args("filename"),
+//           "Loads *this from a text file.")
+//      .def("saveAsXML", &piecewise_bezier_curve_t::saveAsXML<piecewise_bezier_curve_t>,
+//           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
+//      .def("loadFromXML", &piecewise_bezier_curve_t::loadFromXML<piecewise_bezier_curve_t>,
+//           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
+//      .def("saveAsBinary", &piecewise_bezier_curve_t::saveAsBinary<piecewise_bezier_curve_t>, bp::args("filename"),
+//           "Saves *this inside a binary file.")
+//      .def("loadFromBinary", &piecewise_bezier_curve_t::loadFromBinary<piecewise_bezier_curve_t>, bp::args("filename"),
+//           "Loads *this from a binary file.")
+        ;
 
   /** END piecewise curve function **/
   /** BEGIN exact_cubic curve**/
