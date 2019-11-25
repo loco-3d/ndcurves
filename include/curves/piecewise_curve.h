@@ -24,10 +24,12 @@ namespace curves {
 template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
           typename T_Point = std::vector<Point, Eigen::aligned_allocator<Point> >,
-          typename Curve = curve_abc<Time, Numeric, Safe, Point> >
-struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
+          typename Curve = curve_abc<Time, Numeric, Safe, Point>,
+          typename Point_derivate = Point >
+struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_derivate> {
   typedef Point point_t;
   typedef T_Point t_point_t;
+  typedef Point_derivate point_derivate_t;
   typedef Time time_t;
   typedef Numeric num_t;
   typedef Curve curve_t;
@@ -83,7 +85,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param order : order of derivative.
   ///  \return \f$\frac{d^Np(t)}{dt^N}\f$ point corresponding on derivative spline of order N at time t.
   ///
-  virtual Point derivate(const Time t, const std::size_t order) const {
+  virtual point_derivate_t derivate(const Time t, const std::size_t order) const {
     check_if_not_empty();
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       throw std::invalid_argument("can't evaluate piecewise curve, out of range");
@@ -96,8 +98,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
    * @param order order of derivative
    * @return
    */
-  piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve> compute_derivate(const std::size_t order) const {
-    piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve> res;
+  piecewise_curve<Time, Numeric, Safe, point_derivate_t, std::vector<point_derivate_t, Eigen::aligned_allocator<Point> >, Curve> compute_derivate(const std::size_t order) const {
+    piecewise_curve<Time, Numeric, Safe, point_derivate_t,  std::vector<point_derivate_t, Eigen::aligned_allocator<Point> >, Curve> res;
     for (typename t_curve_t::const_iterator itc = curves_.begin(); itc < curves_.end(); ++itc) {
       res.add_curve(itc->compute_derivate(order));
     }
@@ -378,8 +380,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
   }
 };  // End struct piecewise curve
 
-template <typename Time, typename Numeric, bool Safe, typename Point, typename T_Point, typename Curve>
-const double piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve>::MARGIN(0.001);
+template <typename Time, typename Numeric, bool Safe, typename Point, typename T_Point,typename Curve,typename Point_derivate>
+const double piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve,Point_derivate>::MARGIN(0.001);
 
 }  // namespace curves
 
