@@ -19,10 +19,24 @@ if CURVES_WITH_PINOCCHIO_SUPPORT:
     from pinocchio import SE3, Motion
 
 
+
 class TestCurves(unittest.TestCase):
     # def print_str(self, inStr):
     #   print inStr
     #   return
+
+    def compareCurves(self,c1,c2):
+        t_min = c1.min()
+        t_max = c1.max()
+        self.assertEqual(t_min,c2.min())
+        self.assertEqual(t_max,c2.max())
+        self.assertTrue(norm(c1.derivate(t_min, 1) - c2.derivate(t_min, 1)) < 1e-10)
+        self.assertTrue(norm(c1.derivate(t_max, 1) - c2.derivate(t_max, 1)) < 1e-10)
+        t = t_min
+        while t < t_max:
+          self.assertTrue(norm(c1(t) - c2(t)) < 1e-10)
+          t = t+0.01
+
 
     def test_bezier(self):
         print("test_bezier")
