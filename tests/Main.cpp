@@ -18,47 +18,43 @@
 
 using namespace std;
 
-namespace curves
-{
+namespace curves {
 typedef Eigen::Vector3d point_t;
 typedef Eigen::VectorXd pointX_t;
 typedef Eigen::Quaternion<double> quaternion_t;
-typedef std::vector<pointX_t,Eigen::aligned_allocator<pointX_t> >  t_pointX_t;
-typedef curve_abc  <double, double, true, pointX_t> curve_abc_t;
-typedef polynomial  <double, double, true, pointX_t, t_pointX_t> polynomial_t;
-typedef exact_cubic <double, double, true, pointX_t> exact_cubic_t;
-typedef exact_cubic   <double, double, true, Eigen::Matrix<double,1,1> > exact_cubic_one;
-typedef bezier_curve  <double, double, true, pointX_t> bezier_curve_t;
-typedef cubic_hermite_spline <double, double, true, pointX_t> cubic_hermite_spline_t;
-typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
-typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
-typedef piecewise_curve <double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t> piecewise_cubic_hermite_curve_t;
+typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_pointX_t;
+typedef curve_abc<double, double, true, pointX_t> curve_abc_t;
+typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
+typedef exact_cubic<double, double, true, pointX_t> exact_cubic_t;
+typedef exact_cubic<double, double, true, Eigen::Matrix<double, 1, 1> > exact_cubic_one;
+typedef bezier_curve<double, double, true, pointX_t> bezier_curve_t;
+typedef cubic_hermite_spline<double, double, true, pointX_t> cubic_hermite_spline_t;
+typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
+typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
+typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t>
+    piecewise_cubic_hermite_curve_t;
 typedef exact_cubic_t::spline_constraints spline_constraints_t;
 typedef std::pair<double, pointX_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
-typedef Eigen::Matrix<double,1,1> point_one;
+typedef Eigen::Matrix<double, 1, 1> point_one;
 typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
 typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
-typedef std::vector<pair_point_tangent_t,Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
-typedef SO3Linear  <double, double, true> SO3Linear_t;
-typedef SE3Curve  <double, double, true> SE3Curve_t;
-typedef Eigen::Transform<double,3,Eigen::Affine> transform_t;
+typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
+typedef SO3Linear<double, double, true> SO3Linear_t;
+typedef SE3Curve<double, double, true> SE3Curve_t;
+typedef Eigen::Transform<double, 3, Eigen::Affine> transform_t;
 
 const double margin = 1e-3;
-bool QuasiEqual(const double a, const double b)
-{
-  return std::fabs(a-b)<margin;
-}
-bool QuasiEqual(const point_t a, const point_t b)
-{
+bool QuasiEqual(const double a, const double b) { return std::fabs(a - b) < margin; }
+bool QuasiEqual(const point_t a, const point_t b) {
   bool equal = true;
-  for(size_t i = 0 ; i < 3 ; ++i){
-    equal = equal && QuasiEqual(a[i],b[i]);
+  for (size_t i = 0; i < 3; ++i) {
+    equal = equal && QuasiEqual(a[i], b[i]);
   }
   return equal;
 }
-} // End namespace curves
+}  // End namespace curves
 
 using namespace curves;
 
@@ -1313,21 +1309,20 @@ void curveAbcDimDynamicTest(bool& error) {
   }
 }
 
-void PiecewisePolynomialCurveFromDiscretePoints(bool& error)
-{
+void PiecewisePolynomialCurveFromDiscretePoints(bool& error) {
   std::string errMsg("PiecewisePolynomialCurveFromDiscretePoints, Error, value on curve is wrong : ");
-  point_t p0(0.,0.,0.);
-  point_t p1(1.,2.,3.);
-  point_t p2(4.,4.,4.);
-  point_t p3(10.,10.,10.);
-  point_t d0(1.,1.,1.);
-  point_t d1(2.,2.,2.);
-  point_t d2(3.,3.,3.);
-  point_t d3(5.,5.,5.);
-  point_t dd0(1.5,1.5,1.5);
-  point_t dd1(2.5,2.5,2.5);
-  point_t dd2(3.5,3.5,3.5);
-  point_t dd3(5.5,5.5,5.5);
+  point_t p0(0., 0., 0.);
+  point_t p1(1., 2., 3.);
+  point_t p2(4., 4., 4.);
+  point_t p3(10., 10., 10.);
+  point_t d0(1., 1., 1.);
+  point_t d1(2., 2., 2.);
+  point_t d2(3., 3., 3.);
+  point_t d3(5., 5., 5.);
+  point_t dd0(1.5, 1.5, 1.5);
+  point_t dd1(2.5, 2.5, 2.5);
+  point_t dd2(3.5, 3.5, 3.5);
+  point_t dd3(5.5, 5.5, 5.5);
   double t0 = 1.0;
   double t1 = 1.5;
   double t2 = 3.0;
@@ -1354,53 +1349,44 @@ void PiecewisePolynomialCurveFromDiscretePoints(bool& error)
   time_points.push_back(t3);
 
   // Piecewise polynomial curve C0 => Linear interpolation between points
-  piecewise_polynomial_curve_t ppc_C0 =  piecewise_polynomial_curve_t::
-    convert_discrete_points_to_polynomial<polynomial_t>(points,time_points);
-  if (!ppc_C0.is_continuous(0))
-  {
-    std::cout<<"PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C0"<<std::endl;
+  piecewise_polynomial_curve_t ppc_C0 =
+      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points, time_points);
+  if (!ppc_C0.is_continuous(0)) {
+    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C0" << std::endl;
     error = true;
   }
-  for (std::size_t i=0; i<points.size(); i++)
-  {
+  for (std::size_t i = 0; i < points.size(); i++) {
     ComparePoints(points[i], ppc_C0(time_points[i]), errMsg, error);
   }
-  point_t pos_between_po_and_p1( (p1[0]+p0[0])/2.0, (p1[1]+p0[1])/2.0,(p1[2]+p0[2])/2.0 );
-  double time_between_po_and_p1 = (t0+t1)/2.0;
+  point_t pos_between_po_and_p1((p1[0] + p0[0]) / 2.0, (p1[1] + p0[1]) / 2.0, (p1[2] + p0[2]) / 2.0);
+  double time_between_po_and_p1 = (t0 + t1) / 2.0;
   ComparePoints(pos_between_po_and_p1, ppc_C0(time_between_po_and_p1), errMsg, error);
 
   // Piecewise polynomial curve C1
-  piecewise_polynomial_curve_t ppc_C1 =  piecewise_polynomial_curve_t::
-    convert_discrete_points_to_polynomial<polynomial_t>(points,
-                                                        points_derivative,
-                                                        time_points);
-  if (!ppc_C1.is_continuous(1))
-  {
-    std::cout<<"PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1"<<std::endl;
+  piecewise_polynomial_curve_t ppc_C1 =
+      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points, points_derivative,
+                                                                                        time_points);
+  if (!ppc_C1.is_continuous(1)) {
+    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1" << std::endl;
     error = true;
   }
-  for (std::size_t i=0; i<points.size(); i++)
-  {
+  for (std::size_t i = 0; i < points.size(); i++) {
     ComparePoints(points[i], ppc_C1(time_points[i]), errMsg, error);
-    ComparePoints(points_derivative[i], ppc_C1.derivate(time_points[i],1), errMsg, error);
+    ComparePoints(points_derivative[i], ppc_C1.derivate(time_points[i], 1), errMsg, error);
   }
 
   // Piecewise polynomial curve C2
-  piecewise_polynomial_curve_t ppc_C2 =  piecewise_polynomial_curve_t::
-    convert_discrete_points_to_polynomial<polynomial_t>(points,
-                                                        points_derivative,
-                                                        points_second_derivative,
-                                                        time_points);
-  if (!ppc_C2.is_continuous(2))
-  {
-    std::cout<<"PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1"<<std::endl;
+  piecewise_polynomial_curve_t ppc_C2 =
+      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(
+          points, points_derivative, points_second_derivative, time_points);
+  if (!ppc_C2.is_continuous(2)) {
+    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1" << std::endl;
     error = true;
   }
-  for (std::size_t i=0; i<points.size(); i++)
-  {
+  for (std::size_t i = 0; i < points.size(); i++) {
     ComparePoints(points[i], ppc_C2(time_points[i]), errMsg, error);
-    ComparePoints(points_derivative[i], ppc_C2.derivate(time_points[i],1), errMsg, error);
-    ComparePoints(points_second_derivative[i], ppc_C2.derivate(time_points[i],2), errMsg, error);
+    ComparePoints(points_derivative[i], ppc_C2.derivate(time_points[i], 1), errMsg, error);
+    ComparePoints(points_second_derivative[i], ppc_C2.derivate(time_points[i], 2), errMsg, error);
   }
 }
 
@@ -1633,140 +1619,147 @@ void polynomialFromBoundaryConditions(bool& error) {
   }
 }
 
+void so3LinearTest(bool& error) {
+  quaternion_t q0(1, 0, 0, 0);
+  quaternion_t q1(0.7071, 0.7071, 0, 0);
+  SO3Linear_t so3Traj(q0, q1, 0., 1.5);
 
-void so3LinearTest(bool& error){
-  quaternion_t q0(1,0,0,0);
-  quaternion_t q1(0.7071,0.7071,0,0);
-  SO3Linear_t so3Traj(q0,q1,0.,1.5);
-
-  if(so3Traj.min() != 0 ){
-    error=true;
-    std::cout<<"Min bound not respected"<<std::endl;
+  if (so3Traj.min() != 0) {
+    error = true;
+    std::cout << "Min bound not respected" << std::endl;
   }
-  if(so3Traj.max() != 1.5 ){
-    error=true;
-    std::cout<<"Max bound not respected"<<std::endl;
+  if (so3Traj.max() != 1.5) {
+    error = true;
+    std::cout << "Max bound not respected" << std::endl;
   }
-  if(!so3Traj.computeAsQuaternion(0).isApprox(q0)){
-    error=true;
-    std::cout<<"evaluate at t=0 is not the init quaternion"<<std::endl;
+  if (!so3Traj.computeAsQuaternion(0).isApprox(q0)) {
+    error = true;
+    std::cout << "evaluate at t=0 is not the init quaternion" << std::endl;
   }
-  if(so3Traj(0) != q0.toRotationMatrix()){
-    error=true;
-    std::cout<<"evaluate at t=0 is not the init rotation"<<std::endl;
+  if (so3Traj(0) != q0.toRotationMatrix()) {
+    error = true;
+    std::cout << "evaluate at t=0 is not the init rotation" << std::endl;
   }
-  if(!so3Traj.computeAsQuaternion(1.5).isApprox(q1)){
-    error=true;
-    std::cout<<"evaluate at t=max is not the final quaternion"<<std::endl;
+  if (!so3Traj.computeAsQuaternion(1.5).isApprox(q1)) {
+    error = true;
+    std::cout << "evaluate at t=max is not the final quaternion" << std::endl;
   }
-  if(so3Traj(1.5) != q1.toRotationMatrix()){
-    error=true;
-    std::cout<<"evaluate at t=max is not the final rotation"<<std::endl;
+  if (so3Traj(1.5) != q1.toRotationMatrix()) {
+    error = true;
+    std::cout << "evaluate at t=max is not the final rotation" << std::endl;
   }
-  //check derivatives :
-  if(so3Traj.derivate(0,1) != so3Traj.derivate(1.,1)){
-    error=true;
-    std::cout<<"first order derivative should be constant."<<std::endl;
+  // check derivatives :
+  if (so3Traj.derivate(0, 1) != so3Traj.derivate(1., 1)) {
+    error = true;
+    std::cout << "first order derivative should be constant." << std::endl;
   }
-  if(so3Traj.derivate(0,2) != point_t::Zero(3)){
-    error=true;
-    std::cout<<"second order derivative should be null"<<std::endl;
+  if (so3Traj.derivate(0, 2) != point_t::Zero(3)) {
+    error = true;
+    std::cout << "second order derivative should be null" << std::endl;
   }
   // check if errors are correctly raised :
-  try{
+  try {
     so3Traj(-0.1);
     error = true;
-    std::cout<<"SO3Linear: calling () with t < tmin should raise an invalid_argument error"<<std::endl;
-  }catch(std::invalid_argument e){  }
-  try{
+    std::cout << "SO3Linear: calling () with t < tmin should raise an invalid_argument error" << std::endl;
+  } catch (std::invalid_argument e) {
+  }
+  try {
     so3Traj(1.7);
     error = true;
-    std::cout<<"SO3Linear: calling () with t > tmin should raise an invalid_argument error"<<std::endl;
-  }catch(std::invalid_argument e){  }
-  try{
-    so3Traj.derivate(0,0);
+    std::cout << "SO3Linear: calling () with t > tmin should raise an invalid_argument error" << std::endl;
+  } catch (std::invalid_argument e) {
+  }
+  try {
+    so3Traj.derivate(0, 0);
     error = true;
-    std::cout<<"SO3Linear: calling derivate with order = 0 should raise an invalid_argument error"<<std::endl;
-  }catch(std::invalid_argument e){  }
+    std::cout << "SO3Linear: calling derivate with order = 0 should raise an invalid_argument error" << std::endl;
+  } catch (std::invalid_argument e) {
+  }
 }
 
-void se3CurveTest(bool& error){
-  quaternion_t q0(1,0,0,0);
-  quaternion_t q1(0.,1.,0,0);
-  pointX_t p0 = point_t(1.,1.5,-2.);
-  pointX_t p1 = point_t(3.,0,1.);
+void se3CurveTest(bool& error) {
+  quaternion_t q0(1, 0, 0, 0);
+  quaternion_t q1(0., 1., 0, 0);
+  pointX_t p0 = point_t(1., 1.5, -2.);
+  pointX_t p1 = point_t(3., 0, 1.);
 
-  double min = 0.5,max = 2.;
+  double min = 0.5, max = 2.;
 
-  // constructor from init/end position/rotation : automatically create a linear interpolation for position and slerp for rotation
-  SE3Curve_t cLinear(p0,p1,q0,q1,min,max);
+  // constructor from init/end position/rotation : automatically create a linear interpolation for position and slerp
+  // for rotation
+  SE3Curve_t cLinear(p0, p1, q0, q1, min, max);
   transform_t transformInit = cLinear(min);
   transform_t transformEnd = cLinear(max);
-  transform_t transformMid = cLinear((max+min)/2.);
-  if(! transformInit.translation().isApprox(p0)){
-    error=true;
-    std::cout<<"Init position of the curve is not correct."<<std::endl;
+  transform_t transformMid = cLinear((max + min) / 2.);
+  if (!transformInit.translation().isApprox(p0)) {
+    error = true;
+    std::cout << "Init position of the curve is not correct." << std::endl;
   }
-  if(! transformInit.rotation().isApprox(q0.toRotationMatrix())){
-    error=true;
-    std::cout<<"Init rotation of the curve is not correct."<<std::endl;
+  if (!transformInit.rotation().isApprox(q0.toRotationMatrix())) {
+    error = true;
+    std::cout << "Init rotation of the curve is not correct." << std::endl;
   }
-  if(! transformEnd.translation().isApprox(p1)){
-    error=true;
-    std::cout<<"End position of the curve is not correct."<<std::endl;
+  if (!transformEnd.translation().isApprox(p1)) {
+    error = true;
+    std::cout << "End position of the curve is not correct." << std::endl;
   }
-  if(! transformEnd.rotation().isApprox(q1.toRotationMatrix())){
-    error=true;
-    std::cout<<"End rotation of the curve is not correct."<<std::endl;
+  if (!transformEnd.rotation().isApprox(q1.toRotationMatrix())) {
+    error = true;
+    std::cout << "End rotation of the curve is not correct." << std::endl;
   }
-  quaternion_t qMid(sqrt(2.)/2.,sqrt(2.)/2.,0,0);
-  point_t pMid = (p0+p1)/2.;
-  if(! transformMid.translation().isApprox(pMid)){
-    error=true;
-    std::cout<<"Mid position of the curve is not correct."<<std::endl;
+  quaternion_t qMid(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0);
+  point_t pMid = (p0 + p1) / 2.;
+  if (!transformMid.translation().isApprox(pMid)) {
+    error = true;
+    std::cout << "Mid position of the curve is not correct." << std::endl;
   }
-  if(! transformMid.rotation().isApprox(qMid.toRotationMatrix())){
-    error=true;
-    std::cout<<"Mid rotation of the curve is not correct."<<std::endl;
+  if (!transformMid.rotation().isApprox(qMid.toRotationMatrix())) {
+    error = true;
+    std::cout << "Mid rotation of the curve is not correct." << std::endl;
   }
 
-  //constructor with specific translation curve
+  // constructor with specific translation curve
   SE3Curve_t cBezier;
-  { // inner scope to check what happen when translation_bezier is out of scope
-    point_t a(1,2,3);
-    point_t b(2,3,4);
-    point_t c(3,4,5);
-    point_t d(3,6,7);
+  {  // inner scope to check what happen when translation_bezier is out of scope
+    point_t a(1, 2, 3);
+    point_t b(2, 3, 4);
+    point_t c(3, 4, 5);
+    point_t d(3, 6, 7);
     std::vector<point_t> params;
-    params.push_back(a);params.push_back(b);params.push_back(c);params.push_back(d);
-    bezier_curve_t* translation_bezier = new bezier_curve_t(params.begin(),params.end(),min,max);
-    cBezier = SE3Curve_t(translation_bezier,q0.toRotationMatrix(),q1.toRotationMatrix());
+    params.push_back(a);
+    params.push_back(b);
+    params.push_back(c);
+    params.push_back(d);
+    bezier_curve_t* translation_bezier = new bezier_curve_t(params.begin(), params.end(), min, max);
+    cBezier = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q1.toRotationMatrix());
     p0 = (*translation_bezier)(min);
     p1 = (*translation_bezier)(max);
-    pMid = (*translation_bezier)((max+min)/2.);
-    if(cBezier.min() != min){
+    pMid = (*translation_bezier)((max + min) / 2.);
+    if (cBezier.min() != min) {
       error = true;
-      std::cout<<"SE3 constructor from translation bezier do not respect the min time interval"<<std::endl;
+      std::cout << "SE3 constructor from translation bezier do not respect the min time interval" << std::endl;
     }
-    if(cBezier.max() != max){
+    if (cBezier.max() != max) {
       error = true;
-      std::cout<<"SE3 constructor from translation bezier do not respect the max time interval"<<std::endl;
+      std::cout << "SE3 constructor from translation bezier do not respect the max time interval" << std::endl;
     }
     double t = min;
-    while(t<max){
-      if(!cBezier(t).translation().isApprox((*translation_bezier)(t))){
+    while (t < max) {
+      if (!cBezier(t).translation().isApprox((*translation_bezier)(t))) {
         error = true;
-        std::cout<<"SE3 translation is not equivalent to bezier for t = "<<t<<std::endl;
+        std::cout << "SE3 translation is not equivalent to bezier for t = " << t << std::endl;
       }
       t += 0.1;
     }
     // check the derivatives for translation:
-    for(size_t i = 1 ; i < 3 ; i++){
+    for (size_t i = 1; i < 3; i++) {
       t = min;
-      while(t<max){
-        if(!cBezier.derivate(t,i).head<3>().isApprox(translation_bezier->derivate(t,i))){
+      while (t < max) {
+        if (!cBezier.derivate(t, i).head<3>().isApprox(translation_bezier->derivate(t, i))) {
           error = true;
-          std::cout<<"SE3 curve derivative is not equivalent to bezier for t = "<<t<<" and order = "<<i<<std::endl;
+          std::cout << "SE3 curve derivative is not equivalent to bezier for t = " << t << " and order = " << i
+                    << std::endl;
         }
         t += 0.1;
       }
@@ -1775,61 +1768,62 @@ void se3CurveTest(bool& error){
   // check the rotation
   transformInit = cBezier(min);
   transformEnd = cBezier(max);
-  transformMid = cBezier((max+min)/2.);
-  if(! transformInit.translation().isApprox(p0)){
-    error=true;
-    std::cout<<"Init position of the curve is not correct."<<std::endl;
+  transformMid = cBezier((max + min) / 2.);
+  if (!transformInit.translation().isApprox(p0)) {
+    error = true;
+    std::cout << "Init position of the curve is not correct." << std::endl;
   }
-  if(! transformInit.rotation().isApprox(q0.toRotationMatrix())){
-    error=true;
-    std::cout<<"Init rotation of the curve is not correct."<<std::endl;
+  if (!transformInit.rotation().isApprox(q0.toRotationMatrix())) {
+    error = true;
+    std::cout << "Init rotation of the curve is not correct." << std::endl;
   }
-  if(! transformEnd.translation().isApprox(p1)){
-    error=true;
-    std::cout<<"End position of the curve is not correct."<<std::endl;
+  if (!transformEnd.translation().isApprox(p1)) {
+    error = true;
+    std::cout << "End position of the curve is not correct." << std::endl;
   }
-  if(! transformEnd.rotation().isApprox(q1.toRotationMatrix())){
-    error=true;
-    std::cout<<"End rotation of the curve is not correct."<<std::endl;
+  if (!transformEnd.rotation().isApprox(q1.toRotationMatrix())) {
+    error = true;
+    std::cout << "End rotation of the curve is not correct." << std::endl;
   }
-  if(! transformMid.translation().isApprox(pMid)){
-    error=true;
-    std::cout<<"Mid position of the curve is not correct."<<std::endl;
+  if (!transformMid.translation().isApprox(pMid)) {
+    error = true;
+    std::cout << "Mid position of the curve is not correct." << std::endl;
   }
-  if(! transformMid.rotation().isApprox(qMid.toRotationMatrix())){
-    error=true;
-    std::cout<<"Mid rotation of the curve is not correct."<<std::endl;
+  if (!transformMid.rotation().isApprox(qMid.toRotationMatrix())) {
+    error = true;
+    std::cout << "Mid rotation of the curve is not correct." << std::endl;
   }
 
-  //check derivatives for rotation:
-  if(cBezier.derivate(min,1).tail<3>() != cBezier.derivate(max,1).tail<3>()){
-    error=true;
-    std::cout<<"SE3 curve : first order derivative for rotation should be constant."<<std::endl;
+  // check derivatives for rotation:
+  if (cBezier.derivate(min, 1).tail<3>() != cBezier.derivate(max, 1).tail<3>()) {
+    error = true;
+    std::cout << "SE3 curve : first order derivative for rotation should be constant." << std::endl;
   }
-  if(cBezier.derivate(min,2).tail<3>() != point_t::Zero(3)){
-    error=true;
-    std::cout<<"SE3 curve : second order derivative for rotation should be null"<<std::endl;
+  if (cBezier.derivate(min, 2).tail<3>() != point_t::Zero(3)) {
+    error = true;
+    std::cout << "SE3 curve : second order derivative for rotation should be null" << std::endl;
   }
 
   // check if errors are correctly raised
-  try{
+  try {
     cBezier(0.1);
     error = true;
-    std::cout<<"SE3 curve: calling () with t < tmin should raise an invalid_argument error"<<std::endl;
-  }catch(std::invalid_argument e){  }
-  try{
+    std::cout << "SE3 curve: calling () with t < tmin should raise an invalid_argument error" << std::endl;
+  } catch (std::invalid_argument e) {
+  }
+  try {
     cBezier(2.3);
     error = true;
-    std::cout<<"SE3 curve: calling () with t > tmin should raise an invalid_argument error"<<std::endl;
-  }catch(std::invalid_argument e){  }
-  try{
-    cBezier.derivate(0.6,0);
+    std::cout << "SE3 curve: calling () with t > tmin should raise an invalid_argument error" << std::endl;
+  } catch (std::invalid_argument e) {
+  }
+  try {
+    cBezier.derivate(0.6, 0);
     error = true;
-    std::cout<<"SE3 curve: calling derivate with order = 0 should raise an invalid_argument error"<<std::endl;
-  }catch(std::invalid_argument e){  }
+    std::cout << "SE3 curve: calling derivate with order = 0 should raise an invalid_argument error" << std::endl;
+  } catch (std::invalid_argument e) {
+  }
 }
-
-
 
 /**
  * @brief BezierLinearProblemTests test the generation of linear / quadratic problems with
@@ -1839,40 +1833,30 @@ void se3CurveTest(bool& error){
 
 using namespace curves::optimization;
 
-
-var_pair_t setup_control_points(const std::size_t degree,
-                          const constraint_flag flag,
-                          const point_t& initPos = point_t(),
-                          const point_t& endPos  = point_t(),
-                          const constraint_linear& constraints = constraint_linear(3),
-                          const double totalTime = 1.)
-{
-    problem_definition_t pDef(constraints);
-    pDef.init_pos = initPos; pDef.end_pos = endPos;
-    pDef.flag = flag;
-    pDef.totalTime = totalTime;
-    pDef.degree = degree;
-    problem_data_t pData = setup_control_points<point_t, double,true>(pDef);
-    return std::make_pair(pData.variables_,
-                          std::make_pair(pData.startVariableIndex, pData.numVariables));
+var_pair_t setup_control_points(const std::size_t degree, const constraint_flag flag,
+                                const point_t& initPos = point_t(), const point_t& endPos = point_t(),
+                                const constraint_linear& constraints = constraint_linear(3),
+                                const double totalTime = 1.) {
+  problem_definition_t pDef(constraints);
+  pDef.init_pos = initPos;
+  pDef.end_pos = endPos;
+  pDef.flag = flag;
+  pDef.totalTime = totalTime;
+  pDef.degree = degree;
+  problem_data_t pData = setup_control_points<point_t, double, true>(pDef);
+  return std::make_pair(pData.variables_, std::make_pair(pData.startVariableIndex, pData.numVariables));
 }
 
-enum vartype
-{
-    variable,
-    constant
-};
+enum vartype { variable, constant };
 
-bool isVar(const linear_variable_t& var)
-{
-    return ! var.isZero() && var.B() == linear_variable_t::matrix_x_t::Identity(3,3) &&
-           var.c() == linear_variable_t::vector_x_t::Zero(3);
+bool isVar(const linear_variable_t& var) {
+  return !var.isZero() && var.B() == linear_variable_t::matrix_x_t::Identity(3, 3) &&
+         var.c() == linear_variable_t::vector_x_t::Zero(3);
 }
 
-bool isConstant(const linear_variable_t& var)
-{
-    return var.isZero() || (var.B() == linear_variable_t::matrix_x_t::Zero(3,3) &&
-           var.c() != linear_variable_t::vector_x_t::Zero(3));
+bool isConstant(const linear_variable_t& var) {
+  return var.isZero() ||
+         (var.B() == linear_variable_t::matrix_x_t::Zero(3, 3) && var.c() != linear_variable_t::vector_x_t::Zero(3));
 }
 
 /*bool isMixed(const linear_variable_t& var)
@@ -1881,372 +1865,340 @@ bool isConstant(const linear_variable_t& var)
            var.b_ != linear_variable_t::point_t::Zero();
 }*/
 
-bool checkValue(const linear_variable_t& var, const vartype vart)
-{
-    if (vart == constant)
-        return isConstant(var);
-    else
-        return isVar(var);
+bool checkValue(const linear_variable_t& var, const vartype vart) {
+  if (vart == constant)
+    return isConstant(var);
+  else
+    return isVar(var);
 }
 
-void checksequence(const T_linear_variable_t& vars, vartype* expected,
-                   const std::string testname, bool& error)
-{
-    int i =0;
-    for(CIT_linear_variable_t cit = vars.begin();
-        cit != vars.end(); ++cit, ++i)
-    {
-        if(! checkValue(*cit, expected[i]))
-        {
-            std::cout << "in test: " << testname << ": wrong type for variable at position " << i << std::endl;
-            error = true;
-        }
+void checksequence(const T_linear_variable_t& vars, vartype* expected, const std::string testname, bool& error) {
+  int i = 0;
+  for (CIT_linear_variable_t cit = vars.begin(); cit != vars.end(); ++cit, ++i) {
+    if (!checkValue(*cit, expected[i])) {
+      std::cout << "in test: " << testname << ": wrong type for variable at position " << i << std::endl;
+      error = true;
     }
+  }
 }
 
-void checkNumVar(const T_linear_variable_t& vars, const std::size_t expected,
-                 const std::string testname, bool& error)
-{
-    if(vars.size() != expected)
-    {
-        error = true;
-        std::cout << "incorrect number of variables in "
-                  << testname << "(" << expected << "," << vars.size() << ")" << std::endl;
-    }
+void checkNumVar(const T_linear_variable_t& vars, const std::size_t expected, const std::string testname,
+                 bool& error) {
+  if (vars.size() != expected) {
+    error = true;
+    std::cout << "incorrect number of variables in " << testname << "(" << expected << "," << vars.size() << ")"
+              << std::endl;
+  }
 }
 
 void checkPair(const pair_size_t pair, const std::size_t start_index, const std::size_t num_vars,
-                 const std::string testname, bool& error)
-{
-    if(pair.first != start_index)
-    {
-        error = true;
-        std::cout << "incorrect starting index for variablesin "
+               const std::string testname, bool& error) {
+  if (pair.first != start_index) {
+    error = true;
+    std::cout << "incorrect starting index for variablesin "
 
-                  << testname << "(" << start_index << "," << pair.first << ")" << std::endl;
-    }
-    if(pair.second != num_vars)
-    {
-        error = true;
-        std::cout << "incorrect number of identified variablesin "
-                  << testname << "(" << num_vars << "," << pair.second << ")" << std::endl;
-    }
+              << testname << "(" << start_index << "," << pair.first << ")" << std::endl;
+  }
+  if (pair.second != num_vars) {
+    error = true;
+    std::cout << "incorrect number of identified variablesin " << testname << "(" << num_vars << "," << pair.second
+              << ")" << std::endl;
+  }
 }
 
-void BezierLinearProblemsetup_control_pointsNoConstraint(bool& error){
-    constraint_flag flag = optimization::NONE;
-    var_pair_t res_no_constraints = setup_control_points(5, flag);
-    T_linear_variable_t& vars = res_no_constraints.first;
-    vartype exptecdvars [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "setup_control_pointsNoConstraint", error);
-    checksequence(vars,exptecdvars,"setup_control_pointsNoConstraint", error);
+void BezierLinearProblemsetup_control_pointsNoConstraint(bool& error) {
+  constraint_flag flag = optimization::NONE;
+  var_pair_t res_no_constraints = setup_control_points(5, flag);
+  T_linear_variable_t& vars = res_no_constraints.first;
+  vartype exptecdvars[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "setup_control_pointsNoConstraint", error);
+  checksequence(vars, exptecdvars, "setup_control_pointsNoConstraint", error);
 }
 
-constraint_linear makeConstraint()
-{
-    point_t init_pos = point_t(1.,1.,1.);
-    constraint_linear cl(3);
-    init_pos*=2;
-    cl.init_vel = init_pos;
-    init_pos*=2;
-    cl.init_acc = init_pos;
-    init_pos*=2;
-    cl.end_acc = init_pos;
-    init_pos*=2;
-    cl.end_vel = init_pos;
-    return cl;
+constraint_linear makeConstraint() {
+  point_t init_pos = point_t(1., 1., 1.);
+  constraint_linear cl(3);
+  init_pos *= 2;
+  cl.init_vel = init_pos;
+  init_pos *= 2;
+  cl.init_acc = init_pos;
+  init_pos *= 2;
+  cl.end_acc = init_pos;
+  init_pos *= 2;
+  cl.end_vel = init_pos;
+  return cl;
 }
 
-void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error){
-    constraint_flag flag = optimization::INIT_POS;
-    point_t init_pos = point_t(1.,1.,1.);
-    var_pair_t res = setup_control_points(5, flag,init_pos);
-    T_linear_variable_t& vars = res.first;
-    vartype exptecdvars [] = {constant,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialInit", error);
-    checksequence(vars,exptecdvars,"VarCombinatorialInit", error);
-    checkPair(res.second, 1, 5, "VarCombinatorialInit", error);
+void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
+  constraint_flag flag = optimization::INIT_POS;
+  point_t init_pos = point_t(1., 1., 1.);
+  var_pair_t res = setup_control_points(5, flag, init_pos);
+  T_linear_variable_t& vars = res.first;
+  vartype exptecdvars[] = {constant, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialInit", error);
+  checksequence(vars, exptecdvars, "VarCombinatorialInit", error);
+  checkPair(res.second, 1, 5, "VarCombinatorialInit", error);
 
-    constraint_linear constraints = makeConstraint();
+  constraint_linear constraints = makeConstraint();
+  flag = INIT_POS | INIT_VEL;
+  res = setup_control_points(5, flag, init_pos, point_t(), constraints);
+  vars = res.first;
+  vartype exptecdvar1[] = {constant, constant, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialInit", error);
+  checksequence(vars, exptecdvar1, "VarCombinatorialInit", error);
+  checkPair(res.second, 2, 4, "VarCombinatorialInit", error);
+
+  flag = INIT_POS | INIT_VEL | INIT_ACC;
+  res = setup_control_points(5, flag, init_pos, point_t(), constraints);
+  vars = res.first;
+  vartype exptecdvar2[] = {constant, constant, constant, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialInit", error);
+  checksequence(vars, exptecdvar2, "VarCombinatorialInit", error);
+  checkPair(res.second, 3, 3, "VarCombinatorialInit", error);
+
+  flag = INIT_VEL;
+  res = setup_control_points(5, flag, init_pos, point_t(), constraints);
+  vars = res.first;
+  vartype exptecdvar3[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialInit", error);
+  checksequence(vars, exptecdvar3, "VarCombinatorialInit", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialInit", error);
+
+  flag = INIT_ACC;
+  res = setup_control_points(5, flag, init_pos, point_t(), constraints);
+  vars = res.first;
+  vartype exptecdvar4[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialInit", error);
+  checksequence(vars, exptecdvar4, "VarCombinatorialInit", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialInit", error);
+
+  flag = INIT_ACC | INIT_VEL;
+  res = setup_control_points(5, flag, init_pos, point_t(), constraints);
+  vars = res.first;
+  vartype exptecdvar5[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialInit", error);
+  checksequence(vars, exptecdvar5, "VarCombinatorialInit", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialInit", error);
+
+  bool err = true;
+  try {
     flag = INIT_POS | INIT_VEL;
-    res = setup_control_points(5, flag,init_pos,point_t(),constraints);
-    vars = res.first;
-    vartype exptecdvar1 [] = {constant,constant,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialInit", error);
-    checksequence(vars,exptecdvar1,"VarCombinatorialInit", error);
-    checkPair(res.second, 2, 4, "VarCombinatorialInit", error);
-
-    flag = INIT_POS | INIT_VEL | INIT_ACC;
-    res = setup_control_points(5, flag,init_pos,point_t(),constraints);
-    vars = res.first;
-    vartype exptecdvar2 [] = {constant,constant,constant,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialInit", error);
-    checksequence(vars,exptecdvar2,"VarCombinatorialInit", error);
-    checkPair(res.second, 3, 3, "VarCombinatorialInit", error);
-
-    flag = INIT_VEL;
-    res = setup_control_points(5, flag,init_pos,point_t(),constraints);
-    vars = res.first;
-    vartype exptecdvar3 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialInit", error);
-    checksequence(vars,exptecdvar3,"VarCombinatorialInit", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialInit", error);
-
-    flag = INIT_ACC;
-    res = setup_control_points(5, flag,init_pos,point_t(),constraints);
-    vars = res.first;
-    vartype exptecdvar4 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialInit", error);
-    checksequence(vars,exptecdvar4,"VarCombinatorialInit", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialInit", error);
-
-    flag = INIT_ACC | INIT_VEL;
-    res = setup_control_points(5, flag,init_pos,point_t(),constraints);
-    vars = res.first;
-    vartype exptecdvar5 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialInit", error);
-    checksequence(vars,exptecdvar5,"VarCombinatorialInit", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialInit", error);
-
-
-    bool err = true;
-    try
-    {
-        flag = INIT_POS | INIT_VEL;
-        res = setup_control_points(1, flag,init_pos,point_t(),constraints);
-    }
-    catch(...)
-    {
-        err = false;
-    }
-    if(err)
-    {
-        error = true;
-        std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints " << std::endl;
-    }
+    res = setup_control_points(1, flag, init_pos, point_t(), constraints);
+  } catch (...) {
+    err = false;
+  }
+  if (err) {
+    error = true;
+    std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints "
+              << std::endl;
+  }
 }
 
-void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error){
-    constraint_flag flag = optimization::END_POS;
-    point_t init_pos = point_t(1.,1.,1.);
-    var_pair_t res = setup_control_points(5, flag,init_pos);
-    T_linear_variable_t& vars = res.first;
-    vartype exptecdvars [] = {variable,variable,variable,variable,variable,constant};
-    checkNumVar(vars, 6, "VarCombinatorialEnd", error);
-    checksequence(vars,exptecdvars,"VarCombinatorialEnd", error);
-    checkPair(res.second, 0, 5, "VarCombinatorialEnd", error);
+void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
+  constraint_flag flag = optimization::END_POS;
+  point_t init_pos = point_t(1., 1., 1.);
+  var_pair_t res = setup_control_points(5, flag, init_pos);
+  T_linear_variable_t& vars = res.first;
+  vartype exptecdvars[] = {variable, variable, variable, variable, variable, constant};
+  checkNumVar(vars, 6, "VarCombinatorialEnd", error);
+  checksequence(vars, exptecdvars, "VarCombinatorialEnd", error);
+  checkPair(res.second, 0, 5, "VarCombinatorialEnd", error);
 
-    constraint_linear constraints = makeConstraint();
-    flag = END_POS | END_VEL;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar1 [] = {variable,variable,variable,variable,constant,constant};
-    checkNumVar(vars, 6, "VarCombinatorialEnd", error);
-    checksequence(vars,exptecdvar1,"VarCombinatorialEnd", error);
-    checkPair(res.second, 0, 4, "VarCombinatorialEnd", error);
+  constraint_linear constraints = makeConstraint();
+  flag = END_POS | END_VEL;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar1[] = {variable, variable, variable, variable, constant, constant};
+  checkNumVar(vars, 6, "VarCombinatorialEnd", error);
+  checksequence(vars, exptecdvar1, "VarCombinatorialEnd", error);
+  checkPair(res.second, 0, 4, "VarCombinatorialEnd", error);
 
-    flag = END_POS | END_VEL | END_ACC;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar2 [] = {variable,variable,variable,constant,constant,constant};
-    checkNumVar(vars, 6, "VarCombinatorialEnd", error);
-    checksequence(vars,exptecdvar2,"VarCombinatorialEnd", error);
-    checkPair(res.second, 0, 3, "VarCombinatorialEnd", error);
+  flag = END_POS | END_VEL | END_ACC;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar2[] = {variable, variable, variable, constant, constant, constant};
+  checkNumVar(vars, 6, "VarCombinatorialEnd", error);
+  checksequence(vars, exptecdvar2, "VarCombinatorialEnd", error);
+  checkPair(res.second, 0, 3, "VarCombinatorialEnd", error);
 
-    flag = END_VEL;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar3 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialEnd", error);
-    checksequence(vars,exptecdvar3,"VarCombinatorialEnd", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialEnd", error);
+  flag = END_VEL;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar3[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialEnd", error);
+  checksequence(vars, exptecdvar3, "VarCombinatorialEnd", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialEnd", error);
 
-    flag = END_ACC;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar4 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialEnd", error);
-    checksequence(vars,exptecdvar4,"VarCombinatorialEnd", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialEnd", error);
+  flag = END_ACC;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar4[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialEnd", error);
+  checksequence(vars, exptecdvar4, "VarCombinatorialEnd", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialEnd", error);
 
+  flag = END_ACC | END_VEL;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar5[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialEnd", error);
+  checksequence(vars, exptecdvar5, "VarCombinatorialEnd", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialEnd", error);
+
+  bool err = true;
+  try {
     flag = END_ACC | END_VEL;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar5 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialEnd", error);
-    checksequence(vars,exptecdvar5,"VarCombinatorialEnd", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialEnd", error);
-
-
-    bool err = true;
-    try
-    {
-        flag = END_ACC | END_VEL;
-        res = setup_control_points(1, flag,init_pos,point_t(),constraints);
-    }
-    catch(...)
-    {
-        err = false;
-    }
-    if(err)
-    {
-        error = true;
-        std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints " << std::endl;
-    }
+    res = setup_control_points(1, flag, init_pos, point_t(), constraints);
+  } catch (...) {
+    err = false;
+  }
+  if (err) {
+    error = true;
+    std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints "
+              << std::endl;
+  }
 }
 
+void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
+  constraint_flag flag = END_POS | INIT_POS;
+  point_t init_pos = point_t(1., 1., 1.);
+  var_pair_t res = setup_control_points(5, flag, init_pos);
+  T_linear_variable_t& vars = res.first;
+  vartype exptecdvars[] = {constant, variable, variable, variable, variable, constant};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvars, "VarCombinatorialMix", error);
+  checkPair(res.second, 1, 4, "VarCombinatorialMix", error);
 
-void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error){
-    constraint_flag flag = END_POS | INIT_POS;
-    point_t init_pos = point_t(1.,1.,1.);
-    var_pair_t res = setup_control_points(5, flag,init_pos);
-    T_linear_variable_t& vars = res.first;
-    vartype exptecdvars [] = {constant,variable,variable,variable,variable,constant};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvars,"VarCombinatorialMix", error);
-    checkPair(res.second, 1, 4, "VarCombinatorialMix", error);
+  constraint_linear constraints = makeConstraint();
+  flag = END_POS | END_VEL | INIT_VEL | INIT_POS;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar1[] = {constant, constant, variable, variable, constant, constant};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar1, "VarCombinatorialMix", error);
+  checkPair(res.second, 2, 2, "VarCombinatorialMix", error);
 
-    constraint_linear constraints = makeConstraint();
-    flag = END_POS | END_VEL | INIT_VEL | INIT_POS;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar1 [] = {constant,constant,variable,variable,constant,constant};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar1,"VarCombinatorialMix", error);
-    checkPair(res.second, 2, 2, "VarCombinatorialMix", error);
+  flag = END_POS | END_VEL | END_ACC | INIT_VEL | INIT_POS;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar2[] = {constant, constant, variable, constant, constant, constant};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar2, "VarCombinatorialMix", error);
+  checkPair(res.second, 2, 1, "VarCombinatorialMix", error);
 
-    flag = END_POS | END_VEL | END_ACC | INIT_VEL | INIT_POS;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar2 [] = {constant,constant,variable,constant,constant,constant};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar2,"VarCombinatorialMix", error);
-    checkPair(res.second, 2, 1, "VarCombinatorialMix", error);
+  flag = ALL;
+  res = setup_control_points(8, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar3[] = {constant, constant, constant, constant, variable, constant, constant, constant, constant};
+  checkNumVar(vars, 9, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar3, "VarCombinatorialMix", error);
+  checkPair(res.second, 4, 1, "VarCombinatorialMix", error);
 
+  flag = END_VEL | END_ACC | INIT_VEL;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar4[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar4, "VarCombinatorialMix", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
+
+  flag = END_VEL | INIT_VEL;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar5[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar5, "VarCombinatorialMix", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
+
+  bool err = true;
+  try {
     flag = ALL;
-    res = setup_control_points(8, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar3 [] = {constant,constant,constant,constant,variable,constant,constant,constant,constant};
-    checkNumVar(vars, 9, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar3,"VarCombinatorialMix", error);
-    checkPair(res.second, 4, 1, "VarCombinatorialMix", error);
-
-    flag = END_VEL | END_ACC | INIT_VEL;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar4 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar4,"VarCombinatorialMix", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
-
-    flag = END_VEL | INIT_VEL;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar5 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar5,"VarCombinatorialMix", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
-
-
-    bool err = true;
-    try
-    {
-        flag = ALL;
-        res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    }
-    catch(...)
-    {
-        err = false;
-    }
-    if(err)
-    {
-        error = true;
-        std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints " << std::endl;
-    }
+    res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  } catch (...) {
+    err = false;
+  }
+  if (err) {
+    error = true;
+    std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints "
+              << std::endl;
+  }
 }
 
-void BezierLinearProblemInitInequalities(bool& error){
-    constraint_flag flag = INIT_POS | END_POS;
-    point_t init_pos = point_t(1.,1.,1.);
-    var_pair_t res = setup_control_points(5, flag,init_pos);
-    T_linear_variable_t& vars = res.first;
-    vartype exptecdvars [] = {constant,variable,variable,variable,variable,constant};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvars,"VarCombinatorialMix", error);
-    checkPair(res.second, 1, 4, "VarCombinatorialMix", error);
+void BezierLinearProblemInitInequalities(bool& error) {
+  constraint_flag flag = INIT_POS | END_POS;
+  point_t init_pos = point_t(1., 1., 1.);
+  var_pair_t res = setup_control_points(5, flag, init_pos);
+  T_linear_variable_t& vars = res.first;
+  vartype exptecdvars[] = {constant, variable, variable, variable, variable, constant};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvars, "VarCombinatorialMix", error);
+  checkPair(res.second, 1, 4, "VarCombinatorialMix", error);
 
-    constraint_linear constraints = makeConstraint();
-    flag = END_POS | END_VEL | INIT_VEL | INIT_POS;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar1 [] = {constant,constant,variable,variable,constant,constant};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar1,"VarCombinatorialMix", error);
-    checkPair(res.second, 2, 2, "VarCombinatorialMix", error);
+  constraint_linear constraints = makeConstraint();
+  flag = END_POS | END_VEL | INIT_VEL | INIT_POS;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar1[] = {constant, constant, variable, variable, constant, constant};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar1, "VarCombinatorialMix", error);
+  checkPair(res.second, 2, 2, "VarCombinatorialMix", error);
 
-    flag = END_POS | END_VEL | END_ACC | INIT_VEL | INIT_POS;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar2 [] = {constant,constant,variable,constant,constant,constant};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar2,"VarCombinatorialMix", error);
-    checkPair(res.second, 2, 1, "VarCombinatorialMix", error);
+  flag = END_POS | END_VEL | END_ACC | INIT_VEL | INIT_POS;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar2[] = {constant, constant, variable, constant, constant, constant};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar2, "VarCombinatorialMix", error);
+  checkPair(res.second, 2, 1, "VarCombinatorialMix", error);
 
+  flag = ALL;
+  res = setup_control_points(6, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar3[] = {constant, constant, constant, variable, constant, constant, constant};
+  checkNumVar(vars, 7, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar3, "VarCombinatorialMix", error);
+  checkPair(res.second, 3, 1, "VarCombinatorialMix", error);
+
+  flag = END_VEL | END_ACC | INIT_VEL;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar4[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar4, "VarCombinatorialMix", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
+
+  flag = END_VEL | INIT_VEL;
+  res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  vars = res.first;
+  vartype exptecdvar5[] = {variable, variable, variable, variable, variable, variable};
+  checkNumVar(vars, 6, "VarCombinatorialMix", error);
+  checksequence(vars, exptecdvar5, "VarCombinatorialMix", error);
+  checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
+
+  bool err = true;
+  try {
     flag = ALL;
-    res = setup_control_points(6, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar3 [] = {constant,constant,constant,variable,constant,constant,constant};
-    checkNumVar(vars, 7, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar3,"VarCombinatorialMix", error);
-    checkPair(res.second, 3, 1, "VarCombinatorialMix", error);
-
-    flag = END_VEL | END_ACC | INIT_VEL;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar4 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar4,"VarCombinatorialMix", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
-
-    flag = END_VEL | INIT_VEL;
-    res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    vars = res.first;
-    vartype exptecdvar5 [] = {variable,variable,variable,variable,variable,variable};
-    checkNumVar(vars, 6, "VarCombinatorialMix", error);
-    checksequence(vars,exptecdvar5,"VarCombinatorialMix", error);
-    checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
-
-
-    bool err = true;
-    try
-    {
-        flag = ALL;
-        res = setup_control_points(5, flag,init_pos,init_pos,constraints);
-    }
-    catch(...)
-    {
-        err = false;
-    }
-    if(err)
-    {
-        error = true;
-        std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints " << std::endl;
-    }
+    res = setup_control_points(5, flag, init_pos, init_pos, constraints);
+  } catch (...) {
+    err = false;
+  }
+  if (err) {
+    error = true;
+    std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints "
+              << std::endl;
+  }
 }
 
 static const std::string path = "../../tests/data/";
 
-void BezierLinearProblemsetupLoadProblem(bool& /*error*/)
-{
-    problem_definition_t pDef = loadproblem(path+"test.pb");
-    //problem_data_t pData = setup_control_points<point_t, 3, double>(pDef);
-    generate_problem<point_t,double,true>(pDef, VELOCITY);
-    //initInequalityMatrix<point_t,3,double>(pDef,pData,prob);
+void BezierLinearProblemsetupLoadProblem(bool& /*error*/) {
+  problem_definition_t pDef = loadproblem(path + "test.pb");
+  // problem_data_t pData = setup_control_points<point_t, 3, double>(pDef);
+  generate_problem<point_t, double, true>(pDef, VELOCITY);
+  // initInequalityMatrix<point_t,3,double>(pDef,pData,prob);
 }
 
-
-int main(int /*argc*/, char** /*argv[]*/)
-{
+int main(int /*argc*/, char** /*argv[]*/) {
   std::cout << "performing tests... \n";
   bool error = false;
   PolynomialCubicFunctionTest(error);
@@ -2283,9 +2235,7 @@ int main(int /*argc*/, char** /*argv[]*/)
   BezierLinearProblemsetup_control_pointsVarCombinatorialMix(error);
   BezierLinearProblemsetupLoadProblem(error);
 
-
-  if(error)
-  {
+  if (error) {
     std::cout << "There were some errors\n";
     return -1;
   } else {

@@ -7,21 +7,19 @@
 
 #include <boost/python.hpp>
 
-namespace curves
-{
-  namespace python
-  {
-    namespace bp = boost::python;
+namespace curves {
+namespace python {
+namespace bp = boost::python;
 
-    ///
-    /// \brief Helper to create or simply return an existing namespace in Python
-    ///
-    /// \param[in] submodule_name name of the submodule
-    ///
-    /// \returns The submodule related to the namespace name.
-    ///
-    bp::object getOrCreatePythonNamespace(const std::string & submodule_name);
-  } // namespace python
-} // namespace curves
+///
+/// \brief Helper to create or simply return an existing namespace in Python
+///
+/// \param[in] submodule_name name of the submodule
+///
+/// \returns The submodule related to the namespace name.
+///
+bp::object getOrCreatePythonNamespace(const std::string& submodule_name);
+}  // namespace python
+}  // namespace curves
 
-#endif // ifndef __python_namespace_h__
+#endif  // ifndef __python_namespace_h__

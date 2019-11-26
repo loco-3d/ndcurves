@@ -1,42 +1,39 @@
-import os
 import unittest
-import eigenpy
-eigenpy.switchToNumpyArray()
 
-from numpy import array_equal, isclose, matrix, random, array, zeros
+import eigenpy
+from numpy import array, matrix, zeros
 from numpy.linalg import norm
 
-from curves import (bezier, bezier_from_hermite, bezier_from_polynomial, cubic_hermite_spline, curve_constraints,
-                    exact_cubic, hermite_from_bezier, hermite_from_polynomial, piecewise_bezier_curve,
-                    piecewise_cubic_hermite_curve, piecewise_polynomial_curve, polynomial, polynomial_from_bezier,
-                    polynomial_from_hermite)
+from curves.optimization import (constraint_flag, generate_integral_problem, integral_cost_flag, problem_definition,
+                                 setup_control_points)
 
-from curves.optimization import(constraint_flag, integral_cost_flag, quadratic_problem, setup_control_points, generate_problem, generate_integral_problem, problem_data, problem_definition)
+eigenpy.switchToNumpyArray()
 
 
 class TestProblemDefinition(unittest.TestCase):
 
-     #generate problem data
-     def test_problem_definition(self):
-          pD = problem_definition(3)
-          pD.init_pos
-          pD.init_vel = matrix([0., 1., 1.]).transpose()
-          pD.end_vel = matrix([0., 1., 1.]).transpose()
-          pD.init_acc = matrix([0., 1., -1.]).transpose()
-          pD.end_acc = matrix([0., 0., 0]).transpose()
-          pD.init_pos = array([[0.,0.,0.]]).T
-          pD.end_pos = array([[1.,1.,1.]]).T
-          pD.flag = constraint_flag.INIT_VEL | constraint_flag.INIT_POS
+    # generate problem data
+    def test_problem_definition(self):
+        pD = problem_definition(3)
+        pD.init_pos
+        pD.init_vel = matrix([0., 1., 1.]).transpose()
+        pD.end_vel = matrix([0., 1., 1.]).transpose()
+        pD.init_acc = matrix([0., 1., -1.]).transpose()
+        pD.end_acc = matrix([0., 0., 0]).transpose()
+        pD.init_pos = array([[0., 0., 0.]]).T
+        pD.end_pos = array([[1., 1., 1.]]).T
+        pD.flag = constraint_flag.INIT_VEL | constraint_flag.INIT_POS
 
-          quadratic_problem = generate_integral_problem(pD,integral_cost_flag.ACCELERATION)
+        generate_integral_problem(pD, integral_cost_flag.ACCELERATION)
 
-          #generate problem
-          problem = setup_control_points(pD)
-          bezierLinear = problem.bezier()
-          bezierFixed = bezierLinear.evaluate(array([zeros(12)]).T)
-          self.assertTrue(bezierFixed.nbWaypoints == pD.degree + 1)
-          self.assertTrue(norm(bezierFixed(0.) - pD.init_pos) <= 0.001)
-          self.assertTrue(norm(bezierFixed.derivate(0.0, 1) - pD.init_vel) <= 0.001)
+        # generate problem
+        problem = setup_control_points(pD)
+        bezierLinear = problem.bezier()
+        bezierFixed = bezierLinear.evaluate(array([zeros(12)]).T)
+        self.assertTrue(bezierFixed.nbWaypoints == pD.degree + 1)
+        self.assertTrue(norm(bezierFixed(0.) - pD.init_pos) <= 0.001)
+        self.assertTrue(norm(bezierFixed.derivate(0.0, 1) - pD.init_vel) <= 0.001)
+
 
 if __name__ == '__main__':
     unittest.main()

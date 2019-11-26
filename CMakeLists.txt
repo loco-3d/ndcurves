@@ -1,28 +1,32 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-
-INCLUDE(cmake/base.cmake)
-INCLUDE(cmake/boost.cmake)
-INCLUDE(cmake/test.cmake)
-INCLUDE(cmake/python.cmake)
-INCLUDE(cmake/hpp.cmake)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 SET(PROJECT_ORG loco-3d)
 SET(PROJECT_NAME curves)
 SET(PROJECT_DESCRIPTION
   "template based classes for creating and manipulating spline and bezier curves. Comes with extra options specific to end-effector trajectories in robotics."
   )
+SET(PROJECT_URL "http://gepgitlab.laas.fr/${PROJECT_NAMESPACE}/${PROJECT_NAME}")
+
+INCLUDE(cmake/base.cmake)
+INCLUDE(cmake/boost.cmake)
+INCLUDE(cmake/test.cmake)
+INCLUDE(cmake/python.cmake)
 
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
 
-SETUP_HPP_PROJECT()
+CMAKE_POLICY(SET CMP0048 OLD)
+PROJECT(${PROJECT_NAME} CXX)
 
 ADD_REQUIRED_DEPENDENCY(eigen3)
-OPTION(CURVES_WITH_PINOCCHIO_SUPPORT "Build with pinocchio support" OFF)
+ADD_OPTIONAL_DEPENDENCY(pinocchio)
+OPTION(CURVES_WITH_PINOCCHIO_SUPPORT "Build with pinocchio support" ${PINOCCHIO_FOUND})
 IF(CURVES_WITH_PINOCCHIO_SUPPORT)
-  ADD_REQUIRED_DEPENDENCY(pinocchio)
+  IF(NOT PINOCCHIO_FOUND)
+    MESSAGE(FATAL_ERROR "CURVES_WITH_PINOCCHIO_SUPPORT selected, but pinocchio has not been found")
+  ENDIF(NOT PINOCCHIO_FOUND)
+  PKG_CONFIG_APPEND_CFLAGS("-DCURVES_WITH_PINOCCHIO_SUPPORT")
 ENDIF(CURVES_WITH_PINOCCHIO_SUPPORT)
-
 
 SET(BOOST_COMPONENTS unit_test_framework serialization)
 
@@ -49,5 +53,3 @@ ENDIF(BUILD_PYTHON_INTERFACE)
 
 ADD_SUBDIRECTORY(include/curves)
 ADD_SUBDIRECTORY(tests)
-
-SETUP_HPP_PROJECT_FINALIZE()

@@ -9,16 +9,13 @@
 #ifndef _OPTIMIZATION_PYTHON
 #define _OPTIMIZATION_PYTHON
 
-namespace curves
-{
-namespace optimization
-{
-namespace python
-{
+namespace curves {
+namespace optimization {
+namespace python {
 
 void exposeOptimization();
-} // namespace python
-} // namespace optimization
-} // namespace curves
+}  // namespace python
+}  // namespace optimization
+}  // namespace curves
 
-#endif //_OPTIMIZATION_PYTHON
+#endif  //_OPTIMIZATION_PYTHON

@@ -157,23 +157,16 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return isContinuous;
   }
 
-  std::size_t num_curves() const
-  {
-      return curves_.size();
-  }
+  std::size_t num_curves() const { return curves_.size(); }
 
-  const curve_t& curve_at_time(const time_t t) const
-  {
-      return curves_[find_interval(t)];
-  }
+  const curve_t& curve_at_time(const time_t t) const { return curves_[find_interval(t)]; }
 
-  const curve_t& curve_at_index(const std::size_t idx) const
-  {
-      if (Safe && idx >= num_curves())
-      {
-          throw std::length_error("curve_at_index: requested index greater than number of curves in piecewise_curve instance");
-      }
-      return curves_[idx];
+  const curve_t& curve_at_index(const std::size_t idx) const {
+    if (Safe && idx >= num_curves()) {
+      throw std::length_error(
+          "curve_at_index: requested index greater than number of curves in piecewise_curve instance");
+    }
+    return curves_[idx];
   }
 
   template <typename Bezier>

@@ -39,7 +39,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   typedef std::vector<point_t, Eigen::aligned_allocator<point_t> > t_point_t;
   typedef typename t_point_t::const_iterator cit_point_t;
   typedef bezier_curve<Time, Numeric, Safe, Point> bezier_curve_t;
-  typedef piecewise_curve <Time, Numeric, Safe, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
+  typedef piecewise_curve<Time, Numeric, Safe, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
 
   /* Constructors - destructors */
  public:
@@ -296,7 +296,6 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return new_pts;
   }
 
-
   /// \brief Split the bezier curve in 2 at time t.
   /// \param t : list of points.
   /// \param u : unNormalized time.
@@ -324,26 +323,22 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return std::make_pair(c_first, c_second);
   }
 
-
   /// \brief Split the bezier curve in several curves, all accessible
   /// within a piecewise_bezier_curve_t.
   /// \param times : list of times of size n.
   /// \return a piecewise_bezier_curve_t comprising n+1 curves
   ///
-  piecewise_bezier_curve_t split(const vector_x_t& times) const
-  {
-      typename piecewise_bezier_curve_t::t_curve_t curves;
-      bezier_curve_t current = *this;
-      for(int i = 0; i < times.rows(); ++i)
-      {
-          std::pair<bezier_curve_t, bezier_curve_t> pairsplit = current.split(times[i]);
-          curves.push_back(pairsplit.first);
-          current = pairsplit.second;
-      }
-      curves.push_back(current);
-      return piecewise_bezier_curve_t(curves);
+  piecewise_bezier_curve_t split(const vector_x_t& times) const {
+    typename piecewise_bezier_curve_t::t_curve_t curves;
+    bezier_curve_t current = *this;
+    for (int i = 0; i < times.rows(); ++i) {
+      std::pair<bezier_curve_t, bezier_curve_t> pairsplit = current.split(times[i]);
+      curves.push_back(pairsplit.first);
+      current = pairsplit.second;
+    }
+    curves.push_back(current);
+    return piecewise_bezier_curve_t(curves);
   }
-
 
   /// \brief Extract a bezier curve defined between \f$[t_1,t_2]\f$ from the actual bezier curve
   ///        defined between \f$[T_{min},T_{max}]\f$ with \f$T_{min} \leq t_1 \leq t_2 \leq T_{max}\f$.

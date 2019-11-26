@@ -1,20 +1,23 @@
 import os
 import unittest
-
 from math import sqrt
+
+import eigenpy
 import numpy as np
-from numpy import matrix, array_equal, isclose,random,zeros
+from numpy import array, array_equal, isclose, random, zeros
 from numpy.linalg import norm
 
-from curves import (CURVES_WITH_PINOCCHIO_SUPPORT,bezier_from_hermite, bezier_from_polynomial, hermite_from_polynomial,
-                    hermite_from_bezier, polynomial_from_hermite, polynomial_from_bezier,
-                    cubic_hermite_spline, curve_constraints, exact_cubic, bezier,bezier3,
-                    piecewise_bezier_curve, piecewise_cubic_hermite_curve,
-                    piecewise_polynomial_curve, polynomial,SO3Linear,SE3Curve,Quaternion
-                    )
+from curves import (CURVES_WITH_PINOCCHIO_SUPPORT, Quaternion, SE3Curve, SO3Linear, bezier, bezier3,
+                    bezier_from_hermite, bezier_from_polynomial, cubic_hermite_spline, curve_constraints, exact_cubic,
+                    hermite_from_bezier, hermite_from_polynomial, piecewise_bezier_curve,
+                    piecewise_cubic_hermite_curve, piecewise_polynomial_curve, polynomial, polynomial_from_bezier,
+                    polynomial_from_hermite)
+
+eigenpy.switchToNumpyArray()
 
 if CURVES_WITH_PINOCCHIO_SUPPORT:
-  from pinocchio import SE3,Motion
+    from pinocchio import SE3, Motion
+
 
 class TestCurves(unittest.TestCase):
     # def print_str(self, inStr):
@@ -27,23 +30,23 @@ class TestCurves(unittest.TestCase):
         # - Functions : constructor, min, max, derivate,compute_derivate, compute_primitive
         # - Variables : degree, nbWayPoints
         __EPS = 1e-6
-        waypoints = matrix([[1., 2., 3.]]).T
+        waypoints = array([[1., 2., 3.]]).T
         a = bezier(waypoints, 0., 2.)
         t = 0.
         while t < 2.:
-            self.assertTrue(norm(a(t) - matrix([1., 2., 3.]).T) < __EPS)
+            self.assertTrue(norm(a(t) - array([1., 2., 3.]).T) < __EPS)
             t += 0.1
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        # time_waypoints = matrix([0., 1.]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        # time_waypoints = array([0., 1.]).transpose()
         # Create bezier6 and bezier
         a = bezier(waypoints, 0., 3.)
         # Test waypoints
         self.assertTrue(a.nbWaypoints == 2)
         for i in range(0, a.nbWaypoints):
             if i == 0:
-                self.assertTrue((a.waypointAtIndex(0) == matrix([1., 2., 3.]).transpose()).all())
+                self.assertTrue((a.waypointAtIndex(0) == array([1., 2., 3.])).all())
             elif i == 1:
-                self.assertTrue((a.waypointAtIndex(1) == matrix([4., 5., 6.]).transpose()).all())
+                self.assertTrue((a.waypointAtIndex(1) == array([4., 5., 6.])).all())
         # self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
         # self.print_str(("test 1")
@@ -51,7 +54,7 @@ class TestCurves(unittest.TestCase):
         a.min()
         a.max()
         a(0.4)
-        self.assertTrue((a(a.min()) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((a(a.min()) == array([1., 2., 3.])).all())
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         a = a.compute_derivate(100)
@@ -60,15 +63,15 @@ class TestCurves(unittest.TestCase):
         for i in range(10):
             t = float(i) / 10.
             self.assertTrue((a(t) == prim.derivate(t, 1)).all())
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # Check primitive and derivate - order 2
         prim = a.compute_primitive(2)
         for i in range(10):
             t = float(i) / 10.
             self.assertTrue((a(t) == prim.derivate(t, 2)).all())
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # Create new bezier curve
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
         a0 = bezier(waypoints)
         a1 = bezier(waypoints, 0., 3.)
         prim0 = a0.compute_primitive(1)
@@ -80,33 +83,33 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(norm(a0.derivate(t, 1) - a1.derivate(3 * t, 1) * 3.) < __EPS)
             self.assertTrue(norm(a0.derivate(t, 2) - a1.derivate(3 * t, 2) * 9.) < __EPS)
             self.assertTrue(norm(prim0(t) - prim1(t * 3) / 3.) < __EPS)
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # testing bezier with constraints
         c = curve_constraints(3)
-        c.init_vel = matrix([0., 1., 1.]).transpose()
-        c.end_vel = matrix([0., 1., 1.]).transpose()
-        c.init_acc = matrix([0., 1., -1.]).transpose()
-        c.end_acc = matrix([0., 100., 1.]).transpose()
+        c.init_vel = array([[0., 1., 1.]]).transpose()
+        c.end_vel = array([[0., 1., 1.]]).transpose()
+        c.init_acc = array([[0., 1., -1.]]).transpose()
+        c.end_acc = array([[0., 100., 1.]]).transpose()
         # Check derivate with constraints
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, c)
         self.assertTrue(norm(a.derivate(0, 1) - c.init_vel) < 1e-10)
         self.assertTrue(norm(a.derivate(1, 2) - c.end_acc) < 1e-10)
 
         # Test serialization : bezier 3
         a.saveAsText("serialization_curve.test")
-        # waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        # waypoints = array([[0,0,0,], [0,0,0,]]).transpose()
         b = bezier()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
 
         # Bezier dim 4
-        waypoints = matrix([[1., 2., 3., 4.]]).T
+        waypoints = array([[1., 2., 3., 4.]]).T
         a = bezier(waypoints, 0., 2.)
         # Test serialization : bezier of dim 4
         a.saveAsText("serialization_curve.test")
-        # waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        # waypoints = array([[0,0,0,], [0,0,0,]]).transpose()
         b = bezier()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
@@ -119,23 +122,23 @@ class TestCurves(unittest.TestCase):
         # - Functions : constructor, min, max, derivate,compute_derivate, compute_primitive
         # - Variables : degree, nbWayPoints
         __EPS = 1e-6
-        waypoints = matrix([[1., 2., 3.]]).T
+        waypoints = array([[1., 2., 3.]]).T
         a = bezier3(waypoints, 0., 2.)
         t = 0.
         while t < 2.:
-            self.assertTrue(norm(a(t) - matrix([1., 2., 3.]).T) < __EPS)
+            self.assertTrue(norm(a(t) - array([1., 2., 3.]).T) < __EPS)
             t += 0.1
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        # time_waypoints = matrix([0., 1.]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        # time_waypoints = array([[0., 1.]]).transpose()
         # Create bezier6 and bezier
         a = bezier3(waypoints, 0., 3.)
         # Test waypoints
         self.assertTrue(a.nbWaypoints == 2)
         for i in range(0, a.nbWaypoints):
             if i == 0:
-                self.assertTrue((a.waypointAtIndex(0) == matrix([1., 2., 3.]).transpose()).all())
+                self.assertTrue((a.waypointAtIndex(0) == array([1., 2., 3.])).all())
             elif i == 1:
-                self.assertTrue((a.waypointAtIndex(1) == matrix([4., 5., 6.]).transpose()).all())
+                self.assertTrue((a.waypointAtIndex(1) == array([4., 5., 6.])).all())
         # self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
         # self.print_str(("test 1")
@@ -143,7 +146,7 @@ class TestCurves(unittest.TestCase):
         a.min()
         a.max()
         a(0.4)
-        self.assertTrue((a(a.min()) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((a(a.min()) == array([1., 2., 3.])).all())
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         a = a.compute_derivate(100)
@@ -152,15 +155,15 @@ class TestCurves(unittest.TestCase):
         for i in range(10):
             t = float(i) / 10.
             self.assertTrue((a(t) == prim.derivate(t, 1)).all())
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # Check primitive and derivate - order 2
         prim = a.compute_primitive(2)
         for i in range(10):
             t = float(i) / 10.
             self.assertTrue((a(t) == prim.derivate(t, 2)).all())
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # Create new bezier curve
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
         a0 = bezier3(waypoints)
         a1 = bezier3(waypoints, 0., 3.)
         prim0 = a0.compute_primitive(1)
@@ -172,34 +175,34 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(norm(a0.derivate(t, 1) - a1.derivate(3 * t, 1) * 3.) < __EPS)
             self.assertTrue(norm(a0.derivate(t, 2) - a1.derivate(3 * t, 2) * 9.) < __EPS)
             self.assertTrue(norm(prim0(t) - prim1(t * 3) / 3.) < __EPS)
-        self.assertTrue((prim(0) == matrix([0., 0., 0.])).all())
+        self.assertTrue((prim(0) == array([0., 0., 0.])).all())
         # testing bezier with constraints
         c = curve_constraints(3)
-        c.init_vel = matrix([0., 1., 1.]).transpose()
-        c.end_vel = matrix([0., 1., 1.]).transpose()
-        c.init_acc = matrix([0., 1., -1.]).transpose()
-        c.end_acc = matrix([0., 100., 1.]).transpose()
+        c.init_vel = array([[0., 1., 1.]]).transpose()
+        c.end_vel = array([[0., 1., 1.]]).transpose()
+        c.init_acc = array([[0., 1., -1.]]).transpose()
+        c.end_acc = array([[0., 100., 1.]]).transpose()
         # Check derivate with constraints
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier3(waypoints, c)
         self.assertTrue(norm(a.derivate(0, 1) - c.init_vel) < 1e-10)
         self.assertTrue(norm(a.derivate(1, 2) - c.end_acc) < 1e-10)
 
         # Test serialization : bezier 3
         a.saveAsText("serialization_curve.test")
-        # waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
+        # waypoints = array([[0,0,0,], [0,0,0,]]).transpose()
         b = bezier3()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
 
         # Bezier dim 4
-        waypoints = matrix([[1., 2., 3., 4.]]).T
-        a = bezier3(waypoints, 0., 2.)
+        waypoints = array([[1., 2., 3., 4.]]).T
+        a = bezier(waypoints, 0., 2.)
         # Test serialization : bezier of dim 4
         a.saveAsText("serialization_curve.test")
-        # waypoints = matrix([[0,0,0,], [0,0,0,]]).transpose()
-        b = bezier3()
+        # waypoints = array([[0,0,0,], [0,0,0,]]).transpose()
+        b = bezier()
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
@@ -209,7 +212,7 @@ class TestCurves(unittest.TestCase):
         print("test_polynomial")
         # To test :
         # - Functions : constructor, min, max, derivate, serialize, deserialize
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = polynomial(waypoints)  # Defined on [0.,1.]
         a = polynomial(waypoints, -1., 3.)  # Defined on [-1.,3.]
         a.min()
@@ -217,10 +220,10 @@ class TestCurves(unittest.TestCase):
         a(0.4)
         # Test get coefficient at degree
         self.assertTrue((a.coeff() == waypoints).all())
-        self.assertTrue((a.coeffAtDegree(0) == matrix([1., 2., 3.]).transpose()).all())
-        self.assertTrue((a.coeffAtDegree(1) == matrix([4., 5., 6.]).transpose()).all())
+        self.assertTrue((a.coeffAtDegree(0) == array([1., 2., 3.])).all())
+        self.assertTrue((a.coeffAtDegree(1) == array([4., 5., 6.])).all())
         # Other tests
-        self.assertTrue((a(a.min()) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((a(a.min()) == array([1., 2., 3.])).all())
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         a_derivated = a.compute_derivate(1)
@@ -234,28 +237,29 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_polynomial_from_boundary_condition(self):
-        p0 = matrix([1., 3., -2.]).T
-        p1 = matrix([0.6, 2., 2.5]).T
-        dp0 = matrix([-6., 2., -1.]).T
-        dp1 = matrix([10., 10., 10.]).T
-        ddp0 = matrix([1., -7., 4.5]).T
-        ddp1 = matrix([6., -1., -4]).T
+        p0 = array([1., 3., -2.])
+        p1 = array([0.6, 2., 2.5])
+        dp0 = array([-6., 2., -1.])
+        dp1 = array([10., 10., 10.])
+        ddp0 = array([1., -7., 4.5])
+        ddp1 = array([6., -1., -4])
         min = 1.
         max = 2.5
-        polC0 = polynomial(p0, p1, min, max)
+        # a reshape is required as the inputs must be of shape (n,1) and not (n,)
+        # p0.reshape(-1,1) is equivalent to p0.reshape(len(p0),1)
+        polC0 = polynomial(p0.reshape(-1,1), p1.reshape(-1,1), min, max)
         self.assertEqual(polC0.min(), min)
         self.assertEqual(polC0.max(), max)
-        self.assertTrue(array_equal(polC0(min), p0))
-        self.assertTrue(array_equal(polC0(max), p1))
+        # TODO: Why are thoso `.T[0]` needed ?
         self.assertTrue(array_equal(polC0((min + max) / 2.), 0.5 * p0 + 0.5 * p1))
-        polC1 = polynomial(p0, dp0, p1, dp1, min, max)
+        polC1 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), min, max)
         self.assertEqual(polC1.min(), min)
         self.assertEqual(polC1.max(), max)
         self.assertTrue(isclose(polC1(min), p0).all())
         self.assertTrue(isclose(polC1(max), p1).all())
         self.assertTrue(isclose(polC1.derivate(min, 1), dp0).all())
         self.assertTrue(isclose(polC1.derivate(max, 1), dp1).all())
-        polC2 = polynomial(p0, dp0, ddp0, p1, dp1, ddp1, min, max)
+        polC2 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), min, max)
         self.assertEqual(polC2.min(), min)
         self.assertEqual(polC2.max(), max)
         self.assertTrue(isclose(polC2(min), p0).all())
@@ -265,31 +269,20 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(isclose(polC2.derivate(min, 2), ddp0).all())
         self.assertTrue(isclose(polC2.derivate(max, 2), ddp1).all())
         # check that the exception are correctly raised :
-        try:
-            polC0 = polynomial(p0, p1, max, min)
-            self.assertTrue(False)  # should never get there
-        except ValueError:
-            pass
+        with self.assertRaises(ValueError):
+            polC0 = polynomial(p0.reshape(-1,1), p1.reshape(-1,1), max, min)
 
-        try:
-            polC1 = polynomial(p0, dp0, p1, dp1, max, min)
-            self.assertTrue(False)  # should never get there
-        except ValueError:
-            pass
+        with self.assertRaises(ValueError):
+            polC1 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), max, min)
 
-        try:
-            polC2 = polynomial(p0, dp0, ddp0, p1, dp1, ddp1, max, min)
-            self.assertTrue(False)  # should never get there
-        except ValueError:
-            pass
-
-        return
+        with self.assertRaises(ValueError):
+            polC2 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), max, min)
 
     def test_cubic_hermite_spline(self):
         print("test_cubic_hermite_spline")
-        points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        tangents = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        time_points = matrix([0., 1.]).transpose()
+        points = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        tangents = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        time_points = array([[0., 1.]]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points)
         a.min()
         a.max()
@@ -303,9 +296,9 @@ class TestCurves(unittest.TestCase):
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
         # test dim 4
-        points = matrix([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
-        tangents = matrix([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
-        time_points = matrix([0., 1.]).transpose()
+        points = array([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
+        tangents = array([[1., 2., 3., 4.], [4., 5., 6., 7.]]).transpose()
+        time_points = array([[0., 1.]]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points)
         a.min()
         a.max()
@@ -324,9 +317,9 @@ class TestCurves(unittest.TestCase):
         print("test_piecewise_polynomial_curve")
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous, serialize, deserialize
-        waypoints0 = matrix([[0., 0., 0.]]).transpose()
-        waypoints1 = matrix([[1., 1., 1.]]).transpose()
-        waypoints2 = matrix([[1., 1., 1.], [1., 1., 1.]]).transpose()
+        waypoints0 = array([[0., 0., 0.]]).transpose()
+        waypoints1 = array([[1., 1., 1.]]).transpose()
+        waypoints2 = array([[1., 1., 1.], [1., 1., 1.]]).transpose()
         polynomial(waypoints0, 0., 0.1)
         a = polynomial(waypoints1, 0., 1.)
         b = polynomial(waypoints2, 1., 3.)
@@ -335,7 +328,7 @@ class TestCurves(unittest.TestCase):
         pc.min()
         pc.max()
         pc(0.4)
-        self.assertTrue((pc(pc.min()) == matrix([1., 1., 1.]).transpose()).all())
+        self.assertTrue((pc(pc.min()) == array([[1., 1., 1.]]).transpose()).all())
         self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
@@ -350,10 +343,10 @@ class TestCurves(unittest.TestCase):
 
     def test_piecewise_from_points_list(self):
         N = 7
-        points = matrix(random.rand(3, N))
-        points_derivative = matrix(random.rand(3, N))
-        points_second_derivative = matrix(random.rand(3, N))
-        time_points = matrix(random.rand(N)).T
+        points = array(random.rand(3, N))
+        points_derivative = array(random.rand(3, N))
+        points_second_derivative = array(random.rand(3, N))
+        time_points = array(random.rand(1, N)).T
         time_points.sort(0)
         polC0 = piecewise_polynomial_curve.FromPointsList(points, time_points)
         self.assertEqual(polC0.min(), time_points[0, 0])
@@ -389,28 +382,20 @@ class TestCurves(unittest.TestCase):
         # check if exepetion are corectly raised when time_points are not in ascending values
         time_points[0, 0] = 1
         time_points[1, 0] = 0.5
-        try:
+        with self.assertRaises(ValueError):
             polC0 = piecewise_polynomial_curve.FromPointsList(points, time_points)
-            self.assertTrue(False)  # should not get here
-        except ValueError:
-            pass
-        try:
+
+        with self.assertRaises(ValueError):
             polC1 = piecewise_polynomial_curve.FromPointsList(points, points_derivative, time_points)
-            self.assertTrue(False)  # should not get here
-        except ValueError:
-            pass
-        try:
+
+        with self.assertRaises(ValueError):
             polC2 = piecewise_polynomial_curve.FromPointsList(points, points_derivative, points_second_derivative,
                                                               time_points)
-            self.assertTrue(False)  # should not get here
-        except ValueError:
-            pass
-        return
 
     def test_piecewise_bezier_curve(self):
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, 0., 1.)
         b = bezier(waypoints, 1., 2.)
         pc = piecewise_bezier_curve(a)
@@ -418,7 +403,7 @@ class TestCurves(unittest.TestCase):
         pc.min()
         pc.max()
         pc(0.4)
-        self.assertTrue((pc(pc.min()) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((pc(pc.min()) == array([1., 2., 3.])).all())
         self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
@@ -435,10 +420,10 @@ class TestCurves(unittest.TestCase):
         print("test_piecewise_cubic_hermite_curve")
         # To test :
         # - Functions : constructor, min, max, derivate, add_curve, is_continuous
-        points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        tangents = matrix([[2., 2., 2.], [4., 4., 4.]]).transpose()
-        time_points0 = matrix([0., 1.]).transpose()
-        time_points1 = matrix([1., 2.]).transpose()
+        points = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        tangents = array([[2., 2., 2.], [4., 4., 4.]]).transpose()
+        time_points0 = array([[0., 1.]]).transpose()
+        time_points1 = array([[1., 2.]]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points0)
         b = cubic_hermite_spline(points, tangents, time_points1)
         pc = piecewise_cubic_hermite_curve(a)
@@ -446,7 +431,7 @@ class TestCurves(unittest.TestCase):
         pc.min()
         pc.max()
         pc(0.4)
-        self.assertTrue((pc(0.) == matrix([1., 2., 3.]).transpose()).all())
+        self.assertTrue((pc(0.) == array([1., 2., 3.])).all())
         self.assertTrue((pc.derivate(0.4, 0) == pc(0.4)).all())
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
@@ -463,8 +448,8 @@ class TestCurves(unittest.TestCase):
         print("test_exact_cubic")
         # To test :
         # - Functions : constructor, min, max, derivate, getNumberSplines, getSplineAt
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        time_waypoints = matrix([0., 1.]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        time_waypoints = array([[0., 1.]]).transpose()
         a = exact_cubic(waypoints, time_waypoints)
         a.min()
         a.max()
@@ -485,13 +470,13 @@ class TestCurves(unittest.TestCase):
         print("test_exact_cubic_constraint")
         # To test :
         # - Functions : constructor, min, max, derivate
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        time_waypoints = matrix([0., 1.]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        time_waypoints = array([[0., 1.]]).transpose()
         c = curve_constraints(3)
-        c.init_vel = matrix([0., 1., 1.]).transpose()
-        c.end_vel = matrix([0., 1., 1.]).transpose()
-        c.init_acc = matrix([0., 1., 1.]).transpose()
-        c.end_acc = matrix([0., 1., 1.]).transpose()
+        c.init_vel = array([[0., 1., 1.]]).transpose()
+        c.end_vel = array([[0., 1., 1.]]).transpose()
+        c.init_acc = array([[0., 1., 1.]]).transpose()
+        c.end_acc = array([[0., 1., 1.]]).transpose()
         c.init_vel
         c.end_vel
         c.init_acc
@@ -501,15 +486,15 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_cubic_hermite_spline_2(self):
-        points = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
-        tangents = matrix([[2., 2., 2.], [4., 4., 4.]]).transpose()
-        time_points = matrix([0., 1.]).transpose()
+        points = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        tangents = array([[2., 2., 2.], [4., 4., 4.]]).transpose()
+        time_points = array([[0., 1.]]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points)
         a.min()
         a.max()
         a(0.4)
-        self.assertTrue((a(0.) == matrix([1., 2., 3.]).transpose()).all())
-        self.assertTrue((a.derivate(0., 1) == matrix([2., 2., 2.]).transpose()).all())
+        self.assertTrue((a(0.) == array([1., 2., 3.])).all())
+        self.assertTrue((a.derivate(0., 1) == array([[2., 2., 2.]]).transpose()).all())
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         return
@@ -517,7 +502,7 @@ class TestCurves(unittest.TestCase):
     def test_conversion_curves(self):
         print("test_conversion_curves")
         __EPS = 1e-6
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints)
         # converting bezier to polynomial
         a_pol = polynomial_from_bezier(a)
@@ -543,7 +528,7 @@ class TestCurves(unittest.TestCase):
 
     def test_conversion_piecewise_curves(self):
         __EPS = 1e-6
-        waypoints = matrix([[1., 2., 3.], [4., 5., 6.]]).transpose()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, 0., 1.)
         b = bezier(waypoints, 1., 2.)
         pc = piecewise_bezier_curve(a)
@@ -559,402 +544,336 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(norm(pc_bc(0.3) - pc(0.3)) < __EPS)
         return
 
-
     def test_so3_linear(self):
-        print "test SO3 Linear"
+        print("test SO3 Linear")
         init_quat = Quaternion.Identity()
-        end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
+        end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
         init_rot = init_quat.matrix()
         end_rot = end_quat.matrix()
         min = 0.2
         max = 1.5
 
-        so3Rot = SO3Linear(init_rot,end_rot,min,max)
-        so3Quat = SO3Linear(init_quat,end_quat,min,max)
-        self.assertEqual(so3Rot.min(),min)
-        self.assertEqual(so3Rot.max(),max)
-        self.assertEqual(so3Quat.min(),min)
-        self.assertEqual(so3Quat.max(),max)
-        self.assertTrue(isclose(so3Rot(min),init_rot).all())
-        self.assertTrue(isclose(so3Rot(max),end_rot).all())
-        self.assertTrue(isclose(so3Quat(min),init_rot).all())
-        self.assertTrue(isclose(so3Quat(max),end_rot).all())
-        self.assertEqual(so3Rot.computeAsQuaternion(min),init_quat)
-        self.assertEqual(so3Rot.computeAsQuaternion(max),end_quat)
-        self.assertEqual(so3Quat.computeAsQuaternion(min),init_quat)
-        self.assertEqual(so3Quat.computeAsQuaternion(max),end_quat)
+        so3Rot = SO3Linear(init_rot, end_rot, min, max)
+        so3Quat = SO3Linear(init_quat, end_quat, min, max)
+        self.assertEqual(so3Rot.min(), min)
+        self.assertEqual(so3Rot.max(), max)
+        self.assertEqual(so3Quat.min(), min)
+        self.assertEqual(so3Quat.max(), max)
+        self.assertTrue(isclose(so3Rot(min), init_rot).all())
+        self.assertTrue(isclose(so3Rot(max), end_rot).all())
+        self.assertTrue(isclose(so3Quat(min), init_rot).all())
+        self.assertTrue(isclose(so3Quat(max), end_rot).all())
+        self.assertEqual(so3Rot.computeAsQuaternion(min), init_quat)
+        self.assertEqual(so3Rot.computeAsQuaternion(max), end_quat)
+        self.assertEqual(so3Quat.computeAsQuaternion(min), init_quat)
+        self.assertEqual(so3Quat.computeAsQuaternion(max), end_quat)
         t = min
         while t < max:
-          self.assertTrue(isclose(so3Quat(t),so3Rot(t)).all())
-          t += 0.01
-        # check the derivatives :
-        vel =  matrix([[ 1.20830487],[ 0.  ], [ 0. ]])
-        zeros3 = matrix(zeros(3)).T
-        t = min
-        while t < max:
-          self.assertTrue(isclose(so3Quat.derivate(t,1),vel).all())
-          self.assertTrue(isclose(so3Rot.derivate(t,1),vel).all())
-          t += 0.01
-        for i in range(2,5):
-          t = min
-          while t < max:
-            self.assertTrue(isclose(so3Quat.derivate(t,i),zeros3).all())
-            self.assertTrue(isclose(so3Rot.derivate(t,i),zeros3).all())
+            self.assertTrue(isclose(so3Quat(t), so3Rot(t)).all())
             t += 0.01
+        # check the derivatives :
+        vel = array([1.20830487, 0., 0.])
+        zeros3 = zeros((3, 1))
+        t = min
+        while t < max:
+            self.assertTrue(isclose(so3Quat.derivate(t, 1), vel).all())
+            self.assertTrue(isclose(so3Rot.derivate(t, 1), vel).all())
+            t += 0.01
+        for i in range(2, 5):
+            t = min
+            while t < max:
+                self.assertTrue(isclose(so3Quat.derivate(t, i), zeros3).all())
+                self.assertTrue(isclose(so3Rot.derivate(t, i), zeros3).all())
+                t += 0.01
 
         # check that errors are correctly raised when necessary :
-        try:
-          so3Rot(0.)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          so3Rot(-0.1)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          so3Rot(3)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          so3Rot.derivate(0,1)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          so3Rot.derivate(3.,1)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          so3Rot.derivate(1.,0)
-          self.assertTrue(False)
-        except:
-          pass
+        with self.assertRaises(ValueError):
+            so3Rot(0.)
+        with self.assertRaises(ValueError):
+            so3Rot(-0.1)
+        with self.assertRaises(ValueError):
+            so3Rot(3)
+        # TODO: these are not passing
+        with self.assertRaises(ValueError):
+            so3Rot.derivate(0, 1)
+        with self.assertRaises(ValueError):
+            so3Rot.derivate(3., 1)
+        with self.assertRaises(ValueError):
+            so3Rot.derivate(1., 0)
 
     def test_se3_curve_linear(self):
-        print "test SE3 Linear"
+        print("test SE3 Linear")
         init_quat = Quaternion.Identity()
-        end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
+        end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
         init_rot = init_quat.matrix()
         end_rot = end_quat.matrix()
-        init_translation = matrix([1,1.2,-0.6]).T
-        end_translation = matrix([2.3,0,0.9]).T
-        init_pose = matrix(np.identity(4))
-        end_pose = matrix(np.identity(4))
-        init_pose[:3,:3] = init_rot
-        end_pose[:3,:3] = end_rot
-        init_pose[:3,3] = init_translation
-        end_pose[:3,3] = end_translation
+        init_translation = array([1, 1.2, -0.6]).T
+        end_translation = array([2.3, 0, 0.9]).T
+        init_pose = array(np.identity(4))
+        end_pose = array(np.identity(4))
+        init_pose[:3, :3] = init_rot
+        end_pose[:3, :3] = end_rot
+        init_pose[:3, 3] = init_translation
+        end_pose[:3, 3] = end_translation
         min = 0.2
         max = 1.5
-        se3 = SE3Curve(init_pose,end_pose,min,max)
+        se3 = SE3Curve(init_pose, end_pose, min, max)
         p = se3(min)
         if CURVES_WITH_PINOCCHIO_SUPPORT:
-          self.assertTrue(isinstance(se3.evaluateAsSE3(min),SE3))
-          init_pose = SE3(init_pose)
-          end_pose = SE3(end_pose)
-          self.assertTrue(se3.evaluateAsSE3(min).isApprox(init_pose,1e-6))
-          self.assertTrue(se3.evaluateAsSE3(max).isApprox(end_pose,1e-6))
-        self.assertEqual(p.shape[0],4)
-        self.assertEqual(p.shape[1],4)
-        self.assertTrue(isclose(se3(min),init_pose).all())
-        self.assertTrue(isclose(se3(max),end_pose).all())
-        self.assertEqual(se3.min(),min)
-        self.assertEqual(se3.max(),max)
-        self.assertTrue(isclose(se3.rotation(min),init_rot).all())
-        self.assertTrue(isclose(se3.translation(min),init_translation).all())
-        self.assertTrue(isclose(se3.rotation(max),end_rot).all())
-        self.assertTrue(isclose(se3.translation(max),end_translation).all())
+            self.assertTrue(isinstance(se3.evaluateAsSE3(min), SE3))
+            init_pose = SE3(init_pose)
+            end_pose = SE3(end_pose)
+            self.assertTrue(se3.evaluateAsSE3(min).isApprox(init_pose, 1e-6))
+            self.assertTrue(se3.evaluateAsSE3(max).isApprox(end_pose, 1e-6))
+        self.assertEqual(p.shape[0], 4)
+        self.assertEqual(p.shape[1], 4)
+        self.assertTrue(isclose(se3(min), init_pose).all())
+        self.assertTrue(isclose(se3(max), end_pose).all())
+        self.assertEqual(se3.min(), min)
+        self.assertEqual(se3.max(), max)
+        self.assertTrue(isclose(se3.rotation(min), init_rot).all())
+        self.assertTrue(isclose(se3.translation(min), init_translation).all())
+        self.assertTrue(isclose(se3.rotation(max), end_rot).all())
+        self.assertTrue(isclose(se3.translation(max), end_translation).all())
         # check value of derivative (should be constant here)
-        d = se3.derivate(min,1)
+        d = se3.derivate(min, 1)
         if CURVES_WITH_PINOCCHIO_SUPPORT:
-          motion = se3.derivateAsMotion(min,1)
-          self.assertTrue(isinstance(motion,Motion))
-          self.assertTrue(isclose(motion.linear,((end_translation-init_translation)/(max-min))).all())
-          self.assertTrue(isclose(motion.angular[0],1.20830487))
-          self.assertTrue(isclose(motion.angular[1:3],matrix([0,0]).T).all())
-          self.assertTrue(d.isApprox(se3.derivateAsMotion(0.5,1),1e-6))
-          self.assertTrue(d.isApprox(se3.derivateAsMotion(max,1),1e-6))
-          self.assertTrue(se3.derivateAsMotion(min,2).isApprox(Motion.Zero(),1e-6))
-          self.assertTrue(se3.derivateAsMotion(min,3).isApprox(Motion.Zero(),1e-6))
-        self.assertEqual(d.shape[0],6)
-        self.assertEqual(d.shape[1],1)
-        self.assertTrue(isclose(d[0:3],((end_translation-init_translation)/(max-min))).all())
-        self.assertTrue(isclose(d[3],1.20830487))
-        self.assertTrue(isclose(d[4:6],matrix([0,0]).T).all())
-        self.assertTrue(isclose(d,se3.derivate(0.5,1)).all())
-        self.assertTrue(isclose(d,se3.derivate(max,1)).all())
-        self.assertTrue(isclose(se3.derivate(min,2),matrix(zeros(6)).T).all())
-        self.assertTrue(isclose(se3.derivate(min,3),matrix(zeros(6)).T).all())
+            motion = se3.derivateAsMotion(min, 1)
+            self.assertTrue(isinstance(motion, Motion))
+            self.assertTrue(isclose(motion.linear, ((end_translation - init_translation) / (max - min))).all())
+            self.assertTrue(isclose(motion.angular[0], 1.20830487))
+            self.assertTrue(isclose(motion.angular[1:3], array([0, 0]).T).all())
+            self.assertTrue(d.isApprox(se3.derivateAsMotion(0.5, 1), 1e-6))
+            self.assertTrue(d.isApprox(se3.derivateAsMotion(max, 1), 1e-6))
+            self.assertTrue(se3.derivateAsMotion(min, 2).isApprox(Motion.Zero(), 1e-6))
+            self.assertTrue(se3.derivateAsMotion(min, 3).isApprox(Motion.Zero(), 1e-6))
+        self.assertEqual(d.shape[0], 6)
+        # self.assertEqual(d.shape[1], 1)
+        self.assertTrue(isclose(d[0:3], ((end_translation - init_translation) / (max - min))).all())
+        self.assertTrue(isclose(d[3], 1.20830487))
+        self.assertTrue(isclose(d[4:6], array([0, 0]).T).all())
+        self.assertTrue(isclose(d, se3.derivate(0.5, 1)).all())
+        self.assertTrue(isclose(d, se3.derivate(max, 1)).all())
+        self.assertTrue(isclose(se3.derivate(min, 2), zeros((6, 1))).all())
+        self.assertTrue(isclose(se3.derivate(min, 3), zeros((6, 1))).all())
         # check that errors are correctly raised when necessary :
-        try:
-          se3(0.)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          se3(-0.1)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          se3(3)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          se3.derivate(0,1)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          se3.derivate(3.,1)
-          self.assertTrue(False)
-        except:
-          pass
-        try:
-          se3.derivate(1.,0)
-          self.assertTrue(False)
-        except:
-          pass
+        with self.assertRaises(ValueError):
+            se3(0.)
+        with self.assertRaises(ValueError):
+            se3(-0.1)
+        with self.assertRaises(ValueError):
+            se3(3)
+        with self.assertRaises(ValueError):
+            se3.derivate(0, 1)
+        with self.assertRaises(ValueError):
+            se3.derivate(3., 1)
+        with self.assertRaises(ValueError):
+            se3.derivate(1., 0)
 
     def test_se3_from_translation_curve(self):
-      print "test SE3 From translation curves"
-      init_quat = Quaternion.Identity()
-      end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
-      init_rot = init_quat.matrix()
-      end_rot = end_quat.matrix()
-      waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
-      min = 0.2
-      max = 1.5
-      translation = bezier(waypoints,min,max)
-      # test with bezier
-      se3 = SE3Curve(translation,init_rot,end_rot)
-      self.assertEqual(se3.min(),min)
-      self.assertEqual(se3.max(),max)
-      pmin = se3(min)
-      pmax = se3(max)
-      self.assertTrue(isclose(pmin[:3,:3],init_rot).all())
-      self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
-      self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
-      self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
-      if CURVES_WITH_PINOCCHIO_SUPPORT:
-        pminSE3 = se3.evaluateAsSE3(min)
-        pmaxSE3 = se3.evaluateAsSE3(max)
-        self.assertTrue(isclose(pminSE3.rotation,init_rot).all())
-        self.assertTrue(isclose(pmaxSE3.rotation,end_rot).all())
-        self.assertTrue(isclose(pminSE3.translation,translation(min)).all())
-        self.assertTrue(isclose(pmaxSE3.translation,translation(max)).all())
-      t = min
-      while t < max:
+        print("test SE3 From translation curves")
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        min = 0.2
+        max = 1.5
+        translation = bezier(waypoints, min, max)
+        # test with bezier
+        se3 = SE3Curve(translation, init_rot, end_rot)
+        self.assertEqual(se3.min(), min)
+        self.assertEqual(se3.max(), max)
+        pmin = se3(min)
+        pmax = se3(max)
+        self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+        self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+        self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+        self.assertTrue(isclose(pmax[0:3, 3], translation(max)).all())
         if CURVES_WITH_PINOCCHIO_SUPPORT:
-          self.assertTrue(isclose(se3.evaluateAsSE3(t).translation,translation(t)).all())
-          self.assertTrue(isclose(se3.derivateAsMotion(t,1).linear,translation.derivate(t,1)).all())
-        self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
-        self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
-        t += 0.02
+            pminSE3 = se3.evaluateAsSE3(min)
+            pmaxSE3 = se3.evaluateAsSE3(max)
+            self.assertTrue(isclose(pminSE3.rotation, init_rot).all())
+            self.assertTrue(isclose(pmaxSE3.rotation, end_rot).all())
+            self.assertTrue(isclose(pminSE3.translation, translation(min)).all())
+            self.assertTrue(isclose(pmaxSE3.translation, translation(max)).all())
+        t = min
+        while t < max:
+            if CURVES_WITH_PINOCCHIO_SUPPORT:
+                self.assertTrue(isclose(se3.evaluateAsSE3(t).translation, translation(t)).all())
+                self.assertTrue(isclose(se3.derivateAsMotion(t, 1).linear, translation.derivate(t, 1)).all())
+            self.assertTrue(isclose(se3(t)[0:3, 3], translation(t)).all())
+            self.assertTrue(isclose(se3.derivate(t, 1)[0:3], translation.derivate(t, 1)).all())
+            t += 0.02
 
-      # test with bezier3
-      translation = bezier3(waypoints,min,max)
-      se3 = SE3Curve(translation,init_rot,end_rot)
-      self.assertEqual(se3.min(),min)
-      self.assertEqual(se3.max(),max)
-      pmin = se3(min)
-      pmax = se3(max)
-      self.assertTrue(isclose(pmin[:3,:3],init_rot).all())
-      self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
-      self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
-      self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
-      if CURVES_WITH_PINOCCHIO_SUPPORT:
-        pminSE3 = se3.evaluateAsSE3(min)
-        pmaxSE3 = se3.evaluateAsSE3(max)
-        self.assertTrue(isclose(pminSE3.rotation,init_rot).all())
-        self.assertTrue(isclose(pmaxSE3.rotation,end_rot).all())
-        self.assertTrue(isclose(pminSE3.translation,translation(min)).all())
-        self.assertTrue(isclose(pmaxSE3.translation,translation(max)).all())
-      t = min
-      while t < max:
+        # test with bezier3
+        translation = bezier3(waypoints, min, max)
+        se3 = SE3Curve(translation, init_rot, end_rot)
+        self.assertEqual(se3.min(), min)
+        self.assertEqual(se3.max(), max)
+        pmin = se3(min)
+        pmax = se3(max)
+        self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+        self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+        self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+        self.assertTrue(isclose(pmax[0:3, 3], translation(max)).all())
         if CURVES_WITH_PINOCCHIO_SUPPORT:
-          self.assertTrue(isclose(se3.evaluateAsSE3(t).translation,translation(t)).all())
-          self.assertTrue(isclose(se3.derivateAsMotion(t,1).linear,translation.derivate(t,1)).all())
-        self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
-        self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
-        t += 0.02
+            pminSE3 = se3.evaluateAsSE3(min)
+            pmaxSE3 = se3.evaluateAsSE3(max)
+            self.assertTrue(isclose(pminSE3.rotation, init_rot).all())
+            self.assertTrue(isclose(pmaxSE3.rotation, end_rot).all())
+            self.assertTrue(isclose(pminSE3.translation, translation(min)).all())
+            self.assertTrue(isclose(pmaxSE3.translation, translation(max)).all())
+        t = min
+        while t < max:
+            if CURVES_WITH_PINOCCHIO_SUPPORT:
+                self.assertTrue(isclose(se3.evaluateAsSE3(t).translation, translation(t)).all())
+                self.assertTrue(isclose(se3.derivateAsMotion(t, 1).linear, translation.derivate(t, 1)).all())
+            self.assertTrue(isclose(se3(t)[0:3, 3], translation(t)).all())
+            self.assertTrue(isclose(se3.derivate(t, 1)[0:3], translation.derivate(t, 1)).all())
+            t += 0.02
 
-      # test with piecewise polynomial
-      N = 7
-      points = matrix(random.rand(3,N))
-      points_derivative = matrix(random.rand(3,N))
-      points_second_derivative = matrix(random.rand(3,N))
-      time_points = matrix(random.rand(N)).T
-      time_points.sort(0)
-      translation =piecewise_polynomial_curve.FromPointsList(points,time_points)
-      min = translation.min()
-      max = translation.max()
-      se3 = SE3Curve(translation,init_rot,end_rot)
-      self.assertEqual(se3.min(),min)
-      self.assertEqual(se3.max(),max)
-      pmin = se3(min)
-      pmax = se3(max)
-      self.assertTrue(isclose(pmin[:3,:3],init_rot).all())
-      self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
-      self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
-      self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
-      if CURVES_WITH_PINOCCHIO_SUPPORT:
-        pminSE3 = se3.evaluateAsSE3(min)
-        pmaxSE3 = se3.evaluateAsSE3(max)
-        self.assertTrue(isclose(pminSE3.rotation,init_rot).all())
-        self.assertTrue(isclose(pmaxSE3.rotation,end_rot).all())
-        self.assertTrue(isclose(pminSE3.translation,translation(min)).all())
-        self.assertTrue(isclose(pmaxSE3.translation,translation(max)).all())
-      t = min
-      while t < max:
+        # test with piecewise polynomial
+        N = 7
+        points = array(random.rand(3, N))
+        # points_derivative = array(random.rand(3, N))
+        # points_second_derivative = array(random.rand(3, N))
+        time_points = array(random.rand(1, N)).T
+        time_points.sort(0)
+        translation = piecewise_polynomial_curve.FromPointsList(points, time_points)
+        min = translation.min()
+        max = translation.max()
+        se3 = SE3Curve(translation, init_rot, end_rot)
+        self.assertEqual(se3.min(), min)
+        self.assertEqual(se3.max(), max)
+        pmin = se3(min)
+        pmax = se3(max)
+        self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+        self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+        self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+        self.assertTrue(isclose(pmax[0:3, 3], translation(max)).all())
         if CURVES_WITH_PINOCCHIO_SUPPORT:
-          self.assertTrue(isclose(se3.evaluateAsSE3(t).translation,translation(t)).all())
-          self.assertTrue(isclose(se3.derivateAsMotion(t,1).linear,translation.derivate(t,1)).all())
-        self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
-        self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
-        t += 0.02
+            pminSE3 = se3.evaluateAsSE3(min)
+            pmaxSE3 = se3.evaluateAsSE3(max)
+            self.assertTrue(isclose(pminSE3.rotation, init_rot).all())
+            self.assertTrue(isclose(pmaxSE3.rotation, end_rot).all())
+            self.assertTrue(isclose(pminSE3.translation, translation(min)).all())
+            self.assertTrue(isclose(pmaxSE3.translation, translation(max)).all())
+        t = min
+        while t < max:
+            if CURVES_WITH_PINOCCHIO_SUPPORT:
+                self.assertTrue(isclose(se3.evaluateAsSE3(t).translation, translation(t)).all())
+                self.assertTrue(isclose(se3.derivateAsMotion(t, 1).linear, translation.derivate(t, 1)).all())
+            self.assertTrue(isclose(se3(t)[0:3, 3], translation(t)).all())
+            self.assertTrue(isclose(se3.derivate(t, 1)[0:3], translation.derivate(t, 1)).all())
+            t += 0.02
 
     def test_se3_from_curves(self):
-      print "test SE3 from curves"
-      init_quat = Quaternion.Identity()
-      end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
-      init_rot = init_quat.matrix()
-      end_rot = end_quat.matrix()
-      waypoints = matrix([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
-      min = 0.2
-      max = 1.5
-      translation = bezier(waypoints,min,max)
-      rotation = SO3Linear(init_rot,end_rot,min,max)
-      se3 = SE3Curve(translation,rotation)
-      self.assertEqual(se3.min(),min)
-      self.assertEqual(se3.max(),max)
-      pmin = se3(min)
-      pmax = se3(max)
-      self.assertTrue(isclose(pmin[:3,:3],init_rot).all())
-      self.assertTrue(isclose(pmax[:3,:3],end_rot).all())
-      self.assertTrue(isclose(pmin[0:3,3],translation(min)).all())
-      self.assertTrue(isclose(pmax[0:3,3],translation(max)).all())
-      if CURVES_WITH_PINOCCHIO_SUPPORT:
-        pminSE3 = se3.evaluateAsSE3(min)
-        pmaxSE3 = se3.evaluateAsSE3(max)
-        self.assertTrue(isclose(pminSE3.rotation,init_rot).all())
-        self.assertTrue(isclose(pmaxSE3.rotation,end_rot).all())
-        self.assertTrue(isclose(pminSE3.translation,translation(min)).all())
-        self.assertTrue(isclose(pmaxSE3.translation,translation(max)).all())
-      t = min
-      while t < max:
+        print("test SE3 from curves")
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        min = 0.2
+        max = 1.5
+        translation = bezier(waypoints, min, max)
+        rotation = SO3Linear(init_rot, end_rot, min, max)
+        se3 = SE3Curve(translation, rotation)
+        self.assertEqual(se3.min(), min)
+        self.assertEqual(se3.max(), max)
+        pmin = se3(min)
+        pmax = se3(max)
+        self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+        self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+        self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+        self.assertTrue(isclose(pmax[0:3, 3], translation(max)).all())
         if CURVES_WITH_PINOCCHIO_SUPPORT:
-          self.assertTrue(isclose(se3.evaluateAsSE3(t).translation,translation(t)).all())
-          self.assertTrue(isclose(se3.evaluateAsSE3(t).rotation,rotation(t)).all())
-          self.assertTrue(isclose(se3.derivateAsMotion(t,1).linear,translation.derivate(t,1)).all())
-          self.assertTrue(isclose(se3.derivateAsMotion(t,1).angular,rotation.derivate(t,1)).all())
-        self.assertTrue(isclose(se3(t)[0:3,3],translation(t)).all())
-        self.assertTrue(isclose(se3(t)[0:3,0:3],rotation(t)).all())
-        self.assertTrue(isclose(se3.derivate(t,1)[0:3],translation.derivate(t,1)).all())
-        self.assertTrue(isclose(se3.derivate(t,1)[3:6],rotation.derivate(t,1)).all())
-        t += 0.02
+            pminSE3 = se3.evaluateAsSE3(min)
+            pmaxSE3 = se3.evaluateAsSE3(max)
+            self.assertTrue(isclose(pminSE3.rotation, init_rot).all())
+            self.assertTrue(isclose(pmaxSE3.rotation, end_rot).all())
+            self.assertTrue(isclose(pminSE3.translation, translation(min)).all())
+            self.assertTrue(isclose(pmaxSE3.translation, translation(max)).all())
+        t = min
+        while t < max:
+            if CURVES_WITH_PINOCCHIO_SUPPORT:
+                self.assertTrue(isclose(se3.evaluateAsSE3(t).translation, translation(t)).all())
+                self.assertTrue(isclose(se3.evaluateAsSE3(t).rotation, rotation(t)).all())
+                self.assertTrue(isclose(se3.derivateAsMotion(t, 1).linear, translation.derivate(t, 1)).all())
+                self.assertTrue(isclose(se3.derivateAsMotion(t, 1).angular, rotation.derivate(t, 1)).all())
+            self.assertTrue(isclose(se3(t)[0:3, 3], translation(t)).all())
+            self.assertTrue(isclose(se3(t)[0:3, 0:3], rotation(t)).all())
+            self.assertTrue(isclose(se3.derivate(t, 1)[0:3], translation.derivate(t, 1)).all())
+            self.assertTrue(isclose(se3.derivate(t, 1)[3:6], rotation.derivate(t, 1)).all())
+            t += 0.02
 
-      # check if errors are correctly raised :
-      rotation = SO3Linear(init_rot,end_rot,min+0.2,max)
-      try:
-        se3 = SE3Curve(translation,rotation)
-        self.assertTrue(False)
-      except:
-        pass
-      rotation = SO3Linear(init_rot,end_rot,min-0.1,max)
-      try:
-        se3 = SE3Curve(translation,rotation)
-        self.assertTrue(False)
-      except:
-        pass
-      rotation = SO3Linear(init_rot,end_rot,min,max+0.5)
-      try:
-        se3 = SE3Curve(translation,rotation)
-        self.assertTrue(False)
-      except:
-        pass
-      rotation = SO3Linear(init_rot,end_rot,min,max-0.1)
-      try:
-        se3 = SE3Curve(translation,rotation)
-        self.assertTrue(False)
-      except:
-        pass
+        # check if errors are correctly raised :
+        rotation = SO3Linear(init_rot, end_rot, min + 0.2, max)
+        with self.assertRaises(ValueError):
+            se3 = SE3Curve(translation, rotation)
+        rotation = SO3Linear(init_rot, end_rot, min - 0.1, max)
+        with self.assertRaises(ValueError):
+            se3 = SE3Curve(translation, rotation)
+        rotation = SO3Linear(init_rot, end_rot, min, max + 0.5)
+        with self.assertRaises(ValueError):
+            se3 = SE3Curve(translation, rotation)
+        rotation = SO3Linear(init_rot, end_rot, min, max - 0.1)
+        with self.assertRaises(ValueError):
+            se3 = SE3Curve(translation, rotation)
 
     if CURVES_WITH_PINOCCHIO_SUPPORT:
-      def test_se3_curve_linear_pinocchio(self):
-          print "test SE3 Linear pinocchio"
-          init_quat = Quaternion.Identity()
-          end_quat = Quaternion(sqrt(2.)/2.,sqrt(2.)/2.,0,0)
-          init_rot = init_quat.matrix()
-          end_rot = end_quat.matrix()
-          init_translation = matrix([0.2,-0.7,0.6]).T
-          end_translation = matrix([3.6,-2.2,-0.9]).T
-          init_pose = SE3.Identity()
-          end_pose = SE3.Identity()
-          init_pose.rotation = init_rot
-          end_pose.rotation = end_rot
-          init_pose.translation = init_translation
-          end_pose.translation = end_translation
-          min = 0.7
-          max = 12.
-          se3 = SE3Curve(init_pose,end_pose,min,max)
-          p = se3.evaluateAsSE3(min)
-          self.assertTrue(isinstance(p,SE3))
-          self.assertTrue(se3.evaluateAsSE3(min).isApprox(init_pose,1e-6))
-          self.assertTrue(se3.evaluateAsSE3(max).isApprox(end_pose,1e-6))
-          self.assertEqual(se3.min(),min)
-          self.assertEqual(se3.max(),max)
-          self.assertTrue(isclose(se3.rotation(min),init_rot).all())
-          self.assertTrue(isclose(se3.translation(min),init_translation).all())
-          self.assertTrue(isclose(se3.rotation(max),end_rot).all())
-          self.assertTrue(isclose(se3.translation(max),end_translation).all())
-          # check value of derivative (should be constant here)
-          d = se3.derivateAsMotion(min,1)
-          self.assertTrue(isinstance(d,Motion))
-          self.assertTrue(isclose(d.linear,((end_translation-init_translation)/(max-min))).all())
-          self.assertTrue(isclose(d.angular[0],0.139009))
-          self.assertTrue(isclose(d.angular[1:3],matrix([0,0]).T).all())
-          self.assertTrue(d.isApprox(se3.derivateAsMotion((min + max)/2.,1),1e-6))
-          self.assertTrue(d.isApprox(se3.derivateAsMotion(max,1),1e-6))
-          self.assertTrue(se3.derivateAsMotion(min,2).isApprox(Motion.Zero(),1e-6))
-          self.assertTrue(se3.derivateAsMotion(min,3).isApprox(Motion.Zero(),1e-6))
-          # check that errors are correctly raised when necessary :
-          try:
-            se3(0.)
-            self.assertTrue(False)
-          except:
-            pass
-          try:
-            se3(-0.1)
-            self.assertTrue(False)
-          except:
-            pass
-          try:
-            se3(3)
-            self.assertTrue(False)
-          except:
-            pass
-          try:
-            se3.derivate(0,1)
-            self.assertTrue(False)
-          except:
-            pass
-          try:
-            se3.derivate(3.,1)
-            self.assertTrue(False)
-          except:
-            pass
-          try:
-            se3.derivate(1.,0)
-            self.assertTrue(False)
-          except:
-            pass
 
+        def test_se3_curve_linear_pinocchio(self):
+            print("test SE3 Linear pinocchio")
+            init_quat = Quaternion.Identity()
+            end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
+            init_rot = init_quat.matrix()
+            end_rot = end_quat.matrix()
+            init_translation = array([0.2, -0.7, 0.6]).T
+            end_translation = array([3.6, -2.2, -0.9]).T
+            init_pose = SE3.Identity()
+            end_pose = SE3.Identity()
+            init_pose.rotation = init_rot
+            end_pose.rotation = end_rot
+            init_pose.translation = init_translation
+            end_pose.translation = end_translation
+            min = 0.7
+            max = 12.
+            se3 = SE3Curve(init_pose, end_pose, min, max)
+            p = se3.evaluateAsSE3(min)
+            self.assertTrue(isinstance(p, SE3))
+            self.assertTrue(se3.evaluateAsSE3(min).isApprox(init_pose, 1e-6))
+            self.assertTrue(se3.evaluateAsSE3(max).isApprox(end_pose, 1e-6))
+            self.assertEqual(se3.min(), min)
+            self.assertEqual(se3.max(), max)
+            self.assertTrue(isclose(se3.rotation(min), init_rot).all())
+            self.assertTrue(isclose(se3.translation(min), init_translation).all())
+            self.assertTrue(isclose(se3.rotation(max), end_rot).all())
+            self.assertTrue(isclose(se3.translation(max), end_translation).all())
+            # check value of derivative (should be constant here)
+            d = se3.derivateAsMotion(min, 1)
+            self.assertTrue(isinstance(d, Motion))
+            self.assertTrue(isclose(d.linear, ((end_translation - init_translation) / (max - min))).all())
+            self.assertTrue(isclose(d.angular[0], 0.139009))
+            self.assertTrue(isclose(d.angular[1:3], array([0, 0]).T).all())
+            self.assertTrue(d.isApprox(se3.derivateAsMotion((min + max) / 2., 1), 1e-6))
+            self.assertTrue(d.isApprox(se3.derivateAsMotion(max, 1), 1e-6))
+            self.assertTrue(se3.derivateAsMotion(min, 2).isApprox(Motion.Zero(), 1e-6))
+            self.assertTrue(se3.derivateAsMotion(min, 3).isApprox(Motion.Zero(), 1e-6))
+            # check that errors are correctly raised when necessary :
+            with self.assertRaises(ValueError):
+                se3(0.)
+            with self.assertRaises(ValueError):
+                se3(-0.1)
+            with self.assertRaises(ValueError):
+                se3(3)
+            with self.assertRaises(ValueError):
+                se3.derivate(0, 1)
+            with self.assertRaises(ValueError):
+                se3.derivate(3., 1)
+            with self.assertRaises(ValueError):
+                se3.derivate(1., 0)
 
 
 if __name__ == '__main__':
