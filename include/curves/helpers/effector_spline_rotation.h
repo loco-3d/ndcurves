@@ -89,9 +89,9 @@ class rotation_spline : public curve_abc_quat_t {
   virtual time_t max() const { return max_; }
 
   /*Attributes*/
-  std::size_t dim_;                              // const
   Eigen::Quaterniond quat_from_;                 // const
   Eigen::Quaterniond quat_to_;                   // const
+  std::size_t dim_;                              // const
   double min_;                                   // const
   double max_;                                   // const
   exact_cubic_constraint_one_dim time_reparam_;  // const
