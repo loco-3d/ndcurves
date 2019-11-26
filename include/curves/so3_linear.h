@@ -35,8 +35,10 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
 
   /// \brief constructor with initial and final rotation and time bounds
   SO3Linear(const quaternion_t& init_rot, const quaternion_t& end_rot, const time_t t_min, const time_t t_max)
-      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot), angular_vel_(), T_min_(t_min), T_max_(t_max) {
-    angular_vel_ = log3(init_rot_.toRotationMatrix().transpose() * end_rot_.toRotationMatrix()) / (T_max_ - T_min_);
+      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot),
+        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix()) / (t_max - t_min)),
+        T_min_(t_min), T_max_(t_max)
+  {
     safe_check();
   }
 
@@ -46,17 +48,20 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         dim_(3),
         init_rot_(quaternion_t(init_rot)),
         end_rot_(quaternion_t(end_rot)),
-        angular_vel_(),
+        angular_vel_(log3(init_rot.transpose() * end_rot) / (t_max - t_min)),
         T_min_(t_min),
-        T_max_(t_max) {
-    angular_vel_ = log3(init_rot.transpose() * end_rot) / (T_max_ - T_min_);
+        T_max_(t_max)
+  {
     safe_check();
   }
 
   /// \brief constructor with initial and final rotation, time bounds are set to [0;1]
   SO3Linear(const quaternion_t& init_rot, const quaternion_t& end_rot)
-      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot), angular_vel_(), T_min_(0.), T_max_(1.) {
-    angular_vel_ = log3(init_rot_.toRotationMatrix().transpose() * end_rot_.toRotationMatrix());
+      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot),
+        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
+        T_min_(0.), T_max_(1.)
+  {
+    safe_check();
   }
 
   /// \brief constructor with initial and final rotation expressed as rotation matrix, time bounds are set to [0;1]
@@ -65,10 +70,11 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         dim_(3),
         init_rot_(quaternion_t(init_rot)),
         end_rot_(quaternion_t(end_rot)),
-        angular_vel_(),
+        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
         T_min_(0.),
-        T_max_(1.) {
-    angular_vel_ = log3(init_rot_.toRotationMatrix().transpose() * end_rot_.toRotationMatrix());
+        T_max_(1.)
+  {
+    safe_check();
   }
 
   /// \brief Destructor
@@ -80,6 +86,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
       : dim_(other.dim_),
         init_rot_(other.init_rot_),
         end_rot_(other.end_rot_),
+        angular_vel_(other.angular_vel_),
         T_min_(other.T_min_),
         T_max_(other.T_max_) {}
 
@@ -136,7 +143,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   /*Attributes*/
   std::size_t dim_;  // const
   quaternion_t init_rot_, end_rot_;
-  point3_t angular_vel_;
+  point3_t angular_vel_;  // const
   time_t T_min_, T_max_;  // const
   /*Attributes*/
 
