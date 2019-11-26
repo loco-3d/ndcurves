@@ -83,12 +83,11 @@ void CompareCurves(curve1 c1, curve2 c2, const std::string& errMsg, bool& error 
     error = true;
   } else {
     // derivative in T_min and T_max
-    ComparePoints(c1.derivate(T_min, 1), c2.derivate(T_min, 1), errMsg, error,prec, false);
-    ComparePoints(c1.derivate(T_max, 1), c2.derivate(T_max, 1), errMsg, error,prec, false);
+    ComparePoints(c1.derivate(T_min, 1), c2.derivate(T_min, 1), errMsg+" Derivates at tMin do not match.", error,prec, false);
+    ComparePoints(c1.derivate(T_max, 1), c2.derivate(T_max, 1), errMsg+" Derivates at tMax do not match.", error,prec, false);
     // Test values on curves
-    for (double i = T_min; i < T_max; i += 0.02) {
-      ComparePoints(c1(i), c2(i), errMsg, error,prec, false);
-      ComparePoints(c1(i), c2(i), errMsg, error,prec, false);
+    for (double i = T_min; i <= T_max; i += 0.01) {
+      ComparePoints(c1(i), c2(i), errMsg+" Curves evaluation do not match at t = "+boost::lexical_cast<std::string>(i), error,prec, false);
     }
   }
 }
