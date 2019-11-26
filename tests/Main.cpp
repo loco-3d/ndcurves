@@ -1658,6 +1658,11 @@ void so3LinearTest(bool& error) {
     error = true;
     std::cout << "second order derivative should be null" << std::endl;
   }
+  point3_t angular_vel = so3Traj.derivate(0, 1);
+  if(angular_vel[1] != 0. || angular_vel[2] != 0){
+    error = true;
+    std::cout << "Angular velocity around y and z axis should be null" << std::endl;
+  }
   // check if errors are correctly raised :
   try {
     so3Traj(-0.1);
