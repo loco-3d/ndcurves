@@ -1623,42 +1623,44 @@ void polynomialFromBoundaryConditions(bool& error) {
 void so3LinearTest(bool& error) {
   quaternion_t q0(1, 0, 0, 0);
   quaternion_t q1(0.7071, 0.7071, 0, 0);
-  SO3Linear_t so3Traj(q0, q1, 0., 1.5);
+  const double tMin = 0.;
+  const double tMax = 1.5;
+  SO3Linear_t so3Traj(q0, q1, tMin, tMax);
 
-  if (so3Traj.min() != 0) {
+  if (so3Traj.min() != tMin) {
     error = true;
     std::cout << "Min bound not respected" << std::endl;
   }
-  if (so3Traj.max() != 1.5) {
+  if (so3Traj.max() != tMax) {
     error = true;
     std::cout << "Max bound not respected" << std::endl;
   }
-  if (!so3Traj.computeAsQuaternion(0).isApprox(q0)) {
+  if (!so3Traj.computeAsQuaternion(tMin).isApprox(q0)) {
     error = true;
     std::cout << "evaluate at t=0 is not the init quaternion" << std::endl;
   }
-  if (so3Traj(0) != q0.toRotationMatrix()) {
+  if (so3Traj(tMin) != q0.toRotationMatrix()) {
     error = true;
     std::cout << "evaluate at t=0 is not the init rotation" << std::endl;
   }
-  if (!so3Traj.computeAsQuaternion(1.5).isApprox(q1)) {
+  if (!so3Traj.computeAsQuaternion(tMax).isApprox(q1)) {
     error = true;
     std::cout << "evaluate at t=max is not the final quaternion" << std::endl;
   }
-  if (so3Traj(1.5) != q1.toRotationMatrix()) {
+  if (so3Traj(tMax) != q1.toRotationMatrix()) {
     error = true;
     std::cout << "evaluate at t=max is not the final rotation" << std::endl;
   }
   // check derivatives :
-  if (so3Traj.derivate(0, 1) != so3Traj.derivate(1., 1)) {
+  if (so3Traj.derivate(tMin, 1) != so3Traj.derivate(1., 1)) {
     error = true;
     std::cout << "first order derivative should be constant." << std::endl;
   }
-  if (so3Traj.derivate(0, 2) != point_t::Zero(3)) {
+  if (so3Traj.derivate(tMin, 2) != point3_t::Zero(3)) {
     error = true;
     std::cout << "second order derivative should be null" << std::endl;
   }
-  point3_t angular_vel = so3Traj.derivate(0, 1);
+  point3_t angular_vel = so3Traj.derivate(tMin, 1);
   if(angular_vel[1] != 0. || angular_vel[2] != 0){
     error = true;
     std::cout << "Angular velocity around y and z axis should be null" << std::endl;
@@ -1682,6 +1684,10 @@ void so3LinearTest(bool& error) {
     std::cout << "SO3Linear: calling derivate with order = 0 should raise an invalid_argument error" << std::endl;
   } catch (std::invalid_argument e) {
   }
+
+  SO3Linear_t so3TrajMatrix(q0.toRotationMatrix(), q1.toRotationMatrix(), tMin, tMax);
+  std::string errmsg("SO3Linear built from quaternion or from matrix are not identical.");
+  CompareCurves(so3Traj,so3TrajMatrix,errmsg,error,1e-3);
 }
 
 void SO3serializationTest(bool &error){
