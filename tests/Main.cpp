@@ -1695,22 +1695,24 @@ void SO3serializationTest(bool &error){
   std::string errmsg("SO3serializationTest : curve serialized is not equivalent to the original curve.");
   quaternion_t q0( 0.544,-0.002, -0.796,  0.265);
   quaternion_t q1(0.7071, 0.7071, 0, 0);
+  q1.normalize ();
+  q0.normalize ();
   SO3Linear_t so3Traj(q0, q1,0.5, 2.2);
 
   so3Traj.saveAsText<SO3Linear_t>(fileName+".txt");
   SO3Linear_t so3_from_txt;
   so3_from_txt.loadFromText<SO3Linear_t>(fileName+".txt");
-  CompareCurves<SO3Linear_t, SO3Linear_t>(so3Traj, so3_from_txt, errmsg+" For text serialization", error,1e-3); // approximations comes from the conversions quaternion->matrix->quaternion
+  CompareCurves<SO3Linear_t, SO3Linear_t>(so3Traj, so3_from_txt, errmsg+" For text serialization", error);
 
   so3Traj.saveAsXML<SO3Linear_t>(fileName+".xml","so3Curve");
   SO3Linear_t so3_from_xml;
   so3_from_xml.loadFromXML<SO3Linear_t>(fileName+".xml","so3Curve");
-  CompareCurves<SO3Linear_t, SO3Linear_t>(so3Traj, so3_from_xml,errmsg+" For XML serialization", error,1e-3);
+  CompareCurves<SO3Linear_t, SO3Linear_t>(so3Traj, so3_from_xml,errmsg+" For XML serialization", error);
 
   so3Traj.saveAsBinary<SO3Linear_t>(fileName);
   SO3Linear_t so3_from_binary;
   so3_from_binary.loadFromBinary<SO3Linear_t>(fileName);
-  CompareCurves<SO3Linear_t, SO3Linear_t>(so3Traj, so3_from_binary, errmsg+" For binary serialization", error,1e-3);
+  CompareCurves<SO3Linear_t, SO3Linear_t>(so3Traj, so3_from_binary, errmsg+" For binary serialization", error);
 
 }
 
