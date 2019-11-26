@@ -237,44 +237,46 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_polynomial_from_boundary_condition(self):
-        p0 = array([[1., 3., -2.]]).T
-        p1 = array([[0.6, 2., 2.5]]).T
-        dp0 = array([[-6., 2., -1.]]).T
-        dp1 = array([[10., 10., 10.]]).T
-        ddp0 = array([[1., -7., 4.5]]).T
-        ddp1 = array([[6., -1., -4]]).T
+        p0 = array([1., 3., -2.])
+        p1 = array([0.6, 2., 2.5])
+        dp0 = array([-6., 2., -1.])
+        dp1 = array([10., 10., 10.])
+        ddp0 = array([1., -7., 4.5])
+        ddp1 = array([6., -1., -4])
         min = 1.
         max = 2.5
-        polC0 = polynomial(p0, p1, min, max)
+        # a reshape is required as the inputs must be of shape (n,1) and not (n,)
+        # p0.reshape(-1,1) is equivalent to p0.reshape(len(p0),1)
+        polC0 = polynomial(p0.reshape(-1,1), p1.reshape(-1,1), min, max)
         self.assertEqual(polC0.min(), min)
         self.assertEqual(polC0.max(), max)
         # TODO: Why are thoso `.T[0]` needed ?
-        self.assertTrue(array_equal(polC0((min + max) / 2.), 0.5 * p0.T[0] + 0.5 * p1.T[0]))
-        polC1 = polynomial(p0, dp0, p1, dp1, min, max)
+        self.assertTrue(array_equal(polC0((min + max) / 2.), 0.5 * p0 + 0.5 * p1))
+        polC1 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), min, max)
         self.assertEqual(polC1.min(), min)
         self.assertEqual(polC1.max(), max)
-        self.assertTrue(isclose(polC1(min), p0.T[0]).all())
-        self.assertTrue(isclose(polC1(max), p1.T[0]).all())
-        self.assertTrue(isclose(polC1.derivate(min, 1), dp0.T[0]).all())
-        self.assertTrue(isclose(polC1.derivate(max, 1), dp1.T[0]).all())
-        polC2 = polynomial(p0, dp0, ddp0, p1, dp1, ddp1, min, max)
+        self.assertTrue(isclose(polC1(min), p0).all())
+        self.assertTrue(isclose(polC1(max), p1).all())
+        self.assertTrue(isclose(polC1.derivate(min, 1), dp0).all())
+        self.assertTrue(isclose(polC1.derivate(max, 1), dp1).all())
+        polC2 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), min, max)
         self.assertEqual(polC2.min(), min)
         self.assertEqual(polC2.max(), max)
-        self.assertTrue(isclose(polC2(min), p0.T[0]).all())
-        self.assertTrue(isclose(polC2(max), p1.T[0]).all())
-        self.assertTrue(isclose(polC2.derivate(min, 1), dp0.T[0]).all())
-        self.assertTrue(isclose(polC2.derivate(max, 1), dp1.T[0]).all())
-        self.assertTrue(isclose(polC2.derivate(min, 2), ddp0.T[0]).all())
-        self.assertTrue(isclose(polC2.derivate(max, 2), ddp1.T[0]).all())
+        self.assertTrue(isclose(polC2(min), p0).all())
+        self.assertTrue(isclose(polC2(max), p1).all())
+        self.assertTrue(isclose(polC2.derivate(min, 1), dp0).all())
+        self.assertTrue(isclose(polC2.derivate(max, 1), dp1).all())
+        self.assertTrue(isclose(polC2.derivate(min, 2), ddp0).all())
+        self.assertTrue(isclose(polC2.derivate(max, 2), ddp1).all())
         # check that the exception are correctly raised :
         with self.assertRaises(ValueError):
-            polC0 = polynomial(p0, p1, max, min)
+            polC0 = polynomial(p0.reshape(-1,1), p1.reshape(-1,1), max, min)
 
         with self.assertRaises(ValueError):
-            polC1 = polynomial(p0, dp0, p1, dp1, max, min)
+            polC1 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), max, min)
 
         with self.assertRaises(ValueError):
-            polC2 = polynomial(p0, dp0, ddp0, p1, dp1, ddp1, max, min)
+            polC2 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), max, min)
 
     def test_cubic_hermite_spline(self):
         print("test_cubic_hermite_spline")
