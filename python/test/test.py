@@ -813,6 +813,32 @@ class TestCurves(unittest.TestCase):
         with self.assertRaises(ValueError):
             test = SO3Linear(init_rot,end_rot,max,min)
 
+    def test_so3_linear_serialization(self):
+        print("test SO3 Linear")
+        init_quat = Quaternion( 0.590,-0.002, -0.766,  0.255)
+        end_quat = Quaternion(-0.820,  0.162,  0.381,  0.396)
+        init_quat.normalize()
+        end_quat.normalize()
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        min = 0.2
+        max = 1.5
+        so3Rot = SO3Linear(init_rot, end_rot, min, max)
+        so3Rot.saveAsText("serialization_curve.txt")
+        so3_txt = SO3Linear()
+        so3_txt.loadFromText("serialization_curve.txt")
+        self.compareCurves(so3Rot,so3_txt)
+
+        so3Rot.saveAsXML("serialization_curve.xml","so3")
+        so3_xml = SO3Linear()
+        so3_xml.loadFromXML("serialization_curve.xml","so3")
+        self.compareCurves(so3Rot,so3_xml)
+
+        so3Rot.saveAsBinary("serialization_curve")
+        so3_bin = SO3Linear()
+        so3_bin.loadFromBinary("serialization_curve")
+        self.compareCurves(so3Rot,so3_bin)
+
 
     def test_se3_curve_linear(self):
         print("test SE3 Linear")
