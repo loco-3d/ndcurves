@@ -32,8 +32,10 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   typedef Time time_t;
   typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;  // parent class
   typedef curve_abc<Time, Numeric, Safe, pointX_t> curve_X_t;                     // generic class of curve
-  typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t>
-      curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
+  typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
+  typedef boost::shared_ptr<curve_X_t> curve_ptr_t;
+  typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
+
   typedef SO3Linear<Time, Numeric, Safe> SO3Linear_t;
   typedef polynomial<Time, Numeric, Safe, pointX_t> polynomial_t;
   typedef SE3Curve<Time, Numeric, Safe> SE3Curve_t;
@@ -42,7 +44,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   /* Constructors - destructors */
   /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
   ///
-  SE3Curve() : curve_abc_t(), dim_(3), translation_curve_(NULL), rotation_curve_(NULL), T_min_(0), T_max_(0) {}
+  SE3Curve() : curve_abc_t(), dim_(3), translation_curve_(), rotation_curve_(), T_min_(0), T_max_(0) {}
 
   /// \brief Destructor
   ~SE3Curve() {
@@ -93,7 +95,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   /* Constructor with curve object for the translation : */
   /// \brief Constructor from curve for the translation and init/end rotation, with quaternion.
   /// Use SO3Linear for rotation with the same time bounds as the
-  SE3Curve(curve_X_t* translation_curve, const Quaternion& init_rot, const Quaternion& end_rot)
+  SE3Curve(curve_ptr_t translation_curve, const Quaternion& init_rot, const Quaternion& end_rot)
       : curve_abc_t(),
         dim_(6),
         translation_curve_(translation_curve),
@@ -104,7 +106,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   }
   /// \brief Constructor from curve for the translation and init/end rotation, with rotation matrix.
   /// Use SO3Linear for rotation with the same time bounds as the
-  SE3Curve(curve_X_t* translation_curve, const matrix3_t& init_rot, const matrix3_t& end_rot)
+  SE3Curve(curve_ptr_t translation_curve, const matrix3_t& init_rot, const matrix3_t& end_rot)
       : curve_abc_t(),
         dim_(6),
         translation_curve_(translation_curve),
@@ -116,7 +118,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
 
   /* Constructor from translation and rotation curves object : */
   /// \brief Constructor from from translation and rotation curves object
-  SE3Curve(curve_X_t* translation_curve, curve_rotation_t* rotation_curve)
+  SE3Curve(curve_ptr_t translation_curve, curve_rotation_ptr_t rotation_curve)
       : curve_abc_t(),
         dim_(6),
         translation_curve_(translation_curve),
@@ -176,8 +178,8 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
 
   /*Attributes*/
   std::size_t dim_;  // dim doesn't mean anything in this class ...
-  curve_X_t* translation_curve_ = NULL;
-  curve_rotation_t* rotation_curve_ = NULL;
+  curve_ptr_t translation_curve_;
+  curve_rotation_ptr_t rotation_curve_;
   time_t T_min_, T_max_;
   /*Attributes*/
 

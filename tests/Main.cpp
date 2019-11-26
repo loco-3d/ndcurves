@@ -1769,7 +1769,7 @@ void se3CurveTest(bool& error) {
     params.push_back(b);
     params.push_back(c);
     params.push_back(d);
-    bezier_curve_t* translation_bezier = new bezier_curve_t(params.begin(), params.end(), min, max);
+    boost::shared_ptr<bezier_curve_t> translation_bezier(new bezier_curve_t(params.begin(), params.end(), min, max));
     cBezier = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q1.toRotationMatrix());
     p0 = (*translation_bezier)(min);
     p1 = (*translation_bezier)(max);

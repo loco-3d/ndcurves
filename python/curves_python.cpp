@@ -311,18 +311,18 @@ SE3Curve_t* wrapSE3CurveFromPosAndRotation(const pointX_t& init_pos, const point
 
 SE3Curve_t* wrapSE3CurveFromBezier3Translation(bezier3_t& translation_curve, const matrix3_t& init_rot,
                                                const matrix3_t& end_rot) {
-  bezier_t* translation = new bezier_t(translation_curve.waypoints().begin(), translation_curve.waypoints().end(),
-                                       translation_curve.min(), translation_curve.max());
+  boost::shared_ptr<bezier_t> translation(new bezier_t(translation_curve.waypoints().begin(), translation_curve.waypoints().end(),
+                                       translation_curve.min(), translation_curve.max()));
   return new SE3Curve_t(translation, init_rot, end_rot);
 }
 
-SE3Curve_t* wrapSE3CurveFromTranslation(curve_abc_t& translation_curve, const matrix3_t& init_rot,
+SE3Curve_t* wrapSE3CurveFromTranslation(const curve_ptr_t& translation_curve, const matrix3_t& init_rot,
                                         const matrix3_t& end_rot) {
-  return new SE3Curve_t(&translation_curve, init_rot, end_rot);
+  return new SE3Curve_t(translation_curve, init_rot, end_rot);
 }
 
-SE3Curve_t* wrapSE3CurveFromTwoCurves(curve_abc_t& translation_curve, curve_rotation_t& rotation_curve) {
-  return new SE3Curve_t(&translation_curve, &rotation_curve);
+SE3Curve_t* wrapSE3CurveFromTwoCurves(const curve_ptr_t& translation_curve,const curve_rotation_ptr_t& rotation_curve) {
+  return new SE3Curve_t(translation_curve,rotation_curve);
 }
 
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT

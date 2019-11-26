@@ -83,6 +83,8 @@ typedef curve_abc<real, real, true, pointX_t> curve_abc_t;  // generic class of 
 typedef curve_abc<real, real, true, point3_t> curve_3_t;    // generic class of curve of size 3
 typedef curve_abc<real, real, true, matrix3_t, point3_t>
     curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
+typedef boost::shared_ptr<curve_abc_t> curve_ptr_t;
+typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
 typedef curves::cubic_hermite_spline<real, real, true, pointX_t> cubic_hermite_spline_t;
 typedef curves::bezier_curve<real, real, true, pointX_t> bezier_t;
 typedef curves::bezier_curve<real, real, true, Eigen::Vector3d> bezier3_t;
