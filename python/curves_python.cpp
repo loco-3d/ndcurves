@@ -194,16 +194,20 @@ static piecewise_polynomial_curve_t discretPointToPolynomialC2(const pointX_list
   return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(
       points_list, points_derivative_list, points_second_derivative_list, time_points_list);
 }
-void addFinalPointC0(piecewise_polynomial_curve_t self, const pointX_t& end, const real time) {
-  if (self.is_continuous(1))
+void addFinalPointC0(piecewise_polynomial_curve_t& self, const pointX_t& end, const real time) {
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
+  if (self.is_continuous(1) && self.num_curves()>1 )
     std::cout << "Warning: by adding this final point to the piecewise curve, you loose C1 continuity and only "
                  "guarantee C0 continuity."
               << std::endl;
   polynomial_t pol(self(self.max()), end, self.max(), time);
   self.add_curve(pol);
 }
-void addFinalPointC1(piecewise_polynomial_curve_t self, const pointX_t& end, const pointX_t& d_end, const real time) {
-  if (self.is_continuous(2))
+void addFinalPointC1(piecewise_polynomial_curve_t& self, const pointX_t& end, const pointX_t& d_end, const real time) {
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
+  if (self.is_continuous(2) && self.num_curves()>1 )
     std::cout << "Warning: by adding this final point to the piecewise curve, you loose C2 continuity and only "
                  "guarantee C1 continuity."
               << std::endl;
@@ -211,9 +215,11 @@ void addFinalPointC1(piecewise_polynomial_curve_t self, const pointX_t& end, con
   polynomial_t pol(self(self.max()), self.derivate(self.max(), 1), end, d_end, self.max(), time);
   self.add_curve(pol);
 }
-void addFinalPointC2(piecewise_polynomial_curve_t self, const pointX_t& end, const pointX_t& d_end,
+void addFinalPointC2(piecewise_polynomial_curve_t& self, const pointX_t& end, const pointX_t& d_end,
                      const pointX_t& dd_end, const real time) {
-  if (self.is_continuous(3))
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
+  if (self.is_continuous(3) && self.num_curves()>1 )
     std::cout << "Warning: by adding this final point to the piecewise curve, you loose C3 continuity and only "
                  "guarantee C2 continuity."
               << std::endl;
