@@ -63,7 +63,13 @@ ostream& operator<<(ostream& os, const point3_t& pt) {
   return os;
 }
 
-
+void ComparePoints(const transform_t& pt1, const transform_t& pt2, const std::string& errmsg, bool& error,
+                   double prec = Eigen::NumTraits<double>::dummy_precision() ,bool notequal = false) {
+  if (!pt1.isApprox(pt2,prec)  && !notequal) {
+    error = true;
+    std::cout << errmsg <<" translation :"<<pt1.translation() << " ; " << pt2.translation() << std::endl<<"rotation : "<<pt1.rotation() << " ; " << pt2.rotation() << std::endl;
+  }
+}
 
 void ComparePoints(const Eigen::MatrixXd& pt1, const Eigen::MatrixXd& pt2, const std::string& errmsg, bool& error,
                    double prec = Eigen::NumTraits<double>::dummy_precision() ,bool notequal = false) {
