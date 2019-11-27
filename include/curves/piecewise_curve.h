@@ -144,21 +144,30 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     check_if_not_empty();
     bool isContinuous = true;
     std::size_t i = 0;
-    point_t value_end, value_start;
-    while (isContinuous && i < (size_ - 1)) {
-      curve_t current = curves_.at(i);
-      curve_t next = curves_.at(i + 1);
-      if (order == 0) {
+    if(order ==0){
+      point_t value_end, value_start;
+      while (isContinuous && i < (size_ - 1)) {
+        curve_t current = curves_.at(i);
+        curve_t next = curves_.at(i + 1);
         value_end = current(current.max());
         value_start = next(next.min());
-      } else {
+        if (!value_end.isApprox(value_start,MARGIN)) {
+          isContinuous = false;
+        }
+        i++;
+      }
+    }else{
+      point_derivate_t value_end, value_start;
+      while (isContinuous && i < (size_ - 1)) {
+        curve_t current = curves_.at(i);
+        curve_t next = curves_.at(i + 1);
         value_end = current.derivate(current.max(), order);
         value_start = next.derivate(next.min(), order);
+        if (!value_end.isApprox(value_start,MARGIN)) {
+          isContinuous = false;
+        }
+        i++;
       }
-      if ((value_end - value_start).norm() > MARGIN) {
-        isContinuous = false;
-      }
-      i++;
     }
     return isContinuous;
   }

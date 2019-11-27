@@ -81,6 +81,10 @@ struct linear_variable : public serialization::Serializable {
 
   Numeric norm() const { return isZero() ? 0 : (B_.norm() + c_.norm()); }
 
+  bool isApprox(const linear_variable_t& other,const double prec = Eigen::NumTraits<Numeric>::dummy_precision()){
+    return (*this - other).norm() < prec;
+  }
+
   const matrix_x_t& B() const { return B_; }
   const vector_x_t& c() const { return c_; }
   bool isZero() const { return zero; }
