@@ -766,17 +766,17 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
        "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
        "and time and connecting exactly self(self.max()) and end",
        args("self", "end", "time"))
-      .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>, bp::args("filename"),
+      .def("saveAsText", &piecewise_SE3_curve_t::saveAsText<piecewise_SE3_curve_t>, bp::args("filename"),
            "Saves *this inside a text file.")
-      .def("loadFromText", &piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>, bp::args("filename"),
+      .def("loadFromText", &piecewise_SE3_curve_t::loadFromText<piecewise_SE3_curve_t>, bp::args("filename"),
            "Loads *this from a text file.")
-      .def("saveAsXML", &piecewise_bezier_curve_t::saveAsXML<piecewise_bezier_curve_t>,
+      .def("saveAsXML", &piecewise_SE3_curve_t::saveAsXML<piecewise_SE3_curve_t>,
            bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &piecewise_bezier_curve_t::loadFromXML<piecewise_bezier_curve_t>,
+      .def("loadFromXML", &piecewise_SE3_curve_t::loadFromXML<piecewise_SE3_curve_t>,
            bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &piecewise_bezier_curve_t::saveAsBinary<piecewise_bezier_curve_t>, bp::args("filename"),
+      .def("saveAsBinary", &piecewise_SE3_curve_t::saveAsBinary<piecewise_SE3_curve_t>, bp::args("filename"),
            "Saves *this inside a binary file.")
-      .def("loadFromBinary", &piecewise_bezier_curve_t::loadFromBinary<piecewise_bezier_curve_t>, bp::args("filename"),
+      .def("loadFromBinary", &piecewise_SE3_curve_t::loadFromBinary<piecewise_SE3_curve_t>, bp::args("filename"),
            "Loads *this from a binary file.")
         #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
           .def("evaluateAsSE3", &piecewiseSE3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
