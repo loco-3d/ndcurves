@@ -577,6 +577,68 @@ class TestCurves(unittest.TestCase):
       self.assertFalse(pc.is_continuous(0))
 
 
+      ###  test the different append methods :
+      init_quat = Quaternion.Identity()
+      end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
+      init_rot = init_quat.matrix()
+      end_rot = end_quat.matrix()
+      waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+      min = 0.2
+      max = 1.5
+      translation = bezier(waypoints, min, max)
+      # test with bezier
+      se3 = SE3Curve(translation, init_rot, end_rot)
+      pc = piecewise_SE3_curve()
+      self.assertEqual(pc.num_curves(),0)
+      pc.append(se3)
+      self.assertEqual(pc.num_curves(),1)
+      self.assertEqual(pc.min(), min)
+      self.assertEqual(pc.max(), max)
+      pmin = pc(min)
+      pmax = pc(max)
+      self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+      self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+      self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+      self.assertTrue(isclose(pmax[0:3, 3], translation(max)).all())
+      # append a final tranform :
+      end_quat = Quaternion(sqrt(2.) / 2., 0., sqrt(2.) / 2., 0)
+      end_rot = end_quat.matrix()
+      end_translation = array([1.7, -0.8, 3.]).T
+      end_pose = array(np.identity(4))
+      end_pose[:3, :3] = end_rot
+      end_pose[:3, 3] = end_translation
+      max2 = 3.8
+      pc.append(end_pose,max2)
+      self.assertEqual(pc.num_curves(),2)
+      self.assertEqual(pc.min(), min)
+      self.assertEqual(pc.max(), max2)
+      pmin = pc(min)
+      pmax = pc(max2)
+      self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+      self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+      self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+      self.assertTrue(isclose(pmax[0:3, 3], end_translation).all())
+      self.assertTrue(pc.is_continuous(0))
+      if CURVES_WITH_PINOCCHIO_SUPPORT:
+        end_quat = Quaternion(sqrt(2.) / 2., 0., 0, sqrt(2.) / 2.)
+        end_rot = end_quat.matrix()
+        end_translation = array([-17., 3.7, 1.])
+        end_pose = SE3.Identity()
+        end_pose.rotation = end_rot
+        end_pose.translation = end_translation.reshape(-1,1)
+        max3 = 6.5
+        pc.append(end_pose,max3)
+        self.assertEqual(pc.num_curves(),3)
+        self.assertEqual(pc.min(), min)
+        self.assertEqual(pc.max(), max3)
+        pmin = pc(min)
+        pmax = pc(max3)
+        self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+        self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+        self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+        self.assertTrue(isclose(pmax[0:3, 3], end_translation).all())
+        self.assertTrue(pc.is_continuous(0))
+
     if CURVES_WITH_PINOCCHIO_SUPPORT:
 
         def test_piecewise_se3_curve_linear_pinocchio(self):
