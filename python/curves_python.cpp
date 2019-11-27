@@ -888,9 +888,9 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
                             args("init_SE3", "end_SE3", "min", "max")),
            "Create a SE3 curve between two SE3 objects from Pinocchio, defined for t \in [min,max]."
            " Using linear interpolation for translation and slerp for rotation between init and end.")
-      .def("evaluateAsSE3", &se3Return, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
+      .def("evaluateAsSE3", &se3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
            args("self", "t"))
-      .def("derivateAsMotion", &se3ReturnDerivate,
+      .def("derivateAsMotion", &se3ReturnDerivatePinocchio,
            "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
            args("self", "t", "N"))
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
