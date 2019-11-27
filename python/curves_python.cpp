@@ -299,6 +299,10 @@ SE3Curve_t* wrapSE3CurveFromTransform(const matrix4_t& init_pose, const matrix4_
   return new SE3Curve_t(transform_t(init_pose), transform_t(end_pose), min, max);
 }
 
+SE3Curve_t* wrapSE3CurveFromPosAndRotation(const pointX_t& init_pos, const pointX_t& end_pos, const matrix3_t& init_rot, const matrix3_t& end_rot,const real& t_min, const real& t_max) {
+  return new SE3Curve_t(init_pos,end_pos,init_rot,end_rot, t_min, t_max);
+}
+
 SE3Curve_t* wrapSE3CurveFromBezier3Translation(bezier3_t& translation_curve, const matrix3_t& init_rot,
                                                const matrix3_t& end_rot) {
   bezier_t* translation = new bezier_t(translation_curve.waypoints().begin(), translation_curve.waypoints().end(),
@@ -795,6 +799,12 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3", init<>())
            "Create a SE3 curve between two transform, defined for t \in [min,max]."
            " Using linear interpolation for translation and slerp for rotation between init and end."
            " The input transform are expressed as 4x4 matrix.")
+      .def("__init__",
+           make_constructor(&wrapSE3CurveFromPosAndRotation, default_call_policies(),
+                            args("init_translation", "end_translation","init_rotation","end_rotation", "min", "max")),
+           "Create a SE3 curve between two transform, defined for t \in [min,max]."
+           " Using linear interpolation for translation and slerp for rotation between init and end."
+           " The input translations are expressed as 3d vector and the rotations as 3x3 matrix.")
       .def("__init__",
            make_constructor(&wrapSE3CurveFromTwoCurves, default_call_policies(),
                             args("translation_curve", "rotation_curve")),
