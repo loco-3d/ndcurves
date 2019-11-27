@@ -348,6 +348,17 @@ pointX_t se3returnTranslation(const SE3Curve_t& curve, const real t) { return po
 
 /* End wrap SE3Curves */
 
+/* Wrap piecewiseSE3Curves */
+
+matrix4_t piecewiseSE3Return(const piecewise_SE3_curve_t& curve, const real t) { return curve(t).matrix(); }
+
+
+matrix3_t piecewiseSE3returnRotation(const piecewise_SE3_curve_t& curve, const real t) { return curve(t).rotation(); }
+
+pointX_t piecewiseSE3returnTranslation(const piecewise_SE3_curve_t& curve, const real t) { return pointX_t(curve(t).translation()); }
+
+/* End wrap piecewiseSE3Curves */
+
 // TO DO : Replace all load and save function for serialization in class by using
 //         SerializableVisitor in archive_python_binding.
 BOOST_PYTHON_MODULE(curves) {
@@ -583,7 +594,7 @@ BOOST_PYTHON_MODULE(curves) {
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous,
-           "Check if the curve is continuous at the given order.")
+           "Check if the curve is continuous at the given order.",args("self,order"))
       .def("convert_piecewise_curve_to_bezier",
            &piecewise_polynomial_curve_t::convert_piecewise_curve_to_bezier<bezier_t>,
            "Convert a piecewise polynomial curve to to a piecewise bezier curve")
@@ -686,16 +697,32 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &piecewise_bezier_linear_curve_t::loadFromBinary<piecewise_bezier_linear_curve_t>,
            bp::args("filename"), "Loads *this from a binary file.");
 
-class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3", init<>())
-      .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor))
-      .def("__init__", make_constructor(&wrapPiecewiseSE3EmptyConstructor))
+class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>())
+      .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor, default_call_policies(), arg("curve")),
+      "Create a piecewise-se3 curve containing the given se3 curve.")
+      .def("__init__", make_constructor(&wrapPiecewiseSE3EmptyConstructor),
+      "Create an empty piecewise-se3 curve.")
 //      .def("compute_derivate", &piecewise_SE3_curve_t::compute_derivate,
 //           "Return a piecewise_polynomial curve which is the derivate of this.", args("self", "order"))
-      .def("add_curve", &piecewise_SE3_curve_t::add_curve)
-//      .def("is_continuous", &piecewise_SE3_curve_t::is_continuous)
+      .def("append", &piecewise_SE3_curve_t::add_curve,
+           "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
+           "where T_{min} is equal toT_{max} of the actual piecewise curve.",
+           args("self,curve"))
+      .def("is_continuous", &piecewise_SE3_curve_t::is_continuous, "Check if the curve is continuous at the given order.",args("self,order"))
       .def("curve_at_index", &piecewise_SE3_curve_t::curve_at_index, return_value_policy<copy_const_reference>())
       .def("curve_at_time", &piecewise_SE3_curve_t::curve_at_time, return_value_policy<copy_const_reference>())
       .def("num_curves", &piecewise_SE3_curve_t::num_curves)
+      .def("rotation", &piecewiseSE3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
+           args("self", "t"))
+      .def("translation", &piecewiseSE3returnTranslation, "Output the translation (as a vector 3) at the given time.",
+           args("self", "t"))
+      .def("__call__", &piecewiseSE3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix",
+           args("self", "t"))
+      .def("derivate", &piecewise_SE3_curve_t::derivate,
+           "Evaluate the derivative of order N of curve at time t. Return as a vector 6", args("self", "t", "N"))
+      .def("min", &piecewise_SE3_curve_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &piecewise_SE3_curve_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &piecewise_SE3_curve_t::dim, "Get the dimension of the curve.")
 //      .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>, bp::args("filename"),
 //           "Saves *this inside a text file.")
 //      .def("loadFromText", &piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>, bp::args("filename"),
