@@ -349,6 +349,16 @@ pointX_t se3returnTranslation(const SE3Curve_t& curve, const real t) { return po
 /* End wrap SE3Curves */
 
 /* Wrap piecewiseSE3Curves */
+#ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+typedef pinocchio::SE3Tpl<real, 0> SE3_t;
+typedef pinocchio::MotionTpl<real, 0> Motion_t;
+
+SE3_t piecewiseSE3ReturnPinocchio(const piecewise_SE3_curve_t& curve, const real t) { return SE3_t(curve(t).matrix()); }
+
+Motion_t piecewiseSE3ReturnDerivatePinocchio(const piecewise_SE3_curve_t& curve, const real t, const std::size_t order) {
+  return Motion_t(curve.derivate(t, order));
+}
+#endif  // CURVES_WITH_PINOCCHIO_SUPPORT
 
 matrix4_t piecewiseSE3Return(const piecewise_SE3_curve_t& curve, const real t) { return curve(t).matrix(); }
 
@@ -735,6 +745,13 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
 //           "Saves *this inside a binary file.")
 //      .def("loadFromBinary", &piecewise_bezier_curve_t::loadFromBinary<piecewise_bezier_curve_t>, bp::args("filename"),
 //           "Loads *this from a binary file.")
+        #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+          .def("evaluateAsSE3", &piecewiseSE3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
+               args("self", "t"))
+          .def("derivateAsMotion", &piecewiseSE3ReturnDerivatePinocchio,
+               "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
+               args("self", "t", "N"))
+        #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
         ;
 
   /** END piecewise curve function **/
