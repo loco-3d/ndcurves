@@ -358,6 +358,16 @@ SE3_t piecewiseSE3ReturnPinocchio(const piecewise_SE3_curve_t& curve, const real
 Motion_t piecewiseSE3ReturnDerivatePinocchio(const piecewise_SE3_curve_t& curve, const real t, const std::size_t order) {
   return Motion_t(curve.derivate(t, order));
 }
+
+void addFinalSE3(piecewise_SE3_curve_t& self, const SE3_t& end, const real time) {
+  if (self.is_continuous(1) && self.num_curves()>1 )
+    std::cout << "Warning: by adding this final transform to the piecewise curve, you loose C1 continuity and only "
+                 "guarantee C0 continuity."
+              << std::endl;
+  SE3Curve_t curve(self(self.max()), transform_t(end.toHomogeneousMatrix()), self.max(), time);
+  self.add_curve(curve);
+}
+
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
 
 matrix4_t piecewiseSE3Return(const piecewise_SE3_curve_t& curve, const real t) { return curve(t).matrix(); }
@@ -366,6 +376,15 @@ matrix4_t piecewiseSE3Return(const piecewise_SE3_curve_t& curve, const real t) {
 matrix3_t piecewiseSE3returnRotation(const piecewise_SE3_curve_t& curve, const real t) { return curve(t).rotation(); }
 
 pointX_t piecewiseSE3returnTranslation(const piecewise_SE3_curve_t& curve, const real t) { return pointX_t(curve(t).translation()); }
+
+void addFinalTransform(piecewise_SE3_curve_t& self, const matrix4_t& end, const real time) {
+  if (self.is_continuous(1) && self.num_curves()>1 )
+    std::cout << "Warning: by adding this final transform to the piecewise curve, you loose C1 continuity and only "
+                 "guarantee C0 continuity."
+              << std::endl;
+  SE3Curve_t curve(self(self.max()), transform_t(end), self.max(), time);
+  self.add_curve(curve);
+}
 
 /* End wrap piecewiseSE3Curves */
 
@@ -733,6 +752,10 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
       .def("min", &piecewise_SE3_curve_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &piecewise_SE3_curve_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &piecewise_SE3_curve_t::dim, "Get the dimension of the curve.")
+      .def("append", &addFinalTransform,
+       "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
+       "and time and connecting exactly self(self.max()) and end",
+       args("self", "end", "time"))
 //      .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>, bp::args("filename"),
 //           "Saves *this inside a text file.")
 //      .def("loadFromText", &piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>, bp::args("filename"),
@@ -751,6 +774,10 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
           .def("derivateAsMotion", &piecewiseSE3ReturnDerivatePinocchio,
                "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
                args("self", "t", "N"))
+          .def("append", &addFinalSE3,
+           "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
+           "and time and connecting exactly self(self.max()) and end",
+           args("self", "end", "time"))
         #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
         ;
 
