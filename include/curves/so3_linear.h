@@ -22,9 +22,11 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   typedef Numeric Scalar;
   typedef Eigen::Matrix<Scalar, 3, 1> point3_t;
   typedef Eigen::Matrix<Scalar, 3, 3> matrix3_t;
+  typedef matrix3_t point_t;
+  typedef point3_t point_derivate_t;
   typedef Eigen::Quaternion<Scalar> quaternion_t;
   typedef Time time_t;
-  typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> curve_abc_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;
   typedef SO3Linear<Time, Numeric, Safe> SO3Linear_t;
 
  public:
@@ -155,6 +157,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     if (version) {
       // Do something depending on version ?
     }
+    ar>> BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar>> boost::serialization::make_nvp("dim", dim_);
     matrix3_t init,end;
     ar >> boost::serialization::make_nvp("init_rotation", init);
@@ -172,6 +175,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     if (version) {
       // Do something depending on version ?
     }
+    ar<< BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar<< boost::serialization::make_nvp("dim", dim_);
     matrix3_t init_matrix(getInitRotation());
     matrix3_t end_matrix(getEndRotation());

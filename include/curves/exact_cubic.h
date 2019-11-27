@@ -54,6 +54,7 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point, T_Point,
 
   typedef exact_cubic<Time, Numeric, Safe, Point, T_Point, SplineBase> exact_cubic_t;
   typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, SplineBase> piecewise_curve_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
 
   /* Constructors - destructors */
  public:

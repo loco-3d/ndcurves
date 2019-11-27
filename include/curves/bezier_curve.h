@@ -40,6 +40,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   typedef typename t_point_t::const_iterator cit_point_t;
   typedef bezier_curve<Time, Numeric, Safe, Point> bezier_curve_t;
   typedef piecewise_curve<Time, Numeric, Safe, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
 
   /* Constructors - destructors */
  public:
@@ -444,6 +445,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     if (version) {
       // Do something depending on version ?
     }
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("T_min", T_min_);
     ar& boost::serialization::make_nvp("T_max", T_max_);
