@@ -724,10 +724,8 @@ class TestCurves(unittest.TestCase):
         p = se3(min)
         if CURVES_WITH_PINOCCHIO_SUPPORT:
             self.assertTrue(isinstance(se3.evaluateAsSE3(min), SE3))
-            init_pose = SE3(init_pose)
-            end_pose = SE3(end_pose)
-            self.assertTrue(se3.evaluateAsSE3(min).isApprox(init_pose, 1e-6))
-            self.assertTrue(se3.evaluateAsSE3(max).isApprox(end_pose, 1e-6))
+            self.assertTrue(se3.evaluateAsSE3(min).isApprox(SE3(init_pose), 1e-6))
+            self.assertTrue(se3.evaluateAsSE3(max).isApprox(SE3(end_pose), 1e-6))
         self.assertEqual(p.shape[0], 4)
         self.assertEqual(p.shape[1], 4)
         self.assertTrue(isclose(se3(min), init_pose).all())
@@ -746,8 +744,8 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(isclose(motion.linear, ((end_translation - init_translation) / (max - min))).all())
             self.assertTrue(isclose(motion.angular[0], 1.20830487))
             self.assertTrue(isclose(motion.angular[1:3], array([0, 0]).T).all())
-            self.assertTrue(d.isApprox(se3.derivateAsMotion(0.5, 1), 1e-6))
-            self.assertTrue(d.isApprox(se3.derivateAsMotion(max, 1), 1e-6))
+            self.assertTrue(motion.isApprox(se3.derivateAsMotion(0.5, 1), 1e-6))
+            self.assertTrue(motion.isApprox(se3.derivateAsMotion(max, 1), 1e-6))
             self.assertTrue(se3.derivateAsMotion(min, 2).isApprox(Motion.Zero(), 1e-6))
             self.assertTrue(se3.derivateAsMotion(min, 3).isApprox(Motion.Zero(), 1e-6))
         self.assertEqual(d.shape[0], 6)
@@ -935,14 +933,14 @@ class TestCurves(unittest.TestCase):
             end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
             init_rot = init_quat.matrix()
             end_rot = end_quat.matrix()
-            init_translation = array([0.2, -0.7, 0.6]).T
-            end_translation = array([3.6, -2.2, -0.9]).T
+            init_translation = array([0.2, -0.7, 0.6])
+            end_translation = array([3.6, -2.2, -0.9])
             init_pose = SE3.Identity()
             end_pose = SE3.Identity()
             init_pose.rotation = init_rot
             end_pose.rotation = end_rot
-            init_pose.translation = init_translation
-            end_pose.translation = end_translation
+            init_pose.translation = init_translation.reshape(-1,1)
+            end_pose.translation = end_translation.reshape(-1,1)
             min = 0.7
             max = 12.
             se3 = SE3Curve(init_pose, end_pose, min, max)
@@ -972,11 +970,11 @@ class TestCurves(unittest.TestCase):
             with self.assertRaises(ValueError):
                 se3(-0.1)
             with self.assertRaises(ValueError):
-                se3(3)
+                se3(13.)
             with self.assertRaises(ValueError):
                 se3.derivate(0, 1)
             with self.assertRaises(ValueError):
-                se3.derivate(3., 1)
+                se3.derivate(13., 1)
             with self.assertRaises(ValueError):
                 se3.derivate(1., 0)
 
