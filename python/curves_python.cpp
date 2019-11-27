@@ -622,7 +622,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapPiecewiseBezierCurveConstructor))
       .def("compute_derivate", &piecewise_polynomial_curve_t::compute_derivate,
            "Return a piecewise_polynomial curve which is the derivate of this.", args("self", "order"))
-      .def("add_curve", &piecewise_bezier_curve_t::add_curve)
+      .def("append", &piecewise_bezier_curve_t::add_curve)
       .def("is_continuous", &piecewise_bezier_curve_t::is_continuous)
       .def("convert_piecewise_curve_to_polynomial",
            &piecewise_bezier_curve_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
@@ -648,7 +648,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   class_<piecewise_cubic_hermite_curve_t, bases<curve_abc_t> >("piecewise_cubic_hermite_curve", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseCubicHermiteCurveConstructor))
-      .def("add_curve", &piecewise_cubic_hermite_curve_t::add_curve)
+      .def("append", &piecewise_cubic_hermite_curve_t::add_curve)
       .def("is_continuous", &piecewise_cubic_hermite_curve_t::is_continuous)
       .def("convert_piecewise_curve_to_polynomial",
            &piecewise_cubic_hermite_curve_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
@@ -676,7 +676,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   class_<piecewise_bezier_linear_curve_t, bases<curve_abc_t> >("piecewise_bezier_linear_curve_t", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseLinearBezierCurveConstructor))
-      .def("add_curve", &piecewise_bezier_linear_curve_t::add_curve)
+      .def("append", &piecewise_bezier_linear_curve_t::add_curve)
       .def("is_continuous", &piecewise_bezier_linear_curve_t::is_continuous,
            "Check if the curve is continuous at the given order.")
       .def("curve_at_index", &piecewise_bezier_linear_curve_t::curve_at_index,
