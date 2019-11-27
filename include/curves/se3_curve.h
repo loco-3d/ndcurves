@@ -1,6 +1,7 @@
 #ifndef _STRUCT_SE3_CURVE_H
 #define _STRUCT_SE3_CURVE_H
 
+#include "fwd.h"
 #include "MathDefs.h"
 #include "curve_abc.h"
 #include "so3_linear.h"
@@ -191,6 +192,21 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
     if (version) {
       // Do something depending on version ?
     }
+    //register derived class
+    ar.template register_type<bezier_curve<Scalar, Scalar, Safe, pointX_t> >();
+    ar.template register_type<cubic_hermite_spline<Scalar, Scalar, Safe, pointX_t> >();
+    ar.template register_type<exact_cubic<Scalar, Scalar, Safe, pointX_t> >();
+    ar.template register_type<piecewise_curve<Scalar, Scalar, Safe, pointX_t,
+        std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> >, polynomial_t> >();
+    ar.template register_type<piecewise_curve<Scalar, Scalar, Safe, pointX_t,
+        std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> >, bezier_curve<Scalar, Scalar, Safe, pointX_t> > >();
+    ar.template register_type<piecewise_curve<Scalar, Scalar, Safe, pointX_t,
+        std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> >, cubic_hermite_spline<Scalar, Scalar, Safe, pointX_t> > >();
+    ar.template register_type<polynomial_t>();
+    ar.template register_type<SO3Linear_t>();
+
+
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("translation_curve", translation_curve_);
     ar& boost::serialization::make_nvp("rotation_curve", rotation_curve_);
