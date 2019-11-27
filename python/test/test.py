@@ -638,6 +638,9 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
         self.assertTrue(isclose(pmax[0:3, 3], end_translation).all())
         self.assertTrue(pc.is_continuous(0))
+      pc = piecewise_SE3_curve()
+      with self.assertRaises(RuntimeError):
+        pc.append(end_pose,max)
 
     if CURVES_WITH_PINOCCHIO_SUPPORT:
 

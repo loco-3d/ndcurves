@@ -360,6 +360,8 @@ Motion_t piecewiseSE3ReturnDerivatePinocchio(const piecewise_SE3_curve_t& curve,
 }
 
 void addFinalSE3(piecewise_SE3_curve_t& self, const SE3_t& end, const real time) {
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
   if (self.is_continuous(1) && self.num_curves()>1 )
     std::cout << "Warning: by adding this final transform to the piecewise curve, you loose C1 continuity and only "
                  "guarantee C0 continuity."
@@ -378,6 +380,8 @@ matrix3_t piecewiseSE3returnRotation(const piecewise_SE3_curve_t& curve, const r
 pointX_t piecewiseSE3returnTranslation(const piecewise_SE3_curve_t& curve, const real t) { return pointX_t(curve(t).translation()); }
 
 void addFinalTransform(piecewise_SE3_curve_t& self, const matrix4_t& end, const real time) {
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
   if (self.is_continuous(1) && self.num_curves()>1 )
     std::cout << "Warning: by adding this final transform to the piecewise curve, you loose C1 continuity and only "
                  "guarantee C0 continuity."
