@@ -339,6 +339,37 @@ class TestCurves(unittest.TestCase):
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
+
+
+        waypoints3 = array([[1., 2., 3.,0.6,-9.], [-1., 1.6, 1.7,6.7,14]]).transpose()
+        c = polynomial(waypoints3, 3., 5.2)
+        with self.assertRaises(ValueError):# a and c doesn't have the same dimension
+          pc.append(c)
+
+        ### Test the different append methods :
+        pc = piecewise_polynomial_curve()
+        self.assertEqual(pc.num_curves(),0)
+        end_point1 = array([1.,3.,5.,6.5,-2.])
+        max1 = 2.5
+        with self.assertRaises(RuntimeError): # cannot add final point in an empty curve
+          pc.append(end_point1.reshape(-1,1),max1)
+        with self.assertRaises(ValueError):# a and end_point1 doesn't have the same dimension
+          pc.append(a)
+          pc.append(end_point1.reshape(-1,1),max1)
+
+        pc = piecewise_polynomial_curve()
+        d = polynomial(waypoints3, 0., 1.2)
+        self.assertEqual(pc.num_curves(),0)
+        pc.append(d)
+        self.assertEqual(pc.num_curves(),1)
+        pc.append(end_point1.reshape(-1,1),max1)
+        self.assertEqual(pc.num_curves(),2)
+        self.assertEqual(pc.min(),0.)
+        self.assertEqual(pc.max(),max1)
+        self.assertTrue(pc.is_continuous(0))
+        self.assertTrue(isclose(pc(0.),d(0.)).all())
+        self.assertTrue(isclose(pc(max1),end_point1).all())
+
         return
 
     def test_piecewise_from_points_list(self):
