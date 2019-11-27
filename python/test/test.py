@@ -615,7 +615,20 @@ class TestCurves(unittest.TestCase):
         se3_3 = SE3Curve(se3_2(max2),se3_2(max2-0.5),max2+0.1,max2+1.5)
         pc.append(se3_3)
 
-      # TODO : serialization
+      pc.saveAsText("serialization_curve.txt")
+      pc_txt = piecewise_SE3_curve()
+      pc_txt.loadFromText("serialization_curve.txt")
+      self.compareCurves(pc,pc_txt)
+
+      pc.saveAsXML("serialization_curve.xml","pc")
+      pc_xml = piecewise_SE3_curve()
+      pc_xml.loadFromXML("serialization_curve.xml","pc")
+      self.compareCurves(pc,pc_xml)
+
+      pc.saveAsBinary("serialization_curve")
+      pc_bin = piecewise_SE3_curve()
+      pc_bin.loadFromBinary("serialization_curve")
+      self.compareCurves(pc,pc_bin)
 
       se3_3 = SE3Curve(se3(max),se3_2(max2-0.5),max2,max2+1.5)
       pc.append(se3_3)
