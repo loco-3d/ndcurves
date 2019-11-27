@@ -21,9 +21,13 @@ using namespace std;
 namespace curves {
 typedef Eigen::Vector3d point3_t;
 typedef Eigen::VectorXd pointX_t;
+typedef Eigen::Matrix<double, 3, 3> matrix3_t;
 typedef Eigen::Quaternion<double> quaternion_t;
 typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_pointX_t;
 typedef curve_abc<double, double, true, pointX_t> curve_abc_t;
+typedef curve_abc<double, double, true, matrix3_t, point3_t> curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
+typedef boost::shared_ptr<curve_abc_t> curve_ptr_t;
+typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
 typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
 typedef exact_cubic<double, double, true, pointX_t> exact_cubic_t;
 typedef exact_cubic<double, double, true, Eigen::Matrix<double, 1, 1> > exact_cubic_one;
@@ -44,6 +48,7 @@ typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<pair_point_ta
 typedef SO3Linear<double, double, true> SO3Linear_t;
 typedef SE3Curve<double, double, true> SE3Curve_t;
 typedef Eigen::Transform<double, 3, Eigen::Affine> transform_t;
+
 
 const double margin = 1e-3;
 bool QuasiEqual(const double a, const double b) { return std::fabs(a - b) < margin; }
@@ -1869,6 +1874,72 @@ void se3CurveTest(bool& error) {
   }
 }
 
+
+void Se3serializationTest(bool &error){
+  std::string fileName("fileTest");
+  std::string errmsg("SE3serializationTest : curve serialized is not equivalent to the original curve.");
+  quaternion_t q0(1, 0, 0, 0);
+  quaternion_t q1(0., 1., 0, 0);
+  pointX_t p0 = point3_t(1., 1.5, -2.);
+  pointX_t p1 = point3_t(3., 0, 1.);
+  double min = 0.5, max = 2.;
+  // constructor from init/end position/rotation : automatically create a linear interpolation for position and slerp
+  // for rotation
+  SE3Curve_t cLinear(p0, p1, q0, q1, min, max);
+
+  cLinear.saveAsText<SE3Curve_t>(fileName+".txt");
+  SE3Curve_t se3_from_txt;
+  se3_from_txt.loadFromText<SE3Curve_t>(fileName+".txt");
+  CompareCurves<SE3Curve_t, SE3Curve_t>(cLinear, se3_from_txt, errmsg+" For text serialization", error);
+
+  cLinear.saveAsXML<SE3Curve_t>(fileName+".xml","se3Curve");
+  SE3Curve_t se3_from_xml;
+  se3_from_xml.loadFromXML<SE3Curve_t>(fileName+".xml","se3Curve");
+  CompareCurves<SE3Curve_t, SE3Curve_t>(cLinear, se3_from_xml,errmsg+" For XML serialization", error);
+
+  cLinear.saveAsBinary<SE3Curve_t>(fileName);
+  SE3Curve_t se3_from_binary;
+  se3_from_binary.loadFromBinary<SE3Curve_t>(fileName);
+  CompareCurves<SE3Curve_t, SE3Curve_t>(cLinear, se3_from_binary, errmsg+" For binary serialization", error);
+
+  // constructor with specific translation curve
+  SE3Curve_t cBezier;
+  {  // inner scope to check what happen when translation_bezier is out of scope
+    quaternion_t q0( 0.544,-0.002, -0.796,  0.265);
+    quaternion_t q1(0.7071, 0.7071, 0, 0);
+    q1.normalize ();
+    q0.normalize ();
+    point3_t a(1, 2, 3);
+    point3_t b(2, 3, 4);
+    point3_t c(3, 4, 5);
+    point3_t d(3, 6, 7);
+    std::vector<point3_t> params;
+    params.push_back(a);
+    params.push_back(b);
+    params.push_back(c);
+    params.push_back(d);
+    boost::shared_ptr<bezier_curve_t> translation_bezier(new bezier_curve_t(params.begin(), params.end(), min, max));
+    cBezier = SE3Curve_t(translation_bezier, q0, q1);
+  }
+
+  cBezier.saveAsText<SE3Curve_t>(fileName+".txt");
+  SE3Curve_t se3_from_txt_bezier;
+  se3_from_txt_bezier.loadFromText<SE3Curve_t>(fileName+".txt");
+  CompareCurves<SE3Curve_t, SE3Curve_t>(cBezier, se3_from_txt_bezier, errmsg+" For text serialization", error);
+
+  cBezier.saveAsXML<SE3Curve_t>(fileName+".xml","se3Curve");
+  SE3Curve_t se3_from_xml_bezier;
+  se3_from_xml_bezier.loadFromXML<SE3Curve_t>(fileName+".xml","se3Curve");
+  CompareCurves<SE3Curve_t, SE3Curve_t>(cBezier, se3_from_xml_bezier,errmsg+" For XML serialization", error);
+
+  cBezier.saveAsBinary<SE3Curve_t>(fileName);
+  SE3Curve_t se3_from_binary_bezier;
+  se3_from_binary_bezier.loadFromBinary<SE3Curve_t>(fileName);
+  CompareCurves<SE3Curve_t, SE3Curve_t>(cBezier, se3_from_binary_bezier, errmsg+" For binary serialization", error);
+
+}
+
+
 /**
  * @brief BezierLinearProblemTests test the generation of linear / quadratic problems with
  * variable control points bezier curves
@@ -2274,6 +2345,7 @@ int main(int /*argc*/, char** /*argv[]*/) {
   so3LinearTest(error);
   SO3serializationTest(error);
   se3CurveTest(error);
+  Se3serializationTest(error);
   BezierLinearProblemsetup_control_pointsNoConstraint(error);
   BezierLinearProblemsetup_control_pointsVarCombinatorialInit(error);
   BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(error);
