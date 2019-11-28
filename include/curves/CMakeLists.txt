@@ -15,6 +15,7 @@ SET(${PROJECT_NAME}_HEADERS
   piecewise_curve.h
   so3_linear.h
   se3_curve.h
+  fwd.h
   )
 
 INSTALL(FILES

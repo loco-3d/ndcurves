@@ -12,7 +12,7 @@
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-#include "registeration.h"
+#include "registeration.hpp"
 
 namespace curves {
 namespace serialization {
