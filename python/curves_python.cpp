@@ -158,6 +158,14 @@ piecewise_bezier_linear_curve_t* wrapPiecewiseLinearBezierCurveConstructor(const
 piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveConstructor(const cubic_hermite_spline_t& ch) {
   return new piecewise_cubic_hermite_curve_t(ch);
 }
+
+piecewise_SE3_curve_t* wrapPiecewiseSE3Constructor(const SE3Curve_t& curve) {
+  return new piecewise_SE3_curve_t(curve);
+}
+
+piecewise_SE3_curve_t* wrapPiecewiseSE3EmptyConstructor() {
+  return new piecewise_SE3_curve_t();
+}
 static piecewise_polynomial_curve_t discretPointToPolynomialC0(const pointX_list_t& points,
                                                                const time_waypoints_t& time_points) {
   t_pointX_t points_list = vectorFromEigenArray<pointX_list_t, t_pointX_t>(points);
@@ -186,16 +194,20 @@ static piecewise_polynomial_curve_t discretPointToPolynomialC2(const pointX_list
   return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(
       points_list, points_derivative_list, points_second_derivative_list, time_points_list);
 }
-void addFinalPointC0(piecewise_polynomial_curve_t self, const pointX_t& end, const real time) {
-  if (self.is_continuous(1))
+void addFinalPointC0(piecewise_polynomial_curve_t& self, const pointX_t& end, const real time) {
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
+  if (self.is_continuous(1) && self.num_curves()>1 )
     std::cout << "Warning: by adding this final point to the piecewise curve, you loose C1 continuity and only "
                  "guarantee C0 continuity."
               << std::endl;
   polynomial_t pol(self(self.max()), end, self.max(), time);
   self.add_curve(pol);
 }
-void addFinalPointC1(piecewise_polynomial_curve_t self, const pointX_t& end, const pointX_t& d_end, const real time) {
-  if (self.is_continuous(2))
+void addFinalPointC1(piecewise_polynomial_curve_t& self, const pointX_t& end, const pointX_t& d_end, const real time) {
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
+  if (self.is_continuous(2) && self.num_curves()>1 )
     std::cout << "Warning: by adding this final point to the piecewise curve, you loose C2 continuity and only "
                  "guarantee C1 continuity."
               << std::endl;
@@ -203,9 +215,11 @@ void addFinalPointC1(piecewise_polynomial_curve_t self, const pointX_t& end, con
   polynomial_t pol(self(self.max()), self.derivate(self.max(), 1), end, d_end, self.max(), time);
   self.add_curve(pol);
 }
-void addFinalPointC2(piecewise_polynomial_curve_t self, const pointX_t& end, const pointX_t& d_end,
+void addFinalPointC2(piecewise_polynomial_curve_t& self, const pointX_t& end, const pointX_t& d_end,
                      const pointX_t& dd_end, const real time) {
-  if (self.is_continuous(3))
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
+  if (self.is_continuous(3) && self.num_curves()>1 )
     std::cout << "Warning: by adding this final point to the piecewise curve, you loose C3 continuity and only "
                  "guarantee C2 continuity."
               << std::endl;
@@ -291,6 +305,10 @@ SE3Curve_t* wrapSE3CurveFromTransform(const matrix4_t& init_pose, const matrix4_
   return new SE3Curve_t(transform_t(init_pose), transform_t(end_pose), min, max);
 }
 
+SE3Curve_t* wrapSE3CurveFromPosAndRotation(const pointX_t& init_pos, const pointX_t& end_pos, const matrix3_t& init_rot, const matrix3_t& end_rot,const real& t_min, const real& t_max) {
+  return new SE3Curve_t(init_pos,end_pos,init_rot,end_rot, t_min, t_max);
+}
+
 SE3Curve_t* wrapSE3CurveFromBezier3Translation(bezier3_t& translation_curve, const matrix3_t& init_rot,
                                                const matrix3_t& end_rot) {
   bezier_t* translation = new bezier_t(translation_curve.waypoints().begin(), translation_curve.waypoints().end(),
@@ -335,6 +353,50 @@ matrix3_t se3returnRotation(const SE3Curve_t& curve, const real t) { return curv
 pointX_t se3returnTranslation(const SE3Curve_t& curve, const real t) { return pointX_t(curve(t).translation()); }
 
 /* End wrap SE3Curves */
+
+/* Wrap piecewiseSE3Curves */
+#ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+typedef pinocchio::SE3Tpl<real, 0> SE3_t;
+typedef pinocchio::MotionTpl<real, 0> Motion_t;
+
+SE3_t piecewiseSE3ReturnPinocchio(const piecewise_SE3_curve_t& curve, const real t) { return SE3_t(curve(t).matrix()); }
+
+Motion_t piecewiseSE3ReturnDerivatePinocchio(const piecewise_SE3_curve_t& curve, const real t, const std::size_t order) {
+  return Motion_t(curve.derivate(t, order));
+}
+
+void addFinalSE3(piecewise_SE3_curve_t& self, const SE3_t& end, const real time) {
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
+  if (self.is_continuous(1) && self.num_curves()>1 )
+    std::cout << "Warning: by adding this final transform to the piecewise curve, you loose C1 continuity and only "
+                 "guarantee C0 continuity."
+              << std::endl;
+  SE3Curve_t curve(self(self.max()), transform_t(end.toHomogeneousMatrix()), self.max(), time);
+  self.add_curve(curve);
+}
+
+#endif  // CURVES_WITH_PINOCCHIO_SUPPORT
+
+matrix4_t piecewiseSE3Return(const piecewise_SE3_curve_t& curve, const real t) { return curve(t).matrix(); }
+
+
+matrix3_t piecewiseSE3returnRotation(const piecewise_SE3_curve_t& curve, const real t) { return curve(t).rotation(); }
+
+pointX_t piecewiseSE3returnTranslation(const piecewise_SE3_curve_t& curve, const real t) { return pointX_t(curve(t).translation()); }
+
+void addFinalTransform(piecewise_SE3_curve_t& self, const matrix4_t& end, const real time) {
+  if(self.num_curves() == 0)
+    throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
+  if (self.is_continuous(1) && self.num_curves()>1 )
+    std::cout << "Warning: by adding this final transform to the piecewise curve, you loose C1 continuity and only "
+                 "guarantee C0 continuity."
+              << std::endl;
+  SE3Curve_t curve(self(self.max()), transform_t(end), self.max(), time);
+  self.add_curve(curve);
+}
+
+/* End wrap piecewiseSE3Curves */
 
 // TO DO : Replace all load and save function for serialization in class by using
 //         SerializableVisitor in archive_python_binding.
@@ -571,7 +633,7 @@ BOOST_PYTHON_MODULE(curves) {
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous,
-           "Check if the curve is continuous at the given order.")
+           "Check if the curve is continuous at the given order.",args("self,order"))
       .def("convert_piecewise_curve_to_bezier",
            &piecewise_polynomial_curve_t::convert_piecewise_curve_to_bezier<bezier_t>,
            "Convert a piecewise polynomial curve to to a piecewise bezier curve")
@@ -599,7 +661,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapPiecewiseBezierCurveConstructor))
       .def("compute_derivate", &piecewise_polynomial_curve_t::compute_derivate,
            "Return a piecewise_polynomial curve which is the derivate of this.", args("self", "order"))
-      .def("add_curve", &piecewise_bezier_curve_t::add_curve)
+      .def("append", &piecewise_bezier_curve_t::add_curve)
       .def("is_continuous", &piecewise_bezier_curve_t::is_continuous)
       .def("convert_piecewise_curve_to_polynomial",
            &piecewise_bezier_curve_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
@@ -625,7 +687,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   class_<piecewise_cubic_hermite_curve_t, bases<curve_abc_t> >("piecewise_cubic_hermite_curve", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseCubicHermiteCurveConstructor))
-      .def("add_curve", &piecewise_cubic_hermite_curve_t::add_curve)
+      .def("append", &piecewise_cubic_hermite_curve_t::add_curve)
       .def("is_continuous", &piecewise_cubic_hermite_curve_t::is_continuous)
       .def("convert_piecewise_curve_to_polynomial",
            &piecewise_cubic_hermite_curve_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
@@ -653,7 +715,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   class_<piecewise_bezier_linear_curve_t, bases<curve_abc_t> >("piecewise_bezier_linear_curve_t", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseLinearBezierCurveConstructor))
-      .def("add_curve", &piecewise_bezier_linear_curve_t::add_curve)
+      .def("append", &piecewise_bezier_linear_curve_t::add_curve)
       .def("is_continuous", &piecewise_bezier_linear_curve_t::is_continuous,
            "Check if the curve is continuous at the given order.")
       .def("curve_at_index", &piecewise_bezier_linear_curve_t::curve_at_index,
@@ -673,6 +735,61 @@ BOOST_PYTHON_MODULE(curves) {
            bp::args("filename"), "Saves *this inside a binary file.")
       .def("loadFromBinary", &piecewise_bezier_linear_curve_t::loadFromBinary<piecewise_bezier_linear_curve_t>,
            bp::args("filename"), "Loads *this from a binary file.");
+
+class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>())
+      .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor, default_call_policies(), arg("curve")),
+      "Create a piecewise-se3 curve containing the given se3 curve.")
+      .def("__init__", make_constructor(&wrapPiecewiseSE3EmptyConstructor),
+      "Create an empty piecewise-se3 curve.")
+//      .def("compute_derivate", &piecewise_SE3_curve_t::compute_derivate,
+//           "Return a piecewise_polynomial curve which is the derivate of this.", args("self", "order"))
+      .def("append", &piecewise_SE3_curve_t::add_curve,
+           "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
+           "where T_{min} is equal toT_{max} of the actual piecewise curve.",
+           args("self,curve"))
+      .def("is_continuous", &piecewise_SE3_curve_t::is_continuous, "Check if the curve is continuous at the given order.",args("self,order"))
+      .def("curve_at_index", &piecewise_SE3_curve_t::curve_at_index, return_value_policy<copy_const_reference>())
+      .def("curve_at_time", &piecewise_SE3_curve_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("num_curves", &piecewise_SE3_curve_t::num_curves)
+      .def("rotation", &piecewiseSE3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
+           args("self", "t"))
+      .def("translation", &piecewiseSE3returnTranslation, "Output the translation (as a vector 3) at the given time.",
+           args("self", "t"))
+      .def("__call__", &piecewiseSE3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix",
+           args("self", "t"))
+      .def("derivate", &piecewise_SE3_curve_t::derivate,
+           "Evaluate the derivative of order N of curve at time t. Return as a vector 6", args("self", "t", "N"))
+      .def("min", &piecewise_SE3_curve_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &piecewise_SE3_curve_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &piecewise_SE3_curve_t::dim, "Get the dimension of the curve.")
+      .def("append", &addFinalTransform,
+       "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
+       "and time and connecting exactly self(self.max()) and end",
+       args("self", "end", "time"))
+//      .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>, bp::args("filename"),
+//           "Saves *this inside a text file.")
+//      .def("loadFromText", &piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>, bp::args("filename"),
+//           "Loads *this from a text file.")
+//      .def("saveAsXML", &piecewise_bezier_curve_t::saveAsXML<piecewise_bezier_curve_t>,
+//           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
+//      .def("loadFromXML", &piecewise_bezier_curve_t::loadFromXML<piecewise_bezier_curve_t>,
+//           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
+//      .def("saveAsBinary", &piecewise_bezier_curve_t::saveAsBinary<piecewise_bezier_curve_t>, bp::args("filename"),
+//           "Saves *this inside a binary file.")
+//      .def("loadFromBinary", &piecewise_bezier_curve_t::loadFromBinary<piecewise_bezier_curve_t>, bp::args("filename"),
+//           "Loads *this from a binary file.")
+        #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+          .def("evaluateAsSE3", &piecewiseSE3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
+               args("self", "t"))
+          .def("derivateAsMotion", &piecewiseSE3ReturnDerivatePinocchio,
+               "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
+               args("self", "t", "N"))
+          .def("append", &addFinalSE3,
+           "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
+           "and time and connecting exactly self(self.max()) and end",
+           args("self", "end", "time"))
+        #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
+        ;
 
   /** END piecewise curve function **/
   /** BEGIN exact_cubic curve**/
@@ -764,6 +881,12 @@ BOOST_PYTHON_MODULE(curves) {
            " Using linear interpolation for translation and slerp for rotation between init and end."
            " The input transform are expressed as 4x4 matrix.")
       .def("__init__",
+           make_constructor(&wrapSE3CurveFromPosAndRotation, default_call_policies(),
+                            args("init_translation", "end_translation","init_rotation","end_rotation", "min", "max")),
+           "Create a SE3 curve between two transform, defined for t \in [min,max]."
+           " Using linear interpolation for translation and slerp for rotation between init and end."
+           " The input translations are expressed as 3d vector and the rotations as 3x3 matrix.")
+      .def("__init__",
            make_constructor(&wrapSE3CurveFromTwoCurves, default_call_policies(),
                             args("translation_curve", "rotation_curve")),
            "Create a SE3 curve from a translation curve and a rotation one."
@@ -802,9 +925,9 @@ BOOST_PYTHON_MODULE(curves) {
                             args("init_SE3", "end_SE3", "min", "max")),
            "Create a SE3 curve between two SE3 objects from Pinocchio, defined for t \in [min,max]."
            " Using linear interpolation for translation and slerp for rotation between init and end.")
-      .def("evaluateAsSE3", &se3Return, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
+      .def("evaluateAsSE3", &se3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
            args("self", "t"))
-      .def("derivateAsMotion", &se3ReturnDerivate,
+      .def("derivateAsMotion", &se3ReturnDerivatePinocchio,
            "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
            args("self", "t", "N"))
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT

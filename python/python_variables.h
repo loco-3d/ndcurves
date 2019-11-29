@@ -99,6 +99,7 @@ typedef curves::piecewise_curve<real, real, true, linear_variable_t,
 typedef curves::exact_cubic<real, real, true, pointX_t, t_pointX_t> exact_cubic_t;
 typedef SO3Linear<double, double, true> SO3Linear_t;
 typedef SE3Curve<double, double, true> SE3Curve_t;
+typedef curves::piecewise_curve<real, real, true, SE3Curve_t::point_t, t_pointX_t, SE3Curve_t,SE3Curve_t::point_derivate_t> piecewise_SE3_curve_t;
 typedef curves::Bern<double> bernstein_t;
 
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
@@ -117,6 +118,7 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_bezier_linear_c
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::exact_cubic_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::SO3Linear_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::SE3Curve_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_SE3_curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::matrix_x_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::pointX_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::linear_variable_t)

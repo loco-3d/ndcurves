@@ -24,10 +24,12 @@ namespace curves {
 template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
           typename T_Point = std::vector<Point, Eigen::aligned_allocator<Point> >,
-          typename Curve = curve_abc<Time, Numeric, Safe, Point> >
-struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
+          typename Curve = curve_abc<Time, Numeric, Safe, Point>,
+          typename Point_derivate = Point >
+struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_derivate> {
   typedef Point point_t;
   typedef T_Point t_point_t;
+  typedef Point_derivate point_derivate_t;
   typedef Time time_t;
   typedef Numeric num_t;
   typedef Curve curve_t;
@@ -41,17 +43,17 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
   /// \brief Constructor.
   /// Initialize a piecewise curve by giving the first curve.
-  /// \param pol   : a polynomial curve.
+  /// \param cf   : a curve.
   ///
   piecewise_curve(const curve_t& cf) {
-    dim_ = cf(cf.min()).size();
+    dim_ = cf.dim();
     size_ = 0;
     add_curve(cf);
   }
 
   piecewise_curve(const t_curve_t list_curves) {
     if (list_curves.size() != 0) {
-      dim_ = list_curves[0](list_curves[0].min()).size();
+      dim_ = list_curves[0].dim();
     }
     size_ = 0;
     for (std::size_t i = 0; i < list_curves.size(); i++) {
@@ -83,7 +85,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param order : order of derivative.
   ///  \return \f$\frac{d^Np(t)}{dt^N}\f$ point corresponding on derivative spline of order N at time t.
   ///
-  virtual Point derivate(const Time t, const std::size_t order) const {
+  virtual point_derivate_t derivate(const Time t, const std::size_t order) const {
     check_if_not_empty();
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       throw std::invalid_argument("can't evaluate piecewise curve, out of range");
@@ -96,8 +98,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
    * @param order order of derivative
    * @return
    */
-  piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve> compute_derivate(const std::size_t order) const {
-    piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve> res;
+  piecewise_curve<Time, Numeric, Safe, point_derivate_t, std::vector<point_derivate_t, Eigen::aligned_allocator<Point> >, Curve> compute_derivate(const std::size_t order) const {
+    piecewise_curve<Time, Numeric, Safe, point_derivate_t,  std::vector<point_derivate_t, Eigen::aligned_allocator<Point> >, Curve> res;
     for (typename t_curve_t::const_iterator itc = curves_.begin(); itc < curves_.end(); ++itc) {
       res.add_curve(itc->compute_derivate(order));
     }
@@ -111,23 +113,27 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param cf : curve to add.
   ///
   void add_curve(const curve_t& cf) {
-    if (size_ == 0 && dim_ == 0) {
-      dim_ = cf(cf.min()).size();
+    if (size_ == 0 && dim_ == 0) { // first curve added
+      dim_ = cf.dim();
     }
-    // Check time continuity : Beginning time of pol must be equal to T_max_ of actual piecewise curve.
+    // Check time continuity : Beginning time of cf must be equal to T_max_ of actual piecewise curve.
     if (size_ != 0 && !(fabs(cf.min() - T_max_) < MARGIN)) {
       throw std::invalid_argument(
           "Can not add new Polynom to PiecewiseCurve : time discontinuity between T_max_ and pol.min()");
     }
+    if(cf.dim() != dim_){
+      throw std::invalid_argument(
+          "All the curves in a piecewiseCurve should have the same dimension");
+    }
     curves_.push_back(cf);
     size_ = curves_.size();
     T_max_ = cf.max();
-    time_curves_.push_back(T_max_);
     if (size_ == 1) {
       // First curve added
       time_curves_.push_back(cf.min());
       T_min_ = cf.min();
     }
+    time_curves_.push_back(T_max_);
   }
 
   ///  \brief Check if the curve is continuous of order given.
@@ -138,21 +144,30 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
     check_if_not_empty();
     bool isContinuous = true;
     std::size_t i = 0;
-    point_t value_end, value_start;
-    while (isContinuous && i < (size_ - 1)) {
-      curve_t current = curves_.at(i);
-      curve_t next = curves_.at(i + 1);
-      if (order == 0) {
+    if(order ==0){
+      point_t value_end, value_start;
+      while (isContinuous && i < (size_ - 1)) {
+        curve_t current = curves_.at(i);
+        curve_t next = curves_.at(i + 1);
         value_end = current(current.max());
         value_start = next(next.min());
-      } else {
+        if (!value_end.isApprox(value_start,MARGIN)) {
+          isContinuous = false;
+        }
+        i++;
+      }
+    }else{
+      point_derivate_t value_end, value_start;
+      while (isContinuous && i < (size_ - 1)) {
+        curve_t current = curves_.at(i);
+        curve_t next = curves_.at(i + 1);
         value_end = current.derivate(current.max(), order);
         value_start = next.derivate(next.min(), order);
+        if (!value_end.isApprox(value_start,MARGIN)) {
+          isContinuous = false;
+        }
+        i++;
       }
-      if ((value_end - value_start).norm() > MARGIN) {
-        isContinuous = false;
-      }
-      i++;
     }
     return isContinuous;
   }
@@ -374,8 +389,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point> {
   }
 };  // End struct piecewise curve
 
-template <typename Time, typename Numeric, bool Safe, typename Point, typename T_Point, typename Curve>
-const double piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve>::MARGIN(0.001);
+template <typename Time, typename Numeric, bool Safe, typename Point, typename T_Point,typename Curve,typename Point_derivate>
+const double piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve,Point_derivate>::MARGIN(0.001);
 
 }  // namespace curves
 

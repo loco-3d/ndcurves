@@ -44,6 +44,7 @@ class rotation_spline : public curve_abc_quat_t {
       : curve_abc_quat_t(),
         quat_from_(quat_from.data()),
         quat_to_(quat_to.data()),
+        dim_(4),
         min_(min),
         max_(max),
         time_reparam_(computeWayPoints()) {}
@@ -54,6 +55,7 @@ class rotation_spline : public curve_abc_quat_t {
   rotation_spline& operator=(const rotation_spline& from) {
     quat_from_ = from.quat_from_;
     quat_to_ = from.quat_to_;
+    dim_ = from.dim_;
     min_ = from.min_;
     max_ = from.max_;
     time_reparam_ = exact_cubic_constraint_one_dim(from.time_reparam_);
