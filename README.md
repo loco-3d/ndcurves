@@ -25,7 +25,7 @@ The library comes with an helper class to automatically generate end-effector tr
 For instance, to create a 2 second long trajectory from the point (0,0,0) to (1,1,0), with a waypoint
 at (0.5,0.5,0.5), one can use the following code:
 
-```
+```cpp
 typedef std::pair<double, Eigen::Vector3d> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 
@@ -45,7 +45,7 @@ exact_cubic_t* eff_traj = effector_spline(waypoints.begin(),waypoints.end());
 ```
 If rotation of the effector must be considered, the code is almost the same:
 
-```
+```cpp
 // initial rotation is 0, end rotation is a rotation by Pi around x axis
 quat_t init_rot(0,0,0,1), end_rot(1,0,0,0);
 effector_spline_rotation eff_traj_rot(waypoints.begin(),waypoints.end(), init_quat, end_quat);
@@ -79,25 +79,25 @@ git clone --recursive https://github.com/stonneau/spline.git $SPLINE_DIR
 ```
 The library is header only, so the build only serves to build the tests and python bindings:
 
-```
-	cd $SPLINE_DIR && mkdir build && cd build
-	cmake .. && make
-	../bin/tests
+```sh
+cd $SPLINE_DIR && mkdir build && cd build
+cmake .. && make
+../bin/tests
 ```
 
 If everything went fine you should obtain the following output:
-```
+```sh
 performing tests...
 no errors found
 ```
 ### Optional: Python bindings installation
 To install the Python bindings, in the CMakeLists.txt file, first enable the BUILD_PYTHON_INTERFACE option:
-```
+```cmake
 OPTION (BUILD_PYTHON_INTERFACE "Build the python binding" ON)
 ```
 
 Then rebuild the library:
-```
+```sh
 cd $SPLINE_DIR/build
 cmake -DCMAKE_INSTALL_PREFIX=${DEVEL_DIR}/install ..
 make install
