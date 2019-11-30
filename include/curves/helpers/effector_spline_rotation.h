@@ -87,6 +87,9 @@ class rotation_spline : public curve_abc_quat_t {
   virtual std::size_t dim() const { return dim_; }
   virtual time_t min() const { return min_; }
   virtual time_t max() const { return max_; }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const {return 1;}
 
   /*Attributes*/
   Eigen::Quaterniond quat_from_;                 // const
