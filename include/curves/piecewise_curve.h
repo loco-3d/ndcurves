@@ -11,6 +11,7 @@
 #include "curve_abc.h"
 #include "curve_conversion.h"
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/serialization/vector.hpp>
 
 namespace curves {
 /// \class PiecewiseCurve.
@@ -400,12 +401,9 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     if (version) {
       // Do something depending on version ?
     }
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_t);
     ar& boost::serialization::make_nvp("dim", dim_);
-    //ar& boost::serialization::make_nvp("curves", curves_);
-    for(typename t_curve_ptr_t::const_iterator it = curves_.begin() ; it != curves_.end() ; ++it){
-      ar& *(*it); // how does it work when deserializing ??
-    }
+    ar& boost::serialization::make_nvp("curves", curves_);
     ar& boost::serialization::make_nvp("time_curves", time_curves_);
     ar& boost::serialization::make_nvp("size", size_);
     ar& boost::serialization::make_nvp("T_min", T_min_);

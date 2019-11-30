@@ -2335,7 +2335,7 @@ int main(int /*argc*/, char** /*argv[]*/) {
   toPolynomialConversionTest(error);
   cubicConversionTest(error);
   curveAbcDimDynamicTest(error);
-  //serializationCurvesTest(error);
+  serializationCurvesTest(error);
   polynomialFromBoundaryConditions(error);
   so3LinearTest(error);
   SO3serializationTest(error);
