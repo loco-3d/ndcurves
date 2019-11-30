@@ -41,6 +41,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   typedef Eigen::MatrixXd coeff_t;
   typedef Eigen::Ref<coeff_t> coeff_t_ref;
   typedef polynomial<Time, Numeric, Safe, Point, T_Point> polynomial_t;
+  typedef typename curve_abc_t::curve_ptr_t curve_ptr_t;
 
   /* Constructors - destructors */
  public:
@@ -272,14 +273,16 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     return currentPoint_;
   }
 
-  polynomial_t compute_derivate(const std::size_t order) const {
+  curve_ptr_t compute_derivate(const std::size_t order) const {
     check_if_not_empty();
-    if (order == 0) {
-      return *this;
-    }
+    if(order < 1)
+      throw std::invalid_argument("ORDER argument for compute_derivate must be >= 1 .");
     coeff_t coeff_derivated = deriv_coeff(coefficients_);
-    polynomial_t deriv(coeff_derivated, T_min_, T_max_);
-    return deriv.compute_derivate(order - 1);
+    curve_ptr_t deriv(new polynomial_t(coeff_derivated, T_min_, T_max_));
+    if(order == 1)
+      return deriv;
+    else
+      return deriv->compute_derivate(order - 1);
   }
 
   Eigen::MatrixXd coeff() const { return coefficients_; }

@@ -125,6 +125,10 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     }
   }
 
+  boost::shared_ptr<curve_abc_t> compute_derivate(const std::size_t order) const {
+    throw std::logic_error("Compute derivate for SO3Linear is not implemented yet.");
+  }
+
   /*Helpers*/
   /// \brief Get dimension of curve.
   /// \return dimension of curve.

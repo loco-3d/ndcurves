@@ -76,6 +76,10 @@ class rotation_spline : public curve_abc_quat_t {
     throw std::runtime_error("TODO quaternion spline does not implement derivate");
   }
 
+  boost::shared_ptr<curve_abc_quat_t> compute_derivate(const std::size_t order) const {
+    throw std::logic_error("Compute derivate for quaternion spline is not implemented yet.");
+  }
+
   /// \brief Initialize time reparametrization for spline.
   exact_cubic_constraint_one_dim computeWayPoints() const {
     t_waypoint_one_dim_t waypoints;

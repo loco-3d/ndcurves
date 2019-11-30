@@ -164,6 +164,10 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
     return res;
   }
 
+  boost::shared_ptr<curve_abc_t> compute_derivate(const std::size_t order) const {
+    throw std::logic_error("Compute derivate for SE3 is not implemented yet.");
+  }
+
   /*Helpers*/
   /// \brief Get dimension of curve.
   /// \return dimension of curve.

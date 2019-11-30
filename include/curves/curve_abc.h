@@ -47,6 +47,12 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   ///  \return \f$x(t)\f$, point corresponding on curve at time t.
   virtual point_t operator()(const time_t t) const = 0;
 
+
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  virtual curve_ptr_t compute_derivate(const std::size_t order) const = 0;
+
   /// \brief Evaluate the derivative of order N of curve at time t.
   /// \param t : time when to evaluate the spline.
   /// \param order : order of derivative.

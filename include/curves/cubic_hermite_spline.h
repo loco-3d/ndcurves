@@ -112,6 +112,11 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     return evalCubicHermiteSpline(t, order);
   }
 
+  boost::shared_ptr<curve_abc_t> compute_derivate(const std::size_t order) const {
+    throw std::logic_error("Compute derivate for cubic hermite spline is not implemented yet.");
+  }
+
+
   /// \brief Set time of each control point of cubic hermite spline.
   /// Set duration of each spline, Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with
   /// values corresponding to times for \f$P_0, P_1, P_2, ..., P_N\f$ respectively.<br>

@@ -41,6 +41,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   typedef bezier_curve<Time, Numeric, Safe, Point> bezier_curve_t;
   typedef piecewise_curve<Time, Numeric, Safe, point_t> piecewise_curve_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
+  typedef typename curve_abc_t::curve_ptr_t curve_ptr_t;
 
   /* Constructors - destructors */
  public:
@@ -142,11 +143,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
   ///  \param order : order of derivative.
   ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  bezier_curve_t compute_derivate(const std::size_t order) const {
+  curve_ptr_t compute_derivate(const std::size_t order) const {
     check_conditions();
-    if (order == 0) {
-      return *this;
-    }
+    if(order < 1)
+      throw std::invalid_argument("ORDER argument for compute_derivate must be >= 1 .");
     t_point_t derived_wp;
     for (typename t_point_t::const_iterator pit = control_points_.begin(); pit != control_points_.end() - 1; ++pit) {
       derived_wp.push_back((num_t)degree_ * (*(pit + 1) - (*pit)));
@@ -154,8 +154,11 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     if (derived_wp.empty()) {
       derived_wp.push_back(point_t::Zero(dim_));
     }
-    bezier_curve_t deriv(derived_wp.begin(), derived_wp.end(), T_min_, T_max_, mult_T_ * (1. / (T_max_ - T_min_)));
-    return deriv.compute_derivate(order - 1);
+    curve_ptr_t deriv(new bezier_curve_t(derived_wp.begin(), derived_wp.end(), T_min_, T_max_, mult_T_ * (1. / (T_max_ - T_min_))));
+    if(order == 1)
+      return deriv;
+    else
+      return deriv->compute_derivate(order - 1);
   }
 
   ///  \brief Compute the primitive of the curve at order N.
@@ -190,8 +193,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derived curve of order N at time t.
   ///
   virtual point_t derivate(const time_t t, const std::size_t order) const {
-    bezier_curve_t deriv = compute_derivate(order);
-    return deriv(t);
+    curve_ptr_t deriv = compute_derivate(order);
+    return (*deriv)(t);
   }
 
   /// \brief Evaluate all Bernstein polynomes for a certain degree.
