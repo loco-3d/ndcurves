@@ -1,4 +1,4 @@
-
+#include "curves/fwd.h"
 #include "curves/exact_cubic.h"
 #include "curves/bezier_curve.h"
 #include "curves/polynomial.h"
@@ -20,21 +20,7 @@
 using namespace std;
 
 namespace curves {
-typedef Eigen::Vector3d point3_t;
-typedef Eigen::VectorXd pointX_t;
-typedef Eigen::Matrix<double, 3, 3> matrix3_t;
-typedef Eigen::Quaternion<double> quaternion_t;
-typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_pointX_t;
-typedef curve_abc<double, double, true, pointX_t> curve_abc_t;
-typedef curve_abc<double, double, true, matrix3_t, point3_t> curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
-typedef boost::shared_ptr<curve_abc_t> curve_ptr_t;
-typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
-typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
-typedef exact_cubic<double, double, true, pointX_t> exact_cubic_t;
 typedef exact_cubic<double, double, true, Eigen::Matrix<double, 1, 1> > exact_cubic_one;
-typedef bezier_curve<double, double, true, pointX_t> bezier_curve_t;
-typedef cubic_hermite_spline<double, double, true, pointX_t> cubic_hermite_spline_t;
-typedef piecewise_curve <double, double, true, pointX_t> piecewise_curve_t;
 typedef exact_cubic_t::spline_constraints spline_constraints_t;
 
 typedef std::pair<double, pointX_t> Waypoint;
@@ -44,9 +30,7 @@ typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
 typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
 typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
-typedef SO3Linear<double, double, true> SO3Linear_t;
-typedef SE3Curve<double, double, true> SE3Curve_t;
-typedef Eigen::Transform<double, 3, Eigen::Affine> transform_t;
+
 
 
 const double margin = 1e-3;
