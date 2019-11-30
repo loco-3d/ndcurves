@@ -21,12 +21,12 @@ template <typename Time, typename Numeric, bool Safe,typename Point >
 template <typename Time, typename Numeric, bool Safe,typename Point >
   struct cubic_hermite_spline;
 
-template <typename Time, typename Numeric, bool Safe, typename Point ,
-            typename T_Point , typename SplineBase >
+template <typename Time, typename Numeric, bool Safe, typename Point,
+          typename T_Point,typename SplineBase >
   struct exact_cubic;
 
 template <typename Time, typename Numeric, bool Safe, typename Point,
-            typename T_Point, typename Curve, typename Point_derivate>
+            typename Point_derivate>
   struct piecewise_curve;
 
 template <typename Time, typename Numeric, bool Safe,typename Point, typename T_Point>
