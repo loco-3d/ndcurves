@@ -7,6 +7,10 @@
 #include <Eigen/Geometry>
 #include <boost/math/constants/constants.hpp>
 
+#include <boost/serialization/split_free.hpp>
+#include <boost/serialization/vector.hpp>
+
+
 namespace curves {
 
 /// \class SO3Linear.
@@ -18,9 +22,11 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   typedef Numeric Scalar;
   typedef Eigen::Matrix<Scalar, 3, 1> point3_t;
   typedef Eigen::Matrix<Scalar, 3, 3> matrix3_t;
+  typedef matrix3_t point_t;
+  typedef point3_t point_derivate_t;
   typedef Eigen::Quaternion<Scalar> quaternion_t;
   typedef Time time_t;
-  typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> curve_abc_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;
   typedef SO3Linear<Time, Numeric, Safe> SO3Linear_t;
 
  public:
@@ -31,8 +37,10 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
 
   /// \brief constructor with initial and final rotation and time bounds
   SO3Linear(const quaternion_t& init_rot, const quaternion_t& end_rot, const time_t t_min, const time_t t_max)
-      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot), angular_vel_(), T_min_(t_min), T_max_(t_max) {
-    angular_vel_ = log3(init_rot_.toRotationMatrix().transpose() * end_rot_.toRotationMatrix()) / (T_max_ - T_min_);
+      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot),
+        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix()) / (t_max - t_min)),
+        T_min_(t_min), T_max_(t_max)
+  {
     safe_check();
   }
 
@@ -42,17 +50,20 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         dim_(3),
         init_rot_(quaternion_t(init_rot)),
         end_rot_(quaternion_t(end_rot)),
-        angular_vel_(),
+        angular_vel_(log3(init_rot.transpose() * end_rot) / (t_max - t_min)),
         T_min_(t_min),
-        T_max_(t_max) {
-    angular_vel_ = log3(init_rot.transpose() * end_rot) / (T_max_ - T_min_);
+        T_max_(t_max)
+  {
     safe_check();
   }
 
   /// \brief constructor with initial and final rotation, time bounds are set to [0;1]
   SO3Linear(const quaternion_t& init_rot, const quaternion_t& end_rot)
-      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot), angular_vel_(), T_min_(0.), T_max_(1.) {
-    angular_vel_ = log3(init_rot_.toRotationMatrix().transpose() * end_rot_.toRotationMatrix());
+      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot),
+        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
+        T_min_(0.), T_max_(1.)
+  {
+    safe_check();
   }
 
   /// \brief constructor with initial and final rotation expressed as rotation matrix, time bounds are set to [0;1]
@@ -61,10 +72,11 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         dim_(3),
         init_rot_(quaternion_t(init_rot)),
         end_rot_(quaternion_t(end_rot)),
-        angular_vel_(),
+        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
         T_min_(0.),
-        T_max_(1.) {
-    angular_vel_ = log3(init_rot_.toRotationMatrix().transpose() * end_rot_.toRotationMatrix());
+        T_max_(1.)
+  {
+    safe_check();
   }
 
   /// \brief Destructor
@@ -76,6 +88,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
       : dim_(other.dim_),
         init_rot_(other.init_rot_),
         end_rot_(other.end_rot_),
+        angular_vel_(other.angular_vel_),
         T_min_(other.T_min_),
         T_max_(other.T_max_) {}
 
@@ -122,12 +135,17 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$ upper bound of time range.
   time_t max() const { return T_max_; }
+  matrix3_t getInitRotation()const {return init_rot_.toRotationMatrix();}
+  matrix3_t getEndRotation()const {return end_rot_.toRotationMatrix();}
+  matrix3_t getInitRotation() {return init_rot_.toRotationMatrix();}
+  matrix3_t getEndRotation() {return end_rot_.toRotationMatrix();}
+
   /*Helpers*/
 
   /*Attributes*/
   std::size_t dim_;  // const
   quaternion_t init_rot_, end_rot_;
-  point3_t angular_vel_;
+  point3_t angular_vel_;  // const
   time_t T_min_, T_max_;  // const
   /*Attributes*/
 
@@ -135,17 +153,40 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
+  void load(Archive& ar, const unsigned int version) {
     if (version) {
       // Do something depending on version ?
     }
-    ar& boost::serialization::make_nvp("dim", dim_);
-    ar& boost::serialization::make_nvp("init_rot", init_rot_);
-    ar& boost::serialization::make_nvp("end_rot", end_rot_);
-    ar& boost::serialization::make_nvp("angular_vel", angular_vel_);
-    ar& boost::serialization::make_nvp("T_min", T_min_);
-    ar& boost::serialization::make_nvp("T_max", T_max_);
+    ar>> BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
+    ar>> boost::serialization::make_nvp("dim", dim_);
+    matrix3_t init,end;
+    ar >> boost::serialization::make_nvp("init_rotation", init);
+    ar >> boost::serialization::make_nvp("end_rotation", end);
+    init_rot_ = quaternion_t(init);
+    end_rot_ = quaternion_t(end);
+    ar >> boost::serialization::make_nvp("angular_vel", angular_vel_);
+    ar >> boost::serialization::make_nvp("T_min", T_min_);
+    ar >> boost::serialization::make_nvp("T_max", T_max_);
+
   }
+
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const {
+    if (version) {
+      // Do something depending on version ?
+    }
+    ar<< BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
+    ar<< boost::serialization::make_nvp("dim", dim_);
+    matrix3_t init_matrix(getInitRotation());
+    matrix3_t end_matrix(getEndRotation());
+    ar<< boost::serialization::make_nvp("init_rotation", init_matrix);
+    ar<< boost::serialization::make_nvp("end_rotation", end_matrix);
+    ar<< boost::serialization::make_nvp("angular_vel", angular_vel_);
+    ar<< boost::serialization::make_nvp("T_min", T_min_);
+    ar<< boost::serialization::make_nvp("T_max", T_max_);
+  }
+
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
 
   /// \brief Log: SO3 -> so3.
   ///

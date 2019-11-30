@@ -19,7 +19,7 @@ namespace curves {
 namespace optimization {
 template <typename Point, typename Numeric, bool Safe = true>
 struct problem_data {
-  problem_data(const int dim) : bezier(0), dim_(dim) {}
+  problem_data(const std::size_t dim) : bezier(0), dim_(dim) {}
   ~problem_data() {
     if (bezier) delete bezier;
   }
@@ -34,7 +34,7 @@ struct problem_data {
   std::size_t startVariableIndex;  // before that index, variables are constant
   std::size_t numStateConstraints;
   bezier_t* bezier;
-  const int dim_;
+  const std::size_t dim_;
 
   problem_data(const problem_data& other)
       : variables_(other.variables_),
@@ -60,7 +60,7 @@ inline std::size_t num_active_constraints(const constraint_flag& flag) {
 
 template <typename Numeric, typename LinearVar>
 LinearVar fill_with_zeros(const LinearVar& var, const std::size_t i, const std::size_t startVariableIndex,
-                          const std::size_t numVariables, const int Dim) {
+                          const std::size_t numVariables, const std::size_t Dim) {
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> matrix_t;
   typename LinearVar::matrix_x_t B;
   B = matrix_t::Zero(Dim, numVariables * Dim);
@@ -226,7 +226,7 @@ std::vector<bezier_curve<Numeric, Numeric, true, linear_variable<Numeric> > > sp
 template <typename Point, typename Numeric>
 void initInequalityMatrix(const problem_definition<Point, Numeric>& pDef, problem_data<Point, Numeric>& pData,
                           quadratic_problem<Point, Numeric>& prob) {
-  const int& Dim = pData.dim_;
+  const std::size_t& Dim = pData.dim_;
   typedef problem_definition<Point, Numeric> problem_definition_t;
   typedef typename problem_definition_t::matrix_x_t matrix_x_t;
   typedef typename problem_definition_t::vector_x_t vector_x_t;
@@ -269,7 +269,7 @@ void initInequalityMatrix(const problem_definition<Point, Numeric>& pDef, proble
 
 template <typename Point, typename Numeric, typename In>
 quadratic_variable<Numeric> bezier_product(In PointsBegin1, In PointsEnd1, In PointsBegin2, In PointsEnd2,
-                                           const int /*Dim*/) {
+                                           const std::size_t /*Dim*/) {
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
   unsigned int nPoints1 = (unsigned int)(std::distance(PointsBegin1, PointsEnd1)),
                nPoints2 = (unsigned int)(std::distance(PointsBegin2, PointsEnd2));

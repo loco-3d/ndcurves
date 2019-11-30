@@ -33,10 +33,13 @@ namespace curves {
 template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
 struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
+  typedef Point point_t;
   typedef std::pair<Point, Point> pair_point_tangent_t;
   typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
   typedef std::vector<Time> vector_time_t;
   typedef Numeric num_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
+
 
  public:
   /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
@@ -356,6 +359,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     if (version) {
       // Do something depending on version ?
     }
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("control_points", control_points_);
     ar& boost::serialization::make_nvp("time_control_points", time_control_points_);

@@ -359,6 +359,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     if (version) {
       // Do something depending on version ?
     }
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("coefficients", coefficients_);
     ar& boost::serialization::make_nvp("dim", dim_);

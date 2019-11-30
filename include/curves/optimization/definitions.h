@@ -49,7 +49,7 @@ struct problem_definition : public curve_constraints<Point> {
   typedef typename T_matrix_x_t::const_iterator CIT_matrix_x_t;
   typedef typename T_vector_x_t::const_iterator CIT_vector_x_t;
 
-  problem_definition(const int dim)
+  problem_definition(const std::size_t dim)
       : curve_constraints_t(dim),
         flag(NONE),
         init_pos(point_t::Zero(dim)),
@@ -77,7 +77,7 @@ struct problem_definition : public curve_constraints<Point> {
   vector_x_t splitTimes_;
   T_matrix_x_t inequalityMatrices_;  // must be of size (splitTimes_ + 1)
   T_vector_x_t inequalityVectors_;   // must be of size (splitTimes_ + 1)
-  const int dim_;
+  const std::size_t dim_;
 };
 
 }  // namespace optimization

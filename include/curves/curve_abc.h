@@ -14,6 +14,7 @@
 #include "MathDefs.h"
 #include "serialization/archive.hpp"
 #include "serialization/eigen-matrix.hpp"
+#include <boost/serialization/shared_ptr.hpp>
 
 #include <functional>
 
@@ -73,5 +74,6 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
     }
   }
 };
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(curve_abc)
 }  // namespace curves
 #endif  //_STRUCT_CURVE_ABC

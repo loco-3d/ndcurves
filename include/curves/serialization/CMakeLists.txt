@@ -1,5 +1,6 @@
 SET(${PROJECT_NAME}_SERIALIZATION_HEADERS
   archive.hpp
+  registeration.hpp
   eigen-matrix.hpp
   fwd.hpp
   )

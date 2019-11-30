@@ -35,6 +35,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   typedef Curve curve_t;
   typedef typename std::vector<curve_t> t_curve_t;
   typedef typename std::vector<Time> t_time_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_abc_t;  // parent class
+
 
  public:
   /// \brief Empty constructor. Add at least one curve to call other class functions.
@@ -380,6 +382,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     if (version) {
       // Do something depending on version ?
     }
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("curves", curves_);
     ar& boost::serialization::make_nvp("time_curves", time_curves_);

@@ -3,9 +3,6 @@
 
 #ifndef __curves_serialization_archive_hpp__
 #define __curves_serialization_archive_hpp__
-
-#include "fwd.hpp"
-
 #include <fstream>
 #include <string>
 #include <stdexcept>
@@ -15,6 +12,7 @@
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include "registeration.hpp"
 
 namespace curves {
 namespace serialization {
@@ -36,6 +34,7 @@ struct Serializable {
     std::ifstream ifs(filename.c_str());
     if (ifs) {
       boost::archive::text_iarchive ia(ifs);
+      register_types<boost::archive::text_iarchive>(ia);
       ia >> derived<Derived>();
     } else {
       const std::string exception_message(filename + " does not seem to be a valid file.");
@@ -49,6 +48,7 @@ struct Serializable {
     std::ofstream ofs(filename.c_str());
     if (ofs) {
       boost::archive::text_oarchive oa(ofs);
+      register_types<boost::archive::text_oarchive>(oa);
       oa << derived<Derived>();
     } else {
       const std::string exception_message(filename + " does not seem to be a valid file.");
@@ -63,6 +63,7 @@ struct Serializable {
     std::ifstream ifs(filename.c_str());
     if (ifs) {
       boost::archive::xml_iarchive ia(ifs);
+      register_types<boost::archive::xml_iarchive>(ia);
       ia >> boost::serialization::make_nvp(tag_name.c_str(), derived<Derived>());
     } else {
       const std::string exception_message(filename + " does not seem to be a valid file.");
@@ -77,6 +78,7 @@ struct Serializable {
     std::ofstream ofs(filename.c_str());
     if (ofs) {
       boost::archive::xml_oarchive oa(ofs);
+      register_types<boost::archive::xml_oarchive>(oa);
       oa << boost::serialization::make_nvp(tag_name.c_str(), derived<Derived>());
     } else {
       const std::string exception_message(filename + " does not seem to be a valid file.");
@@ -90,6 +92,7 @@ struct Serializable {
     std::ifstream ifs(filename.c_str());
     if (ifs) {
       boost::archive::binary_iarchive ia(ifs);
+      register_types<boost::archive::binary_iarchive>(ia);
       ia >> derived<Derived>();
     } else {
       const std::string exception_message(filename + " does not seem to be a valid file.");
@@ -103,6 +106,7 @@ struct Serializable {
     std::ofstream ofs(filename.c_str());
     if (ofs) {
       boost::archive::binary_oarchive oa(ofs);
+      register_types<boost::archive::binary_oarchive>(oa);
       oa << derived<Derived>();
     } else {
       const std::string exception_message(filename + " does not seem to be a valid file.");

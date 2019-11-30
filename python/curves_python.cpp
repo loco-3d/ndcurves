@@ -311,18 +311,18 @@ SE3Curve_t* wrapSE3CurveFromPosAndRotation(const pointX_t& init_pos, const point
 
 SE3Curve_t* wrapSE3CurveFromBezier3Translation(bezier3_t& translation_curve, const matrix3_t& init_rot,
                                                const matrix3_t& end_rot) {
-  bezier_t* translation = new bezier_t(translation_curve.waypoints().begin(), translation_curve.waypoints().end(),
-                                       translation_curve.min(), translation_curve.max());
+  boost::shared_ptr<bezier_t> translation(new bezier_t(translation_curve.waypoints().begin(), translation_curve.waypoints().end(),
+                                       translation_curve.min(), translation_curve.max()));
   return new SE3Curve_t(translation, init_rot, end_rot);
 }
 
-SE3Curve_t* wrapSE3CurveFromTranslation(curve_abc_t& translation_curve, const matrix3_t& init_rot,
+SE3Curve_t* wrapSE3CurveFromTranslation(const curve_ptr_t& translation_curve, const matrix3_t& init_rot,
                                         const matrix3_t& end_rot) {
-  return new SE3Curve_t(&translation_curve, init_rot, end_rot);
+  return new SE3Curve_t(translation_curve, init_rot, end_rot);
 }
 
-SE3Curve_t* wrapSE3CurveFromTwoCurves(curve_abc_t& translation_curve, curve_rotation_t& rotation_curve) {
-  return new SE3Curve_t(&translation_curve, &rotation_curve);
+SE3Curve_t* wrapSE3CurveFromTwoCurves(const curve_ptr_t& translation_curve,const curve_rotation_ptr_t& rotation_curve) {
+  return new SE3Curve_t(translation_curve,rotation_curve);
 }
 
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
@@ -766,18 +766,18 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
        "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
        "and time and connecting exactly self(self.max()) and end",
        args("self", "end", "time"))
-//      .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>, bp::args("filename"),
-//           "Saves *this inside a text file.")
-//      .def("loadFromText", &piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>, bp::args("filename"),
-//           "Loads *this from a text file.")
-//      .def("saveAsXML", &piecewise_bezier_curve_t::saveAsXML<piecewise_bezier_curve_t>,
-//           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-//      .def("loadFromXML", &piecewise_bezier_curve_t::loadFromXML<piecewise_bezier_curve_t>,
-//           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-//      .def("saveAsBinary", &piecewise_bezier_curve_t::saveAsBinary<piecewise_bezier_curve_t>, bp::args("filename"),
-//           "Saves *this inside a binary file.")
-//      .def("loadFromBinary", &piecewise_bezier_curve_t::loadFromBinary<piecewise_bezier_curve_t>, bp::args("filename"),
-//           "Loads *this from a binary file.")
+      .def("saveAsText", &piecewise_SE3_curve_t::saveAsText<piecewise_SE3_curve_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &piecewise_SE3_curve_t::loadFromText<piecewise_SE3_curve_t>, bp::args("filename"),
+           "Loads *this from a text file.")
+      .def("saveAsXML", &piecewise_SE3_curve_t::saveAsXML<piecewise_SE3_curve_t>,
+           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
+      .def("loadFromXML", &piecewise_SE3_curve_t::loadFromXML<piecewise_SE3_curve_t>,
+           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
+      .def("saveAsBinary", &piecewise_SE3_curve_t::saveAsBinary<piecewise_SE3_curve_t>, bp::args("filename"),
+           "Saves *this inside a binary file.")
+      .def("loadFromBinary", &piecewise_SE3_curve_t::loadFromBinary<piecewise_SE3_curve_t>, bp::args("filename"),
+           "Loads *this from a binary file.")
         #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
           .def("evaluateAsSE3", &piecewiseSE3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
                args("self", "t"))
@@ -858,17 +858,18 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
       .def("computeAsQuaternion", &SO3Linear_t::computeAsQuaternion,
            "Output the quaternion of the rotation at the given time. This rotation is obtained by a Spherical Linear "
            "Interpolation between the initial and final rotation.")
-      //      .def("saveAsText", &SO3Linear_t::saveAsText<SO3Linear_t>,bp::args("filename"),"Saves *this inside a text
-      //      file.") .def("loadFromText",&SO3Linear_t::loadFromText<SO3Linear_t>,bp::args("filename"),"Loads *this
-      //      from a text file.")
-      //      .def("saveAsXML",&SO3Linear_t::saveAsXML<SO3Linear_t>,bp::args("filename","tag_name"),"Saves *this inside
-      //      a XML file.")
-      //      .def("loadFromXML",&SO3Linear_t::loadFromXML<SO3Linear_t>,bp::args("filename","tag_name"),"Loads *this
-      //      from a XML file.")
-      //      .def("saveAsBinary",&SO3Linear_t::saveAsBinary<SO3Linear_t>,bp::args("filename"),"Saves *this inside a
-      //      binary file.")
-      //      .def("loadFromBinary",&SO3Linear_t::loadFromBinary<SO3Linear_t>,bp::args("filename"),"Loads *this from a
-      //      binary file.")
+      .def("saveAsText", &SO3Linear_t::saveAsText<SO3Linear_t>,bp::args("filename"),
+      "Saves *this inside a text file.")
+      .def("loadFromText",&SO3Linear_t::loadFromText<SO3Linear_t>,bp::args("filename"),
+      "Loads *this from a text file.")
+      .def("saveAsXML",&SO3Linear_t::saveAsXML<SO3Linear_t>,bp::args("filename","tag_name"),
+      "Saves *this inside a XML file.")
+      .def("loadFromXML",&SO3Linear_t::loadFromXML<SO3Linear_t>,bp::args("filename","tag_name"),
+      "Loads *this from a XML file.")
+      .def("saveAsBinary",&SO3Linear_t::saveAsBinary<SO3Linear_t>,bp::args("filename"),
+      "Saves *this inside a binary file.")
+      .def("loadFromBinary",&SO3Linear_t::loadFromBinary<SO3Linear_t>,bp::args("filename"),
+      "Loads *this from a binary file.")
       ;
 
   /** END  SO3 Linear**/
@@ -919,6 +920,18 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
       .def("min", &SE3Curve_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &SE3Curve_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &SE3Curve_t::dim, "Get the dimension of the curve.")
+      .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>,bp::args("filename"),
+      "Saves *this inside a text file.")
+      .def("loadFromText",&SE3Curve_t::loadFromText<SE3Curve_t>,bp::args("filename"),
+      "Loads *this from a text file.")
+      .def("saveAsXML",&SE3Curve_t::saveAsXML<SE3Curve_t>,bp::args("filename","tag_name"),
+      "Saves *this inside a XML file.")
+      .def("loadFromXML",&SE3Curve_t::loadFromXML<SE3Curve_t>,bp::args("filename","tag_name"),
+      "Loads *this from a XML file.")
+      .def("saveAsBinary",&SE3Curve_t::saveAsBinary<SE3Curve_t>,bp::args("filename"),
+      "Saves *this inside a binary file.")
+      .def("loadFromBinary",&SE3Curve_t::loadFromBinary<SE3Curve_t>,bp::args("filename"),
+      "Loads *this from a binary file.")
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("__init__",
            make_constructor(&wrapSE3CurveFromSE3Pinocchio, default_call_policies(),
@@ -931,17 +944,6 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
            "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
            args("self", "t", "N"))
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
-      //        .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>,bp::args("filename"),"Saves *this inside a text
-      //        file.") .def("loadFromText",&SE3Curve_t::loadFromText<SE3Curve_t>,bp::args("filename"),"Loads *this
-      //        from a text file.")
-      //        .def("saveAsXML",&SE3Curve_t::saveAsXML<SE3Curve_t>,bp::args("filename","tag_name"),"Saves *this inside
-      //        a XML file.")
-      //        .def("loadFromXML",&SE3Curve_t::loadFromXML<SE3Curve_t>,bp::args("filename","tag_name"),"Loads *this
-      //        from a XML file.")
-      //        .def("saveAsBinary",&SE3Curve_t::saveAsBinary<SE3Curve_t>,bp::args("filename"),"Saves *this inside a
-      //        binary file.")
-      //        .def("loadFromBinary",&SE3Curve_t::loadFromBinary<SE3Curve_t>,bp::args("filename"),"Loads *this from a
-      //        binary file.")
       ;
 
   /** END SE3 Curve**/

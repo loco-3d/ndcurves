@@ -19,10 +19,24 @@ if CURVES_WITH_PINOCCHIO_SUPPORT:
     from pinocchio import SE3, Motion
 
 
+
 class TestCurves(unittest.TestCase):
     # def print_str(self, inStr):
     #   print inStr
     #   return
+
+    def compareCurves(self,c1,c2):
+        t_min = c1.min()
+        t_max = c1.max()
+        self.assertEqual(t_min,c2.min())
+        self.assertEqual(t_max,c2.max())
+        self.assertTrue(norm(c1.derivate(t_min, 1) - c2.derivate(t_min, 1)) < 1e-10)
+        self.assertTrue(norm(c1.derivate(t_max, 1) - c2.derivate(t_max, 1)) < 1e-10)
+        t = t_min
+        while t < t_max:
+          self.assertTrue(norm(c1(t) - c2(t)) < 1e-10)
+          t = t+0.01
+
 
     def test_bezier(self):
         print("test_bezier")
@@ -601,7 +615,20 @@ class TestCurves(unittest.TestCase):
         se3_3 = SE3Curve(se3_2(max2),se3_2(max2-0.5),max2+0.1,max2+1.5)
         pc.append(se3_3)
 
-      # TODO : serialization
+      pc.saveAsText("serialization_curve.txt")
+      pc_txt = piecewise_SE3_curve()
+      pc_txt.loadFromText("serialization_curve.txt")
+      self.compareCurves(pc,pc_txt)
+
+      pc.saveAsXML("serialization_curve.xml","pc")
+      pc_xml = piecewise_SE3_curve()
+      pc_xml.loadFromXML("serialization_curve.xml","pc")
+      self.compareCurves(pc,pc_xml)
+
+      pc.saveAsBinary("serialization_curve")
+      pc_bin = piecewise_SE3_curve()
+      pc_bin.loadFromBinary("serialization_curve")
+      self.compareCurves(pc,pc_bin)
 
       se3_3 = SE3Curve(se3(max),se3_2(max2-0.5),max2,max2+1.5)
       pc.append(se3_3)
@@ -798,6 +825,32 @@ class TestCurves(unittest.TestCase):
             so3Rot.derivate(1., 0)
         with self.assertRaises(ValueError):
             test = SO3Linear(init_rot,end_rot,max,min)
+
+    def test_so3_linear_serialization(self):
+        print("test SO3 Linear")
+        init_quat = Quaternion( 0.590,-0.002, -0.766,  0.255)
+        end_quat = Quaternion(-0.820,  0.162,  0.381,  0.396)
+        init_quat.normalize()
+        end_quat.normalize()
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        min = 0.2
+        max = 1.5
+        so3Rot = SO3Linear(init_rot, end_rot, min, max)
+        so3Rot.saveAsText("serialization_curve.txt")
+        so3_txt = SO3Linear()
+        so3_txt.loadFromText("serialization_curve.txt")
+        self.compareCurves(so3Rot,so3_txt)
+
+        so3Rot.saveAsXML("serialization_curve.xml","so3")
+        so3_xml = SO3Linear()
+        so3_xml.loadFromXML("serialization_curve.xml","so3")
+        self.compareCurves(so3Rot,so3_xml)
+
+        so3Rot.saveAsBinary("serialization_curve")
+        so3_bin = SO3Linear()
+        so3_bin.loadFromBinary("serialization_curve")
+        self.compareCurves(so3Rot,so3_bin)
 
 
     def test_se3_curve_linear(self):
@@ -1073,6 +1126,68 @@ class TestCurves(unittest.TestCase):
                 se3.derivate(13., 1)
             with self.assertRaises(ValueError):
                 se3.derivate(1., 0)
+
+    def test_se3_serialization(self):
+        print("test serialization SE3")
+        init_quat = Quaternion( 0.590,-0.002, -0.766,  0.255)
+        end_quat = Quaternion(-0.820,  0.162,  0.381,  0.396)
+        init_quat.normalize()
+        end_quat.normalize()
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        init_translation = array([1, 1.2, -0.6]).T
+        end_translation = array([2.3, 0, 0.9]).T
+        init_pose = array(np.identity(4))
+        end_pose = array(np.identity(4))
+        init_pose[:3, :3] = init_rot
+        end_pose[:3, :3] = end_rot
+        init_pose[:3, 3] = init_translation
+        end_pose[:3, 3] = end_translation
+        min = 0.2
+        max = 1.5
+        se3_linear = SE3Curve(init_pose, end_pose, min, max)
+
+        se3_linear.saveAsText("serialization_curve.txt")
+        se3_txt = SE3Curve()
+        se3_txt.loadFromText("serialization_curve.txt")
+        self.compareCurves(se3_linear,se3_txt)
+
+        se3_linear.saveAsXML("serialization_curve.xml","se3")
+        se3_xml = SE3Curve()
+        se3_xml.loadFromXML("serialization_curve.xml","se3")
+        self.compareCurves(se3_linear,se3_xml)
+
+        se3_linear.saveAsBinary("serialization_curve")
+        se3_bin = SE3Curve()
+        se3_bin.loadFromBinary("serialization_curve")
+        self.compareCurves(se3_linear,se3_bin)
+
+        ## test from two curves :
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        min = 0.2
+        max = 1.5
+        translation = bezier(waypoints, min, max)
+        rotation = SO3Linear(init_rot, end_rot, min, max)
+        se3_curves = SE3Curve(translation, rotation)
+
+        se3_curves.saveAsText("serialization_curve.txt")
+        se3_txt = SE3Curve()
+        se3_txt.loadFromText("serialization_curve.txt")
+        self.compareCurves(se3_curves,se3_txt)
+
+        se3_curves.saveAsXML("serialization_curve.xml","se3")
+        se3_xml = SE3Curve()
+        se3_xml.loadFromXML("serialization_curve.xml","se3")
+        self.compareCurves(se3_curves,se3_xml)
+
+        se3_curves.saveAsBinary("serialization_curve")
+        se3_bin = SE3Curve()
+        se3_bin.loadFromBinary("serialization_curve")
+        self.compareCurves(se3_curves,se3_bin)
 
 
 if __name__ == '__main__':
