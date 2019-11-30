@@ -68,7 +68,7 @@ void ComparePoints(const Eigen::MatrixXd& pt1, const Eigen::MatrixXd& pt2, const
 }
 
 template <typename curve1, typename curve2>
-void CompareCurves(curve1 c1, curve2 c2, const std::string& errMsg, bool& error ,double prec = Eigen::NumTraits<double>::dummy_precision()) {
+void CompareCurves(const curve1& c1,const curve2& c2, const std::string& errMsg, bool& error ,double prec = Eigen::NumTraits<double>::dummy_precision()) {
   double T_min = c1.min();
   double T_max = c1.max();
   if (!QuasiEqual(T_min, c2.min()) || !QuasiEqual(T_max, c2.max())) {
