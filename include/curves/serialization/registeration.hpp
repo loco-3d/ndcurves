@@ -31,18 +31,15 @@ namespace serialization {
     typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_point_t;
 
     //register derived class
-    ar.template register_type<bezier_curve<Scalar, Scalar, true, pointX_t> >();
-    ar.template register_type<cubic_hermite_spline<Scalar, Scalar, true, pointX_t> >();
-    ar.template register_type<exact_cubic<Scalar, Scalar, true, pointX_t,
-        t_point_t, polynomial<Scalar, Scalar, true, pointX_t,t_point_t> > >();
-    ar.template register_type<piecewise_curve<Scalar, Scalar, true, pointX_t,
-        t_point_t, polynomial<Scalar, Scalar, true, pointX_t, t_point_t> ,pointX_t> >();
-    ar.template register_type<piecewise_curve<Scalar, Scalar, true, pointX_t,
-        t_point_t, bezier_curve<Scalar, Scalar, true, pointX_t> ,pointX_t> >();
-    ar.template register_type<piecewise_curve<Scalar, Scalar, true, pointX_t,
-        t_point_t, cubic_hermite_spline<Scalar, Scalar, true, pointX_t> ,pointX_t> >();
-    ar.template register_type<polynomial<Scalar, Scalar, true, pointX_t, t_point_t> >();
-    ar.template register_type<SO3Linear<Scalar, Scalar, true> >();
+    ar.template register_type<polynomial_t >();
+    ar.template register_type<exact_cubic_t >();
+    ar.template register_type<bezier_curve_t >();
+    ar.template register_type<SO3Linear_t >();
+    ar.template register_type<SE3Curve_t >();
+    ar.template register_type<cubic_hermite_spline_t >();
+    ar.template register_type<piecewise_curve_t >();
+    ar.template register_type<piecewise_SE3_curve_t >();
+
   }
 
 }
