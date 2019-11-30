@@ -39,7 +39,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   typedef std::vector<point_t, Eigen::aligned_allocator<point_t> > t_point_t;
   typedef typename t_point_t::const_iterator cit_point_t;
   typedef bezier_curve<Time, Numeric, Safe, Point> bezier_curve_t;
-  typedef piecewise_curve<Time, Numeric, Safe, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
+  typedef piecewise_curve<Time, Numeric, Safe, point_t> piecewise_curve_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
 
   /* Constructors - destructors */
@@ -325,12 +325,12 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
   /// \brief Split the bezier curve in several curves, all accessible
-  /// within a piecewise_bezier_curve_t.
+  /// within a piecewise_curve_t.
   /// \param times : list of times of size n.
-  /// \return a piecewise_bezier_curve_t comprising n+1 curves
+  /// \return a piecewise_curve_t comprising n+1 curves
   ///
-  piecewise_bezier_curve_t split(const vector_x_t& times) const {
-    typename piecewise_bezier_curve_t::t_curve_t curves;
+  piecewise_curve_t split(const vector_x_t& times) const {
+    typename piecewise_curve_t::t_curve_t curves;
     bezier_curve_t current = *this;
     for (int i = 0; i < times.rows(); ++i) {
       std::pair<bezier_curve_t, bezier_curve_t> pairsplit = current.split(times[i]);
@@ -338,7 +338,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
       current = pairsplit.second;
     }
     curves.push_back(current);
-    return piecewise_bezier_curve_t(curves);
+    return piecewise_curve_t(curves);
   }
 
   /// \brief Extract a bezier curve defined between \f$[t_1,t_2]\f$ from the actual bezier curve
