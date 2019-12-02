@@ -752,17 +752,17 @@ class TestCurves(unittest.TestCase):
         waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, 0., 1.)
         b = bezier(waypoints, 1., 2.)
-        pc = piecewise_bezier_curve(a)
+        pc = piecewise(a)
         pc.append(b)
         # Convert to piecewise polynomial
         pc_pol = pc.convert_piecewise_curve_to_polynomial()
-        self.assertTrue(norm(pc_pol(0.3) - pc(0.3)) < __EPS)
+        self.compareCurves(pc_pol, pc)
         # Convert to piecewise cubic hermite
         pc_chs = pc.convert_piecewise_curve_to_cubic_hermite()
-        self.assertTrue(norm(pc_chs(0.3) - pc(0.3)) < __EPS)
+        self.compareCurves(pc_chs, pc)
         # Convert to piecewise bezier
         pc_bc = pc_chs.convert_piecewise_curve_to_bezier()
-        self.assertTrue(norm(pc_bc(0.3) - pc(0.3)) < __EPS)
+        self.compareCurves(pc_bc, pc)
         return
 
     def test_so3_linear(self):
