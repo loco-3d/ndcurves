@@ -641,7 +641,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("is_continuous", &piecewise_t::is_continuous,
            "Check if the curve is continuous at the given order.",args("self,order"))
       .def("convert_piecewise_curve_to_polynomial",
-           &piecewise_t::convert_piecewise_curve_to_bezier<polynomial_t>,
+           &piecewise_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
            "Convert a piecewise curve to to a piecewise polynomial curve")
       .def("convert_piecewise_curve_to_bezier",
            &piecewise_t::convert_piecewise_curve_to_bezier<bezier_t>,
