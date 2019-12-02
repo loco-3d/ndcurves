@@ -112,7 +112,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     return evalCubicHermiteSpline(t, order);
   }
 
-  boost::shared_ptr<curve_abc_t> compute_derivate(const std::size_t order) const {
+  boost::shared_ptr<curve_abc_t> compute_derivate(const std::size_t /*order*/) const {
     throw std::logic_error("Compute derivate for cubic hermite spline is not implemented yet.");
   }
 

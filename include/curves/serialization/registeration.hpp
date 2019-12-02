@@ -26,9 +26,6 @@ namespace serialization {
 
   template <class Archive>
   void register_types(Archive& ar){
-    typedef double Scalar;
-    typedef Eigen::Matrix<Scalar, -1, 1> pointX_t;
-    typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_point_t;
 
     //register derived class
     ar.template register_type<polynomial_t >();
