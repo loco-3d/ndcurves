@@ -297,6 +297,13 @@ SO3Linear_t* wrapSO3LinearConstructorFromMatrix(const matrix3_t& init_rot, const
 /* End wrap SO3Linear */
 
 /* Wrap SE3Curves */
+
+matrix4_t se3Return(const curve_SE3_t& curve, const real t) { return curve(t).matrix(); }
+
+matrix3_t se3returnRotation(const curve_SE3_t& curve, const real t) { return curve(t).rotation(); }
+
+pointX_t se3returnTranslation(const curve_SE3_t& curve, const real t) { return pointX_t(curve(t).translation()); }
+
 SE3Curve_t* wrapSE3CurveFromTransform(const matrix4_t& init_pose, const matrix4_t& end_pose, const real min,
                                       const real max) {
   return new SE3Curve_t(transform_t(init_pose), transform_t(end_pose), min, max);
@@ -332,35 +339,18 @@ SE3Curve_t* wrapSE3CurveFromSE3Pinocchio(const SE3_t& init_pose, const SE3_t& en
                         max);
 }
 
-SE3_t se3ReturnPinocchio(const SE3Curve_t& curve, const real t) { return SE3_t(curve(t).matrix()); }
+SE3_t se3ReturnPinocchio(const curve_SE3_t& curve, const real t) { return SE3_t(curve(t).matrix()); }
 
-Motion_t se3ReturnDerivatePinocchio(const SE3Curve_t& curve, const real t, const std::size_t order) {
+Motion_t se3ReturnDerivatePinocchio(const curve_SE3_t& curve, const real t, const std::size_t order) {
   return Motion_t(curve.derivate(t, order));
 }
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
-
-matrix4_t se3Return(const SE3Curve_t& curve, const real t) { return curve(t).matrix(); }
-
-pointX_t se3ReturnDerivate(const SE3Curve_t& curve, const real t, const std::size_t order) {
-  return curve.derivate(t, order);
-}
-
-matrix3_t se3returnRotation(const SE3Curve_t& curve, const real t) { return curve(t).rotation(); }
-
-pointX_t se3returnTranslation(const SE3Curve_t& curve, const real t) { return pointX_t(curve(t).translation()); }
-
 /* End wrap SE3Curves */
 
 /* Wrap piecewiseSE3Curves */
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
 typedef pinocchio::SE3Tpl<real, 0> SE3_t;
 typedef pinocchio::MotionTpl<real, 0> Motion_t;
-
-SE3_t piecewiseSE3ReturnPinocchio(const piecewise_SE3_t& curve, const real t) { return SE3_t(curve(t).matrix()); }
-
-Motion_t piecewiseSE3ReturnDerivatePinocchio(const piecewise_SE3_t& curve, const real t, const std::size_t order) {
-  return Motion_t(curve.derivate(t, order));
-}
 
 void addFinalSE3(piecewise_SE3_t& self, const SE3_t& end, const real time) {
   if(self.num_curves() == 0)
@@ -374,13 +364,6 @@ void addFinalSE3(piecewise_SE3_t& self, const SE3_t& end, const real time) {
 }
 
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
-
-matrix4_t piecewiseSE3Return(const piecewise_SE3_t& curve, const real t) { return curve(t).matrix(); }
-
-
-matrix3_t piecewiseSE3returnRotation(const piecewise_SE3_t& curve, const real t) { return curve(t).rotation(); }
-
-pointX_t piecewiseSE3returnTranslation(const piecewise_SE3_t& curve, const real t) { return pointX_t(curve(t).translation()); }
 
 void addFinalTransform(piecewise_SE3_t& self, const matrix4_t& end, const real time) {
   if(self.num_curves() == 0)
@@ -450,13 +433,25 @@ BOOST_PYTHON_MODULE(curves) {
       .def("dim", pure_virtual(&curve_rotation_t::dim), "Get the dimension of the curve.");
 
   class_<CurveSE3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve_SE3", no_init)
-      .def("__call__", pure_virtual(&curve_SE3_t::operator()), "Evaluate the curve at the given time.",
+      .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix.",
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_SE3_t::derivate),
-           "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
+           "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
       .def("min", pure_virtual(&curve_SE3_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_SE3_t::max), "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.");
+      .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.")
+      .def("rotation", &se3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
+           args("self", "time"))
+      .def("translation", &se3returnTranslation, "Output the rotation (as a vector 3) at the given time.",
+           args("self", "time"))
+    #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+      .def("evaluateAsSE3", &se3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
+           args("self", "t"))
+      .def("derivateAsMotion", &se3ReturnDerivatePinocchio,
+           "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
+           args("self", "t", "N"))
+    #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
+      ;
 
 
   /** BEGIN bezier3 curve**/
@@ -681,17 +676,6 @@ BOOST_PYTHON_MODULE(curves) {
       .def("curve_at_index", &piecewise_SE3_t::curve_at_index, return_value_policy<copy_const_reference>())
       .def("curve_at_time", &piecewise_SE3_t::curve_at_time, return_value_policy<copy_const_reference>())
       .def("num_curves", &piecewise_SE3_t::num_curves)
-      .def("rotation", &piecewiseSE3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
-           args("self", "t"))
-      .def("translation", &piecewiseSE3returnTranslation, "Output the translation (as a vector 3) at the given time.",
-           args("self", "t"))
-      .def("__call__", &piecewiseSE3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix",
-           args("self", "t"))
-      .def("derivate", &piecewise_SE3_t::derivate,
-           "Evaluate the derivative of order N of curve at time t. Return as a vector 6", args("self", "t", "N"))
-      .def("min", &piecewise_SE3_t::min, "Get the LOWER bound on interval definition of the curve.")
-      .def("max", &piecewise_SE3_t::max, "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", &piecewise_SE3_t::dim, "Get the dimension of the curve.")
       .def("append", &addFinalTransform,
        "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
        "and time and connecting exactly self(self.max()) and end",
@@ -709,11 +693,6 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &piecewise_SE3_t::loadFromBinary<piecewise_SE3_t>, bp::args("filename"),
            "Loads *this from a binary file.")
         #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
-          .def("evaluateAsSE3", &piecewiseSE3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
-               args("self", "t"))
-          .def("derivateAsMotion", &piecewiseSE3ReturnDerivatePinocchio,
-               "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
-               args("self", "t", "N"))
           .def("append", &addFinalSE3,
            "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
            "and time and connecting exactly self(self.max()) and end",
@@ -839,17 +818,6 @@ BOOST_PYTHON_MODULE(curves) {
            "translation curve."
            "The orientation along the SE3Curve will be a slerp between the two given rotations."
            "The orientations should be represented as 3x3 rotation matrix")
-      .def("rotation", &se3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
-           args("self", "time"))
-      .def("translation", &se3returnTranslation, "Output the rotation (as a vector 3) at the given time.",
-           args("self", "time"))
-      .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix",
-           args("self", "t"))
-      .def("derivate", &se3ReturnDerivate,
-           "Evaluate the derivative of order N of curve at time t. Return as a vector 6", args("self", "t", "N"))
-      .def("min", &SE3Curve_t::min, "Get the LOWER bound on interval definition of the curve.")
-      .def("max", &SE3Curve_t::max, "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", &SE3Curve_t::dim, "Get the dimension of the curve.")
       .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>,bp::args("filename"),
       "Saves *this inside a text file.")
       .def("loadFromText",&SE3Curve_t::loadFromText<SE3Curve_t>,bp::args("filename"),
@@ -868,11 +836,6 @@ BOOST_PYTHON_MODULE(curves) {
                             args("init_SE3", "end_SE3", "min", "max")),
            "Create a SE3 curve between two SE3 objects from Pinocchio, defined for t \in [min,max]."
            " Using linear interpolation for translation and slerp for rotation between init and end.")
-      .def("evaluateAsSE3", &se3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
-           args("self", "t"))
-      .def("derivateAsMotion", &se3ReturnDerivatePinocchio,
-           "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
-           args("self", "t", "N"))
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
       ;
 
