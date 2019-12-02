@@ -26,13 +26,15 @@ class TestCurves(unittest.TestCase):
     def compareCurves(self,c1,c2):
         t_min = c1.min()
         t_max = c1.max()
-        self.assertEqual(t_min,c2.min())
-        self.assertEqual(t_max,c2.max())
-        self.assertTrue(norm(c1.derivate(t_min, 1) - c2.derivate(t_min, 1)) < 1e-10)
-        self.assertTrue(norm(c1.derivate(t_max, 1) - c2.derivate(t_max, 1)) < 1e-10)
+        self.assertEqual(t_min,c2.min(),"c1 min : "+str(t_min)+" ; c2 min : "+str(c2.min()))
+        self.assertEqual(t_max,c2.max(),"c1 max : "+str(t_max)+" ; c2 max : "+str(c2.max()))
+        self.assertTrue(norm(c1.derivate(t_min, 1) - c2.derivate(t_min, 1)) < 1e-10,
+        "dc1(tmin) = "+str(c1.derivate(t_min, 1))+" ; dc2(tmin) = "+str(c2.derivate(t_min, 1)))
+        self.assertTrue(norm(c1.derivate(t_max, 1) - c2.derivate(t_max, 1)) < 1e-10,
+        "dc1(tmax) = "+str(c1.derivate(t_max, 1))+" ; dc2(tmax) = "+str(c2.derivate(t_max, 1)))
         t = t_min
         while t < t_max:
-          self.assertTrue(norm(c1(t) - c2(t)) < 1e-10)
+          self.assertTrue(norm(c1(t) - c2(t)) < 1e-10," at t = "+str(t)+" c1 = "+str(c1(t))+" ; c2 = "+str(c2(t)))
           t = t+0.01
 
 
