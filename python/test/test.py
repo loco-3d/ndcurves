@@ -8,10 +8,8 @@ from numpy import array, array_equal, isclose, random, zeros
 from numpy.linalg import norm
 
 from curves import (CURVES_WITH_PINOCCHIO_SUPPORT, Quaternion, SE3Curve, SO3Linear, bezier, bezier3,
-                    bezier_from_hermite, bezier_from_polynomial, cubic_hermite_spline, curve_constraints, exact_cubic,
-                    hermite_from_bezier, hermite_from_polynomial, piecewise_bezier_curve,
-                    piecewise_cubic_hermite_curve, piecewise_polynomial_curve,piecewise_SE3_curve, polynomial, polynomial_from_bezier,
-                    polynomial_from_hermite)
+                    cubic_hermite_spline, curve_constraints, exact_cubic,polynomial,
+                    piecewise, piecewise_SE3, convert_to_polynomial,convert_to_bezier,convert_to_hermite)
 
 eigenpy.switchToNumpyArray()
 
@@ -69,7 +67,6 @@ class TestCurves(unittest.TestCase):
         a.max()
         a(0.4)
         self.assertTrue((a(a.min()) == array([1., 2., 3.])).all())
-        self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         a = a.compute_derivate(100)
         prim = a.compute_primitive(1)
@@ -161,7 +158,6 @@ class TestCurves(unittest.TestCase):
         a.max()
         a(0.4)
         self.assertTrue((a(a.min()) == array([1., 2., 3.])).all())
-        self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         a = a.compute_derivate(100)
         prim = a.compute_primitive(1)
@@ -337,7 +333,7 @@ class TestCurves(unittest.TestCase):
         polynomial(waypoints0, 0., 0.1)
         a = polynomial(waypoints1, 0., 1.)
         b = polynomial(waypoints2, 1., 3.)
-        pc = piecewise_polynomial_curve(a)
+        pc = piecewise(a)
         pc.append(b)
         pc.min()
         pc.max()
@@ -349,7 +345,7 @@ class TestCurves(unittest.TestCase):
         pc.is_continuous(1)
         # Test serialization
         pc.saveAsText("serialization_pc.test")
-        pc_test = piecewise_polynomial_curve()
+        pc_test = piecewise()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
@@ -361,7 +357,7 @@ class TestCurves(unittest.TestCase):
           pc.append(c)
 
         ### Test the different append methods :
-        pc = piecewise_polynomial_curve()
+        pc = piecewise()
         self.assertEqual(pc.num_curves(),0)
         end_point1 = array([1.,3.,5.,6.5,-2.])
         max1 = 2.5
@@ -371,7 +367,7 @@ class TestCurves(unittest.TestCase):
           pc.append(a)
           pc.append(end_point1.reshape(-1,1),max1)
 
-        pc = piecewise_polynomial_curve()
+        pc = piecewise()
         d = polynomial(waypoints3, 0., 1.2)
         self.assertEqual(pc.num_curves(),0)
         pc.append(d)
@@ -393,7 +389,7 @@ class TestCurves(unittest.TestCase):
         points_second_derivative = array(random.rand(3, N))
         time_points = array(random.rand(1, N)).T
         time_points.sort(0)
-        polC0 = piecewise_polynomial_curve.FromPointsList(points, time_points)
+        polC0 = piecewise.FromPointsList(points, time_points)
         self.assertEqual(polC0.min(), time_points[0, 0])
         self.assertEqual(polC0.max(), time_points[-1, 0])
         self.assertTrue(polC0.is_continuous(0))
@@ -401,7 +397,7 @@ class TestCurves(unittest.TestCase):
         for i in range(N):
             self.assertTrue(isclose(polC0(time_points[i, 0]), points[:, i]).all())
 
-        polC1 = piecewise_polynomial_curve.FromPointsList(points, points_derivative, time_points)
+        polC1 = piecewise.FromPointsList(points, points_derivative, time_points)
         self.assertEqual(polC1.min(), time_points[0, 0])
         self.assertEqual(polC1.max(), time_points[-1, 0])
         self.assertTrue(polC1.is_continuous(0))
@@ -411,7 +407,7 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(isclose(polC1(time_points[i, 0]), points[:, i]).all())
             self.assertTrue(isclose(polC1.derivate(time_points[i, 0], 1), points_derivative[:, i]).all())
 
-        polC2 = piecewise_polynomial_curve.FromPointsList(points, points_derivative, points_second_derivative,
+        polC2 = piecewise.FromPointsList(points, points_derivative, points_second_derivative,
                                                           time_points)
         self.assertEqual(polC2.min(), time_points[0, 0])
         self.assertEqual(polC2.max(), time_points[-1, 0])
@@ -428,13 +424,13 @@ class TestCurves(unittest.TestCase):
         time_points[0, 0] = 1
         time_points[1, 0] = 0.5
         with self.assertRaises(ValueError):
-            polC0 = piecewise_polynomial_curve.FromPointsList(points, time_points)
+            polC0 = piecewise.FromPointsList(points, time_points)
 
         with self.assertRaises(ValueError):
-            polC1 = piecewise_polynomial_curve.FromPointsList(points, points_derivative, time_points)
+            polC1 = piecewise.FromPointsList(points, points_derivative, time_points)
 
         with self.assertRaises(ValueError):
-            polC2 = piecewise_polynomial_curve.FromPointsList(points, points_derivative, points_second_derivative,
+            polC2 = piecewise.FromPointsList(points, points_derivative, points_second_derivative,
                                                               time_points)
 
     def test_piecewise_bezier_curve(self):
@@ -443,7 +439,7 @@ class TestCurves(unittest.TestCase):
         waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, 0., 1.)
         b = bezier(waypoints, 1., 2.)
-        pc = piecewise_bezier_curve(a)
+        pc = piecewise(a)
         pc.append(b)
         pc.min()
         pc.max()
@@ -455,7 +451,7 @@ class TestCurves(unittest.TestCase):
         pc.is_continuous(1)
         # Test serialization
         pc.saveAsText("serialization_pc.test")
-        pc_test = piecewise_bezier_curve()
+        pc_test = piecewise()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
@@ -471,7 +467,7 @@ class TestCurves(unittest.TestCase):
         time_points1 = array([[1., 2.]]).transpose()
         a = cubic_hermite_spline(points, tangents, time_points0)
         b = cubic_hermite_spline(points, tangents, time_points1)
-        pc = piecewise_cubic_hermite_curve(a)
+        pc = piecewise(a)
         pc.append(b)
         pc.min()
         pc.max()
@@ -483,7 +479,7 @@ class TestCurves(unittest.TestCase):
         pc.is_continuous(1)
         # Test serialization
         pc.saveAsText("serialization_pc.test")
-        pc_test = piecewise_cubic_hermite_curve()
+        pc_test = piecewise()
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
@@ -550,23 +546,23 @@ class TestCurves(unittest.TestCase):
         waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints)
         # converting bezier to polynomial
-        a_pol = polynomial_from_bezier(a)
+        a_pol = convert_to_polynomial(a)
         self.assertTrue(norm(a(0.3) - a_pol(0.3)) < __EPS)
         # converting polynomial to hermite
-        a_chs = hermite_from_polynomial(a_pol)
+        a_chs = convert_to_hermite(a_pol)
         self.assertTrue(norm(a_chs(0.3) - a_pol(0.3)) < __EPS)
         # converting hermite to bezier
-        a_bc = bezier_from_hermite(a_chs)
+        a_bc = convert_to_bezier(a_chs)
         self.assertTrue(norm(a_chs(0.3) - a_bc(0.3)) < __EPS)
         self.assertTrue(norm(a(0.3) - a_bc(0.3)) < __EPS)
         # converting bezier to hermite
-        a_chs = hermite_from_bezier(a)
+        a_chs = convert_to_hermite(a)
         self.assertTrue(norm(a(0.3) - a_chs(0.3)) < __EPS)
         # converting hermite to polynomial
-        a_pol = polynomial_from_hermite(a_chs)
+        a_pol = convert_to_polynomial(a_chs)
         self.assertTrue(norm(a_pol(0.3) - a_chs(0.3)) < __EPS)
         # converting polynomial to bezier
-        a_bc = bezier_from_polynomial(a_pol)
+        a_bc = convert_to_bezier(a_pol)
         self.assertTrue(norm(a_bc(0.3) - a_pol(0.3)) < __EPS)
         self.assertTrue(norm(a(0.3) - a_bc(0.3)) < __EPS)
         return
@@ -582,7 +578,7 @@ class TestCurves(unittest.TestCase):
       translation = bezier(waypoints, min, max)
       # test with bezier
       se3 = SE3Curve(translation, init_rot, end_rot)
-      pc = piecewise_SE3_curve(se3)
+      pc = piecewise_SE3(se3)
       self.assertEqual(pc.num_curves(),1)
       self.assertEqual(pc.min(), min)
       self.assertEqual(pc.max(), max)
@@ -616,17 +612,17 @@ class TestCurves(unittest.TestCase):
         pc.append(se3_3)
 
       pc.saveAsText("serialization_curve.txt")
-      pc_txt = piecewise_SE3_curve()
+      pc_txt = piecewise_SE3()
       pc_txt.loadFromText("serialization_curve.txt")
       self.compareCurves(pc,pc_txt)
 
       pc.saveAsXML("serialization_curve.xml","pc")
-      pc_xml = piecewise_SE3_curve()
+      pc_xml = piecewise_SE3()
       pc_xml.loadFromXML("serialization_curve.xml","pc")
       self.compareCurves(pc,pc_xml)
 
       pc.saveAsBinary("serialization_curve")
-      pc_bin = piecewise_SE3_curve()
+      pc_bin = piecewise_SE3()
       pc_bin.loadFromBinary("serialization_curve")
       self.compareCurves(pc,pc_bin)
 
@@ -646,7 +642,7 @@ class TestCurves(unittest.TestCase):
       translation = bezier(waypoints, min, max)
       # test with bezier
       se3 = SE3Curve(translation, init_rot, end_rot)
-      pc = piecewise_SE3_curve()
+      pc = piecewise_SE3()
       self.assertEqual(pc.num_curves(),0)
       pc.append(se3)
       self.assertEqual(pc.num_curves(),1)
@@ -696,7 +692,7 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
         self.assertTrue(isclose(pmax[0:3, 3], end_translation).all())
         self.assertTrue(pc.is_continuous(0))
-      pc = piecewise_SE3_curve()
+      pc = piecewise_SE3()
       with self.assertRaises(RuntimeError):
         pc.append(end_pose,max)
 
@@ -719,7 +715,7 @@ class TestCurves(unittest.TestCase):
             min = 0.7
             max = 12.
             se3 = SE3Curve(init_pose, end_pose, min, max)
-            pc = piecewise_SE3_curve(se3)
+            pc = piecewise_SE3(se3)
             self.assertEqual(pc.num_curves(),1)
             p = pc.evaluateAsSE3(min)
             self.assertTrue(isinstance(p, SE3))
@@ -992,7 +988,7 @@ class TestCurves(unittest.TestCase):
         # points_second_derivative = array(random.rand(3, N))
         time_points = array(random.rand(1, N)).T
         time_points.sort(0)
-        translation = piecewise_polynomial_curve.FromPointsList(points, time_points)
+        translation = piecewise.FromPointsList(points, time_points)
         min = translation.min()
         max = translation.max()
         se3 = SE3Curve(translation, init_rot, end_rot)
