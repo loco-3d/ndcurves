@@ -145,13 +145,13 @@ void PolynomialCubicFunctionTest(bool& error) {
   }
   // Test derivate and compute_derivative
   // Order 1
-  curve_ptr_t cf_derivated = cf.compute_derivate(1);
+  curve_abc_t* cf_derivated = cf.compute_derivate(1);
   ComparePoints(cf.derivate(0, 1), (*cf_derivated)(0), errMsg + " - derivate order 1 : ", error);
   ComparePoints(cf.derivate(0.3, 1), (*cf_derivated)(0.3), errMsg + " - derivate order 1 : ", error);
   ComparePoints(cf.derivate(0.5, 1), (*cf_derivated)(0.5), errMsg + " - derivate order 1 : ", error);
   ComparePoints(cf.derivate(1, 1), (*cf_derivated)(1), errMsg + " - derivate order 1 : ", error);
   // Order 2
-  curve_ptr_t cf_derivated_2 = cf.compute_derivate(2);
+  curve_abc_t* cf_derivated_2 = cf.compute_derivate(2);
   ComparePoints(cf.derivate(0, 2), (*cf_derivated_2)(0), errMsg + " - derivate order 1 : ", error);
   ComparePoints(cf.derivate(0.3, 2), (*cf_derivated_2)(0.3), errMsg + " - derivate order 1 : ", error);
   ComparePoints(cf.derivate(0.5, 2), (*cf_derivated_2)(0.5), errMsg + " - derivate order 1 : ", error);
@@ -197,7 +197,7 @@ void BezierCurveTest(bool& error) {
   // testing bernstein polynomials
   bezier_t cf5(params.begin(), params.end(), 1., 2.);
   std::string errMsg2("In test BezierCurveTest ; Bernstein polynomials do not evaluate as analytical evaluation");
-  boost::shared_ptr<bezier_t> cf5_derivated = boost::dynamic_pointer_cast<bezier_t>(cf5.compute_derivate(1));
+  bezier_t* cf5_derivated = cf5.compute_derivate(1);
 
   for (double d = 1.; d < 2.; d += 0.1) {
     ComparePoints(cf5.evalBernstein(d), cf5(d), errMsg2, error);
@@ -483,7 +483,7 @@ void cubicConversionTest(bool& error) {
   CompareCurves<bezier_t, cubic_hermite_spline_t>(bc0, chs2, errMsg1, error);
 
   // Test : compute derivative of bezier => Convert it to polynomial
-  curve_ptr_t bc_der = bc0.compute_derivate(1);
+  curve_abc_t* bc_der = bc0.compute_derivate(1);
   polynomial_t pol_test = polynomial_from_curve<polynomial_t>(*bc_der);
   CompareCurves<curve_abc_t, polynomial_t>(*bc_der, pol_test, errMsg1, error);
 }
@@ -1194,8 +1194,8 @@ void piecewiseCurveTest(bool& error) {
 
     // compare compute_derivate and derivate results :
 
-    curve_ptr_t pc_C2_derivate = pc_C2.compute_derivate(1);
-    curve_ptr_t pc_C2_derivate2 = pc_C2.compute_derivate(2);
+    curve_abc_t* pc_C2_derivate = pc_C2.compute_derivate(1);
+    curve_abc_t* pc_C2_derivate2 = pc_C2.compute_derivate(2);
     if (pc_C2.min() != pc_C2_derivate->min()) {
       error = true;
       std::cout << "min bounds for curve and it's derivate are not equals." << std::endl;

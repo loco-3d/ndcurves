@@ -76,7 +76,7 @@ class rotation_spline : public curve_abc_quat_t {
     throw std::runtime_error("TODO quaternion spline does not implement derivate");
   }
 
-  boost::shared_ptr<curve_abc_quat_t> compute_derivate(const std::size_t /*order*/) const {
+  curve_abc_quat_t* compute_derivate(const std::size_t /*order*/) const {
     throw std::logic_error("Compute derivate for quaternion spline is not implemented yet.");
   }
 

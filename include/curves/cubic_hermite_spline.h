@@ -39,6 +39,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   typedef std::vector<Time> vector_time_t;
   typedef Numeric num_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
+  typedef cubic_hermite_spline<Time, Numeric, Safe, point_t> cubic_hermite_spline_t;
 
 
  public:
@@ -112,7 +113,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     return evalCubicHermiteSpline(t, order);
   }
 
-  boost::shared_ptr<curve_abc_t> compute_derivate(const std::size_t /*order*/) const {
+  cubic_hermite_spline_t* compute_derivate(const std::size_t /*order*/) const {
     throw std::logic_error("Compute derivate for cubic hermite spline is not implemented yet.");
   }
 
