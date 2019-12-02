@@ -306,7 +306,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   /// \param u : unNormalized time.
   /// \return pair containing the first element of both bezier curve obtained.
   ///
-  std::pair<bezier_curve_ptr_t, bezier_curve_ptr_t> split(const Numeric t) const {
+  std::pair<bezier_curve_t, bezier_curve_t> split(const Numeric t) const {
     check_conditions();
     if (fabs(t - T_max_) < MARGIN) {
       throw std::runtime_error("can't split curve, interval range is equal to original curve");
@@ -323,8 +323,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
       wps_second[degree_ - id] = casteljau_pts.back();
       ++id;
     }
-    bezier_curve_ptr_t c_first(new bezier_curve_t(wps_first.begin(), wps_first.end(), T_min_, t, mult_T_));
-    bezier_curve_ptr_t c_second(new bezier_curve_t(wps_second.begin(), wps_second.end(), t, T_max_, mult_T_));
+    bezier_curve_t c_first(wps_first.begin(), wps_first.end(), T_min_, t, mult_T_);
+    bezier_curve_t c_second(wps_second.begin(), wps_second.end(), t, T_max_, mult_T_);
     return std::make_pair(c_first, c_second);
   }
 
@@ -334,17 +334,20 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   /// \return a piecewise_curve_t comprising n+1 curves
   ///
   piecewise_curve_t split(const vector_x_t& times) const {
-    typename piecewise_curve_t::t_curve_ptr_t curves;
-    std::pair<bezier_curve_ptr_t, bezier_curve_ptr_t> pairsplit = split(times[0]);
-    curves.push_back(pairsplit.first);
-    bezier_curve_ptr_t  current = pairsplit.second;
-    for (int i = 1; i < times.rows(); ++i) {
-      pairsplit = current->split(times[i]);
+    std::vector<bezier_curve_t> curves;
+    bezier_curve_t current = *this;
+    for (int i = 0; i < times.rows(); ++i) {
+      std::pair<bezier_curve_t, bezier_curve_t> pairsplit = current.split(times[i]);
       curves.push_back(pairsplit.first);
       current = pairsplit.second;
     }
     curves.push_back(current);
-    return piecewise_curve_t(curves);
+    piecewise_curve_t res;
+    for(typename std::vector<bezier_curve_t>::const_iterator cit = curves.begin(); cit != curves.end() ; ++cit){
+      typename piecewise_curve_t::curve_ptr_t ptr(new bezier_curve_t(*cit));
+      res.add_curve_ptr(ptr);
+    }
+    return res;
   }
 
   /// \brief Extract a bezier curve defined between \f$[t_1,t_2]\f$ from the actual bezier curve
