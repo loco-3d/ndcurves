@@ -34,6 +34,13 @@ struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
 };
+struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
+  point_t operator()(const real) { return this->get_override("operator()")(); }
+  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  std::size_t dim() { return this->get_override("dim")(); }
+  real min() { return this->get_override("min")(); }
+  real max() { return this->get_override("max")(); }
+};
 /* end base wrap of curve_abc */
 
 /* Template constructor bezier */
@@ -442,6 +449,16 @@ BOOST_PYTHON_MODULE(curves) {
       .def("max", pure_virtual(&curve_rotation_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_rotation_t::dim), "Get the dimension of the curve.");
 
+  class_<CurveSE3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve_SE3", no_init)
+      .def("__call__", pure_virtual(&curve_SE3_t::operator()), "Evaluate the curve at the given time.",
+           args("self", "t"))
+      .def("derivate", pure_virtual(&curve_SE3_t::derivate),
+           "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
+      .def("min", pure_virtual(&curve_SE3_t::min), "Get the LOWER bound on interval definition of the curve.")
+      .def("max", pure_virtual(&curve_SE3_t::max), "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.");
+
+
   /** BEGIN bezier3 curve**/
   class_<bezier3_t, bases<curve_3_t> >("bezier3", init<>())
       .def("__init__", make_constructor(&wrapBezier3Constructor))
@@ -787,7 +804,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END  SO3 Linear**/
   /** BEGIN SE3 Curve**/
-  class_<SE3Curve_t, bases<curve_abc_t> >("SE3Curve", init<>())
+  class_<SE3Curve_t, bases<curve_SE3_t> >("SE3Curve", init<>())
       .def("__init__",
            make_constructor(&wrapSE3CurveFromTransform, default_call_policies(),
                             args("init_transform", "end_transform", "min", "max")),
