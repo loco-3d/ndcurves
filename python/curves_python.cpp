@@ -16,6 +16,7 @@ using namespace boost::python;
 struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_t* compute_derivate(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -23,6 +24,7 @@ struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
 struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_t* compute_derivate(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -30,6 +32,7 @@ struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
 struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_t* compute_derivate(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -37,6 +40,7 @@ struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
 struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_t* compute_derivate(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -398,6 +402,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_abc_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
+      .def("compute_derivate", pure_virtual(&curve_abc_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_abc_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_abc_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_abc_t::dim), "Get the dimension of the curve.")
@@ -419,6 +424,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_3_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
+      .def("compute_derivate", pure_virtual(&curve_3_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_3_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_3_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_3_t::dim), "Get the dimension of the curve.");
@@ -428,6 +434,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_rotation_t::derivate),
            "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
+      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_rotation_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_rotation_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_rotation_t::dim), "Get the dimension of the curve.");
@@ -437,6 +444,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_SE3_t::derivate),
            "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
+      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_SE3_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_SE3_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.")
@@ -460,7 +468,6 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
       .def("__init__", make_constructor(&wrapBezier3ConstructorConstraints))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBoundsConstraints))
-      .def("compute_derivate", &bezier3_t::compute_derivate, return_value_policy<manage_new_object>())
       .def("compute_primitive", &bezier3_t::compute_primitive)
       .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
       .def_readonly("degree", &bezier3_t::degree_)
@@ -484,7 +491,6 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezierConstructorBounds))
       .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
       .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
-      .def("compute_derivate", &bezier_t::compute_derivate, return_value_policy<manage_new_object>())
       .def("compute_primitive", &bezier_t::compute_primitive)
       .def("waypointAtIndex", &bezier_t::waypointAtIndex)
       .def_readonly("degree", &bezier_t::degree_)
@@ -581,7 +587,6 @@ BOOST_PYTHON_MODULE(curves) {
            " ddc(min) == dd_init and ddc(max) == dd_end")
       .def("coeffAtDegree", &polynomial_t::coeffAtDegree)
       .def("coeff", &polynomial_t::coeff)
-      .def("compute_derivate", &polynomial_t::compute_derivate, "Compute derivative of order N of curve at time t.", return_value_policy<manage_new_object>())
       .def("saveAsText", &polynomial_t::saveAsText<polynomial_t>, bp::args("filename"),
            "Saves *this inside a text file.")
       .def("loadFromText", &polynomial_t::loadFromText<polynomial_t>, bp::args("filename"),
@@ -628,8 +633,6 @@ BOOST_PYTHON_MODULE(curves) {
            "and time and connecting exactly self(self.max()) and end. It guarantee C2 continuity and guarantee that "
            "self.derivate(time,1) == d_end and self.derivate(time,2) == dd_end",
            args("self", "end", "d_end", "d_end", "time"))
-      .def("compute_derivate", &piecewise_t::compute_derivate, return_value_policy<manage_new_object>(),
-           "Return a piecewise curve which is the derivate of this.", args("self", "order"))
       .def("append", &piecewise_t::add_curve_ptr,
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
@@ -666,8 +669,6 @@ BOOST_PYTHON_MODULE(curves) {
       "Create a piecewise-se3 curve containing the given se3 curve.")
       .def("__init__", make_constructor(&wrapPiecewiseSE3EmptyConstructor),
       "Create an empty piecewise-se3 curve.")
-      .def("compute_derivate", &piecewise_SE3_t::compute_derivate, return_value_policy<manage_new_object>(),
-           "Return a piecewise_polynomial curve which is the derivate of this.", args("self", "order"))
       .def("append", &piecewise_SE3_t::add_curve_ptr,
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.",
