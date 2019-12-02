@@ -1191,6 +1191,15 @@ void piecewiseCurveTest(bool& error) {
     CompareCurves<piecewise_t, piecewise_t>(pc, pc_hermite, errmsg5, error);
     piecewise_t pc_polynomial_same = pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
     CompareCurves<piecewise_t, piecewise_t>(pc, pc_polynomial_same, errmsg5, error);
+    // CONVERT PIECEWISE BEZIER TO POLYNOMIAL AND HERMITE
+
+    std::string errmsg6("in piecewise bezier curve test, Error while checking piecewise curve conversion");
+    piecewise_t pc_bezier1 = pc_C0.convert_piecewise_curve_to_bezier<bezier_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_bezier1, errmsg6, error);
+    piecewise_t pc_hermite1 = pc_C0.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_hermite1, errmsg6, error);
+    piecewise_t pc_polynomial1 = pc_C0.convert_piecewise_curve_to_polynomial<polynomial_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_polynomial1, errmsg6, error);
 
     // compare compute_derivate and derivate results :
 
