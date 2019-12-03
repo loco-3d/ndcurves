@@ -59,10 +59,50 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   /// \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
   virtual point_derivate_t derivate(const time_t t, const std::size_t order) const = 0;
 
-  ///  \brief Compute the derived curve at order N.
-  ///  \param order : order of derivative.
-  ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  //virtual curve_t* compute_derivate(const std::size_t order) const = 0 ;
+  /**
+   * @brief isApprox check if other and *this are equals, given a precision treshold.
+   * This test is done by discretizing, it should be re-implemented in the child class to check exactly
+   * all the members.
+   * @param other the other curve to check
+   * @param order the order up to which the derivatives of the curves are checked for equality
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  virtual bool isApprox(const curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
+    bool equal = (min() == other.min())
+               && (max() == other.max())
+               && (dim() == other.dim());
+    if(!equal){
+      return false;
+    }
+    // check the value along the two curves
+    Numeric t = min();
+    while(t<= max()){
+      if(!(*this)(t).isApprox(other(t),prec)){
+        return false;
+      }
+      t += 0.01; // FIXME : define this step somewhere ??
+    }
+    //  check if the derivatives are equals
+    for(size_t n = 1 ; n <= order ; ++n){
+      t = min();
+      while(t<= max()){
+        if(!derivate(t,n).isApprox(other.derivate(t,n),prec)){
+          return false;
+        }
+        t += 0.01; // FIXME : define this step somewhere ??
+      }
+    }
+    return true;
+  }
+
+  virtual bool operator==(const curve_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const curve_t& other) const {
+    return !(*this == other);
+  }
 
   /*Operations*/
 
