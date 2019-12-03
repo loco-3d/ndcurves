@@ -2320,6 +2320,276 @@ void BezierLinearProblemsetupLoadProblem(bool& /*error*/) {
   // initInequalityMatrix<point_t,3,double>(pDef,pData,prob);
 }
 
+void testOperatorEqual(bool& error){
+  // test with a C2 polynomial :
+  pointX_t zeros = point3_t(0., 0., 0.);
+  pointX_t p0 = point3_t(0., 1., 0.);
+  pointX_t p1 = point3_t(1., 2., -3.);
+  pointX_t dp0 = point3_t(-8., 4., 6.);
+  pointX_t dp1 = point3_t(10., -10., 10.);
+  pointX_t ddp0 = point3_t(-1., 7., 4.);
+  pointX_t ddp1 = point3_t(12., -8., 2.5);
+  double min = 0.5;
+  double max = 2.;
+  polynomial_t polC2_1 = polynomial_t(p0, dp0, ddp0, p1, dp1, ddp1, min, max);
+  polynomial_t polC2_2 = polynomial_t(p0, dp0, ddp0, p1, dp1, ddp1, min, max);
+  polynomial_t polC2_3(polC2_1);
+
+  if(polC2_1 != polC2_2){
+    std::cout<<"polC2_1 and polC2_2 should be equals"<<std::endl;
+    error = true;
+  }
+  if(polC2_1 != polC2_3){
+    std::cout<<"polC2_1 and polC2_3 should be equals"<<std::endl;
+    error = true;
+  }
+
+  polynomial_t polC2_4 = polynomial_t(p1, dp0, ddp0, p1, dp1, ddp0, min, max);
+  if(polC2_1 == polC2_4){
+    std::cout<<"polC2_1 and polC2_4 should not be equals"<<std::endl;
+    error = true;
+  }
+
+  // test with bezier
+  point3_t a(1, 2, 3);
+  point3_t b(2, 3, 4);
+  point3_t c(3, 4, 5);
+  point3_t d(3, 6, 7);
+  point3_t e(3, 61, 7);
+  point3_t f(3, 56, 7);
+  point3_t g(3, 36, 7);
+  point3_t h(43, 6, 7);
+  point3_t i(3, 6, 77);
+  std::vector<point3_t> control_points;
+  control_points.push_back(a);
+  control_points.push_back(b);
+  control_points.push_back(c);
+  control_points.push_back(d);
+  control_points.push_back(e);
+  control_points.push_back(f);
+  control_points.push_back(g);
+  control_points.push_back(h);
+  control_points.push_back(i);
+  bezier_t::num_t T_min = 1.0;
+  bezier_t::num_t T_max = 3.0;
+  bezier_t bc_0(control_points.begin(), control_points.end(), T_min, T_max);
+  bezier_t bc_1(bc_0);
+  if(bc_1 != bc_0){
+    std::cout<<"bc_0 and bc_1 should be equals"<<std::endl;
+    error = true;
+  }
+  std::vector<point3_t> control_points2;
+  control_points2.push_back(a);
+  control_points2.push_back(b);
+  control_points2.push_back(c);
+  control_points2.push_back(d);
+  bezier_t bc_2(control_points2.begin(), control_points2.end(), T_min, T_max);
+  if(bc_2 == bc_0){
+    std::cout<<"bc_0 and bc_2 should not be equals"<<std::endl;
+    error = true;
+  }
+  polynomial_t pol_2 = polynomial_from_curve<polynomial_t>(bc_2);
+  bezier_t bc_3 = bezier_from_curve<bezier_t>(pol_2);
+  if(bc_2 != bc_3){
+    std::cout<<"bc_2 and bc_3 should be equals"<<std::endl;
+    error = true;
+  }
+
+  // test bezier / polynomial
+  polynomial_t pol_0 = polynomial_from_curve<polynomial_t>(bc_0);
+  CompareCurves<polynomial_t,bezier_t>(pol_0,bc_0,"compare pol_0 and bc_0",error);
+  if(bc_0 != pol_0){
+    std::cout<<"bc_0 and pol_0 should be equals"<<std::endl;
+    error = true;
+  }
+
+  // test with hermite :
+  point3_t ch_p0(1, 2, 3);
+  point3_t ch_m0(2, 3, 4);
+  point3_t ch_p1(3, 4, 5);
+  point3_t ch_m1(3, 6, 7);
+  pair_point_tangent_t pair0(ch_p0, ch_m0);
+  pair_point_tangent_t pair1(ch_p1, ch_m1);
+  t_pair_point_tangent_t ch_control_points;
+  ch_control_points.push_back(pair0);
+  ch_control_points.push_back(pair1);
+  std::vector<double> time_control_points;
+  time_control_points.push_back(T_min);
+  time_control_points.push_back(T_max);
+  cubic_hermite_spline_t chs0(ch_control_points.begin(), ch_control_points.end(), time_control_points);
+  cubic_hermite_spline_t chs1(ch_control_points.begin(), ch_control_points.end(), time_control_points);
+  cubic_hermite_spline_t chs2(chs0);
+  point3_t ch_p2(3.1, 4, 5);
+  point3_t ch_m2(3, 6.5, 6.);
+  pair_point_tangent_t pair2(ch_p2, ch_m2);
+  t_pair_point_tangent_t ch_control_points2;
+  ch_control_points2.push_back(pair0);
+  ch_control_points2.push_back(pair2);
+  cubic_hermite_spline_t chs3(ch_control_points2.begin(), ch_control_points2.end(), time_control_points);
+  if(chs0 != chs1){
+    std::cout<<"chs0 and chs1 should be equals"<<std::endl;
+    error = true;
+  }
+  if(chs0 != chs2){
+    std::cout<<"chs0 and chs2 should be equals"<<std::endl;
+    error = true;
+  }
+  if(chs0 == chs3){
+    std::cout<<"chs0 and chs3 should not be equals"<<std::endl;
+    error = true;
+  }
+
+//  // test bezier / hermite
+  bezier_t bc_ch = bezier_from_curve<bezier_t>(chs0);
+  if(chs0 != bc_ch){
+    std::cout<<"chs0 and bc_ch should be equals"<<std::endl;
+    error = true;
+  }
+  // test polynomial / hermite
+  polynomial_t pol_ch = polynomial_from_curve<polynomial_t>(chs0);
+  if(chs0 != pol_ch){
+    std::cout<<"chs0 and pol_ch should be equals"<<std::endl;
+    error = true;
+  }
+
+  // SO3
+  quaternion_t q0(1, 0, 0, 0);
+  quaternion_t q1(0.7071, 0.7071, 0, 0);
+  q0.normalize();
+  q1.normalize();
+  const double tMin = 0.;
+  const double tMax = 1.5;
+  SO3Linear_t so3Traj1(q0, q1, tMin, tMax);
+  SO3Linear_t so3Traj2(q0, q1, tMin, tMax);
+  SO3Linear_t so3TrajMatrix1(q0.toRotationMatrix(), q1.toRotationMatrix(), tMin, tMax);
+  SO3Linear_t so3TrajMatrix2(so3TrajMatrix1);
+  quaternion_t q2(0.7071, 0., 0.7071, 0);
+  q2.normalize();
+  SO3Linear_t so3Traj3(q0, q2, tMin, tMax);
+  if(so3Traj1 != so3Traj2){
+    std::cout<<"so3Traj1 and so3Traj2 should be equals"<<std::endl;
+    error = true;
+  }
+  if(so3Traj1 != so3TrajMatrix1){
+    std::cout<<"so3Traj1 and so3TrajMatrix1 should be equals"<<std::endl;
+    error = true;
+  }
+  if(so3Traj1 != so3TrajMatrix2){
+    std::cout<<"so3Traj1 and so3TrajMatrix2 should be equals"<<std::endl;
+    error = true;
+  }
+  if(so3Traj1 == so3Traj3){
+    std::cout<<"so3Traj1 and so3Traj3 should not be equals"<<std::endl;
+    error = true;
+  }
+
+  // SE3
+  boost::shared_ptr<bezier_t> translation_bezier(new bezier_t(bc_0));
+  boost::shared_ptr<polynomial_t> translation_polynomial(new polynomial_t(pol_0));
+  SE3Curve_t se3_bezier1 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q1.toRotationMatrix());
+  SE3Curve_t se3_pol1 = SE3Curve_t(translation_polynomial, q0.toRotationMatrix(), q1.toRotationMatrix());
+  SE3Curve_t se3_bezier2(se3_bezier1);
+  SE3Curve_t se3_bezier3 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q2.toRotationMatrix());
+  boost::shared_ptr<polynomial_t> translation_polynomial2(new polynomial_t(pol_2));
+  SE3Curve_t se3_pol2 = SE3Curve_t(translation_polynomial2, q0.toRotationMatrix(), q1.toRotationMatrix());
+  if(se3_bezier1 != se3_pol1){
+    std::cout<<"se3_bezier1 and se3_pol1 should be equals"<<std::endl;
+    error = true;
+  }
+  if(se3_bezier1 != se3_bezier2){
+    std::cout<<"se3_bezier1 and se3_bezier2 should be equals"<<std::endl;
+    error = true;
+  }
+  if(se3_bezier1 == se3_pol2){
+    std::cout<<"se3_bezier1 and se3_pol2 should not be equals"<<std::endl;
+    error = true;
+  }
+  if(se3_bezier1 == se3_bezier3){
+    std::cout<<"se3_bezier1 and se3_bezier3 should not be equals"<<std::endl;
+    error = true;
+  }
+
+  // Piecewises
+  point3_t a0(1, 2, 3);
+  point3_t b0(2, 3, 4);
+  point3_t c0(3, 4, 5);
+  point3_t d0(4, 5, 6);
+  std::vector<point3_t> params0;
+  std::vector<point3_t> params1;
+  params0.push_back(a0);  // bezier between [0,1]
+  params0.push_back(b0);
+  params0.push_back(c0);
+  params0.push_back(d0);
+  params1.push_back(d0);  // bezier between [1,2]
+  params1.push_back(c0);
+  params1.push_back(b0);
+  params1.push_back(a0);
+  boost::shared_ptr<bezier_t> bc0_ptr(new bezier_t(params0.begin(), params0.end(), 0., 1.));
+  boost::shared_ptr<bezier_t> bc1_ptr(new bezier_t(params1.begin(), params1.end(), 1., 2.));
+  piecewise_t pc_C0(bc0_ptr);
+  pc_C0.add_curve_ptr(bc1_ptr);
+  piecewise_t pc_C1(bc0_ptr);
+  pc_C1.add_curve_ptr(bc1_ptr);
+  piecewise_t pc_C2(pc_C0);
+  piecewise_t pc_C3(bc0_ptr);
+  piecewise_t pc_C4(bc0_ptr);
+  boost::shared_ptr<bezier_t> bc2_ptr(new bezier_t(params0.begin(), params0.end(), 1., 2.));
+  pc_C4.add_curve_ptr(bc2_ptr);
+
+  if(pc_C0 != pc_C1){
+    std::cout<<"pc_C0 and pc_C1 should be equals"<<std::endl;
+    error = true;
+  }
+  if(pc_C0 != pc_C2){
+    std::cout<<"pc_C0 and pc_C2 should be equals"<<std::endl;
+    error = true;
+  }
+  if(pc_C0 == pc_C3){
+    std::cout<<"pc_C0 and pc_C3 should not be equals"<<std::endl;
+    error = true;
+  }
+  if(pc_C0 == pc_C4){
+    std::cout<<"pc_C0 and pc_C4 should not be equals"<<std::endl;
+    error = true;
+  }
+  // piecewise with mixed curves types
+  piecewise_t pc_C5 =  pc_C0.convert_piecewise_curve_to_polynomial<polynomial_t>();
+  if(pc_C0 != pc_C5){
+    std::cout<<"pc_C0 and pc_C5 should be equals"<<std::endl;
+    error = true;
+  }
+
+  // piecewise se3 :
+  piecewise_SE3_t pc_se3_1;
+  pc_se3_1.add_curve(se3_pol1);
+  point3_t p_init_se3(translation_polynomial->operator()(translation_polynomial->max()));
+  point3_t dp_init_se3(translation_polynomial->derivate(translation_polynomial->max(),1));
+  point3_t p_end_se3(1,-2,6);
+  point3_t dp_end_se3(3.5,2.5,-9);
+  boost::shared_ptr<polynomial_t> translation_pol3(new polynomial_t(p_init_se3,dp_init_se3,p_end_se3,dp_end_se3,translation_polynomial->max(),translation_polynomial->max()+2.5));
+  curve_SE3_ptr_t se3_pol_3(new SE3Curve_t(translation_pol3,q1.toRotationMatrix(),q2.toRotationMatrix()));
+  pc_se3_1.add_curve_ptr(se3_pol_3);
+  piecewise_SE3_t pc_se3_2(pc_se3_1);
+  piecewise_SE3_t pc_se3_3(boost::make_shared<SE3Curve_t>(se3_pol1));
+  pc_se3_3.add_curve_ptr(se3_pol_3);
+  piecewise_SE3_t pc_se3_4(boost::make_shared<SE3Curve_t>(se3_pol2));
+  pc_se3_4.add_curve_ptr(se3_pol_3);
+
+  if(pc_se3_1 != pc_se3_2){
+    std::cout<<"pc_se3_1 and pc_se3_2 should be equals"<<std::endl;
+    error = true;
+  }
+  if(pc_se3_1 != pc_se3_3){
+    std::cout<<"pc_se3_1 and pc_se3_3 should be equals"<<std::endl;
+    error = true;
+  }
+  if(pc_se3_1 == pc_se3_4){
+    std::cout<<"pc_se3_1 and pc_se3_3 should not be equals"<<std::endl;
+    error = true;
+  }
+
+}
+
 int main(int /*argc*/, char** /*argv[]*/) {
   std::cout << "performing tests... \n";
   bool error = false;
@@ -2358,6 +2628,7 @@ int main(int /*argc*/, char** /*argv[]*/) {
   BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(error);
   BezierLinearProblemsetup_control_pointsVarCombinatorialMix(error);
   BezierLinearProblemsetupLoadProblem(error);
+  testOperatorEqual(error);
 
   if (error) {
     std::cout << "There were some errors\n";
