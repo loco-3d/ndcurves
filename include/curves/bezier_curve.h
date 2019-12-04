@@ -140,6 +140,30 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
   }
 
+  virtual bool operator==(const bezier_curve_t& other) const {
+    //std::cout<<"operator == between bezier called."<<std::endl;
+    return  T_min_ == other.min()
+        && T_max_ == other.max()
+        && dim_ == other.dim()
+        && degree_ == other.degree()
+        && size_ == other.size_
+        && mult_T_ == other.mult_T_
+        && bernstein_ == other.bernstein_;
+  }
+
+  virtual bool operator!=(const bezier_curve_t& other) const {
+    return !(*this == other);
+  }
+
+  virtual bool operator==(const curve_abc_t& other) const {
+    return curve_abc_t::isApprox(other);
+  }
+
+  virtual bool operator!=(const curve_abc_t& other) const {
+    return !curve_abc_t::isApprox(other);
+  }
+
+
   ///  \brief Compute the derived curve at order N.
   ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
   ///  \param order : order of derivative.
