@@ -254,6 +254,42 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     return h;
   }
 
+  /**
+   * @brief isApprox check if other and *this are equals, given a precision treshold.
+   * This test is done by discretizing, it should be re-implemented in the child class to check exactly
+   * all the members.
+   * @param other the other curve to check
+   * @param order the order up to which the derivatives of the curves are checked for equality
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  virtual bool isApprox(const polynomial_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
+    //std::cout<<"is approx in polynomial called."<<std::endl;
+    (void)order; // silent warning, order is not used in this class.
+    return T_min_ == other.min()
+        && T_max_ == other.max()
+        && dim_ == other.dim()
+        && degree_ == other.degree()
+        && coefficients_.isApprox(other.coefficients_,prec);
+  }
+
+  virtual bool operator==(const polynomial_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const polynomial_t& other) const {
+    return !(*this == other);
+  }
+
+  virtual bool operator==(const curve_abc_t& other) const {
+    return curve_abc_t::isApprox(other);
+  }
+
+  virtual bool operator!=(const curve_abc_t& other) const {
+    return !curve_abc_t::isApprox(other);
+  }
+
+
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.
