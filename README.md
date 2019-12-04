@@ -75,14 +75,14 @@ This package is available as binary in [robotpkg/wip](http://robotpkg.openrobots
 To handle this with cmake, use the recursive option to clone the repository.
 For instance, using http:
 ```
-git clone --recursive https://github.com/stonneau/spline.git $SPLINE_DIR
+git clone --recursive https://github.com/loco-3d/curves.git
 ```
 The library is header only, so the build only serves to build the tests and python bindings:
 
 ```
-	cd $SPLINE_DIR && mkdir build && cd build
+	cd curves && mkdir build && cd build
 	cmake .. && make
-	../bin/tests
+	make test
 ```
 
 If everything went fine you should obtain the following output:
@@ -93,18 +93,16 @@ no errors found
 ### Optional: Python bindings installation
 To install the Python bindings, in the CMakeLists.txt file, first enable the BUILD_PYTHON_INTERFACE option:
 ```
-OPTION (BUILD_PYTHON_INTERFACE "Build the python binding" ON)
+cmake -DBUILD_PYTHON_INTERFACE=ON ..
 ```
 
 Then rebuild the library:
 ```
-cd $SPLINE_DIR/build
-cmake -DCMAKE_INSTALL_PREFIX=${DEVEL_DIR}/install ..
+cd curves/build
 make install
 ```
-The python bindings should then be accessible through the package centroidal_dynamics.
-To see example of use, you can refer to the [test file](https://github.com/stonneau/spline/blob/master/python/test/test.py)
+To see example of use, you can refer to the [test file](https://github.com/loco-3d/curves/blob/master/python/test/test.py)
 which is rather self explanatory:
 
 In spite of an exhaustive documentation, please refer to the C++ documentation, which mostly applies
-to python. For the moment, only bezier curves are binded.
+to python.
