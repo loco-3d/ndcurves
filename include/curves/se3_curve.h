@@ -150,6 +150,41 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
     return res;
   }
 
+  /**
+   * @brief isApprox check if other and *this are equals, given a precision treshold.
+   * This test is done by discretizing, it should be re-implemented in the child class to check exactly
+   * all the members.
+   * @param other the other curve to check
+   * @param order the order up to which the derivatives of the curves are checked for equality
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  virtual bool isApprox(const SE3Curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
+    //std::cout<<"is approx in SE3 called."<<std::endl;
+    (void)order; // silent warning, order is not used in this class.
+    return T_min_ == other.min()
+        && T_max_ == other.max()
+        && (translation_curve_ == other.translation_curve_ || translation_curve_->isApprox(*other.translation_curve_,prec))
+        && (rotation_curve_ == other.rotation_curve_ || rotation_curve_->isApprox(*other.rotation_curve_,prec));
+  }
+
+  virtual bool operator==(const SE3Curve_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const SE3Curve_t& other) const {
+    return !(*this == other);
+  }
+
+  virtual bool operator==(const curve_abc_t& other) const {
+    return curve_abc_t::isApprox(other);
+  }
+
+  virtual bool operator!=(const curve_abc_t& other) const {
+    return !curve_abc_t::isApprox(other);
+  }
+
+
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.
