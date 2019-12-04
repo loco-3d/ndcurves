@@ -103,6 +103,53 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     }
   }
 
+  /**
+   * @brief isApprox check if other and *this are equals, given a precision treshold.
+   * This test is done by discretizing, it should be re-implemented in the child class to check exactly
+   * all the members.
+   * @param other the other curve to check
+   * @param order the order up to which the derivatives of the curves are checked for equality
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  virtual bool isApprox(const cubic_hermite_spline_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
+    //std::cout<<"is approx in hermite called."<<std::endl;
+    (void)order; // silent warning, order is not used in this class.
+    bool equal =  T_min_ == other.min()
+        && T_max_ == other.max()
+        && dim_ == other.dim()
+        && degree_ == other.degree()
+        && size_ == other.size()
+        && time_control_points_ == other.time_control_points_
+        && duration_splines_ == other.duration_splines_;
+    if(!equal)
+      return false;
+    for (std::size_t i = 0 ; i < size_ ;++i)
+    {
+      if((!control_points_[i].first.isApprox(other.control_points_[i].first,prec)) ||
+         (!control_points_[i].second.isApprox(other.control_points_[i].second,prec)) )
+        return false;
+    }
+    return true;
+  }
+
+  virtual bool operator==(const cubic_hermite_spline_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const cubic_hermite_spline_t& other) const {
+    return !(*this == other);
+  }
+
+  virtual bool operator==(const curve_abc_t& other) const {
+    return curve_abc_t::isApprox(other);
+  }
+
+  virtual bool operator!=(const curve_abc_t& other) const {
+    return !curve_abc_t::isApprox(other);
+  }
+
+
   ///  \brief Evaluate the derivative of order N of spline at time t.
   ///  \param t : time when to evaluate the spline.
   ///  \param order : order of derivative.
