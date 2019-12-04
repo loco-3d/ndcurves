@@ -2334,7 +2334,7 @@ void testOperatorEqual(bool& error){
   polynomial_t polC2_1 = polynomial_t(p0, dp0, ddp0, p1, dp1, ddp1, min, max);
   polynomial_t polC2_2 = polynomial_t(p0, dp0, ddp0, p1, dp1, ddp1, min, max);
   polynomial_t polC2_3(polC2_1);
-
+  //std::cout<<"Should call polynomial method : "<<std::endl;
   if(polC2_1 != polC2_2){
     std::cout<<"polC2_1 and polC2_2 should be equals"<<std::endl;
     error = true;
@@ -2374,6 +2374,7 @@ void testOperatorEqual(bool& error){
   bezier_t::num_t T_max = 3.0;
   bezier_t bc_0(control_points.begin(), control_points.end(), T_min, T_max);
   bezier_t bc_1(bc_0);
+  //std::cout<<"Should call Bezier method : "<<std::endl;
   if(bc_1 != bc_0){
     std::cout<<"bc_0 and bc_1 should be equals"<<std::endl;
     error = true;
@@ -2398,6 +2399,7 @@ void testOperatorEqual(bool& error){
   // test bezier / polynomial
   polynomial_t pol_0 = polynomial_from_curve<polynomial_t>(bc_0);
   CompareCurves<polynomial_t,bezier_t>(pol_0,bc_0,"compare pol_0 and bc_0",error);
+  //std::cout<<"Should call curve_abc method : "<<std::endl;
   if(bc_0 != pol_0){
     std::cout<<"bc_0 and pol_0 should be equals"<<std::endl;
     error = true;
@@ -2426,6 +2428,7 @@ void testOperatorEqual(bool& error){
   ch_control_points2.push_back(pair0);
   ch_control_points2.push_back(pair2);
   cubic_hermite_spline_t chs3(ch_control_points2.begin(), ch_control_points2.end(), time_control_points);
+  //std::cout<<"Should call hermite method : "<<std::endl;
   if(chs0 != chs1){
     std::cout<<"chs0 and chs1 should be equals"<<std::endl;
     error = true;
@@ -2441,6 +2444,7 @@ void testOperatorEqual(bool& error){
 
 //  // test bezier / hermite
   bezier_t bc_ch = bezier_from_curve<bezier_t>(chs0);
+  //std::cout<<"Should call curve_abc method : "<<std::endl;
   if(chs0 != bc_ch){
     std::cout<<"chs0 and bc_ch should be equals"<<std::endl;
     error = true;
@@ -2466,6 +2470,7 @@ void testOperatorEqual(bool& error){
   quaternion_t q2(0.7071, 0., 0.7071, 0);
   q2.normalize();
   SO3Linear_t so3Traj3(q0, q2, tMin, tMax);
+  //std::cout<<"Should call SO3 method : "<<std::endl;
   if(so3Traj1 != so3Traj2){
     std::cout<<"so3Traj1 and so3Traj2 should be equals"<<std::endl;
     error = true;
@@ -2492,18 +2497,22 @@ void testOperatorEqual(bool& error){
   SE3Curve_t se3_bezier3 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q2.toRotationMatrix());
   boost::shared_ptr<polynomial_t> translation_polynomial2(new polynomial_t(pol_2));
   SE3Curve_t se3_pol2 = SE3Curve_t(translation_polynomial2, q0.toRotationMatrix(), q1.toRotationMatrix());
+  //std::cout<<"Should call se3 -> curve_abc / so3 method : "<<std::endl;
   if(se3_bezier1 != se3_pol1){
     std::cout<<"se3_bezier1 and se3_pol1 should be equals"<<std::endl;
     error = true;
   }
+  //std::cout<<"Should call se3 -> bezier / so3 method : "<<std::endl;
   if(se3_bezier1 != se3_bezier2){
     std::cout<<"se3_bezier1 and se3_bezier2 should be equals"<<std::endl;
     error = true;
   }
+  //std::cout<<"Should call se3 -> curve_abc / so3 method : "<<std::endl;
   if(se3_bezier1 == se3_pol2){
     std::cout<<"se3_bezier1 and se3_pol2 should not be equals"<<std::endl;
     error = true;
   }
+  //std::cout<<"Should call se3 -> bezier / so3 method : "<<std::endl;
   if(se3_bezier1 == se3_bezier3){
     std::cout<<"se3_bezier1 and se3_bezier3 should not be equals"<<std::endl;
     error = true;
@@ -2535,7 +2544,7 @@ void testOperatorEqual(bool& error){
   piecewise_t pc_C4(bc0_ptr);
   boost::shared_ptr<bezier_t> bc2_ptr(new bezier_t(params0.begin(), params0.end(), 1., 2.));
   pc_C4.add_curve_ptr(bc2_ptr);
-
+  //std::cout<<"Should call curve_abc method : "<<std::endl;
   if(pc_C0 != pc_C1){
     std::cout<<"pc_C0 and pc_C1 should be equals"<<std::endl;
     error = true;
