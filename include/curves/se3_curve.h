@@ -176,12 +176,19 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
     return !(*this == other);
   }
 
+  virtual bool isApprox(const curve_abc_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
+    const SE3Curve_t* other_cast = dynamic_cast<const SE3Curve_t*>(&other);
+    if(other_cast)
+      return isApprox(*other_cast);
+    else
+      return curve_abc_t::isApprox(other,prec,order);
+  }
   virtual bool operator==(const curve_abc_t& other) const {
-    return curve_abc_t::isApprox(other);
+    return isApprox(other);
   }
 
   virtual bool operator!=(const curve_abc_t& other) const {
-    return !curve_abc_t::isApprox(other);
+    return !(*this == other);
   }
 
 
