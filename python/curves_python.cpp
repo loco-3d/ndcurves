@@ -400,6 +400,8 @@ BOOST_PYTHON_MODULE(curves) {
   class_<CurveWrapper, boost::noncopyable>("curve", no_init)
       .def("__call__", pure_virtual(&curve_abc_t::operator()), "Evaluate the curve at the given time.",
            args("self", "t"))
+      .def("__eq__", &curve_abc_t::operator==)
+      .def("__ne__", &curve_abc_t::operator!=)
       .def("derivate", pure_virtual(&curve_abc_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("compute_derivate", pure_virtual(&curve_abc_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
@@ -422,6 +424,8 @@ BOOST_PYTHON_MODULE(curves) {
   class_<Curve3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve3", no_init)
       .def("__call__", pure_virtual(&curve_3_t::operator()), "Evaluate the curve at the given time.",
            args("self", "t"))
+      .def("__eq__", &curve_3_t::operator==)
+      .def("__ne__", &curve_3_t::operator!=)
       .def("derivate", pure_virtual(&curve_3_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("compute_derivate", pure_virtual(&curve_3_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
@@ -432,6 +436,8 @@ BOOST_PYTHON_MODULE(curves) {
   class_<CurveRotationWrapper, boost::noncopyable, bases<curve_abc_t> >("curve_rotation", no_init)
       .def("__call__", pure_virtual(&curve_rotation_t::operator()), "Evaluate the curve at the given time.",
            args("self", "t"))
+      .def("__eq__", &curve_rotation_t::operator==)
+      .def("__ne__", &curve_rotation_t::operator!=)
       .def("derivate", pure_virtual(&curve_rotation_t::derivate),
            "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
       .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
@@ -442,6 +448,8 @@ BOOST_PYTHON_MODULE(curves) {
   class_<CurveSE3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve_SE3", no_init)
       .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix.",
            args("self", "t"))
+      .def("__eq__", &curve_SE3_t::operator==)
+      .def("__ne__", &curve_SE3_t::operator!=)
       .def("derivate", pure_virtual(&curve_SE3_t::derivate),
            "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
       .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
