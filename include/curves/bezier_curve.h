@@ -140,15 +140,29 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
   }
 
-  virtual bool operator==(const bezier_curve_t& other) const {
-    //std::cout<<"operator == between bezier called."<<std::endl;
-    return  T_min_ == other.min()
+  virtual bool isApprox(const bezier_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
+    //std::cout<<"is approx in bezier called."<<std::endl;
+    (void)order;
+    bool equal = T_min_ == other.min()
         && T_max_ == other.max()
         && dim_ == other.dim()
         && degree_ == other.degree()
         && size_ == other.size_
         && mult_T_ == other.mult_T_
         && bernstein_ == other.bernstein_;
+    if(!equal)
+      return false;
+    for (size_t i = 0 ;i < size_;++i)
+    {
+      if(!control_points_.at(i).isApprox(other.control_points_.at(i),prec))
+        return false;
+    }
+    return true;
+  }
+
+
+  virtual bool operator==(const bezier_curve_t& other) const {
+    return isApprox(other);
   }
 
   virtual bool operator!=(const bezier_curve_t& other) const {
@@ -158,7 +172,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   virtual bool isApprox(const curve_abc_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
     const bezier_curve_t* other_cast = dynamic_cast<const bezier_curve_t*>(&other);
     if(other_cast)
-      return (*this == *other_cast); // no isApprox between two bezier, only exact equality
+      return isApprox(*other_cast);
     else
       return curve_abc_t::isApprox(other,prec,order);
   }
