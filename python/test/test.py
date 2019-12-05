@@ -1187,6 +1187,58 @@ class TestCurves(unittest.TestCase):
         se3_bin.loadFromBinary("serialization_curve")
         self.compareCurves(se3_curves,se3_bin)
 
+    def test_operatorEqual(self):
+        # test with bezier
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        a0 = bezier(waypoints)
+        a1 = bezier(waypoints, 0., 3.)
+        a2 = bezier(waypoints, 0., 3.)
+        self.assertTrue(a0 != a1)
+        self.assertTrue(a1 == a2)
+
+        # test with polynomials of degree 5
+        p0 = array([1., 3., -2.])
+        p1 = array([0.6, 2., 2.5])
+        dp0 = array([-6., 2., -1.])
+        dp1 = array([10., 10., 10.])
+        ddp0 = array([1., -7., 4.5])
+        ddp1 = array([6., -1., -4])
+        min = 1.
+        max = 2.5
+        pol_1 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), min, max)
+        pol_2 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), min, max)
+        pol_3 = polynomial(p1.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p0.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), min, max)
+        self.assertTrue(pol_1 == pol_2)
+        self.assertTrue(pol_1 != pol_3)
+
+        # test with polynomial/bezier
+        pol_4 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), min, max)
+        b_4 = convert_to_bezier(pol_4)
+        self.assertTrue(pol_4 == b_4)
+        self.assertTrue(pol_4 != a1)
+
+        #test with SE3 :
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        min = 0.2
+        max = 1.5
+        translation = bezier(waypoints, min, max)
+        se3_1 = SE3Curve(translation, init_rot, end_rot)
+        se3_2 = SE3Curve(translation, init_rot, end_rot)
+        waypoints2 = array([[1., 2., 3.5], [4., 5., 6.], [-4, 5., 6.], [4., 8., 6.], [4., 5., 6.]]).transpose()
+        translation3 = bezier(waypoints2, min, max)
+        se3_3 = SE3Curve(translation3, init_rot, end_rot)
+        end_quat2 = Quaternion(sqrt(2.) / 2.,0.,  sqrt(2.) / 2., 0)
+        end_rot2 = end_quat2.matrix()
+        se3_4 = SE3Curve(translation, init_rot, end_rot2)
+        self.assertTrue(se3_1 == se3_2)
+        self.assertTrue(se3_1 != se3_3)
+        self.assertTrue(se3_1 != se3_4)
+
+
 
 if __name__ == '__main__':
     unittest.main()
