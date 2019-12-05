@@ -452,7 +452,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__ne__", &curve_SE3_t::operator!=)
       .def("derivate", pure_virtual(&curve_SE3_t::derivate),
            "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
-      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
+      .def("compute_derivate", pure_virtual(&curve_SE3_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_SE3_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_SE3_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.")
