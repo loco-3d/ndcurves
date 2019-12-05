@@ -2387,6 +2387,24 @@ void testOperatorEqual(bool& error){
     std::cout<<"bc_0 and bc_2 should not be equals"<<std::endl;
     error = true;
   }
+
+  point3_t e3(3, 61.9, 7);
+  point3_t g3(-3, 36, 7);
+  std::vector<point3_t> control_points3;
+  control_points3.push_back(a);
+  control_points3.push_back(b);
+  control_points3.push_back(c);
+  control_points3.push_back(d);
+  control_points3.push_back(e3);
+  control_points3.push_back(f);
+  control_points3.push_back(g3);
+  control_points3.push_back(h);
+  control_points3.push_back(i);
+  bezier_t bc_0_3(control_points3.begin(), control_points3.end(), T_min, T_max);
+  if(bc_0_3 == bc_0){
+   std::cout<<"bc_0_3 and bc_0 should not be equals"<<std::endl;
+   error = true;
+  }
   polynomial_t pol_2 = polynomial_from_curve<polynomial_t>(bc_2);
   bezier_t bc_3 = bezier_from_curve<bezier_t>(pol_2);
   if(bc_2 != bc_3){
