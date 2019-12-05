@@ -122,8 +122,8 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     return  T_min_ == other.min()
         && T_max_ == other.max()
         && dim_ == other.dim()
-        && init_rot_.isApprox(other.init_rot_,prec)
-        && end_rot_.isApprox(other.end_rot_,prec);
+        && init_rot_.toRotationMatrix().isApprox(other.init_rot_.toRotationMatrix(),prec)
+        && end_rot_.toRotationMatrix().isApprox(other.end_rot_.toRotationMatrix(),prec);
   }
 
   virtual bool operator==(const SO3Linear_t& other) const {
