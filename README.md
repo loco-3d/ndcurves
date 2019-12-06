@@ -1,4 +1,4 @@
-Spline
+Curves
 ===================
 
 [![Pipeline status](https://gepgitlab.laas.fr/loco-3d/curves/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/loco-3d/curves/commits/master)
@@ -8,15 +8,17 @@ Spline
 A template-based Library for creating curves of arbitrary order and dimension, eventually subject to derivative constraints. The main use of the library is the creation of end-effector trajectories for legged robots.
 
 To do so, tools are provided to:
-> - create **exact** splines of arbitrary order (that pass exactly by an arbitrary number waypoints)
-> - constrain initial / end velocities and acceleration for the spline.
-> - constrain take-off and landing phases to follow a straight line along a given normal (to avoid undesired collisions between the effector and the contact surface)
-> - automatically handle 3d rotation of the effector.
+ - create **exact** splines of arbitrary order (that pass exactly by an arbitrary number waypoints)
+ - constrain initial / end velocities and acceleration for the spline.
+ - constrain take-off and landing phases to follow a straight line along a given normal (to avoid undesired collisions between the effector and the contact surface)
+ - automatically handle 3d rotation of the effector.
 
-The library is template-based, thus generic:  the curves can be of any dimension, and can be implemented in double, float  ...
+Several type of formulation are provided:
+ - Polynomials
+ - Bezier
+ - Hermite (only cubic hermite for now)
 
-While a Bezier curve implementation is provided, the main interest
-of this library is to create spline curves of arbitrary order
+The library is template-based, thus generic:  the curves can be of any dimension, and can be implemented in double or float and can work with kind variables like Vector, Transform, Matrix, ...
 
 ----------
 Example of use for and end-effector trajectory
@@ -91,7 +93,7 @@ performing tests...
 no errors found
 ```
 ### Optional: Python bindings installation
-To install the Python bindings, in the CMakeLists.txt file, first enable the BUILD_PYTHON_INTERFACE option:
+To install the Python bindings first enable the BUILD_PYTHON_INTERFACE option:
 ```
 cmake -DBUILD_PYTHON_INTERFACE=ON ..
 ```
