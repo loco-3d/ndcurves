@@ -1,4 +1,4 @@
-SET(${PROJECT_NAME}_HELPERS_HEADERS
+SET(${PROJECT_NAME}_OPTIMIZATION_HEADERS
   definitions.h
   details.h
   quadratic_problem.h
@@ -6,6 +6,6 @@ SET(${PROJECT_NAME}_HELPERS_HEADERS
   )
 
 INSTALL(FILES
-  ${${PROJECT_NAME}_HELPERS_HEADERS}
-  DESTINATION include/hpp/spline/optimization
+  ${${PROJECT_NAME}_OPTIMIZATION_HEADERS}
+  DESTINATION include/curves/optimization
   )
