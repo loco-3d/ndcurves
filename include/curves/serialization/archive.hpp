@@ -30,7 +30,7 @@ struct Serializable {
  public:
   /// \brief Loads a Derived object from a text file.
   template <class Derived>
-  void loadFromText(const std::string& filename) throw(std::invalid_argument) {
+  void loadFromText(const std::string& filename) {
     std::ifstream ifs(filename.c_str());
     if (ifs) {
       boost::archive::text_iarchive ia(ifs);
@@ -44,7 +44,7 @@ struct Serializable {
 
   /// \brief Saved a Derived object as a text file.
   template <class Derived>
-  void saveAsText(const std::string& filename) const throw(std::invalid_argument) {
+  void saveAsText(const std::string& filename) const {
     std::ofstream ofs(filename.c_str());
     if (ofs) {
       boost::archive::text_oarchive oa(ofs);
@@ -58,7 +58,7 @@ struct Serializable {
 
   /// \brief Loads a Derived object from an XML file.
   template <class Derived>
-  void loadFromXML(const std::string& filename, const std::string& tag_name) throw(std::invalid_argument) {
+  void loadFromXML(const std::string& filename, const std::string& tag_name) {
     assert(!tag_name.empty());
     std::ifstream ifs(filename.c_str());
     if (ifs) {
@@ -73,7 +73,7 @@ struct Serializable {
 
   /// \brief Saved a Derived object as an XML file.
   template <class Derived>
-  void saveAsXML(const std::string& filename, const std::string& tag_name) const throw(std::invalid_argument) {
+  void saveAsXML(const std::string& filename, const std::string& tag_name) const {
     assert(!tag_name.empty());
     std::ofstream ofs(filename.c_str());
     if (ofs) {
@@ -88,7 +88,7 @@ struct Serializable {
 
   /// \brief Loads a Derived object from an binary file.
   template <class Derived>
-  void loadFromBinary(const std::string& filename) throw(std::invalid_argument) {
+  void loadFromBinary(const std::string& filename) {
     std::ifstream ifs(filename.c_str());
     if (ifs) {
       boost::archive::binary_iarchive ia(ifs);
@@ -102,7 +102,7 @@ struct Serializable {
 
   /// \brief Saved a Derived object as an binary file.
   template <class Derived>
-  void saveAsBinary(const std::string& filename) const throw(std::invalid_argument) {
+  void saveAsBinary(const std::string& filename) const {
     std::ofstream ofs(filename.c_str());
     if (ofs) {
       boost::archive::binary_oarchive oa(ofs);

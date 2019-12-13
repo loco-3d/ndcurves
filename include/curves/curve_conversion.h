@@ -23,8 +23,6 @@ Polynomial polynomial_from_curve(const curveTypeToConvert& curve) {
   t_point_t coefficients;
   curveTypeToConvert current(curve);
   coefficients.push_back(curve(curve.min()));
-  num_t T = curve.max() - curve.min();
-  num_t T_div = 1.0;
   num_t fact = 1;
   for (std::size_t i = 1; i <= curve.degree_; ++i) {
     fact *= (num_t)i;
@@ -78,7 +76,6 @@ Hermite hermite_from_curve(const curveTypeToConvert& curve) {
   curveTypeToConvert current(curve);
   num_t T_min = current.min();
   num_t T_max = current.max();
-  num_t T = T_max - T_min;
   // Positions and derivatives
   point_t p0 = current(T_min);
   point_t p1 = current(T_max);

@@ -403,13 +403,13 @@ void addFinalTransform(piecewise_SE3_curve_t& self, const matrix4_t& end, const 
 BOOST_PYTHON_MODULE(curves) {
   /** BEGIN eigenpy init**/
   eigenpy::enableEigenPy();
-  eigenpy::enableEigenPySpecific<pointX_t, pointX_t>();
-  eigenpy::enableEigenPySpecific<pointX_list_t, pointX_list_t>();
-  eigenpy::enableEigenPySpecific<coeff_t, coeff_t>();
-  eigenpy::enableEigenPySpecific<point_list_t, point_list_t>();
-  eigenpy::enableEigenPySpecific<matrix3_t, matrix3_t>();
-  eigenpy::enableEigenPySpecific<matrix4_t, matrix4_t>();
-  // eigenpy::enableEigenPySpecific<quaternion_t,quaternion_t>();
+  ENABLE_SPECIFIC_MATRIX_TYPE(pointX_t);
+  ENABLE_SPECIFIC_MATRIX_TYPE(pointX_list_t);
+  ENABLE_SPECIFIC_MATRIX_TYPE(coeff_t);
+  ENABLE_SPECIFIC_MATRIX_TYPE(point_list_t);
+  ENABLE_SPECIFIC_MATRIX_TYPE(matrix3_t);
+  ENABLE_SPECIFIC_MATRIX_TYPE(matrix4_t);
+  // ENABLE_SPECIFIC_MATRIX_TYPE(quaternion_t);
   eigenpy::exposeQuaternion();
   /*eigenpy::exposeAngleAxis();
   eigenpy::exposeQuaternion();*/
@@ -551,30 +551,30 @@ BOOST_PYTHON_MODULE(curves) {
   class_<polynomial_t, bases<curve_abc_t> >("polynomial", init<>())
       .def("__init__",
            make_constructor(&wrapPolynomialConstructor1, default_call_policies(), args("coeffs", "min", "max")),
-           "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [min,max]."
+           "Create polynomial spline from an Eigen matrix of coefficient defined for t in [min,max]."
            " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest "
            "order."
            " Spline order is given by the number of the columns -1.")
       .def("__init__", make_constructor(&wrapPolynomialConstructor2, default_call_policies(), arg("coeffs")),
-           "Create polynomial spline from an Eigen matrix of coefficient defined for t \in [0,1]."
+           "Create polynomial spline from an Eigen matrix of coefficient defined for t in [0,1]."
            " The matrix should contain one coefficient per column, from the zero order coefficient,up to the highest "
            "order."
            " Spline order is given by the number of the columns -1.")
       .def("__init__",
            make_constructor(&wrapPolynomialConstructorFromBoundaryConditionsDegree1, default_call_policies(),
                             args("init", "end", "min", "max")),
-           "Create a polynomial of degree 1 defined for t \in [min,max], "
+           "Create a polynomial of degree 1 defined for t in [min,max], "
            "such that c(min) == init and c(max) == end.")
       .def("__init__",
            make_constructor(&wrapPolynomialConstructorFromBoundaryConditionsDegree3, default_call_policies(),
                             args("init", "d_init", "end", "d_end", "min", "max")),
-           "Create a polynomial of degree 3 defined for t \in [min,max], "
+           "Create a polynomial of degree 3 defined for t in [min,max], "
            "such that c(min) == init and c(max) == end"
            " dc(min) == d_init and dc(max) == d_end")
       .def("__init__",
            make_constructor(&wrapPolynomialConstructorFromBoundaryConditionsDegree5, default_call_policies(),
                             args("init", "d_init", "dd_init", "end", "d_end", "dd_end", "min", "max")),
-           "Create a polynomial of degree 5 defined for t \in [min,max], "
+           "Create a polynomial of degree 5 defined for t in [min,max], "
            "such that c(min) == init and c(max) == end"
            " dc(min) == d_init and dc(max) == d_end"
            " ddc(min) == dd_init and ddc(max) == dd_end")
@@ -848,12 +848,12 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
       .def("__init__",
            make_constructor(&wrapSO3LinearConstructorFromMatrix, default_call_policies(),
                             args("init_rotation", "end_rotation", "min", "max")),
-           "Create a SO3 Linear curve between two rotations, defined for t \in [min,max]."
+           "Create a SO3 Linear curve between two rotations, defined for t in [min,max]."
            " The input rotations are expressed as 3x3 matrix.")
       .def("__init__",
            make_constructor(&wrapSO3LinearConstructorFromQuaternion, default_call_policies(),
                             args("init_rotation", "end_rotation", "min", "max")),
-           "Create a SO3 Linear curve between two rotations, defined for t \in [min,max]."
+           "Create a SO3 Linear curve between two rotations, defined for t in [min,max]."
            " The input rotations are expressed as Quaternions.")
       .def("computeAsQuaternion", &SO3Linear_t::computeAsQuaternion,
            "Output the quaternion of the rotation at the given time. This rotation is obtained by a Spherical Linear "
@@ -878,13 +878,13 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
       .def("__init__",
            make_constructor(&wrapSE3CurveFromTransform, default_call_policies(),
                             args("init_transform", "end_transform", "min", "max")),
-           "Create a SE3 curve between two transform, defined for t \in [min,max]."
+           "Create a SE3 curve between two transform, defined for t in [min,max]."
            " Using linear interpolation for translation and slerp for rotation between init and end."
            " The input transform are expressed as 4x4 matrix.")
       .def("__init__",
            make_constructor(&wrapSE3CurveFromPosAndRotation, default_call_policies(),
                             args("init_translation", "end_translation","init_rotation","end_rotation", "min", "max")),
-           "Create a SE3 curve between two transform, defined for t \in [min,max]."
+           "Create a SE3 curve between two transform, defined for t in [min,max]."
            " Using linear interpolation for translation and slerp for rotation between init and end."
            " The input translations are expressed as 3d vector and the rotations as 3x3 matrix.")
       .def("__init__",
@@ -936,7 +936,7 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
       .def("__init__",
            make_constructor(&wrapSE3CurveFromSE3Pinocchio, default_call_policies(),
                             args("init_SE3", "end_SE3", "min", "max")),
-           "Create a SE3 curve between two SE3 objects from Pinocchio, defined for t \in [min,max]."
+           "Create a SE3 curve between two SE3 objects from Pinocchio, defined for t in [min,max]."
            " Using linear interpolation for translation and slerp for rotation between init and end.")
       .def("evaluateAsSE3", &se3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
            args("self", "t"))
