@@ -22,8 +22,6 @@ Polynomial polynomial_from_curve(const typename Polynomial::curve_abc_t& curve) 
   typedef typename Polynomial::num_t num_t;
   t_point_t coefficients;
   coefficients.push_back(curve(curve.min()));
-  num_t T = curve.max() - curve.min();
-  num_t T_div = 1.0;
   num_t fact = 1;
   for (std::size_t i = 1; i <= curve.degree(); ++i) {
     fact *= (num_t)i;
@@ -75,9 +73,9 @@ Hermite hermite_from_curve(const typename Hermite::curve_abc_t& curve) {
   typedef typename Hermite::t_pair_point_tangent_t t_pair_point_tangent_t;
   typedef typename Hermite::point_t point_t;
   typedef typename Hermite::num_t num_t;
-  num_t T_min = curve.min();
-  num_t T_max = curve.max();
-  num_t T = T_max - T_min;
+  curveTypeToConvert current(curve);
+  num_t T_min = current.min();
+  num_t T_max = current.max();
   // Positions and derivatives
   point_t p0 = curve(T_min);
   point_t p1 = curve(T_max);
