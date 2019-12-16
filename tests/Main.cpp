@@ -2304,10 +2304,8 @@ void BezierLinearProblemInitInequalities(bool& error) {
   }
 }
 
-static const std::string path = "../../tests/data/";
-
 void BezierLinearProblemsetupLoadProblem(bool& /*error*/) {
-  problem_definition_t pDef = loadproblem(path + "test.pb");
+  problem_definition_t pDef = loadproblem(TEST_DATA_PATH "test.pb");
   // problem_data_t pData = setup_control_points<point_t, 3, double>(pDef);
   generate_problem<point3_t, double, true>(pDef, VELOCITY);
   // initInequalityMatrix<point_t,3,double>(pDef,pData,prob);
