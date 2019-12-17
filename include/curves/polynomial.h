@@ -273,10 +273,10 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     return currentPoint_;
   }
 
-  polynomial_t* compute_derivate(const std::size_t order) const {
+  polynomial_t compute_derivate(const std::size_t order) const {
     check_if_not_empty();
     if (order == 0) {
-      return new polynomial_t(*this);
+      return *this;
     }
     coeff_t coeff_derivated = deriv_coeff(coefficients_);
     polynomial_t deriv(coeff_derivated, T_min_, T_max_);

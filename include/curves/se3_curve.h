@@ -164,7 +164,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
     return res;
   }
 
-  SE3Curve_t* compute_derivate(const std::size_t /*order*/) const {
+  SE3Curve_t compute_derivate(const std::size_t /*order*/) const {
     throw std::logic_error("Compute derivate for SE3 is not implemented yet.");
   }
 

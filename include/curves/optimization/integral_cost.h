@@ -32,10 +32,9 @@ quadratic_variable<Numeric> compute_integral_cost_internal(const problem_data<Po
   typedef bezier_curve<Numeric, Numeric, true, linear_variable<Numeric> > bezier_t;
   typedef typename bezier_t::t_point_t t_point_t;
   typedef typename t_point_t::const_iterator cit_point_t;
-  bezier_t* acc = pData.bezier->compute_derivate(num_derivate);
-  const t_point_t& wps = acc->waypoints();
+  bezier_t acc = pData.bezier->compute_derivate(num_derivate);
+  const t_point_t& wps = acc.waypoints();
   quadratic_variable<Numeric> res(bezier_product<Point, Numeric, cit_point_t>(wps.begin(), wps.end(), wps.begin(), wps.end(), pData.dim_));
-  delete acc;
   return res;
 }
 
