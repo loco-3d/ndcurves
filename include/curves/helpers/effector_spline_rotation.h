@@ -76,6 +76,14 @@ class rotation_spline : public curve_abc_quat_t {
     throw std::runtime_error("TODO quaternion spline does not implement derivate");
   }
 
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  curve_abc_quat_t* compute_derivate_ptr(const std::size_t /*order*/) const {
+    throw std::logic_error("Compute derivate for quaternion spline is not implemented yet.");
+  }
+
+
   /// \brief Initialize time reparametrization for spline.
   exact_cubic_constraint_one_dim computeWayPoints() const {
     t_waypoint_one_dim_t waypoints;
@@ -87,6 +95,9 @@ class rotation_spline : public curve_abc_quat_t {
   virtual std::size_t dim() const { return dim_; }
   virtual time_t min() const { return min_; }
   virtual time_t max() const { return max_; }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const {return 1;}
 
   /*Attributes*/
   Eigen::Quaterniond quat_from_;                 // const

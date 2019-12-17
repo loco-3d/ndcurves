@@ -39,8 +39,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   typedef std::vector<point_t, Eigen::aligned_allocator<point_t> > t_point_t;
   typedef typename t_point_t::const_iterator cit_point_t;
   typedef bezier_curve<Time, Numeric, Safe, Point> bezier_curve_t;
-  typedef piecewise_curve<Time, Numeric, Safe, point_t, t_point_t, bezier_curve_t> piecewise_bezier_curve_t;
+  typedef boost::shared_ptr<bezier_curve_t> bezier_curve_ptr_t;
+  typedef piecewise_curve<Time, Numeric, Safe, point_t> piecewise_curve_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
+  typedef typename curve_abc_t::curve_ptr_t curve_ptr_t;
 
   /* Constructors - destructors */
  public:
@@ -158,6 +160,13 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return deriv.compute_derivate(order - 1);
   }
 
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  bezier_curve_t* compute_derivate_ptr(const std::size_t order) const {
+    return new bezier_curve_t(compute_derivate(order));
+  }
+
   ///  \brief Compute the primitive of the curve at order N.
   ///  Computes the primitive at order N of bezier curve of parametric equation \f$x(t)\f$. <br>
   ///  At order \f$N=1\f$, the primitve \f$X(t)\f$ of \f$x(t)\f$ is such as \f$\frac{dX(t)}{dt} = x(t)\f$.
@@ -190,8 +199,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derived curve of order N at time t.
   ///
   virtual point_t derivate(const time_t t, const std::size_t order) const {
-    bezier_curve_t deriv = compute_derivate(order);
-    return deriv(t);
+    return compute_derivate(order)(t);
   }
 
   /// \brief Evaluate all Bernstein polynomes for a certain degree.
@@ -325,12 +333,12 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
   /// \brief Split the bezier curve in several curves, all accessible
-  /// within a piecewise_bezier_curve_t.
+  /// within a piecewise_curve_t.
   /// \param times : list of times of size n.
-  /// \return a piecewise_bezier_curve_t comprising n+1 curves
+  /// \return a piecewise_curve_t comprising n+1 curves
   ///
-  piecewise_bezier_curve_t split(const vector_x_t& times) const {
-    typename piecewise_bezier_curve_t::t_curve_t curves;
+  piecewise_curve_t split(const vector_x_t& times) const {
+    std::vector<bezier_curve_t> curves;
     bezier_curve_t current = *this;
     for (int i = 0; i < times.rows(); ++i) {
       std::pair<bezier_curve_t, bezier_curve_t> pairsplit = current.split(times[i]);
@@ -338,7 +346,12 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
       current = pairsplit.second;
     }
     curves.push_back(current);
-    return piecewise_bezier_curve_t(curves);
+    piecewise_curve_t res;
+    for(typename std::vector<bezier_curve_t>::const_iterator cit = curves.begin(); cit != curves.end() ; ++cit){
+      typename piecewise_curve_t::curve_ptr_t ptr(new bezier_curve_t(*cit));
+      res.add_curve_ptr(ptr);
+    }
+    return res;
   }
 
   /// \brief Extract a bezier curve defined between \f$[t_1,t_2]\f$ from the actual bezier curve
@@ -414,6 +427,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$, upper bound of time range.
   virtual time_t max() const { return T_max_; }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const {return degree_;}
   /*Helpers*/
 
   /* Attributes */

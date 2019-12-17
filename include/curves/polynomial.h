@@ -41,6 +41,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   typedef Eigen::MatrixXd coeff_t;
   typedef Eigen::Ref<coeff_t> coeff_t_ref;
   typedef polynomial<Time, Numeric, Safe, Point, T_Point> polynomial_t;
+  typedef typename curve_abc_t::curve_ptr_t curve_ptr_t;
 
   /* Constructors - destructors */
  public:
@@ -282,6 +283,13 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     return deriv.compute_derivate(order - 1);
   }
 
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  polynomial_t* compute_derivate_ptr(const std::size_t order) const {
+    return new polynomial_t(compute_derivate(order));
+  }
+
   Eigen::MatrixXd coeff() const { return coefficients_; }
 
   point_t coeffAtDegree(const std::size_t degree) const {
@@ -329,6 +337,9 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$ upper bound of time range.
   num_t virtual max() const { return T_max_; }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const {return degree_;}
   /*Helpers*/
 
   /*Attributes*/

@@ -10,6 +10,8 @@
 
 #include "curve_abc.h"
 #include "curve_conversion.h"
+#include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/serialization/vector.hpp>
 
 namespace curves {
 /// \class PiecewiseCurve.
@@ -23,21 +25,19 @@ namespace curves {
 ///
 template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
-          typename T_Point = std::vector<Point, Eigen::aligned_allocator<Point> >,
-          typename Curve = curve_abc<Time, Numeric, Safe, Point>,
           typename Point_derivate = Point >
 struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_derivate> {
   typedef Point point_t;
-  typedef T_Point t_point_t;
-  typedef Point_derivate point_derivate_t;
+  typedef Point_derivate   point_derivate_t;
+  typedef std::vector<point_t, Eigen::aligned_allocator<point_t> > t_point_t;
+  typedef std::vector<point_derivate_t, Eigen::aligned_allocator<point_derivate_t> > t_point_derivate_t;
   typedef Time time_t;
   typedef Numeric num_t;
-  typedef Curve curve_t;
-  typedef typename std::vector<curve_t> t_curve_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_t; // parent class
+  typedef boost::shared_ptr<curve_t> curve_ptr_t;
+  typedef typename std::vector<curve_ptr_t> t_curve_ptr_t;
   typedef typename std::vector<Time> t_time_t;
-  typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_abc_t;  // parent class
-
-
+  typedef piecewise_curve<Time, Numeric, Safe, Point,Point_derivate> piecewise_curve_t;
  public:
   /// \brief Empty constructor. Add at least one curve to call other class functions.
   ///
@@ -47,19 +47,17 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   /// Initialize a piecewise curve by giving the first curve.
   /// \param cf   : a curve.
   ///
-  piecewise_curve(const curve_t& cf) {
-    dim_ = cf.dim();
-    size_ = 0;
-    add_curve(cf);
+  piecewise_curve(const curve_ptr_t& cf):
+    dim_(0), size_(0), T_min_(0), T_max_(0)
+  {
+    add_curve_ptr(cf);
   }
 
-  piecewise_curve(const t_curve_t list_curves) {
-    if (list_curves.size() != 0) {
-      dim_ = list_curves[0].dim();
-    }
-    size_ = 0;
-    for (std::size_t i = 0; i < list_curves.size(); i++) {
-      add_curve(list_curves[i]);
+  piecewise_curve(const t_curve_ptr_t& curves_list):
+    dim_(0), size_(0), T_min_(0), T_max_(0)
+  {
+    for(typename t_curve_ptr_t::const_iterator it = curves_list.begin() ; it != curves_list.end() ; ++it){
+      add_curve_ptr(*it);
     }
   }
 
@@ -73,13 +71,13 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
 
   virtual ~piecewise_curve() {}
 
-  virtual Point operator()(const Time t) const {
+  virtual point_t operator()(const Time t) const {
     check_if_not_empty();
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       // std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
       throw std::out_of_range("can't evaluate piecewise curve, out of range");
     }
-    return curves_.at(find_interval(t))(t);
+    return (*curves_.at(find_interval(t)))(t);
   }
 
   ///  \brief Evaluate the derivative of order N of curve at time t.
@@ -92,7 +90,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       throw std::invalid_argument("can't evaluate piecewise curve, out of range");
     }
-    return (curves_.at(find_interval(t))).derivate(t, order);
+    return (*curves_.at(find_interval(t))).derivate(t, order);
   }
 
   /**
@@ -100,12 +98,20 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
    * @param order order of derivative
    * @return
    */
-  piecewise_curve<Time, Numeric, Safe, point_derivate_t, std::vector<point_derivate_t, Eigen::aligned_allocator<Point> >, Curve> compute_derivate(const std::size_t order) const {
-    piecewise_curve<Time, Numeric, Safe, point_derivate_t,  std::vector<point_derivate_t, Eigen::aligned_allocator<Point> >, Curve> res;
-    for (typename t_curve_t::const_iterator itc = curves_.begin(); itc < curves_.end(); ++itc) {
-      res.add_curve(itc->compute_derivate(order));
+  piecewise_curve_t* compute_derivate_ptr(const std::size_t order) const {
+    piecewise_curve_t* res(new piecewise_curve_t());
+    for (typename t_curve_ptr_t::const_iterator itc = curves_.begin(); itc < curves_.end(); ++itc) {
+      curve_ptr_t ptr((*itc)->compute_derivate_ptr(order));
+      res->add_curve_ptr(ptr);
     }
     return res;
+  }
+
+
+  template <typename Curve>
+  void add_curve(const Curve& curve) {
+    curve_ptr_t curve_ptr = boost::make_shared<Curve>(curve);
+    add_curve_ptr(curve_ptr);
   }
 
   ///  \brief Add a new curve to piecewise curve, which should be defined in \f$[T_{min},T_{max}]\f$ where
@@ -114,29 +120,31 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   ///         defined in the template.
   ///  \param cf : curve to add.
   ///
-  void add_curve(const curve_t& cf) {
-    if (size_ == 0 && dim_ == 0) { // first curve added
-      dim_ = cf.dim();
+  void add_curve_ptr(const curve_ptr_t& cf) {
+    if (size_ == 0) { // first curve added
+      dim_ = cf->dim();
     }
     // Check time continuity : Beginning time of cf must be equal to T_max_ of actual piecewise curve.
-    if (size_ != 0 && !(fabs(cf.min() - T_max_) < MARGIN)) {
-      throw std::invalid_argument(
-          "Can not add new Polynom to PiecewiseCurve : time discontinuity between T_max_ and pol.min()");
+    if (size_ != 0 && !(fabs(cf->min() - T_max_) < MARGIN)) {
+      std::stringstream ss; ss <<  "Can not add new Polynom to PiecewiseCurve : time discontinuity between T_max_ and pol.min(). Current T_max is "<<T_max_<<" new curve min is "<<cf->min();
+      throw std::invalid_argument(ss.str().c_str());
     }
-    if(cf.dim() != dim_){
-      throw std::invalid_argument(
-          "All the curves in a piecewiseCurve should have the same dimension");
+    if(cf->dim() != dim_){
+      std::stringstream ss; ss << "All the curves in a piecewiseCurve should have the same dimension. Current dim is "<<dim_<<" dim of the new curve is "<<cf->dim();
+      throw std::invalid_argument(ss.str().c_str());
     }
     curves_.push_back(cf);
     size_ = curves_.size();
-    T_max_ = cf.max();
+    T_max_ = cf->max();
     if (size_ == 1) {
       // First curve added
-      time_curves_.push_back(cf.min());
-      T_min_ = cf.min();
+      time_curves_.push_back(cf->min());
+      T_min_ = cf->min();
     }
     time_curves_.push_back(T_max_);
   }
+
+
 
   ///  \brief Check if the curve is continuous of order given.
   ///  \param order : order of continuity we want to check.
@@ -149,10 +157,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     if(order ==0){
       point_t value_end, value_start;
       while (isContinuous && i < (size_ - 1)) {
-        curve_t current = curves_.at(i);
-        curve_t next = curves_.at(i + 1);
-        value_end = current(current.max());
-        value_start = next(next.min());
+        curve_ptr_t current = curves_.at(i);
+        curve_ptr_t next = curves_.at(i + 1);
+        value_end = (*current)(current->max());
+        value_start = (*next)(next->min());
         if (!value_end.isApprox(value_start,MARGIN)) {
           isContinuous = false;
         }
@@ -161,10 +169,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     }else{
       point_derivate_t value_end, value_start;
       while (isContinuous && i < (size_ - 1)) {
-        curve_t current = curves_.at(i);
-        curve_t next = curves_.at(i + 1);
-        value_end = current.derivate(current.max(), order);
-        value_start = next.derivate(next.min(), order);
+        curve_ptr_t current = curves_.at(i);
+        curve_ptr_t next = curves_.at(i + 1);
+        value_end = current->derivate(current->max(), order);
+        value_start = next->derivate(next->min(), order);
         if (!value_end.isApprox(value_start,MARGIN)) {
           isContinuous = false;
         }
@@ -176,9 +184,9 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
 
   std::size_t num_curves() const { return curves_.size(); }
 
-  const curve_t& curve_at_time(const time_t t) const { return curves_[find_interval(t)]; }
+  const curve_ptr_t& curve_at_time(const time_t t) const { return curves_[find_interval(t)]; }
 
-  const curve_t& curve_at_index(const std::size_t idx) const {
+  const curve_ptr_t& curve_at_index(const std::size_t idx) const {
     if (Safe && idx >= num_curves()) {
       throw std::length_error(
           "curve_at_index: requested index greater than number of curves in piecewise_curve instance");
@@ -187,56 +195,54 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   }
 
   template <typename Bezier>
-  piecewise_curve<Time, Numeric, Safe, Point, T_Point, Bezier> convert_piecewise_curve_to_bezier() {
+  piecewise_curve_t convert_piecewise_curve_to_bezier() {
     check_if_not_empty();
-    typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, Bezier> piecewise_curve_out_t;
-    // Get first curve (segment)
-    curve_t first_curve = curves_.at(0);
-    Bezier first_curve_output = bezier_from_curve<Bezier, curve_t>(first_curve);
+    // check if given Bezier curve have the correct dimension :
+    BOOST_STATIC_ASSERT(boost::is_same<typename Bezier::point_t, point_t>::value);
+    BOOST_STATIC_ASSERT(boost::is_same<typename Bezier::point_derivate_t, point_derivate_t>::value);
     // Create piecewise curve
-    piecewise_curve_out_t pc_res(first_curve_output);
+    piecewise_curve_t pc_res;
     // Convert and add all other curves (segments)
-    for (std::size_t i = 1; i < size_; i++) {
-      pc_res.add_curve(bezier_from_curve<Bezier, curve_t>(curves_.at(i)));
+    for (std::size_t i = 0; i < size_; i++) {
+      pc_res.add_curve(bezier_from_curve<Bezier>(*curves_.at(i)));
     }
     return pc_res;
   }
 
-  template <typename Hermite>
-  piecewise_curve<Time, Numeric, Safe, Point, T_Point, Hermite> convert_piecewise_curve_to_cubic_hermite() {
+ template <typename Hermite>
+ piecewise_curve_t convert_piecewise_curve_to_cubic_hermite() {
     check_if_not_empty();
-    typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, Hermite> piecewise_curve_out_t;
-    // Get first curve (segment)
-    curve_t first_curve = curves_.at(0);
-    Hermite first_curve_output = hermite_from_curve<Hermite, curve_t>(first_curve);
+    // check if given Hermite curve have the correct dimension :
+    BOOST_STATIC_ASSERT(boost::is_same<typename Hermite::point_t, point_t>::value);
+    BOOST_STATIC_ASSERT(boost::is_same<typename Hermite::point_derivate_t, point_derivate_t>::value);
     // Create piecewise curve
-    piecewise_curve_out_t pc_res(first_curve_output);
+    piecewise_curve_t pc_res;
     // Convert and add all other curves (segments)
-    for (std::size_t i = 1; i < size_; i++) {
-      pc_res.add_curve(hermite_from_curve<Hermite, curve_t>(curves_.at(i)));
-    }
-    return pc_res;
-  }
-
-  template <typename Polynomial>
-  piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> convert_piecewise_curve_to_polynomial() {
-    check_if_not_empty();
-    typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_curve_out_t;
-    // Get first curve (segment)
-    curve_t first_curve = curves_.at(0);
-    Polynomial first_curve_output = polynomial_from_curve<Polynomial, curve_t>(first_curve);
-    // Create piecewise curve
-    piecewise_curve_out_t pc_res(first_curve_output);
-    // Convert and add all other curves (segments)
-    for (std::size_t i = 1; i < size_; i++) {
-      pc_res.add_curve(polynomial_from_curve<Polynomial, curve_t>(curves_.at(i)));
+    for (std::size_t i = 0; i < size_; i++) {
+      pc_res.add_curve(hermite_from_curve<Hermite>(*curves_.at(i)));
     }
     return pc_res;
   }
 
   template <typename Polynomial>
-  static piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> convert_discrete_points_to_polynomial(
-      T_Point points, t_time_t time_points) {
+  piecewise_curve_t convert_piecewise_curve_to_polynomial() {
+    check_if_not_empty();
+    // check if given Polynomial curve have the correct dimension :
+    BOOST_STATIC_ASSERT(boost::is_same<typename Polynomial::point_t, point_t>::value);
+    BOOST_STATIC_ASSERT(boost::is_same<typename Polynomial::point_derivate_t, point_derivate_t>::value);
+    // Create piecewise curve
+    piecewise_curve_t pc_res;
+    // Convert and add all other curves (segments)
+    for (std::size_t i = 0; i < size_; i++) {
+      pc_res.add_curve(polynomial_from_curve<Polynomial>(*curves_.at(i)));
+    }
+    return pc_res;
+  }
+
+
+  template <typename Polynomial>
+  static piecewise_curve_t convert_discrete_points_to_polynomial(
+      t_point_t points, t_time_t time_points) {
     if (Safe & !(points.size() > 1)) {
       // std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
       throw std::invalid_argument(
@@ -247,7 +253,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
           "piecewise_curve::convert_discrete_points_to_polynomial: Error, points and time_points must have the same "
           "size.");
     }
-    piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_res;
+    // check if given Polynomial curve have the correct dimension :
+    BOOST_STATIC_ASSERT(boost::is_same<typename Polynomial::point_t, point_t>::value);
+    BOOST_STATIC_ASSERT(boost::is_same<typename Polynomial::point_derivate_t, point_derivate_t>::value);
+    piecewise_curve_t piecewise_res;
 
     for (size_t i = 1; i < points.size(); ++i) {
       piecewise_res.add_curve(Polynomial(points[i - 1], points[i], time_points[i - 1], time_points[i]));
@@ -256,8 +265,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   }
 
   template <typename Polynomial>
-  static piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> convert_discrete_points_to_polynomial(
-      T_Point points, T_Point points_derivative, t_time_t time_points) {
+  static piecewise_curve_t convert_discrete_points_to_polynomial(
+      t_point_t points, t_point_derivate_t points_derivative, t_time_t time_points) {
     if (Safe & !(points.size() > 1)) {
       // std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
       throw std::invalid_argument(
@@ -273,7 +282,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
           "piecewise_curve::convert_discrete_points_to_polynomial: Error, points and points_derivative must have the "
           "same size.");
     }
-    piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_res;
+    // check if given Polynomial curve have the correct dimension :
+    BOOST_STATIC_ASSERT(boost::is_same<typename Polynomial::point_t, point_t>::value);
+    BOOST_STATIC_ASSERT(boost::is_same<typename Polynomial::point_derivate_t, point_derivate_t>::value);
+    piecewise_curve_t piecewise_res;
 
     for (size_t i = 1; i < points.size(); ++i) {
       piecewise_res.add_curve(Polynomial(points[i - 1], points_derivative[i - 1], points[i], points_derivative[i],
@@ -283,8 +295,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   }
 
   template <typename Polynomial>
-  static piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> convert_discrete_points_to_polynomial(
-      T_Point points, T_Point points_derivative, T_Point points_second_derivative, t_time_t time_points) {
+  static piecewise_curve_t convert_discrete_points_to_polynomial(
+      t_point_t points, t_point_derivate_t points_derivative, t_point_derivate_t points_second_derivative, t_time_t time_points) {
     if (Safe & !(points.size() > 1)) {
       // std::cout<<"[Min,Max]=["<<T_min_<<","<<T_max_<<"]"<<" t="<<t<<std::endl;
       throw std::invalid_argument(
@@ -305,7 +317,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
           "piecewise_curve::convert_discrete_points_to_polynomial: Error, points and points_second_derivative must "
           "have the same size.");
     }
-    piecewise_curve<Time, Numeric, Safe, Point, T_Point, Polynomial> piecewise_res;
+    // check if given Polynomial curve have the correct dimension :
+    BOOST_STATIC_ASSERT(boost::is_same<typename Polynomial::point_t, point_t>::value);
+    BOOST_STATIC_ASSERT(boost::is_same<typename Polynomial::point_derivate_t, point_derivate_t>::value);
+    piecewise_curve_t piecewise_res;
 
     for (size_t i = 1; i < points.size(); ++i) {
       piecewise_res.add_curve(Polynomial(points[i - 1], points_derivative[i - 1], points_second_derivative[i - 1],
@@ -362,12 +377,17 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$, upper bound of time range.
   Time virtual max() const { return T_max_; }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const {
+    throw std::runtime_error("degree() method is not implemented for this type of curve.");
+  }
   std::size_t getNumberCurves() { return curves_.size(); }
   /*Helpers*/
 
   /* Attributes */
   std::size_t dim_;       // Dim of curve
-  t_curve_t curves_;      // for curves 0/1/2 : [ curve0, curve1, curve2 ]
+  t_curve_ptr_t curves_;  // for curves 0/1/2 : [ curve0, curve1, curve2 ]
   t_time_t time_curves_;  // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
   std::size_t size_;      // Number of segments in piecewise curve = size of curves_
   Time T_min_, T_max_;
@@ -382,7 +402,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     if (version) {
       // Do something depending on version ?
     }
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("curves", curves_);
     ar& boost::serialization::make_nvp("time_curves", time_curves_);
@@ -392,8 +412,9 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   }
 };  // End struct piecewise curve
 
-template <typename Time, typename Numeric, bool Safe, typename Point, typename T_Point,typename Curve,typename Point_derivate>
-const double piecewise_curve<Time, Numeric, Safe, Point, T_Point, Curve,Point_derivate>::MARGIN(0.001);
+
+template <typename Time, typename Numeric, bool Safe, typename Point, typename Point_derivate>
+const double piecewise_curve<Time, Numeric, Safe, Point,Point_derivate >::MARGIN(0.001);
 
 }  // namespace curves
 

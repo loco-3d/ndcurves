@@ -39,6 +39,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   typedef std::vector<Time> vector_time_t;
   typedef Numeric num_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
+  typedef cubic_hermite_spline<Time, Numeric, Safe, point_t> cubic_hermite_spline_t;
 
 
  public:
@@ -111,6 +112,19 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     check_conditions();
     return evalCubicHermiteSpline(t, order);
   }
+
+  cubic_hermite_spline_t compute_derivate(const std::size_t /*order*/) const {
+    throw std::logic_error("Compute derivate for cubic hermite spline is not implemented yet.");
+  }
+
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  cubic_hermite_spline_t* compute_derivate_ptr(const std::size_t order) const {
+    return new cubic_hermite_spline_t(compute_derivate(order));
+  }
+
+
 
   /// \brief Set time of each control point of cubic hermite spline.
   /// Set duration of each spline, Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with
@@ -325,6 +339,9 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$, upper bound of time range.
   Time virtual max() const { return time_control_points_.back(); }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const {return degree_;}
   /*Helpers*/
 
   /*Attributes*/

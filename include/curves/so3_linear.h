@@ -125,6 +125,18 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     }
   }
 
+  SO3Linear_t compute_derivate(const std::size_t /*order*/) const {
+    throw std::logic_error("Compute derivate for SO3Linear is not implemented yet.");
+  }
+
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  SO3Linear_t* compute_derivate_ptr(const std::size_t order) const {
+    return new SO3Linear_t(compute_derivate(order));
+  }
+
+
   /*Helpers*/
   /// \brief Get dimension of curve.
   /// \return dimension of curve.
@@ -135,6 +147,9 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$ upper bound of time range.
   time_t max() const { return T_max_; }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const {return 1;}
   matrix3_t getInitRotation()const {return init_rot_.toRotationMatrix();}
   matrix3_t getEndRotation()const {return end_rot_.toRotationMatrix();}
   matrix3_t getInitRotation() {return init_rot_.toRotationMatrix();}

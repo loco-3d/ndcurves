@@ -17,6 +17,7 @@ using namespace boost::python;
 struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -24,6 +25,7 @@ struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
 struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -31,6 +33,15 @@ struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
 struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
+  std::size_t dim() { return this->get_override("dim")(); }
+  real min() { return this->get_override("min")(); }
+  real max() { return this->get_override("max")(); }
+};
+struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
+  point_t operator()(const real) { return this->get_override("operator()")(); }
+  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -137,53 +148,42 @@ polynomial_t* wrapPolynomialConstructorFromBoundaryConditionsDegree3(const point
 }
 polynomial_t* wrapPolynomialConstructorFromBoundaryConditionsDegree5(const pointX_t& init, const pointX_t& d_init,
                                                                      const pointX_t& dd_init, const pointX_t& end,
-                                                                     const point_t& d_end, const point_t& dd_end,
+                                                                     const pointX_t& d_end, const pointX_t& dd_end,
                                                                      const real min, const real max) {
   return new polynomial_t(init, d_init, dd_init, end, d_end, dd_end, min, max);
 }
 /* End wrap polynomial */
 
 /* Wrap piecewise curve */
-piecewise_polynomial_curve_t* wrapPiecewisePolynomialCurveConstructor(const polynomial_t& pol) {
-  return new piecewise_polynomial_curve_t(pol);
+piecewise_t* wrapPiecewiseCurveConstructor(const curve_ptr_t& curve) {
+  return new piecewise_t(curve);
 }
-piecewise_polynomial_curve_t* wrapPiecewisePolynomialCurveEmptyConstructor() {
-  return new piecewise_polynomial_curve_t();
+piecewise_t* wrapPiecewisePolynomialCurveEmptyConstructor() {
+  return new piecewise_t();
 }
-piecewise_bezier_curve_t* wrapPiecewiseBezierCurveConstructor(const bezier_t& bc) {
-  return new piecewise_bezier_curve_t(bc);
+piecewise_SE3_t* wrapPiecewiseSE3Constructor(const curve_SE3_ptr_t& curve) {
+  return new piecewise_SE3_t(curve);
 }
-piecewise_bezier_linear_curve_t* wrapPiecewiseLinearBezierCurveConstructor(const bezier_linear_variable_t& bc) {
-  return new piecewise_bezier_linear_curve_t(bc);
-}
-piecewise_cubic_hermite_curve_t* wrapPiecewiseCubicHermiteCurveConstructor(const cubic_hermite_spline_t& ch) {
-  return new piecewise_cubic_hermite_curve_t(ch);
+piecewise_SE3_t* wrapPiecewiseSE3EmptyConstructor() {
+  return new piecewise_SE3_t();
 }
 
-piecewise_SE3_curve_t* wrapPiecewiseSE3Constructor(const SE3Curve_t& curve) {
-  return new piecewise_SE3_curve_t(curve);
-}
-
-piecewise_SE3_curve_t* wrapPiecewiseSE3EmptyConstructor() {
-  return new piecewise_SE3_curve_t();
-}
-static piecewise_polynomial_curve_t discretPointToPolynomialC0(const pointX_list_t& points,
+static piecewise_t discretPointToPolynomialC0(const pointX_list_t& points,
                                                                const time_waypoints_t& time_points) {
   t_pointX_t points_list = vectorFromEigenArray<pointX_list_t, t_pointX_t>(points);
   t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t, t_time_t>(time_points);
-  return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,
-                                                                                           time_points_list);
+  return piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(points_list,time_points_list);
 }
-static piecewise_polynomial_curve_t discretPointToPolynomialC1(const pointX_list_t& points,
+static piecewise_t discretPointToPolynomialC1(const pointX_list_t& points,
                                                                const pointX_list_t& points_derivative,
                                                                const time_waypoints_t& time_points) {
   t_pointX_t points_list = vectorFromEigenArray<pointX_list_t, t_pointX_t>(points);
   t_pointX_t points_derivative_list = vectorFromEigenArray<pointX_list_t, t_pointX_t>(points_derivative);
   t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t, t_time_t>(time_points);
-  return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(
+  return piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(
       points_list, points_derivative_list, time_points_list);
 }
-static piecewise_polynomial_curve_t discretPointToPolynomialC2(const pointX_list_t& points,
+static piecewise_t discretPointToPolynomialC2(const pointX_list_t& points,
                                                                const pointX_list_t& points_derivative,
                                                                const pointX_list_t& points_second_derivative,
                                                                const time_waypoints_t& time_points) {
@@ -192,20 +192,21 @@ static piecewise_polynomial_curve_t discretPointToPolynomialC2(const pointX_list
   t_pointX_t points_second_derivative_list = vectorFromEigenArray<pointX_list_t, t_pointX_t>(points_second_derivative);
 
   t_time_t time_points_list = vectorFromEigenVector<time_waypoints_t, t_time_t>(time_points);
-  return piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(
+  return piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(
       points_list, points_derivative_list, points_second_derivative_list, time_points_list);
 }
-void addFinalPointC0(piecewise_polynomial_curve_t& self, const pointX_t& end, const real time) {
+
+void addFinalPointC0(piecewise_t& self, const pointX_t& end, const real time) {
   if(self.num_curves() == 0)
     throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
   if (self.is_continuous(1) && self.num_curves()>1 )
     std::cout << "Warning: by adding this final point to the piecewise curve, you loose C1 continuity and only "
                  "guarantee C0 continuity."
               << std::endl;
-  polynomial_t pol(self(self.max()), end, self.max(), time);
-  self.add_curve(pol);
+  curve_ptr_t pol(new polynomial_t(self(self.max()), end, self.max(), time));
+  self.add_curve_ptr(pol);
 }
-void addFinalPointC1(piecewise_polynomial_curve_t& self, const pointX_t& end, const pointX_t& d_end, const real time) {
+void addFinalPointC1(piecewise_t& self, const pointX_t& end, const pointX_t& d_end, const real time) {
   if(self.num_curves() == 0)
     throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
   if (self.is_continuous(2) && self.num_curves()>1 )
@@ -213,10 +214,10 @@ void addFinalPointC1(piecewise_polynomial_curve_t& self, const pointX_t& end, co
                  "guarantee C1 continuity."
               << std::endl;
   if (!self.is_continuous(1)) std::cout << "Warning: the current piecewise curve is not C1 continuous." << std::endl;
-  polynomial_t pol(self(self.max()), self.derivate(self.max(), 1), end, d_end, self.max(), time);
-  self.add_curve(pol);
+  curve_ptr_t pol(new polynomial_t(self(self.max()), self.derivate(self.max(), 1), end, d_end, self.max(), time));
+  self.add_curve_ptr(pol);
 }
-void addFinalPointC2(piecewise_polynomial_curve_t& self, const pointX_t& end, const pointX_t& d_end,
+void addFinalPointC2(piecewise_t& self, const pointX_t& end, const pointX_t& d_end,
                      const pointX_t& dd_end, const real time) {
   if(self.num_curves() == 0)
     throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
@@ -225,9 +226,9 @@ void addFinalPointC2(piecewise_polynomial_curve_t& self, const pointX_t& end, co
                  "guarantee C2 continuity."
               << std::endl;
   if (!self.is_continuous(2)) std::cout << "Warning: the current piecewise curve is not C2 continuous." << std::endl;
-  polynomial_t pol(self(self.max()), self.derivate(self.max(), 1), self.derivate(self.max(), 2), end, d_end, dd_end,
-                   self.max(), time);
-  self.add_curve(pol);
+  curve_ptr_t pol(new polynomial_t(self(self.max()), self.derivate(self.max(), 1), self.derivate(self.max(), 2), end, d_end, dd_end,
+                   self.max(), time));
+  self.add_curve_ptr(pol);
 }
 
 /* end wrap piecewise polynomial curve */
@@ -281,8 +282,8 @@ bezier_t* bezier_linear_variable_t_evaluate(const bezier_linear_variable_t* b, c
   return new bezier_t(evaluateLinear<bezier_t, bezier_linear_variable_t>(*b, x));
 }
 
-bezier_t::piecewise_bezier_curve_t (bezier_t::*splitspe)(const bezier_t::vector_x_t&) const = &bezier_t::split;
-bezier_linear_variable_t::piecewise_bezier_curve_t (bezier_linear_variable_t::*split_py)(
+bezier_t::piecewise_curve_t (bezier_t::*splitspe)(const bezier_t::vector_x_t&) const = &bezier_t::split;
+bezier_linear_variable_t::piecewise_curve_t (bezier_linear_variable_t::*split_py)(
     const bezier_linear_variable_t::vector_x_t&) const = &bezier_linear_variable_t::split;
 
 /* End wrap exact cubic spline */
@@ -301,6 +302,13 @@ SO3Linear_t* wrapSO3LinearConstructorFromMatrix(const matrix3_t& init_rot, const
 /* End wrap SO3Linear */
 
 /* Wrap SE3Curves */
+
+matrix4_t se3Return(const curve_SE3_t& curve, const real t) { return curve(t).matrix(); }
+
+matrix3_t se3returnRotation(const curve_SE3_t& curve, const real t) { return curve(t).rotation(); }
+
+pointX_t se3returnTranslation(const curve_SE3_t& curve, const real t) { return pointX_t(curve(t).translation()); }
+
 SE3Curve_t* wrapSE3CurveFromTransform(const matrix4_t& init_pose, const matrix4_t& end_pose, const real min,
                                       const real max) {
   return new SE3Curve_t(transform_t(init_pose), transform_t(end_pose), min, max);
@@ -336,23 +344,12 @@ SE3Curve_t* wrapSE3CurveFromSE3Pinocchio(const SE3_t& init_pose, const SE3_t& en
                         max);
 }
 
-SE3_t se3ReturnPinocchio(const SE3Curve_t& curve, const real t) { return SE3_t(curve(t).matrix()); }
+SE3_t se3ReturnPinocchio(const curve_SE3_t& curve, const real t) { return SE3_t(curve(t).matrix()); }
 
-Motion_t se3ReturnDerivatePinocchio(const SE3Curve_t& curve, const real t, const std::size_t order) {
+Motion_t se3ReturnDerivatePinocchio(const curve_SE3_t& curve, const real t, const std::size_t order) {
   return Motion_t(curve.derivate(t, order));
 }
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
-
-matrix4_t se3Return(const SE3Curve_t& curve, const real t) { return curve(t).matrix(); }
-
-pointX_t se3ReturnDerivate(const SE3Curve_t& curve, const real t, const std::size_t order) {
-  return curve.derivate(t, order);
-}
-
-matrix3_t se3returnRotation(const SE3Curve_t& curve, const real t) { return curve(t).rotation(); }
-
-pointX_t se3returnTranslation(const SE3Curve_t& curve, const real t) { return pointX_t(curve(t).translation()); }
-
 /* End wrap SE3Curves */
 
 /* Wrap piecewiseSE3Curves */
@@ -360,13 +357,7 @@ pointX_t se3returnTranslation(const SE3Curve_t& curve, const real t) { return po
 typedef pinocchio::SE3Tpl<real, 0> SE3_t;
 typedef pinocchio::MotionTpl<real, 0> Motion_t;
 
-SE3_t piecewiseSE3ReturnPinocchio(const piecewise_SE3_curve_t& curve, const real t) { return SE3_t(curve(t).matrix()); }
-
-Motion_t piecewiseSE3ReturnDerivatePinocchio(const piecewise_SE3_curve_t& curve, const real t, const std::size_t order) {
-  return Motion_t(curve.derivate(t, order));
-}
-
-void addFinalSE3(piecewise_SE3_curve_t& self, const SE3_t& end, const real time) {
+void addFinalSE3(piecewise_SE3_t& self, const SE3_t& end, const real time) {
   if(self.num_curves() == 0)
     throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
   if (self.is_continuous(1) && self.num_curves()>1 )
@@ -379,14 +370,7 @@ void addFinalSE3(piecewise_SE3_curve_t& self, const SE3_t& end, const real time)
 
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
 
-matrix4_t piecewiseSE3Return(const piecewise_SE3_curve_t& curve, const real t) { return curve(t).matrix(); }
-
-
-matrix3_t piecewiseSE3returnRotation(const piecewise_SE3_curve_t& curve, const real t) { return curve(t).rotation(); }
-
-pointX_t piecewiseSE3returnTranslation(const piecewise_SE3_curve_t& curve, const real t) { return pointX_t(curve(t).translation()); }
-
-void addFinalTransform(piecewise_SE3_curve_t& self, const matrix4_t& end, const real time) {
+void addFinalTransform(piecewise_SE3_t& self, const matrix4_t& end, const real time) {
   if(self.num_curves() == 0)
     throw std::runtime_error("Piecewise append : you need to add at least one curve before using append(finalPoint) method.");
   if (self.is_continuous(1) && self.num_curves()>1 )
@@ -409,7 +393,6 @@ BOOST_PYTHON_MODULE(curves) {
   ENABLE_SPECIFIC_MATRIX_TYPE(point6_t);
   ENABLE_SPECIFIC_MATRIX_TYPE(pointX_list_t);
   ENABLE_SPECIFIC_MATRIX_TYPE(coeff_t);
-  ENABLE_SPECIFIC_MATRIX_TYPE(point_list_t);
   ENABLE_SPECIFIC_MATRIX_TYPE(matrix3_t);
   ENABLE_SPECIFIC_MATRIX_TYPE(matrix4_t);
   // ENABLE_SPECIFIC_MATRIX_TYPE(quaternion_t);
@@ -422,6 +405,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_abc_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
+      .def("compute_derivate", pure_virtual(&curve_abc_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_abc_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_abc_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_abc_t::dim), "Get the dimension of the curve.")
@@ -443,6 +427,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_3_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
+      .def("compute_derivate", pure_virtual(&curve_3_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_3_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_3_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_3_t::dim), "Get the dimension of the curve.");
@@ -452,9 +437,33 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_rotation_t::derivate),
            "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
+      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_rotation_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_rotation_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_rotation_t::dim), "Get the dimension of the curve.");
+
+  class_<CurveSE3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve_SE3", no_init)
+      .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix.",
+           args("self", "t"))
+      .def("derivate", pure_virtual(&curve_SE3_t::derivate),
+           "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
+      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
+      .def("min", pure_virtual(&curve_SE3_t::min), "Get the LOWER bound on interval definition of the curve.")
+      .def("max", pure_virtual(&curve_SE3_t::max), "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.")
+      .def("rotation", &se3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
+           args("self", "time"))
+      .def("translation", &se3returnTranslation, "Output the rotation (as a vector 3) at the given time.",
+           args("self", "time"))
+    #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+      .def("evaluateAsSE3", &se3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
+           args("self", "t"))
+      .def("derivateAsMotion", &se3ReturnDerivatePinocchio,
+           "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
+           args("self", "t", "N"))
+    #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
+      ;
+
 
   /** BEGIN bezier3 curve**/
   class_<bezier3_t, bases<curve_3_t> >("bezier3", init<>())
@@ -462,7 +471,6 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
       .def("__init__", make_constructor(&wrapBezier3ConstructorConstraints))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBoundsConstraints))
-      .def("compute_derivate", &bezier3_t::compute_derivate)
       .def("compute_primitive", &bezier3_t::compute_primitive)
       .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
       .def_readonly("degree", &bezier3_t::degree_)
@@ -486,7 +494,6 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezierConstructorBounds))
       .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
       .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
-      .def("compute_derivate", &bezier_t::compute_derivate)
       .def("compute_primitive", &bezier_t::compute_primitive)
       .def("waypointAtIndex", &bezier_t::waypointAtIndex)
       .def_readonly("degree", &bezier_t::degree_)
@@ -536,7 +543,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__call__", &bezier_linear_variable_t::operator())
       .def("evaluate", &bezier_linear_variable_t_evaluate, bp::return_value_policy<bp::manage_new_object>())
       .def("derivate", &bezier_linear_variable_t::derivate)
-      .def("compute_derivate", &bezier_linear_variable_t::compute_derivate)
+      .def("compute_derivate", &bezier_linear_variable_t::compute_derivate_ptr, return_value_policy<manage_new_object>())
       .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
       .def("split", split_py)
       .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
@@ -583,7 +590,6 @@ BOOST_PYTHON_MODULE(curves) {
            " ddc(min) == dd_init and ddc(max) == dd_end")
       .def("coeffAtDegree", &polynomial_t::coeffAtDegree)
       .def("coeff", &polynomial_t::coeff)
-      .def("compute_derivate", &polynomial_t::compute_derivate, "Compute derivative of order N of curve at time t.")
       .def("saveAsText", &polynomial_t::saveAsText<polynomial_t>, bp::args("filename"),
            "Saves *this inside a text file.")
       .def("loadFromText", &polynomial_t::loadFromText<polynomial_t>, bp::args("filename"),
@@ -599,10 +605,10 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END polynomial function**/
   /** BEGIN piecewise curve function **/
-  class_<piecewise_polynomial_curve_t, bases<curve_abc_t> >("piecewise_polynomial_curve", init<>())
+  class_<piecewise_t, bases<curve_abc_t> >("piecewise", init<>())
       .def("__init__",
-           make_constructor(&wrapPiecewisePolynomialCurveConstructor, default_call_policies(), arg("curve")),
-           "Create a peicewise-polynomial curve containing the given polynomial curve.")
+           make_constructor(&wrapPiecewiseCurveConstructor, default_call_policies(), arg("curve")),
+           "Create a peicewise curve containing the given curve.")
       .def("FromPointsList", &discretPointToPolynomialC0,
            "Create a piecewise-polynomial connecting exactly all the given points at the given time. The created "
            "piecewise is C0 continuous.",
@@ -630,163 +636,67 @@ BOOST_PYTHON_MODULE(curves) {
            "and time and connecting exactly self(self.max()) and end. It guarantee C2 continuity and guarantee that "
            "self.derivate(time,1) == d_end and self.derivate(time,2) == dd_end",
            args("self", "end", "d_end", "d_end", "time"))
-      .def("compute_derivate", &piecewise_polynomial_curve_t::compute_derivate,
-           "Return a piecewise_polynomial curve which is the derivate of this.", args("self", "order"))
-      .def("append", &piecewise_polynomial_curve_t::add_curve,
+      .def("append", &piecewise_t::add_curve_ptr,
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
-      .def("is_continuous", &piecewise_polynomial_curve_t::is_continuous,
+      .def("is_continuous", &piecewise_t::is_continuous,
            "Check if the curve is continuous at the given order.",args("self,order"))
-      .def("convert_piecewise_curve_to_bezier",
-           &piecewise_polynomial_curve_t::convert_piecewise_curve_to_bezier<bezier_t>,
-           "Convert a piecewise polynomial curve to to a piecewise bezier curve")
-      .def("convert_piecewise_curve_to_cubic_hermite",
-           &piecewise_polynomial_curve_t::convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>,
-           "Convert a piecewise polynomial curve to to a piecewise cubic hermite spline")
-      .def("curve_at_index", &piecewise_polynomial_curve_t::curve_at_index,
-           return_value_policy<copy_const_reference>())
-      .def("curve_at_time", &piecewise_polynomial_curve_t::curve_at_time, return_value_policy<copy_const_reference>())
-      .def("num_curves", &piecewise_polynomial_curve_t::num_curves)
-      .def("saveAsText", &piecewise_polynomial_curve_t::saveAsText<piecewise_polynomial_curve_t>, bp::args("filename"),
-           "Saves *this inside a text file.")
-      .def("loadFromText", &piecewise_polynomial_curve_t::loadFromText<piecewise_polynomial_curve_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &piecewise_polynomial_curve_t::saveAsXML<piecewise_polynomial_curve_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &piecewise_polynomial_curve_t::loadFromXML<piecewise_polynomial_curve_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &piecewise_polynomial_curve_t::saveAsBinary<piecewise_polynomial_curve_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &piecewise_polynomial_curve_t::loadFromBinary<piecewise_polynomial_curve_t>,
-           bp::args("filename"), "Loads *this from a binary file.");
-
-  class_<piecewise_bezier_curve_t, bases<curve_abc_t> >("piecewise_bezier_curve", init<>())
-      .def("__init__", make_constructor(&wrapPiecewiseBezierCurveConstructor))
-      .def("compute_derivate", &piecewise_polynomial_curve_t::compute_derivate,
-           "Return a piecewise_polynomial curve which is the derivate of this.", args("self", "order"))
-      .def("append", &piecewise_bezier_curve_t::add_curve)
-      .def("is_continuous", &piecewise_bezier_curve_t::is_continuous)
       .def("convert_piecewise_curve_to_polynomial",
-           &piecewise_bezier_curve_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
-           "Convert a piecewise bezier curve to to a piecewise polynomial curve")
-      .def("convert_piecewise_curve_to_cubic_hermite",
-           &piecewise_bezier_curve_t::convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>,
-           "Convert a piecewise bezier curve to to a piecewise cubic hermite spline")
-      .def("curve_at_index", &piecewise_bezier_curve_t::curve_at_index, return_value_policy<copy_const_reference>())
-      .def("curve_at_time", &piecewise_bezier_curve_t::curve_at_time, return_value_policy<copy_const_reference>())
-      .def("num_curves", &piecewise_bezier_curve_t::num_curves)
-      .def("saveAsText", &piecewise_bezier_curve_t::saveAsText<piecewise_bezier_curve_t>, bp::args("filename"),
-           "Saves *this inside a text file.")
-      .def("loadFromText", &piecewise_bezier_curve_t::loadFromText<piecewise_bezier_curve_t>, bp::args("filename"),
-           "Loads *this from a text file.")
-      .def("saveAsXML", &piecewise_bezier_curve_t::saveAsXML<piecewise_bezier_curve_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &piecewise_bezier_curve_t::loadFromXML<piecewise_bezier_curve_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &piecewise_bezier_curve_t::saveAsBinary<piecewise_bezier_curve_t>, bp::args("filename"),
-           "Saves *this inside a binary file.")
-      .def("loadFromBinary", &piecewise_bezier_curve_t::loadFromBinary<piecewise_bezier_curve_t>, bp::args("filename"),
-           "Loads *this from a binary file.");
-
-  class_<piecewise_cubic_hermite_curve_t, bases<curve_abc_t> >("piecewise_cubic_hermite_curve", init<>())
-      .def("__init__", make_constructor(&wrapPiecewiseCubicHermiteCurveConstructor))
-      .def("append", &piecewise_cubic_hermite_curve_t::add_curve)
-      .def("is_continuous", &piecewise_cubic_hermite_curve_t::is_continuous)
-      .def("convert_piecewise_curve_to_polynomial",
-           &piecewise_cubic_hermite_curve_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
-           "Convert a piecewise cubic hermite spline to to a piecewise polynomial curve")
+           &piecewise_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
+           "Convert a piecewise curve to to a piecewise polynomial curve")
       .def("convert_piecewise_curve_to_bezier",
-           &piecewise_cubic_hermite_curve_t::convert_piecewise_curve_to_bezier<bezier_t>,
-           "Convert a piecewise cubic hermite spline to to a piecewise bezier curve")
-      .def("curve_at_index", &piecewise_cubic_hermite_curve_t::curve_at_index,
+           &piecewise_t::convert_piecewise_curve_to_bezier<bezier_t>,
+           "Convert a piecewise curve to to a piecewise bezier curve")
+      .def("convert_piecewise_curve_to_cubic_hermite",
+           &piecewise_t::convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>,
+           "Convert a piecewise curve to to a piecewise cubic hermite spline")
+      .def("curve_at_index", &piecewise_t::curve_at_index,
            return_value_policy<copy_const_reference>())
-      .def("curve_at_time", &piecewise_cubic_hermite_curve_t::curve_at_time,
-           return_value_policy<copy_const_reference>())
-      .def("num_curves", &piecewise_cubic_hermite_curve_t::num_curves)
-      .def("saveAsText", &piecewise_cubic_hermite_curve_t::saveAsText<piecewise_cubic_hermite_curve_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &piecewise_cubic_hermite_curve_t::loadFromText<piecewise_cubic_hermite_curve_t>,
+      .def("curve_at_time", &piecewise_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("num_curves", &piecewise_t::num_curves)
+      .def("saveAsText", &piecewise_t::saveAsText<piecewise_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &piecewise_t::loadFromText<piecewise_t>,
            bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &piecewise_cubic_hermite_curve_t::saveAsXML<piecewise_cubic_hermite_curve_t>,
+      .def("saveAsXML", &piecewise_t::saveAsXML<piecewise_t>,
            bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &piecewise_cubic_hermite_curve_t::loadFromXML<piecewise_cubic_hermite_curve_t>,
+      .def("loadFromXML", &piecewise_t::loadFromXML<piecewise_t>,
            bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &piecewise_cubic_hermite_curve_t::saveAsBinary<piecewise_cubic_hermite_curve_t>,
+      .def("saveAsBinary", &piecewise_t::saveAsBinary<piecewise_t>,
            bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &piecewise_cubic_hermite_curve_t::loadFromBinary<piecewise_cubic_hermite_curve_t>,
+      .def("loadFromBinary", &piecewise_t::loadFromBinary<piecewise_t>,
            bp::args("filename"), "Loads *this from a binary file.");
 
-  class_<piecewise_bezier_linear_curve_t, bases<curve_abc_t> >("piecewise_bezier_linear_curve_t", init<>())
-      .def("__init__", make_constructor(&wrapPiecewiseLinearBezierCurveConstructor))
-      .def("append", &piecewise_bezier_linear_curve_t::add_curve)
-      .def("is_continuous", &piecewise_bezier_linear_curve_t::is_continuous,
-           "Check if the curve is continuous at the given order.")
-      .def("curve_at_index", &piecewise_bezier_linear_curve_t::curve_at_index,
-           return_value_policy<copy_const_reference>())
-      .def("curve_at_time", &piecewise_bezier_linear_curve_t::curve_at_time,
-           return_value_policy<copy_const_reference>())
-      .def("num_curves", &piecewise_bezier_linear_curve_t::num_curves)
-      .def("saveAsText", &piecewise_bezier_linear_curve_t::saveAsText<piecewise_bezier_linear_curve_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &piecewise_bezier_linear_curve_t::loadFromText<piecewise_bezier_linear_curve_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &piecewise_bezier_linear_curve_t::saveAsXML<piecewise_bezier_linear_curve_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &piecewise_bezier_linear_curve_t::loadFromXML<piecewise_bezier_linear_curve_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &piecewise_bezier_linear_curve_t::saveAsBinary<piecewise_bezier_linear_curve_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &piecewise_bezier_linear_curve_t::loadFromBinary<piecewise_bezier_linear_curve_t>,
-           bp::args("filename"), "Loads *this from a binary file.");
-
-class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>())
+  class_<piecewise_SE3_t, bases<curve_SE3_t> >("piecewise_SE3", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor, default_call_policies(), arg("curve")),
       "Create a piecewise-se3 curve containing the given se3 curve.")
       .def("__init__", make_constructor(&wrapPiecewiseSE3EmptyConstructor),
       "Create an empty piecewise-se3 curve.")
-//      .def("compute_derivate", &piecewise_SE3_curve_t::compute_derivate,
-//           "Return a piecewise_polynomial curve which is the derivate of this.", args("self", "order"))
-      .def("append", &piecewise_SE3_curve_t::add_curve,
+      .def("append", &piecewise_SE3_t::add_curve_ptr,
            "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.",
            args("self,curve"))
-      .def("is_continuous", &piecewise_SE3_curve_t::is_continuous, "Check if the curve is continuous at the given order.",args("self,order"))
-      .def("curve_at_index", &piecewise_SE3_curve_t::curve_at_index, return_value_policy<copy_const_reference>())
-      .def("curve_at_time", &piecewise_SE3_curve_t::curve_at_time, return_value_policy<copy_const_reference>())
-      .def("num_curves", &piecewise_SE3_curve_t::num_curves)
-      .def("rotation", &piecewiseSE3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
-           args("self", "t"))
-      .def("translation", &piecewiseSE3returnTranslation, "Output the translation (as a vector 3) at the given time.",
-           args("self", "t"))
-      .def("__call__", &piecewiseSE3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix",
-           args("self", "t"))
-      .def("derivate", &piecewise_SE3_curve_t::derivate,
-           "Evaluate the derivative of order N of curve at time t. Return as a vector 6", args("self", "t", "N"))
-      .def("min", &piecewise_SE3_curve_t::min, "Get the LOWER bound on interval definition of the curve.")
-      .def("max", &piecewise_SE3_curve_t::max, "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", &piecewise_SE3_curve_t::dim, "Get the dimension of the curve.")
+      .def("is_continuous", &piecewise_SE3_t::is_continuous, "Check if the curve is continuous at the given order.",args("self,order"))
+      .def("curve_at_index", &piecewise_SE3_t::curve_at_index, return_value_policy<copy_const_reference>())
+      .def("curve_at_time", &piecewise_SE3_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("num_curves", &piecewise_SE3_t::num_curves)
       .def("append", &addFinalTransform,
        "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
        "and time and connecting exactly self(self.max()) and end",
        args("self", "end", "time"))
-      .def("saveAsText", &piecewise_SE3_curve_t::saveAsText<piecewise_SE3_curve_t>, bp::args("filename"),
+      .def("saveAsText", &piecewise_SE3_t::saveAsText<piecewise_SE3_t>, bp::args("filename"),
            "Saves *this inside a text file.")
-      .def("loadFromText", &piecewise_SE3_curve_t::loadFromText<piecewise_SE3_curve_t>, bp::args("filename"),
+      .def("loadFromText", &piecewise_SE3_t::loadFromText<piecewise_SE3_t>, bp::args("filename"),
            "Loads *this from a text file.")
-      .def("saveAsXML", &piecewise_SE3_curve_t::saveAsXML<piecewise_SE3_curve_t>,
+      .def("saveAsXML", &piecewise_SE3_t::saveAsXML<piecewise_SE3_t>,
            bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &piecewise_SE3_curve_t::loadFromXML<piecewise_SE3_curve_t>,
+      .def("loadFromXML", &piecewise_SE3_t::loadFromXML<piecewise_SE3_t>,
            bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &piecewise_SE3_curve_t::saveAsBinary<piecewise_SE3_curve_t>, bp::args("filename"),
+      .def("saveAsBinary", &piecewise_SE3_t::saveAsBinary<piecewise_SE3_t>, bp::args("filename"),
            "Saves *this inside a binary file.")
-      .def("loadFromBinary", &piecewise_SE3_curve_t::loadFromBinary<piecewise_SE3_curve_t>, bp::args("filename"),
+      .def("loadFromBinary", &piecewise_SE3_t::loadFromBinary<piecewise_SE3_t>, bp::args("filename"),
            "Loads *this from a binary file.")
         #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
-          .def("evaluateAsSE3", &piecewiseSE3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
-               args("self", "t"))
-          .def("derivateAsMotion", &piecewiseSE3ReturnDerivatePinocchio,
-               "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
-               args("self", "t", "N"))
           .def("append", &addFinalSE3,
            "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
            "and time and connecting exactly self(self.max()) and end",
@@ -877,7 +787,7 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
 
   /** END  SO3 Linear**/
   /** BEGIN SE3 Curve**/
-  class_<SE3Curve_t, bases<curve_abc_t> >("SE3Curve", init<>())
+  class_<SE3Curve_t, bases<curve_SE3_t> >("SE3Curve", init<>())
       .def("__init__",
            make_constructor(&wrapSE3CurveFromTransform, default_call_policies(),
                             args("init_transform", "end_transform", "min", "max")),
@@ -912,17 +822,6 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
            "translation curve."
            "The orientation along the SE3Curve will be a slerp between the two given rotations."
            "The orientations should be represented as 3x3 rotation matrix")
-      .def("rotation", &se3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
-           args("self", "time"))
-      .def("translation", &se3returnTranslation, "Output the rotation (as a vector 3) at the given time.",
-           args("self", "time"))
-      .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix",
-           args("self", "t"))
-      .def("derivate", &se3ReturnDerivate,
-           "Evaluate the derivative of order N of curve at time t. Return as a vector 6", args("self", "t", "N"))
-      .def("min", &SE3Curve_t::min, "Get the LOWER bound on interval definition of the curve.")
-      .def("max", &SE3Curve_t::max, "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", &SE3Curve_t::dim, "Get the dimension of the curve.")
       .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>,bp::args("filename"),
       "Saves *this inside a text file.")
       .def("loadFromText",&SE3Curve_t::loadFromText<SE3Curve_t>,bp::args("filename"),
@@ -941,22 +840,14 @@ class_<piecewise_SE3_curve_t, bases<curve_abc_t> >("piecewise_SE3_curve", init<>
                             args("init_SE3", "end_SE3", "min", "max")),
            "Create a SE3 curve between two SE3 objects from Pinocchio, defined for t in [min,max]."
            " Using linear interpolation for translation and slerp for rotation between init and end.")
-      .def("evaluateAsSE3", &se3ReturnPinocchio, "Evaluate the curve at the given time. Return as a pinocchio.SE3 object",
-           args("self", "t"))
-      .def("derivateAsMotion", &se3ReturnDerivatePinocchio,
-           "Evaluate the derivative of order N of curve at time t. Return as a pinocchio.Motion",
-           args("self", "t", "N"))
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
       ;
 
   /** END SE3 Curve**/
   /** BEGIN curves conversion**/
-  def("polynomial_from_bezier", polynomial_from_curve<polynomial_t, bezier_t>);
-  def("polynomial_from_hermite", polynomial_from_curve<polynomial_t, cubic_hermite_spline_t>);
-  def("bezier_from_hermite", bezier_from_curve<bezier_t, cubic_hermite_spline_t>);
-  def("bezier_from_polynomial", bezier_from_curve<bezier_t, polynomial_t>);
-  def("hermite_from_bezier", hermite_from_curve<cubic_hermite_spline_t, bezier_t>);
-  def("hermite_from_polynomial", hermite_from_curve<cubic_hermite_spline_t, polynomial_t>);
+  def("convert_to_polynomial", polynomial_from_curve<polynomial_t>);
+  def("convert_to_bezier", bezier_from_curve<bezier_t>);
+  def("convert_to_hermite", hermite_from_curve<cubic_hermite_spline_t>);
   /** END curves conversion**/
 
   optimization::python::exposeOptimization();

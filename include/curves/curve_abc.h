@@ -15,6 +15,7 @@
 #include "serialization/archive.hpp"
 #include "serialization/eigen-matrix.hpp"
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 #include <functional>
 
@@ -28,6 +29,8 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   typedef Point point_t;
   typedef Point_derivate point_derivate_t;
   typedef Time time_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_t; // parent class
+  typedef boost::shared_ptr<curve_t> curve_ptr_t;
 
   /* Constructors - destructors */
  public:
@@ -44,11 +47,18 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   ///  \return \f$x(t)\f$, point corresponding on curve at time t.
   virtual point_t operator()(const time_t t) const = 0;
 
+
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  virtual curve_t* compute_derivate_ptr(const std::size_t order) const = 0;
+
   /// \brief Evaluate the derivative of order N of curve at time t.
   /// \param t : time when to evaluate the spline.
   /// \param order : order of derivative.
   /// \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
   virtual point_derivate_t derivate(const time_t t, const std::size_t order) const = 0;
+
 
   /*Operations*/
 
@@ -62,6 +72,10 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$, upper bound of time range.
   virtual time_t max() const = 0;
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t  degree() const =0;
+
   std::pair<time_t, time_t> timeRange() { return std::make_pair(min(), max()); }
   /*Helpers*/
 

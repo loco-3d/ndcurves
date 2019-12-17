@@ -39,7 +39,7 @@ template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
           typename T_Point = std::vector<Point, Eigen::aligned_allocator<Point> >,
           typename SplineBase = polynomial<Time, Numeric, Safe, Point, T_Point> >
-struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point, T_Point, SplineBase> {
+struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   typedef Point point_t;
   typedef T_Point t_point_t;
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
@@ -53,8 +53,9 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point, T_Point,
   typedef curve_constraints<Point> spline_constraints;
 
   typedef exact_cubic<Time, Numeric, Safe, Point, T_Point, SplineBase> exact_cubic_t;
-  typedef piecewise_curve<Time, Numeric, Safe, Point, T_Point, SplineBase> piecewise_curve_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
+  typedef piecewise_curve<Time, Numeric, Safe, Point> piecewise_curve_t;
+  typedef typename piecewise_curve_t::t_curve_ptr_t t_curve_ptr_t;
 
   /* Constructors - destructors */
  public:
@@ -68,7 +69,13 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point, T_Point,
   ///
   template <typename In>
   exact_cubic(In wayPointsBegin, In wayPointsEnd)
-      : piecewise_curve_t(computeWayPoints<In>(wayPointsBegin, wayPointsEnd)) {}
+      : piecewise_curve_t()
+  {
+    t_spline_t subSplines = computeWayPoints<In>(wayPointsBegin, wayPointsEnd);
+    for (cit_spline_t it = subSplines.begin() ; it != subSplines.end() ; ++it){
+      this->add_curve(*it);
+    }
+  }
 
   /// \brief Constructor.
   /// \param wayPointsBegin : an iterator pointing to the first element of a waypoint container.
@@ -77,11 +84,24 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point, T_Point,
   ///
   template <typename In>
   exact_cubic(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints)
-      : piecewise_curve_t(computeWayPoints<In>(wayPointsBegin, wayPointsEnd, constraints)) {}
+      : piecewise_curve_t()
+  {
+    t_spline_t subSplines = computeWayPoints<In>(wayPointsBegin, wayPointsEnd,constraints);
+    for (cit_spline_t it = subSplines.begin() ; it != subSplines.end() ; ++it){
+      this->add_curve(*it);
+    }
+  }
 
   /// \brief Constructor.
   /// \param subSplines: vector of subSplines.
-  exact_cubic(const t_spline_t& subSplines) : piecewise_curve_t(subSplines) {}
+  exact_cubic(const t_spline_t& subSplines) : piecewise_curve_t()
+  {
+    for (cit_spline_t it = subSplines.begin() ; it != subSplines.end() ; ++it){
+      this->add_curve(*it);
+    }
+  }
+
+  exact_cubic(const t_curve_ptr_t& subSplines) : piecewise_curve_t(subSplines)  { }
 
   /// \brief Copy Constructor.
   exact_cubic(const exact_cubic& other) : piecewise_curve_t(other) {}
@@ -91,7 +111,13 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point, T_Point,
 
   std::size_t getNumberSplines() { return this->getNumberCurves(); }
 
-  spline_t getSplineAt(std::size_t index) { return this->curves_.at(index); }
+  spline_t getSplineAt(std::size_t index) {
+    boost::shared_ptr<spline_t> s_ptr = boost::dynamic_pointer_cast<spline_t>(this->curves_.at(index));
+    if(s_ptr)
+      return *s_ptr;
+    else
+      throw std::runtime_error("Parent piecewise curve do not contain only curves created from exact_cubic class methods");
+  }
 
  private:
   /// \brief Compute polynom of exact cubic spline from waypoints.

@@ -1,4 +1,4 @@
-
+#include "curves/fwd.h"
 #include "curves/exact_cubic.h"
 #include "curves/bezier_curve.h"
 #include "curves/polynomial.h"
@@ -15,29 +15,14 @@
 #include <iostream>
 #include <cmath>
 #include <ctime>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 using namespace std;
 
 namespace curves {
-typedef Eigen::Vector3d point3_t;
-typedef Eigen::VectorXd pointX_t;
-typedef Eigen::Matrix<double, 3, 3> matrix3_t;
-typedef Eigen::Quaternion<double> quaternion_t;
-typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_pointX_t;
-typedef curve_abc<double, double, true, pointX_t> curve_abc_t;
-typedef curve_abc<double, double, true, matrix3_t, point3_t> curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
-typedef boost::shared_ptr<curve_abc_t> curve_ptr_t;
-typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
-typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
-typedef exact_cubic<double, double, true, pointX_t> exact_cubic_t;
 typedef exact_cubic<double, double, true, Eigen::Matrix<double, 1, 1> > exact_cubic_one;
-typedef bezier_curve<double, double, true, pointX_t> bezier_curve_t;
-typedef cubic_hermite_spline<double, double, true, pointX_t> cubic_hermite_spline_t;
-typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, polynomial_t> piecewise_polynomial_curve_t;
-typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, bezier_curve_t> piecewise_bezier_curve_t;
-typedef piecewise_curve<double, double, true, pointX_t, t_pointX_t, cubic_hermite_spline_t>
-    piecewise_cubic_hermite_curve_t;
 typedef exact_cubic_t::spline_constraints spline_constraints_t;
+
 typedef std::pair<double, pointX_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 typedef Eigen::Matrix<double, 1, 1> point_one;
@@ -45,9 +30,7 @@ typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
 typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
 typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
-typedef SO3Linear<double, double, true> SO3Linear_t;
-typedef SE3Curve<double, double, true> SE3Curve_t;
-typedef Eigen::Transform<double, 3, Eigen::Affine> transform_t;
+
 
 
 const double margin = 1e-3;
@@ -85,11 +68,11 @@ void ComparePoints(const Eigen::MatrixXd& pt1, const Eigen::MatrixXd& pt2, const
 }
 
 template <typename curve1, typename curve2>
-void CompareCurves(curve1 c1, curve2 c2, const std::string& errMsg, bool& error ,double prec = Eigen::NumTraits<double>::dummy_precision()) {
+void CompareCurves(const curve1& c1,const curve2& c2, const std::string& errMsg, bool& error ,double prec = Eigen::NumTraits<double>::dummy_precision()) {
   double T_min = c1.min();
   double T_max = c1.max();
   if (!QuasiEqual(T_min, c2.min()) || !QuasiEqual(T_max, c2.max())) {
-    std::cout << "CompareCurves, ERROR, time min and max of curves do not match [" << T_min << "," << T_max << "] "
+    std::cout << errMsg<<"CompareCurves, ERROR, time min and max of curves do not match [" << T_min << "," << T_max << "] "
               << " and [" << c2.min() << "," << c2.max() << "] " << std::endl;
     error = true;
   } else {
@@ -162,17 +145,17 @@ void PolynomialCubicFunctionTest(bool& error) {
   }
   // Test derivate and compute_derivative
   // Order 1
-  polynomial_t cf_derivated = cf.compute_derivate(1);
-  ComparePoints(cf.derivate(0, 1), cf_derivated(0), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(0.3, 1), cf_derivated(0.3), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(0.5, 1), cf_derivated(0.5), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(1, 1), cf_derivated(1), errMsg + " - derivate order 1 : ", error);
+  curve_abc_t* cf_derivated = cf.compute_derivate_ptr(1);
+  ComparePoints(cf.derivate(0, 1), (*cf_derivated)(0), errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.3, 1), (*cf_derivated)(0.3), errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.5, 1), (*cf_derivated)(0.5), errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(1, 1), (*cf_derivated)(1), errMsg + " - derivate order 1 : ", error);
   // Order 2
   polynomial_t cf_derivated_2 = cf.compute_derivate(2);
-  ComparePoints(cf.derivate(0, 2), cf_derivated_2(0), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(0.3, 2), cf_derivated_2(0.3), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(0.5, 2), cf_derivated_2(0.5), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(1, 2), cf_derivated_2(1), errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0, 2), (cf_derivated_2)(0), errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.3, 2), (cf_derivated_2)(0.3), errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.5, 2), (cf_derivated_2)(0.5), errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(1, 2), (cf_derivated_2)(1), errMsg + " - derivate order 1 : ", error);
 }
 
 /*bezier_curve Function tests*/
@@ -185,7 +168,7 @@ void BezierCurveTest(bool& error) {
   std::vector<point3_t> params;
   params.push_back(a);
   // 1d curve in [0,1]
-  bezier_curve_t cf1(params.begin(), params.end());
+  bezier_t cf1(params.begin(), params.end());
   point3_t res1;
   res1 = cf1(0);
   point3_t x10 = a;
@@ -194,7 +177,7 @@ void BezierCurveTest(bool& error) {
   ComparePoints(x10, res1, errMsg + "1(1) ", error);
   // 2d curve in [0,1]
   params.push_back(b);
-  bezier_curve_t cf(params.begin(), params.end());
+  bezier_t cf(params.begin(), params.end());
   res1 = cf(0);
   point3_t x20 = a;
   ComparePoints(x20, res1, errMsg + "2(0) ", error);
@@ -203,22 +186,26 @@ void BezierCurveTest(bool& error) {
   ComparePoints(x21, res1, errMsg + "2(1) ", error);
   // 3d curve in [0,1]
   params.push_back(c);
-  bezier_curve_t cf3(params.begin(), params.end());
+  bezier_t cf3(params.begin(), params.end());
   res1 = cf3(0);
   ComparePoints(a, res1, errMsg + "3(0) ", error);
   res1 = cf3(1);
   ComparePoints(c, res1, errMsg + "3(1) ", error);
   // 4d curve in [1,2]
   params.push_back(d);
-  bezier_curve_t cf4(params.begin(), params.end(), 1., 2.);
+  bezier_t cf4(params.begin(), params.end(), 1., 2.);
   // testing bernstein polynomials
-  bezier_curve_t cf5(params.begin(), params.end(), 1., 2.);
+  bezier_t cf5(params.begin(), params.end(), 1., 2.);
   std::string errMsg2("In test BezierCurveTest ; Bernstein polynomials do not evaluate as analytical evaluation");
+  bezier_t cf5_derivated = cf5.compute_derivate(1);
+
   for (double d = 1.; d < 2.; d += 0.1) {
     ComparePoints(cf5.evalBernstein(d), cf5(d), errMsg2, error);
     ComparePoints(cf5.evalHorner(d), cf5(d), errMsg2, error);
-    ComparePoints(cf5.compute_derivate(1).evalBernstein(d), cf5.compute_derivate(1)(d), errMsg2, error);
-    ComparePoints(cf5.compute_derivate(1).evalHorner(d), cf5.compute_derivate(1)(d), errMsg2, error);
+    ComparePoints(cf5_derivated.evalBernstein(d), cf5_derivated(d), errMsg2, error);
+    ComparePoints(cf5_derivated.evalHorner(d), cf5_derivated(d), errMsg2, error);
+    ComparePoints(cf5.derivate(d,1), cf5_derivated(d), errMsg2, error);
+
   }
   bool error_in(true);
   try {
@@ -272,7 +259,7 @@ void BezierCurveTestCompareHornerAndBernstein(bool&)  // error
   params.push_back(b);
   params.push_back(c);
   // 3d curve
-  bezier_curve_t cf(params.begin(), params.end());  // defined in [0,1]
+  bezier_t cf(params.begin(), params.end());  // defined in [0,1]
   // Check all evaluation of bezier curve
   clock_t s0, e0, s1, e1, s2, e2, s3, e3;
   s0 = clock();
@@ -307,7 +294,7 @@ void BezierCurveTestCompareHornerAndBernstein(bool&)  // error
   params.push_back(g);
   params.push_back(h);
   params.push_back(i);
-  bezier_curve_t cf2(params.begin(), params.end());
+  bezier_t cf2(params.begin(), params.end());
   s1 = clock();
   for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
     cf2.evalBernstein(*cit);
@@ -343,8 +330,7 @@ void BezierDerivativeCurveTest(bool& error) {
   params.push_back(a);
   params.push_back(b);
   params.push_back(c);
-  bezier_curve_t cf3(params.begin(), params.end());
-  ComparePoints(cf3(0), cf3.derivate(0., 0), errMsg, error);
+  bezier_t cf3(params.begin(), params.end());
   ComparePoints(cf3(0), cf3.derivate(0., 1), errMsg, error, true);
   ComparePoints(point3_t::Zero(), cf3.derivate(0., 100), errMsg, error);
 }
@@ -368,8 +354,8 @@ void BezierDerivativeCurveTimeReparametrizationTest(bool& error) {
   double Tmin = 0.;
   double Tmax = 2.;
   double diffT = Tmax - Tmin;
-  bezier_curve_t cf(params.begin(), params.end());
-  bezier_curve_t cfT(params.begin(), params.end(), Tmin, Tmax);
+  bezier_t cf(params.begin(), params.end());
+  bezier_t cfT(params.begin(), params.end(), Tmin, Tmax);
   ComparePoints(cf(0.5), cfT(1), errMsg, error);
   ComparePoints(cf.derivate(0.5, 1), cfT.derivate(1, 1) * (diffT), errMsg, error);
   ComparePoints(cf.derivate(0.5, 2), cfT.derivate(1, 2) * diffT * diffT, errMsg, error);
@@ -380,7 +366,7 @@ void BezierDerivativeCurveConstraintTest(bool& error) {
   point3_t a(1, 2, 3);
   point3_t b(2, 3, 4);
   point3_t c(3, 4, 5);
-  bezier_curve_t::curve_constraints_t constraints(3);
+  bezier_t::curve_constraints_t constraints(3);
   constraints.init_vel = point3_t(-1, -1, -1);
   constraints.init_acc = point3_t(-2, -2, -2);
   constraints.end_vel = point3_t(-10, -10, -10);
@@ -389,9 +375,9 @@ void BezierDerivativeCurveConstraintTest(bool& error) {
   params.push_back(a);
   params.push_back(b);
   params.push_back(c);
-  bezier_curve_t::num_t T_min = 1.0;
-  bezier_curve_t::num_t T_max = 3.0;
-  bezier_curve_t cf(params.begin(), params.end(), constraints, T_min, T_max);
+  bezier_t::num_t T_min = 1.0;
+  bezier_t::num_t T_max = 3.0;
+  bezier_t cf(params.begin(), params.end(), constraints, T_min, T_max);
   ComparePoints(a, cf(T_min), errMsg0, error);
   ComparePoints(c, cf(T_max), errMsg0, error);
   ComparePoints(constraints.init_vel, cf.derivate(T_min, 1), errMsg0, error);
@@ -435,11 +421,11 @@ void toPolynomialConversionTest(bool& error) {
   control_points.push_back(g);
   control_points.push_back(h);
   control_points.push_back(i);
-  bezier_curve_t::num_t T_min = 1.0;
-  bezier_curve_t::num_t T_max = 3.0;
-  bezier_curve_t bc(control_points.begin(), control_points.end(), T_min, T_max);
-  polynomial_t pol = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc);
-  CompareCurves<polynomial_t, bezier_curve_t>(pol, bc, errMsg, error);
+  bezier_t::num_t T_min = 1.0;
+  bezier_t::num_t T_max = 3.0;
+  bezier_t bc(control_points.begin(), control_points.end(), T_min, T_max);
+  polynomial_t pol = polynomial_from_curve<polynomial_t>(bc);
+  CompareCurves<polynomial_t, bezier_t>(pol, bc, errMsg, error);
 }
 
 void cubicConversionTest(bool& error) {
@@ -468,38 +454,38 @@ void cubicConversionTest(bool& error) {
   // hermite to bezier
   // std::cout<<"======================= \n";
   // std::cout<<"hermite to bezier \n";
-  bezier_curve_t bc0 = bezier_from_curve<bezier_curve_t, cubic_hermite_spline_t>(chs0);
-  CompareCurves<cubic_hermite_spline_t, bezier_curve_t>(chs0, bc0, errMsg0, error);
+  bezier_t bc0 = bezier_from_curve<bezier_t>(chs0);
+  CompareCurves<cubic_hermite_spline_t, bezier_t>(chs0, bc0, errMsg0, error);
   // hermite to pol
   // std::cout<<"======================= \n";
   // std::cout<<"hermite to polynomial \n";
-  polynomial_t pol0 = polynomial_from_curve<polynomial_t, cubic_hermite_spline_t>(chs0);
+  polynomial_t pol0 = polynomial_from_curve<polynomial_t>(chs0);
   CompareCurves<cubic_hermite_spline_t, polynomial_t>(chs0, pol0, errMsg0, error);
   // pol to hermite
   // std::cout<<"======================= \n";
   // std::cout<<"polynomial to hermite \n";
-  cubic_hermite_spline_t chs1 = hermite_from_curve<cubic_hermite_spline_t, polynomial_t>(pol0);
+  cubic_hermite_spline_t chs1 = hermite_from_curve<cubic_hermite_spline_t>(pol0);
   CompareCurves<polynomial_t, cubic_hermite_spline_t>(pol0, chs1, errMsg2, error);
   // pol to bezier
   // std::cout<<"======================= \n";
   // std::cout<<"polynomial to bezier \n";
-  bezier_curve_t bc1 = bezier_from_curve<bezier_curve_t, polynomial_t>(pol0);
-  CompareCurves<bezier_curve_t, polynomial_t>(bc1, pol0, errMsg2, error);
+  bezier_t bc1 = bezier_from_curve<bezier_t>(pol0);
+  CompareCurves<bezier_t, polynomial_t>(bc1, pol0, errMsg2, error);
   // Bezier to pol
   // std::cout<<"======================= \n";
   // std::cout<<"bezier to polynomial \n";
-  polynomial_t pol1 = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc0);
-  CompareCurves<bezier_curve_t, polynomial_t>(bc0, pol1, errMsg1, error);
+  polynomial_t pol1 = polynomial_from_curve<polynomial_t>(bc0);
+  CompareCurves<bezier_t, polynomial_t>(bc0, pol1, errMsg1, error);
   // bezier => hermite
   // std::cout<<"======================= \n";
   // std::cout<<"bezier to hermite \n";
-  cubic_hermite_spline_t chs2 = hermite_from_curve<cubic_hermite_spline_t, bezier_curve_t>(bc0);
-  CompareCurves<bezier_curve_t, cubic_hermite_spline_t>(bc0, chs2, errMsg1, error);
+  cubic_hermite_spline_t chs2 = hermite_from_curve<cubic_hermite_spline_t>(bc0);
+  CompareCurves<bezier_t, cubic_hermite_spline_t>(bc0, chs2, errMsg1, error);
 
   // Test : compute derivative of bezier => Convert it to polynomial
-  bezier_curve_t bc_der = bc0.compute_derivate(1);
-  polynomial_t pol_test = polynomial_from_curve<polynomial_t, bezier_curve_t>(bc_der);
-  CompareCurves<bezier_curve_t, polynomial_t>(bc_der, pol_test, errMsg1, error);
+  curve_abc_t* bc_der = bc0.compute_derivate_ptr(1);
+  polynomial_t pol_test = polynomial_from_curve<polynomial_t>(*bc_der);
+  CompareCurves<curve_abc_t, polynomial_t>(*bc_der, pol_test, errMsg1, error);
 }
 
 /*Exact Cubic Function tests*/
@@ -861,7 +847,7 @@ void BezierEvalDeCasteljau(bool& error) {
   params.push_back(b);
   params.push_back(c);
   // 3d curve
-  bezier_curve_t cf(params.begin(), params.end());
+  bezier_t cf(params.begin(), params.end());
   std::string errmsg("Error in BezierEvalDeCasteljau; while comparing actual bezier evaluation and de Casteljau : ");
   for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
     ComparePoints(cf.evalDeCasteljau(*cit), cf(*cit), errmsg, error);
@@ -872,7 +858,7 @@ void BezierEvalDeCasteljau(bool& error) {
   params.push_back(g);
   params.push_back(h);
   params.push_back(i);
-  bezier_curve_t cf2(params.begin(), params.end());
+  bezier_t cf2(params.begin(), params.end());
   for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
     ComparePoints(cf.evalDeCasteljau(*cit), cf(*cit), errmsg, error);
   }
@@ -908,8 +894,8 @@ void BezierSplitCurve(bool& error) {
     double t0 = (rand() / (double)RAND_MAX) * (t_max - t_min) + t_min;
     double t1 = (rand() / (double)RAND_MAX) * (t_max - t0) + t0;
     double ts = (rand() / (double)RAND_MAX) * (t1 - t0) + t0;
-    bezier_curve_t c(wps.begin(), wps.end(), t0, t1);
-    std::pair<bezier_curve_t, bezier_curve_t> cs = c.split(ts);
+    bezier_t c(wps.begin(), wps.end(), t0, t1);
+    std::pair<bezier_t, bezier_t> cs = c.split(ts);
     // test on splitted curves :
     if (!((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_))) {
       error = true;
@@ -939,19 +925,19 @@ void BezierSplitCurve(bool& error) {
       ti += 0.01;
     }
     // Test extract function
-    bezier_curve_t bezier_extracted0 = c.extract(t0 + 0.01, t1 - 0.01);  // T_min < t0 < t1 < T_max
+    bezier_t bezier_extracted0 = c.extract(t0 + 0.01, t1 - 0.01);  // T_min < t0 < t1 < T_max
     for (double t = bezier_extracted0.min(); t < bezier_extracted0.max(); t += 0.01) {
       ComparePoints(bezier_extracted0(t), c(t), errMsg6, error);
     }
-    bezier_curve_t bezier_extracted1 = c.extract(t0, t1 - 0.01);  // T_min = t0 < t1 < T_max
+    bezier_t bezier_extracted1 = c.extract(t0, t1 - 0.01);  // T_min = t0 < t1 < T_max
     for (double t = bezier_extracted1.min(); t < bezier_extracted1.max(); t += 0.01) {
       ComparePoints(bezier_extracted1(t), c(t), errMsg6, error);
     }
-    bezier_curve_t bezier_extracted2 = c.extract(t0 + 0.01, t1);  // T_min < t0 < t1 = T_max
+    bezier_t bezier_extracted2 = c.extract(t0 + 0.01, t1);  // T_min < t0 < t1 = T_max
     for (double t = bezier_extracted2.min(); t < bezier_extracted2.max(); t += 0.01) {
       ComparePoints(bezier_extracted2(t), c(t), errMsg6, error);
     }
-    bezier_curve_t bezier_extracted3 = c.extract(t0, t1);  // T_min = t0 < t1 = T_max
+    bezier_t bezier_extracted3 = c.extract(t0, t1);  // T_min = t0 < t1 = T_max
     for (double t = bezier_extracted3.min(); t < bezier_extracted3.max(); t += 0.01) {
       ComparePoints(bezier_extracted3(t), c(t), errMsg6, error);
     }
@@ -1069,16 +1055,16 @@ void piecewiseCurveTest(bool& error) {
     vec2.push_back(b);  // x=2, y=1, z=1
     vec3.push_back(c);  // x=3, y=1, z=1
     // Create three polynomials of constant value in the interval of definition
-    polynomial_t pol1(vec1.begin(), vec1.end(), 0, 1);
-    polynomial_t pol2(vec2.begin(), vec2.end(), 1, 2);
-    polynomial_t pol3(vec3.begin(), vec3.end(), 2, 3);
+    boost::shared_ptr<polynomial_t> pol1_ptr (new polynomial_t(vec1.begin(), vec1.end(), 0, 1));
+    boost::shared_ptr<polynomial_t> pol2_ptr (new polynomial_t(vec2.begin(), vec2.end(), 1, 2));
+    boost::shared_ptr<polynomial_t> pol3_ptr (new polynomial_t(vec3.begin(), vec3.end(), 2, 3));
     // 1 polynomial in curve
-    piecewise_polynomial_curve_t pc(pol1);
+    piecewise_t pc(pol1_ptr);
     res = pc(0.5);
     ComparePoints(a, res, errmsg1, error);
     // 3 polynomials in curve
-    pc.add_curve(pol2);
-    pc.add_curve(pol3);
+    pc.add_curve_ptr(pol2_ptr);
+    pc.add_curve_ptr(pol3_ptr);
     // Check values on piecewise curve
     // t in [0,1[ -> res=a
     res = pc(0.);
@@ -1110,10 +1096,10 @@ void piecewiseCurveTest(bool& error) {
     params1.push_back(c0);
     params1.push_back(b0);
     params1.push_back(a0);
-    bezier_curve_t bc0(params0.begin(), params0.end(), 0., 1.);
-    bezier_curve_t bc1(params1.begin(), params1.end(), 1., 2.);
-    piecewise_bezier_curve_t pc_C0(bc0);
-    pc_C0.add_curve(bc1);
+    boost::shared_ptr<bezier_t> bc0_ptr(new bezier_t(params0.begin(), params0.end(), 0., 1.));
+    boost::shared_ptr<bezier_t> bc1_ptr(new bezier_t(params1.begin(), params1.end(), 1., 2.));
+    piecewise_t pc_C0(bc0_ptr);
+    pc_C0.add_curve_ptr(bc1_ptr);
     // Check value in t=0.5 and t=1.5
     res = pc_C0(0.0);
     ComparePoints(a0, res, errmsg1, error);
@@ -1139,10 +1125,10 @@ void piecewiseCurveTest(bool& error) {
     time_control_points0.push_back(1.);  // hermite 0 between [0,1]
     time_control_points1.push_back(1.);
     time_control_points1.push_back(3.);  // hermite 1 between [1,3]
-    cubic_hermite_spline_t chs0(control_points_0.begin(), control_points_0.end(), time_control_points0);
-    cubic_hermite_spline_t chs1(control_points_1.begin(), control_points_1.end(), time_control_points1);
-    piecewise_cubic_hermite_curve_t pc_C1(chs0);
-    pc_C1.add_curve(chs1);
+    boost::shared_ptr<cubic_hermite_spline_t> chs0_ptr(new cubic_hermite_spline_t(control_points_0.begin(), control_points_0.end(), time_control_points0));
+    boost::shared_ptr<cubic_hermite_spline_t> chs1_ptr(new cubic_hermite_spline_t(control_points_1.begin(), control_points_1.end(), time_control_points1));
+    piecewise_t pc_C1(chs0_ptr);
+    pc_C1.add_curve_ptr(chs1_ptr);
     // Create piecewise curve C2
     point3_t a1(0, 0, 0);
     point3_t b1(1, 1, 1);
@@ -1153,10 +1139,10 @@ void piecewiseCurveTest(bool& error) {
     // in [1,2]
     vecb.push_back(b1);
     vecb.push_back(b1);  // x=(t-1)+1, y=(t-1)+1, z=(t-1)+1
-    polynomial_t pola(veca.begin(), veca.end(), 0, 1);
-    polynomial_t polb(vecb.begin(), vecb.end(), 1, 2);
-    piecewise_polynomial_curve_t pc_C2(pola);
-    pc_C2.add_curve(polb);
+    boost::shared_ptr<polynomial_t> pola_ptr(new polynomial_t(veca.begin(), veca.end(), 0, 1));
+    boost::shared_ptr<polynomial_t> polb_ptr(new polynomial_t(vecb.begin(), vecb.end(), 1, 2));
+    piecewise_t pc_C2(pola_ptr);
+    pc_C2.add_curve_ptr(polb_ptr);
     // check C0 continuity
     std::string errmsg2("in piecewise polynomial curve test, Error while checking continuity C0 on ");
     std::string errmsg3("in piecewise polynomial curve test, Error while checking continuity C1 on ");
@@ -1199,40 +1185,49 @@ void piecewiseCurveTest(bool& error) {
     }
     // CONVERT PIECEWISE POLYNOMIAL CURVES TO BEZIER AND HERMITE
     std::string errmsg5("in piecewise polynomial curve test, Error while checking piecewise curve conversion");
-    piecewise_bezier_curve_t pc_bezier = pc.convert_piecewise_curve_to_bezier<bezier_curve_t>();
-    CompareCurves<piecewise_polynomial_curve_t, piecewise_bezier_curve_t>(pc, pc_bezier, errmsg5, error);
-    piecewise_cubic_hermite_curve_t pc_hermite = pc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
-    CompareCurves<piecewise_polynomial_curve_t, piecewise_cubic_hermite_curve_t>(pc, pc_hermite, errmsg5, error);
-    piecewise_polynomial_curve_t pc_polynomial_same = pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
-    CompareCurves<piecewise_polynomial_curve_t, piecewise_polynomial_curve_t>(pc, pc_polynomial_same, errmsg5, error);
+    piecewise_t pc_bezier = pc.convert_piecewise_curve_to_bezier<bezier_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc, pc_bezier, errmsg5, error);
+    piecewise_t pc_hermite = pc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc, pc_hermite, errmsg5, error);
+    piecewise_t pc_polynomial_same = pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc, pc_polynomial_same, errmsg5, error);
+    // CONVERT PIECEWISE BEZIER TO POLYNOMIAL AND HERMITE
+
+    std::string errmsg6("in piecewise bezier curve test, Error while checking piecewise curve conversion");
+    piecewise_t pc_bezier1 = pc_C0.convert_piecewise_curve_to_bezier<bezier_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_bezier1, errmsg6, error);
+    piecewise_t pc_hermite1 = pc_C0.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_hermite1, errmsg6, error);
+    piecewise_t pc_polynomial1 = pc_C0.convert_piecewise_curve_to_polynomial<polynomial_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_polynomial1, errmsg6, error);
 
     // compare compute_derivate and derivate results :
 
-    piecewise_polynomial_curve_t pc_C2_derivate = pc_C2.compute_derivate(1);
-    piecewise_polynomial_curve_t pc_C2_derivate2 = pc_C2.compute_derivate(2);
-    if (pc_C2.min() != pc_C2_derivate.min()) {
+    curve_abc_t* pc_C2_derivate = pc_C2.compute_derivate_ptr(1);
+    curve_abc_t* pc_C2_derivate2 = pc_C2.compute_derivate_ptr(2);
+    if (pc_C2.min() != pc_C2_derivate->min()) {
       error = true;
       std::cout << "min bounds for curve and it's derivate are not equals." << std::endl;
     }
-    if (pc_C2.min() != pc_C2_derivate2.min()) {
+    if (pc_C2.min() != pc_C2_derivate2->min()) {
       error = true;
       std::cout << "min bounds for curve and it's second derivate are not equals." << std::endl;
     }
-    if (pc_C2.max() != pc_C2_derivate.max()) {
+    if (pc_C2.max() != pc_C2_derivate->max()) {
       error = true;
       std::cout << "max bounds for curve and it's derivate are not equals." << std::endl;
     }
-    if (pc_C2.max() != pc_C2_derivate2.max()) {
+    if (pc_C2.max() != pc_C2_derivate2->max()) {
       error = true;
       std::cout << "max bounds for curve and it's second derivate are not equals." << std::endl;
     }
     double t = 0.;
     while (t < pc_C2.max()) {
-      if (!QuasiEqual(pc_C2.derivate(t, 1), pc_C2_derivate(t))) {
+      if (!QuasiEqual(pc_C2.derivate(t, 1), (*pc_C2_derivate)(t))) {
         error = true;
         std::cout << "value not equal between derivate and compute_derivate (order 1) at t = " << t << std::endl;
       }
-      if (!QuasiEqual(pc_C2.derivate(t, 2), pc_C2_derivate2(t))) {
+      if (!QuasiEqual(pc_C2.derivate(t, 2), (*pc_C2_derivate2)(t))) {
         error = true;
         std::cout << "value not equal between derivate and compute_derivate (order 2) at t = " << t << std::endl;
       }
@@ -1250,7 +1245,7 @@ void curveAbcDimDynamicTest(bool& error) {
   typedef polynomial<double, double, true> polynomial_test_t;
   typedef exact_cubic<double, double, true> exact_cubic_test_t;
   typedef exact_cubic_test_t::spline_constraints spline_constraints_test_t;
-  typedef bezier_curve<double, double, true> bezier_curve_test_t;
+  typedef bezier_curve<double, double, true> bezier_test_t;
   typedef cubic_hermite_spline<double, double, true> cubic_hermite_spline_test_t;
   curve_abc_test_t* pt_curve_abc;
   // POLYNOMIAL
@@ -1267,7 +1262,7 @@ void curveAbcDimDynamicTest(bool& error) {
     error = false;
   }
   // BEZIER
-  bezier_curve_test_t bc = bezier_from_curve<bezier_curve_test_t, polynomial_test_t>(pol);
+  bezier_test_t bc = bezier_from_curve<bezier_test_t>(pol);
   try {
     bc(0);
     bc(1);
@@ -1275,7 +1270,7 @@ void curveAbcDimDynamicTest(bool& error) {
     error = false;
   }
   // CUBIC HERMITE
-  cubic_hermite_spline_test_t chs = hermite_from_curve<cubic_hermite_spline_test_t, polynomial_test_t>(pol);
+  cubic_hermite_spline_test_t chs = hermite_from_curve<cubic_hermite_spline_test_t>(pol);
   try {
     chs(0);
     chs(1);
@@ -1361,10 +1356,11 @@ void PiecewisePolynomialCurveFromDiscretePoints(bool& error) {
   time_points.push_back(t3);
 
   // Piecewise polynomial curve C0 => Linear interpolation between points
-  piecewise_polynomial_curve_t ppc_C0 =
-      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points, time_points);
-  if (!ppc_C0.is_continuous(0)) {
-    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C0" << std::endl;
+  piecewise_t ppc_C0 =  piecewise_t::
+    convert_discrete_points_to_polynomial<polynomial_t>(points,time_points);
+  if (!ppc_C0.is_continuous(0))
+  {
+    std::cout<<"PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C0"<<std::endl;
     error = true;
   }
   for (std::size_t i = 0; i < points.size(); i++) {
@@ -1375,11 +1371,13 @@ void PiecewisePolynomialCurveFromDiscretePoints(bool& error) {
   ComparePoints(pos_between_po_and_p1, ppc_C0(time_between_po_and_p1), errMsg, error);
 
   // Piecewise polynomial curve C1
-  piecewise_polynomial_curve_t ppc_C1 =
-      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(points, points_derivative,
-                                                                                        time_points);
-  if (!ppc_C1.is_continuous(1)) {
-    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1" << std::endl;
+  piecewise_t ppc_C1 =  piecewise_t::
+    convert_discrete_points_to_polynomial<polynomial_t>(points,
+                                                        points_derivative,
+                                                        time_points);
+  if (!ppc_C1.is_continuous(1))
+  {
+    std::cout<<"PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1"<<std::endl;
     error = true;
   }
   for (std::size_t i = 0; i < points.size(); i++) {
@@ -1388,14 +1386,18 @@ void PiecewisePolynomialCurveFromDiscretePoints(bool& error) {
   }
 
   // Piecewise polynomial curve C2
-  piecewise_polynomial_curve_t ppc_C2 =
-      piecewise_polynomial_curve_t::convert_discrete_points_to_polynomial<polynomial_t>(
-          points, points_derivative, points_second_derivative, time_points);
-  if (!ppc_C2.is_continuous(2)) {
-    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1" << std::endl;
+  piecewise_t ppc_C2 =  piecewise_t::
+    convert_discrete_points_to_polynomial<polynomial_t>(points,
+                                                        points_derivative,
+                                                        points_second_derivative,
+                                                        time_points);
+  if (!ppc_C2.is_continuous(2))
+  {
+    std::cout<<"PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1"<<std::endl;
     error = true;
   }
-  for (std::size_t i = 0; i < points.size(); i++) {
+  for (std::size_t i=0; i<points.size(); i++)
+  {
     ComparePoints(points[i], ppc_C2(time_points[i]), errMsg, error);
     ComparePoints(points_derivative[i], ppc_C2.derivate(time_points[i], 1), errMsg, error);
     ComparePoints(points_second_derivative[i], ppc_C2.derivate(time_points[i], 2), errMsg, error);
@@ -1421,9 +1423,10 @@ void serializationCurvesTest(bool& error) {
     polynomial_t pol1(vec1.begin(), vec1.end(), 0, 1);
     polynomial_t pol2(vec2.begin(), vec2.end(), 1, 2);
     polynomial_t pol3(vec3.begin(), vec3.end(), 2, 3);
-    piecewise_polynomial_curve_t ppc(pol1);
-    ppc.add_curve(pol2);
-    ppc.add_curve(pol3);
+    piecewise_t ppc;
+    ppc.add_curve<polynomial_t>(pol1);
+    ppc.add_curve<polynomial_t>(pol2);
+    ppc.add_curve<polynomial_t>(pol3);
     std::string fileName("fileTest.test");
     std::string fileName1("fileTest1.test");
     // Simple curves
@@ -1433,35 +1436,39 @@ void serializationCurvesTest(bool& error) {
     pol_test.loadFromText<polynomial_t>(fileName1);
     CompareCurves<polynomial_t, polynomial_t>(pol1, pol_test, errMsg1, error);
     // Test serialization on Bezier
-    bezier_curve_t bc = bezier_from_curve<bezier_curve_t, polynomial_t>(pol1);
-    bc.saveAsText<bezier_curve_t>(fileName);
-    bezier_curve_t bc_test;
-    bc_test.loadFromText<bezier_curve_t>(fileName);
-    CompareCurves<polynomial_t, bezier_curve_t>(pol1, bc_test, errMsg2, error);
+    bezier_t bc = bezier_from_curve<bezier_t>(pol1);
+    bc.saveAsText<bezier_t>(fileName);
+    bezier_t bc_test;
+    bc_test.loadFromText<bezier_t>(fileName);
+    CompareCurves<polynomial_t, bezier_t>(pol1, bc_test, errMsg2, error);
     // Test serialization on Cubic Hermite
-    cubic_hermite_spline_t chs = hermite_from_curve<cubic_hermite_spline_t, polynomial_t>(pol1);
+    cubic_hermite_spline_t chs = hermite_from_curve<cubic_hermite_spline_t>(pol1);
     chs.saveAsText<cubic_hermite_spline_t>(fileName);
     cubic_hermite_spline_t chs_test;
     chs_test.loadFromText<cubic_hermite_spline_t>(fileName);
     CompareCurves<polynomial_t, cubic_hermite_spline_t>(pol1, chs_test, errMsg3, error);
     // Piecewise curves
     // Test serialization on Piecewise Polynomial curve
-    ppc.saveAsText<piecewise_polynomial_curve_t>(fileName);
-    piecewise_polynomial_curve_t ppc_test;
-    ppc_test.loadFromText<piecewise_polynomial_curve_t>(fileName);
-    CompareCurves<piecewise_polynomial_curve_t, piecewise_polynomial_curve_t>(ppc, ppc_test, errMsg4, error);
+    ppc.saveAsText<piecewise_t>(fileName);
+    piecewise_t ppc_test,ppc_test_binary;
+    ppc_test.loadFromText<piecewise_t>(fileName);
+    CompareCurves<piecewise_t, piecewise_t>(ppc, ppc_test, errMsg4, error);
+    ppc.saveAsBinary<piecewise_t>(fileName);
+    ppc_test_binary.loadFromBinary<piecewise_t>(fileName);
+    CompareCurves<piecewise_t, piecewise_t>(ppc, ppc_test_binary, errMsg4, error);
+
     // Test serialization on Piecewise Bezier curve
-    piecewise_bezier_curve_t pbc = ppc.convert_piecewise_curve_to_bezier<bezier_curve_t>();
-    pbc.saveAsText<piecewise_bezier_curve_t>(fileName);
-    piecewise_bezier_curve_t pbc_test;
-    pbc_test.loadFromText<piecewise_bezier_curve_t>(fileName);
-    CompareCurves<piecewise_polynomial_curve_t, piecewise_bezier_curve_t>(ppc, pbc_test, errMsg4, error);
+    piecewise_t pbc = ppc.convert_piecewise_curve_to_bezier<bezier_t>();
+    pbc.saveAsText<piecewise_t>(fileName);
+    piecewise_t pbc_test;
+    pbc_test.loadFromText<piecewise_t>(fileName);
+    CompareCurves<piecewise_t, piecewise_t>(ppc, pbc_test, errMsg4, error);
     // Test serialization on Piecewise Cubic Hermite curve
-    piecewise_cubic_hermite_curve_t pchc = ppc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
-    pchc.saveAsText<piecewise_cubic_hermite_curve_t>(fileName);
-    piecewise_cubic_hermite_curve_t pchc_test;
-    pchc_test.loadFromText<piecewise_cubic_hermite_curve_t>(fileName);
-    CompareCurves<piecewise_polynomial_curve_t, piecewise_cubic_hermite_curve_t>(ppc, pchc_test, errMsg4, error);
+    piecewise_t pchc = ppc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    pchc.saveAsText<piecewise_t>(fileName);
+    piecewise_t pchc_test;
+    pchc_test.loadFromText<piecewise_t>(fileName);
+    CompareCurves<piecewise_t, piecewise_t>(ppc, pchc_test, errMsg4, error);
     // Test serialization on exact cubic
     curves::T_Waypoint waypoints;
     for (double i = 0; i <= 1; i = i + 0.2) {
@@ -1490,13 +1497,13 @@ void serializationCurvesTest(bool& error) {
     // Piecewise Polynomial
     pt_0 = NULL;
     pt_1 = NULL;
-    ppc_test = piecewise_polynomial_curve_t();
+    ppc_test = piecewise_t();
     pt_0 = &ppc;
     pt_1 = &ppc_test;
-    (*pt_0).saveAsText<piecewise_polynomial_curve_t>(fileName);
-    (*pt_1).loadFromText<piecewise_polynomial_curve_t>(fileName);
-    CompareCurves<piecewise_polynomial_curve_t, piecewise_polynomial_curve_t>(
-        ppc, (*dynamic_cast<piecewise_polynomial_curve_t*>(pt_1)), errMsg6, error);
+    (*pt_0).saveAsText<piecewise_t>(fileName);
+    (*pt_1).loadFromText<piecewise_t>(fileName);
+    CompareCurves<piecewise_t, piecewise_t>(
+        ppc, (*dynamic_cast<piecewise_t*>(pt_1)), errMsg6, error);
   } catch (...) {
     error = true;
     std::cout << "Error in serializationCurvesTest" << std::endl;
@@ -1780,7 +1787,7 @@ void se3CurveTest(bool& error) {
     params.push_back(b);
     params.push_back(c);
     params.push_back(d);
-    boost::shared_ptr<bezier_curve_t> translation_bezier(new bezier_curve_t(params.begin(), params.end(), min, max));
+    boost::shared_ptr<bezier_t> translation_bezier(new bezier_t(params.begin(), params.end(), min, max));
     cBezier = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q1.toRotationMatrix());
     p0 = (*translation_bezier)(min);
     p1 = (*translation_bezier)(max);
@@ -1918,7 +1925,7 @@ void Se3serializationTest(bool &error){
     params.push_back(b);
     params.push_back(c);
     params.push_back(d);
-    boost::shared_ptr<bezier_curve_t> translation_bezier(new bezier_curve_t(params.begin(), params.end(), min, max));
+    boost::shared_ptr<bezier_t> translation_bezier(new bezier_t(params.begin(), params.end(), min, max));
     cBezier = SE3Curve_t(translation_bezier, q0, q1);
   }
 
