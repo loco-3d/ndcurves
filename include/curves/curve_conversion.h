@@ -73,9 +73,8 @@ Hermite hermite_from_curve(const typename Hermite::curve_abc_t& curve) {
   typedef typename Hermite::t_pair_point_tangent_t t_pair_point_tangent_t;
   typedef typename Hermite::point_t point_t;
   typedef typename Hermite::num_t num_t;
-  curveTypeToConvert current(curve);
-  num_t T_min = current.min();
-  num_t T_max = current.max();
+  num_t T_min = curve.min();
+  num_t T_max = curve.max();
   // Positions and derivatives
   point_t p0 = curve(T_min);
   point_t p1 = curve(T_max);
