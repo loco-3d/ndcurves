@@ -59,10 +59,6 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   /// \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
   virtual point_derivate_t derivate(const time_t t, const std::size_t order) const = 0;
 
-  ///  \brief Compute the derived curve at order N.
-  ///  \param order : order of derivative.
-  ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  //virtual curve_t* compute_derivate(const std::size_t order) const = 0 ;
 
   /*Operations*/
 

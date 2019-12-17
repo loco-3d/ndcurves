@@ -281,7 +281,6 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     coeff_t coeff_derivated = deriv_coeff(coefficients_);
     polynomial_t deriv(coeff_derivated, T_min_, T_max_);
     return deriv.compute_derivate(order - 1);
-
   }
 
   ///  \brief Compute the derived curve at order N.
