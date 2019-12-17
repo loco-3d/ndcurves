@@ -16,7 +16,7 @@ using namespace boost::python;
 struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate(const real) { return this->get_override("compute_derivate")(); }
+  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -24,7 +24,7 @@ struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
 struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate(const real) { return this->get_override("compute_derivate")(); }
+  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -32,7 +32,7 @@ struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
 struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate(const real) { return this->get_override("compute_derivate")(); }
+  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -40,7 +40,7 @@ struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
 struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate(const real) { return this->get_override("compute_derivate")(); }
+  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
@@ -402,7 +402,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_abc_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
-      .def("compute_derivate", pure_virtual(&curve_abc_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
+      .def("compute_derivate", pure_virtual(&curve_abc_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_abc_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_abc_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_abc_t::dim), "Get the dimension of the curve.")
@@ -424,7 +424,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_3_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
-      .def("compute_derivate", pure_virtual(&curve_3_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
+      .def("compute_derivate", pure_virtual(&curve_3_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_3_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_3_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_3_t::dim), "Get the dimension of the curve.");
@@ -434,7 +434,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_rotation_t::derivate),
            "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
-      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
+      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_rotation_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_rotation_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_rotation_t::dim), "Get the dimension of the curve.");
@@ -444,7 +444,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_SE3_t::derivate),
            "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
-      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
+      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_SE3_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_SE3_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.")
@@ -540,7 +540,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__call__", &bezier_linear_variable_t::operator())
       .def("evaluate", &bezier_linear_variable_t_evaluate, bp::return_value_policy<bp::manage_new_object>())
       .def("derivate", &bezier_linear_variable_t::derivate)
-      .def("compute_derivate", &bezier_linear_variable_t::compute_derivate, return_value_policy<manage_new_object>())
+      .def("compute_derivate", &bezier_linear_variable_t::compute_derivate_ptr, return_value_policy<manage_new_object>())
       .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
       .def("split", split_py)
       .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
