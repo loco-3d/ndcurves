@@ -1,13 +1,14 @@
+#ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+#include <pinocchio/spatial/se3.hpp>
+#include <pinocchio/spatial/motion.hpp>
+#endif  // CURVES_WITH_PINOCCHIO_SUPPORT
+
 #include "python_variables.h"
 #include "archive_python_binding.h"
 #include "optimization_python.h"
 
 #include <boost/python.hpp>
 
-#ifdef CURVES_WITH_PINOCCHIO_SUPPORT
-#include <pinocchio/spatial/se3.hpp>
-#include <pinocchio/spatial/motion.hpp>
-#endif  // CURVES_WITH_PINOCCHIO_SUPPORT
 
 namespace curves {
 using namespace boost::python;
