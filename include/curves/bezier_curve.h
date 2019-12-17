@@ -158,7 +158,13 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
     bezier_curve_t deriv(derived_wp.begin(), derived_wp.end(), T_min_, T_max_, mult_T_ * (1. / (T_max_ - T_min_)));
     return deriv.compute_derivate(order - 1);
+  }
 
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  bezier_curve_t* compute_derivate_ptr(const std::size_t order) const {
+    return new bezier_curve_t(compute_derivate(order));
   }
 
   ///  \brief Compute the primitive of the curve at order N.

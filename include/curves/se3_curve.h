@@ -168,6 +168,13 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
     throw std::logic_error("Compute derivate for SE3 is not implemented yet.");
   }
 
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  SE3Curve_t* compute_derivate_ptr(const std::size_t order) const {
+    return new SE3Curve_t(compute_derivate(order));
+  }
+
   /*Helpers*/
   /// \brief Get dimension of curve.
   /// \return dimension of curve.

@@ -129,6 +129,14 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     throw std::logic_error("Compute derivate for SO3Linear is not implemented yet.");
   }
 
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  SO3Linear_t* compute_derivate_ptr(const std::size_t order) const {
+    return new SO3Linear_t(compute_derivate(order));
+  }
+
+
   /*Helpers*/
   /// \brief Get dimension of curve.
   /// \return dimension of curve.

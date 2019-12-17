@@ -98,10 +98,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
    * @param order order of derivative
    * @return
    */
-  piecewise_curve_t* compute_derivate(const std::size_t order) const {
+  piecewise_curve_t* compute_derivate_ptr(const std::size_t order) const {
     piecewise_curve_t* res(new piecewise_curve_t());
     for (typename t_curve_ptr_t::const_iterator itc = curves_.begin(); itc < curves_.end(); ++itc) {
-      curve_ptr_t ptr((*itc)->compute_derivate(order));
+      curve_ptr_t ptr((*itc)->compute_derivate_ptr(order));
       res->add_curve_ptr(ptr);
     }
     return res;

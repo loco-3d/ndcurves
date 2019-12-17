@@ -117,6 +117,14 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     throw std::logic_error("Compute derivate for cubic hermite spline is not implemented yet.");
   }
 
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  cubic_hermite_spline_t* compute_derivate_ptr(const std::size_t order) const {
+    return new cubic_hermite_spline_t(compute_derivate(order));
+  }
+
+
 
   /// \brief Set time of each control point of cubic hermite spline.
   /// Set duration of each spline, Exemple : \f$( 0., 0.5, 0.9, ..., 4.5 )\f$ with

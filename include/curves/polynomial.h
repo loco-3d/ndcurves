@@ -284,6 +284,13 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
   }
 
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  polynomial_t* compute_derivate_ptr(const std::size_t order) const {
+    return new polynomial_t(compute_derivate(order));
+  }
+
   Eigen::MatrixXd coeff() const { return coefficients_; }
 
   point_t coeffAtDegree(const std::size_t degree) const {
