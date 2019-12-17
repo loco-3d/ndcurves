@@ -404,6 +404,8 @@ BOOST_PYTHON_MODULE(curves) {
   /** BEGIN eigenpy init**/
   eigenpy::enableEigenPy();
   ENABLE_SPECIFIC_MATRIX_TYPE(pointX_t);
+  ENABLE_SPECIFIC_MATRIX_TYPE(point3_t);
+  ENABLE_SPECIFIC_MATRIX_TYPE(point6_t);
   ENABLE_SPECIFIC_MATRIX_TYPE(pointX_list_t);
   ENABLE_SPECIFIC_MATRIX_TYPE(coeff_t);
   ENABLE_SPECIFIC_MATRIX_TYPE(point_list_t);
