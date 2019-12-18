@@ -96,14 +96,6 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
     return true;
   }
 
-  virtual bool operator==(const curve_t& other) const {
-    return isApprox(other);
-  }
-
-  virtual bool operator!=(const curve_t& other) const {
-    return !(*this == other);
-  }
-
   /*Operations*/
 
   /*Helpers*/

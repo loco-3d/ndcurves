@@ -289,13 +289,6 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
       return curve_abc_t::isApprox(other,prec,order);
   }
 
-  virtual bool operator==(const curve_abc_t& other) const {
-    return isApprox(other);
-  }
-
-  virtual bool operator!=(const curve_abc_t& other) const {
-    return !(*this == other);
-  }
 
 
   ///  \brief Evaluation of the derivative of order N of spline at time t.
