@@ -80,6 +80,35 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     return (*curves_.at(find_interval(t)))(t);
   }
 
+  /**
+   * @brief isApprox check if other and *this are equals, given a precision treshold.
+   * This test is done by discretizing, it should be re-implemented in the child class to check exactly
+   * all the members.
+   * @param other the other curve to check
+   * @param order the order up to which the derivatives of the curves are checked for equality
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  virtual bool isApprox(const piecewise_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
+    std::cout<<"is approx in piecewise called."<<std::endl;
+    if(num_curves() != other.num_curves())
+      return false;
+    for (size_t i = 0 ; i < num_curves() ; ++i) {
+      if(! curve_at_index(i)->isApprox(*other.curve_at_index(i),prec,order))
+        return false;
+    }
+    return true;
+  }
+
+
+  virtual bool operator==(const piecewise_curve_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const piecewise_curve_t& other) const {
+    return !(*this == other);
+  }
+
   ///  \brief Evaluate the derivative of order N of curve at time t.
   ///  \param t : time when to evaluate the spline.
   ///  \param order : order of derivative.
