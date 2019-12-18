@@ -2415,9 +2415,9 @@ void testOperatorEqual(bool& error){
   // test bezier / polynomial
   polynomial_t pol_0 = polynomial_from_curve<polynomial_t>(bc_0);
   CompareCurves<polynomial_t,bezier_t>(pol_0,bc_0,"compare pol_0 and bc_0",error);
-  //std::cout<<"Should call curve_abc method : "<<std::endl;
-  if(bc_0 != pol_0){
-    std::cout<<"bc_0 and pol_0 should be equals"<<std::endl;
+  std::cout<<"Should call curve_abc method : "<<std::endl;
+  if(!bc_0.isApprox(pol_0)){
+    std::cout<<"bc_0 and pol_0 should be approx"<<std::endl;
     error = true;
   }
 
@@ -2460,15 +2460,15 @@ void testOperatorEqual(bool& error){
 
 //  // test bezier / hermite
   bezier_t bc_ch = bezier_from_curve<bezier_t>(chs0);
-  //std::cout<<"Should call curve_abc method : "<<std::endl;
-  if(chs0 != bc_ch){
-    std::cout<<"chs0 and bc_ch should be equals"<<std::endl;
+  std::cout<<"Should call curve_abc method : "<<std::endl;
+  if(!chs0.isApprox(bc_ch)){
+    std::cout<<"chs0 and bc_ch should be approx"<<std::endl;
     error = true;
   }
   // test polynomial / hermite
   polynomial_t pol_ch = polynomial_from_curve<polynomial_t>(chs0);
-  if(chs0 != pol_ch){
-    std::cout<<"chs0 and pol_ch should be equals"<<std::endl;
+  if(!chs0.isApprox(pol_ch)){
+    std::cout<<"chs0 and pol_ch should be approx"<<std::endl;
     error = true;
   }
 
@@ -2504,10 +2504,28 @@ void testOperatorEqual(bool& error){
     error = true;
   }
 
+  // test from pointer :
+  curve_ptr_t c_ptr1(new bezier_t(bc_0));
+  curve_ptr_t c_ptr2(new bezier_t(bc_0));
+  curve_ptr_t c_ptr3(new polynomial_t(pol_0));
+  std::cout<<"Should call bezier method : "<<std::endl;
+  if(!c_ptr1->isApprox(*c_ptr2)){
+    std::cout<<"c_ptr1 and c_ptr2 should be approx"<<std::endl;
+    error = true;
+  }
+  std::cout<<"Should call curve_abc method : "<<std::endl;
+  if(!c_ptr2->isApprox(*c_ptr3)){
+    std::cout<<"c_ptr2 and c_ptr3 should be approx"<<std::endl;
+    error = true;
+  }
+
+
   // SE3
-  boost::shared_ptr<bezier_t> translation_bezier(new bezier_t(bc_0));
+  boost::shared_ptr<bezier_t> translation_bezier(new bezier_t(bc_0)); 
+  boost::shared_ptr<bezier_t> translation_bezier2(new bezier_t(bc_0));
   boost::shared_ptr<polynomial_t> translation_polynomial(new polynomial_t(pol_0));
   SE3Curve_t se3_bezier1 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q1.toRotationMatrix());
+  SE3Curve_t se3_bezier12 = SE3Curve_t(translation_bezier2, q0.toRotationMatrix(), q1.toRotationMatrix());
   SE3Curve_t se3_pol1 = SE3Curve_t(translation_polynomial, q0.toRotationMatrix(), q1.toRotationMatrix());
   SE3Curve_t se3_bezier2(se3_bezier1);
   SE3Curve_t se3_bezier3 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q2.toRotationMatrix());
@@ -2523,7 +2541,12 @@ void testOperatorEqual(bool& error){
     std::cout<<"se3_bezier1 and se3_bezier2 should be equals"<<std::endl;
     error = true;
   }
-  //std::cout<<"Should call se3 -> curve_abc / so3 method : "<<std::endl;
+  std::cout<<"Should call se3 -> bezier / SO3 method : "<<std::endl;
+  if(se3_bezier1 != se3_bezier12){
+    std::cout<<"se3_bezier1 and se3_bezier12 should be equals"<<std::endl;
+    error = true;
+  }
+  std::cout<<"Should call se3 -> curve_abc : "<<std::endl;
   if(se3_bezier1 == se3_pol2){
     std::cout<<"se3_bezier1 and se3_pol2 should not be equals"<<std::endl;
     error = true;
