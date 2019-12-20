@@ -81,25 +81,30 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   }
 
   /**
-   * @brief isApprox check if other and *this are equals, given a precision treshold.
-   * This test is done by discretizing, it should be re-implemented in the child class to check exactly
-   * all the members.
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
    * @param other the other curve to check
-   * @param order the order up to which the derivatives of the curves are checked for equality
    * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  virtual bool isApprox(const piecewise_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
+  bool isApprox(const piecewise_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
     std::cout<<"is approx in piecewise called."<<std::endl;
     if(num_curves() != other.num_curves())
       return false;
     for (size_t i = 0 ; i < num_curves() ; ++i) {
-      if(! curve_at_index(i)->isApprox(*other.curve_at_index(i),prec,order))
+      if(! curve_at_index(i)->isApprox(other.curve_at_index(i).get(),prec))
         return false;
     }
     return true;
   }
 
+  virtual bool isApprox(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    const piecewise_curve_t* other_cast = dynamic_cast<const piecewise_curve_t*>(other);
+    if(other_cast)
+      return isApprox(*other_cast,prec);
+    else
+      return false;
+  }
 
   virtual bool operator==(const piecewise_curve_t& other) const {
     return isApprox(other);

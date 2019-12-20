@@ -140,9 +140,15 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
   }
 
-  virtual bool isApprox(const bezier_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
-    //std::cout<<"is approx in bezier called."<<std::endl;
-    (void)order;
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const bezier_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    std::cout<<"is approx in bezier called."<<std::endl;
     bool equal = T_min_ == other.min()
         && T_max_ == other.max()
         && dim_ == other.dim()
@@ -160,6 +166,14 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return true;
   }
 
+  virtual bool isApprox(const curve_abc_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    const bezier_curve_t* other_cast = dynamic_cast<const bezier_curve_t*>(other);
+    if(other_cast)
+      return isApprox(*other_cast,prec);
+    else
+      return false;
+  }
+
 
   virtual bool operator==(const bezier_curve_t& other) const {
     return isApprox(other);
@@ -168,15 +182,6 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   virtual bool operator!=(const bezier_curve_t& other) const {
     return !(*this == other);
   }
-
-  virtual bool isApprox(const curve_abc_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
-    const bezier_curve_t* other_cast = dynamic_cast<const bezier_curve_t*>(&other);
-    if(other_cast)
-      return isApprox(*other_cast);
-    else
-      return curve_abc_t::isApprox(other,prec,order);
-  }
-
 
 
   ///  \brief Compute the derived curve at order N.

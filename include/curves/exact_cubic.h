@@ -109,6 +109,17 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   /// \brief Destructor.
   virtual ~exact_cubic() {}
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const exact_cubic_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    return piecewise_curve_t::isApprox(other,prec);
+  }
+
   std::size_t getNumberSplines() { return this->getNumberCurves(); }
 
   spline_t getSplineAt(std::size_t index) {
