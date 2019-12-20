@@ -262,7 +262,6 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
    * @return true is the two curves are approximately equals
    */
   bool isApprox(const polynomial_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
-    std::cout<<"is approx in polynomial called."<<std::endl;
     return T_min_ == other.min()
         && T_max_ == other.max()
         && dim_ == other.dim()

@@ -111,7 +111,6 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
    * @return true is the two curves are approximately equals
    */
   bool isApprox(const cubic_hermite_spline_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
-    std::cout<<"is approx in hermite called."<<std::endl;
     bool equal =  T_min_ == other.min()
         && T_max_ == other.max()
         && dim_ == other.dim()

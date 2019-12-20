@@ -115,7 +115,6 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
    * @return true is the two curves are approximately equals
    */
   bool isApprox(const SO3Linear_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
-    std::cout<<"is approx in SO3 called."<<std::endl;
     return  T_min_ == other.min()
         && T_max_ == other.max()
         && dim_ == other.dim()

@@ -88,7 +88,6 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
    * @return true is the two curves are approximately equals
    */
   bool isApprox(const piecewise_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
-    std::cout<<"is approx in piecewise called."<<std::endl;
     if(num_curves() != other.num_curves())
       return false;
     for (size_t i = 0 ; i < num_curves() ; ++i) {

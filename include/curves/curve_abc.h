@@ -68,7 +68,6 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
    * @return true is the two curves are approximately equals
    */
   bool isEquivalent(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
-    std::cout<<"is equivalent in curve_abc called"<<std::endl;
     bool equal = (min() == other->min())
                && (max() == other->max())
                && (dim() == other->dim());
