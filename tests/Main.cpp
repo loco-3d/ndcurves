@@ -2518,6 +2518,10 @@ void testOperatorEqual(bool& error){
     std::cout<<"c_ptr2 and c_ptr3 should be equivalent"<<std::endl;
     error = true;
   }
+  if(c_ptr1->isApprox(c_ptr3.get())){
+    std::cout<<"c_ptr1 and c_ptr3 should not be approx"<<std::endl;
+    error = true;
+  }
 
 
   // SE3
