@@ -403,8 +403,6 @@ BOOST_PYTHON_MODULE(curves) {
   class_<CurveWrapper, boost::noncopyable>("curve", no_init)
       .def("__call__", pure_virtual(&curve_abc_t::operator()), "Evaluate the curve at the given time.",
            args("self", "t"))
-      .def("__eq__", &curve_abc_t::operator==)
-      .def("__ne__", &curve_abc_t::operator!=)
       .def("derivate", pure_virtual(&curve_abc_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("compute_derivate", pure_virtual(&curve_abc_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
@@ -427,8 +425,6 @@ BOOST_PYTHON_MODULE(curves) {
   class_<Curve3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve3", no_init)
       .def("__call__", pure_virtual(&curve_3_t::operator()), "Evaluate the curve at the given time.",
            args("self", "t"))
-      .def("__eq__", &curve_3_t::operator==)
-      .def("__ne__", &curve_3_t::operator!=)
       .def("derivate", pure_virtual(&curve_3_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("compute_derivate", pure_virtual(&curve_3_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
@@ -439,8 +435,6 @@ BOOST_PYTHON_MODULE(curves) {
   class_<CurveRotationWrapper, boost::noncopyable, bases<curve_abc_t> >("curve_rotation", no_init)
       .def("__call__", pure_virtual(&curve_rotation_t::operator()), "Evaluate the curve at the given time.",
            args("self", "t"))
-      .def("__eq__", &curve_rotation_t::operator==)
-      .def("__ne__", &curve_rotation_t::operator!=)
       .def("derivate", pure_virtual(&curve_rotation_t::derivate),
            "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
       .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
@@ -451,8 +445,6 @@ BOOST_PYTHON_MODULE(curves) {
   class_<CurveSE3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve_SE3", no_init)
       .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix.",
            args("self", "t"))
-      .def("__eq__", &curve_SE3_t::operator==)
-      .def("__ne__", &curve_SE3_t::operator!=)
       .def("derivate", pure_virtual(&curve_SE3_t::derivate),
            "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
       .def("compute_derivate", pure_virtual(&curve_SE3_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
@@ -494,6 +486,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &bezier3_t::loadFromBinary<bezier3_t>, bp::args("filename"),
            "Loads *this from a binary file.")
       //.def(SerializableVisitor<bezier_t>())
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
       ;
   /** END bezier3 curve**/
   /** BEGIN bezier curve**/
@@ -517,6 +511,8 @@ BOOST_PYTHON_MODULE(curves) {
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &bezier_t::loadFromBinary<bezier_t>, bp::args("filename"),
            "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
       //.def(SerializableVisitor<bezier_t>())
       ;
   /** END bezier curve**/
@@ -557,7 +553,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
       .def("waypointAtIndex", &bezier_linear_variable_t::waypointAtIndex)
       .def_readonly("degree", &bezier_linear_variable_t::degree_)
-      .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_);
+      .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   class_<quadratic_variable_t>("cost", no_init)
       .add_property("A", &cost_t_quad)
@@ -609,7 +608,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", &polynomial_t::saveAsBinary<polynomial_t>, bp::args("filename"),
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &polynomial_t::loadFromBinary<polynomial_t>, bp::args("filename"),
-           "Loads *this from a binary file.");
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   /** END polynomial function**/
   /** BEGIN piecewise curve function **/
@@ -673,7 +675,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", &piecewise_t::saveAsBinary<piecewise_t>,
            bp::args("filename"), "Saves *this inside a binary file.")
       .def("loadFromBinary", &piecewise_t::loadFromBinary<piecewise_t>,
-           bp::args("filename"), "Loads *this from a binary file.");
+           bp::args("filename"), "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   class_<piecewise_SE3_t, bases<curve_SE3_t> >("piecewise_SE3", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor, default_call_policies(), arg("curve")),
@@ -704,6 +709,8 @@ BOOST_PYTHON_MODULE(curves) {
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &piecewise_SE3_t::loadFromBinary<piecewise_SE3_t>, bp::args("filename"),
            "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
         #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
           .def("append", &addFinalSE3,
            "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
@@ -730,7 +737,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", &exact_cubic_t::saveAsBinary<exact_cubic_t>, bp::args("filename"),
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &exact_cubic_t::loadFromBinary<exact_cubic_t>, bp::args("filename"),
-           "Loads *this from a binary file.");
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   /** END exact_cubic curve**/
   /** BEGIN cubic_hermite_spline **/
@@ -747,7 +757,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", &cubic_hermite_spline_t::saveAsBinary<cubic_hermite_spline_t>, bp::args("filename"),
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &cubic_hermite_spline_t::loadFromBinary<cubic_hermite_spline_t>, bp::args("filename"),
-           "Loads *this from a binary file.");
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   /** END cubic_hermite_spline **/
   /** BEGIN curve constraints**/
@@ -761,7 +774,10 @@ BOOST_PYTHON_MODULE(curves) {
   /** END curve constraints**/
   /** BEGIN bernstein polynomial**/
   class_<bernstein_t>("bernstein", init<const unsigned int, const unsigned int>())
-      .def("__call__", &bernstein_t::operator());
+      .def("__call__", &bernstein_t::operator())
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
   /** END bernstein polynomial**/
 
   /** BEGIN SO3 Linear**/
@@ -791,6 +807,8 @@ BOOST_PYTHON_MODULE(curves) {
       "Saves *this inside a binary file.")
       .def("loadFromBinary",&SO3Linear_t::loadFromBinary<SO3Linear_t>,bp::args("filename"),
       "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
       ;
 
   /** END  SO3 Linear**/
@@ -842,6 +860,8 @@ BOOST_PYTHON_MODULE(curves) {
       "Saves *this inside a binary file.")
       .def("loadFromBinary",&SE3Curve_t::loadFromBinary<SE3Curve_t>,bp::args("filename"),
       "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("__init__",
            make_constructor(&wrapSE3CurveFromSE3Pinocchio, default_call_policies(),
