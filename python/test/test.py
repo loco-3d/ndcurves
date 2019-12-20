@@ -1214,8 +1214,10 @@ class TestCurves(unittest.TestCase):
         # test with polynomial/bezier
         pol_4 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), min, max)
         b_4 = convert_to_bezier(pol_4)
-        self.assertTrue(pol_4 == b_4)
-        self.assertTrue(pol_4 != a1)
+        self.assertTrue(pol_4.isEquivalent(b_4))
+        self.assertTrue(pol_4.isEquivalent(b_4,1e-6))
+        self.assertTrue(pol_4.isEquivalent(b_4,1e-6,2))
+        self.assertFalse(pol_4.isEquivalent(a1))
 
         #test with SE3 :
         init_quat = Quaternion.Identity()
@@ -1237,7 +1239,6 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(se3_1 == se3_2)
         self.assertTrue(se3_1 != se3_3)
         self.assertTrue(se3_1 != se3_4)
-
 
 
 if __name__ == '__main__':
