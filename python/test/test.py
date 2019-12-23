@@ -257,8 +257,6 @@ class TestCurves(unittest.TestCase):
         ddp1 = array([6., -1., -4])
         min = 1.
         max = 2.5
-        # a reshape is required as the inputs must be of shape (n,1) and not (n,)
-        # p0 is equivalent to p0.reshape(len(p0),1)
         polC0 = polynomial(p0, p1, min, max)
         self.assertEqual(polC0.min(), min)
         self.assertEqual(polC0.max(), max)
@@ -1205,14 +1203,14 @@ class TestCurves(unittest.TestCase):
         ddp1 = array([6., -1., -4])
         min = 1.
         max = 2.5
-        pol_1 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), min, max)
-        pol_2 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), min, max)
-        pol_3 = polynomial(p1.reshape(-1,1), dp0.reshape(-1,1), ddp0.reshape(-1,1), p0.reshape(-1,1), dp1.reshape(-1,1), ddp1.reshape(-1,1), min, max)
+        pol_1 = polynomial(p0, dp0, ddp0, p1, dp1, ddp1, min, max)
+        pol_2 = polynomial(p0, dp0, ddp0, p1, dp1, ddp1, min, max)
+        pol_3 = polynomial(p1, dp0, ddp0, p0, dp1, ddp1, min, max)
         self.assertTrue(pol_1 == pol_2)
         self.assertTrue(pol_1 != pol_3)
 
         # test with polynomial/bezier
-        pol_4 = polynomial(p0.reshape(-1,1), dp0.reshape(-1,1), p1.reshape(-1,1), dp1.reshape(-1,1), min, max)
+        pol_4 = polynomial(p0, dp0, p1, dp1, min, max)
         b_4 = convert_to_bezier(pol_4)
         self.assertTrue(pol_4.isEquivalent(b_4))
         self.assertTrue(pol_4.isEquivalent(b_4,1e-6))
