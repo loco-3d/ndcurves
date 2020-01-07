@@ -46,9 +46,9 @@ struct Bern {
   }
 
   virtual bool operator== (const Bern& other) const{
-    return m_minus_i == other.m_minus_i
-        && i_ == other.i_
-        && bin_m_i_ == other.bin_m_i_;
+    return curves::isApprox<Numeric>(m_minus_i, other.m_minus_i)
+        && curves::isApprox<Numeric>(i_, other.i_)
+        && curves::isApprox<Numeric>(bin_m_i_, other.bin_m_i_);
   }
 
   virtual bool operator!=(const Bern& other) const {

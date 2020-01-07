@@ -153,7 +153,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
         && dim_ == other.dim()
         && degree_ == other.degree()
         && size_ == other.size_
-        && mult_T_ == other.mult_T_
+        && curves::isApprox<Numeric>(mult_T_, other.mult_T_)
         && bernstein_ == other.bernstein_;
     if(!equal)
       return false;
