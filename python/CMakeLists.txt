@@ -24,7 +24,15 @@ IF(APPLE)
   SET_TARGET_PROPERTIES(${PY_NAME} PROPERTIES SUFFIX ".so")
 ENDIF(APPLE)
 
-INSTALL(TARGETS ${PY_NAME} DESTINATION ${PYTHON_SITELIB})
+INSTALL(TARGETS ${PY_NAME} DESTINATION ${PYTHON_SITELIB}/curves)
+
+install (FILES plot/plot.py
+  deploy/__init__.py
+  DESTINATION ${PYTHON_SITELIB}/curves)
+  
+install (FILES deploy/optimization/__init__.py
+  DESTINATION ${PYTHON_SITELIB}/curves/optimization)
+  
 
 ADD_PYTHON_UNIT_TEST("python-curves" "python/test/test.py" "python")
 ADD_PYTHON_UNIT_TEST("python-optimization" "python/test/optimization.py" "python")

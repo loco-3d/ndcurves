@@ -64,7 +64,6 @@ if __name__ == '__main__':
     a = bezier(waypoints)
 
     fig = plt.figure()
-    # ax = fig.add_subplot(131, projection="3d")
     ax = fig.add_subplot(121)
     plotBezier2D(a, axes=[1, 0], ax=ax)
     plotControlPoints2D(a, axes=[1, 0], ax=ax)
