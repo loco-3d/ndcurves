@@ -20,6 +20,13 @@
 #include <functional>
 
 namespace curves {
+
+template <typename T>
+bool isApprox(const T a, const T b, const T eps = 1e-6)
+{
+    return fabs(a - b) < eps;
+}
+
 /// \struct curve_abc.
 /// \brief Represents a curve of dimension Dim.
 /// If value of parameter Safe is false, no verification is made on the evaluation of the curve.
@@ -29,6 +36,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   typedef Point point_t;
   typedef Point_derivate point_derivate_t;
   typedef Time time_t;
+  typedef Numeric num_t;
   typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_t; // parent class
   typedef boost::shared_ptr<curve_t> curve_ptr_t;
 
@@ -59,6 +67,52 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   /// \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
   virtual point_derivate_t derivate(const time_t t, const std::size_t order) const = 0;
 
+  /**
+   * @brief isEquivalent check if other and *this are approximately equal by values, given a precision treshold.
+   * This test is done by discretizing both curves and evaluating them and their derivatives.
+   * @param other the other curve to check
+   * @param order the order up to which the derivatives of the curves are checked for equality
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isEquivalent(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
+    bool equal  = curves::isApprox<num_t> (min(), other->min())
+               && curves::isApprox<num_t> (max(), other->max())
+               && (dim() == other->dim());
+    if(!equal){
+      return false;
+    }
+    time_t inc = (max() - min()) / 10.; // FIXME : define this step somewhere ??
+    // check the value along the two curves
+    time_t t = min();
+    while(t<= max()){
+      if(!(*this)(t).isApprox(other->operator()(t),prec)){
+        return false;
+      }
+      t += inc;
+    }
+    //  check if the derivatives are equals
+    for(size_t n = 1 ; n <= order ; ++n){
+      t = min();
+      while(t<= max()){
+        if(!derivate(t,n).isApprox(other->derivate(t,n),prec)){
+          return false;
+        }
+        t += inc;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * @brief isApprox check if other and *this are approximately equals given a precision treshold
+   * Only two curves of the same class can be approximately equals,
+   * for comparison between different type of curves see isEquivalent.
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  virtual bool isApprox(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const = 0;
 
   /*Operations*/
 

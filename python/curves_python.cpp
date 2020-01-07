@@ -22,6 +22,8 @@ struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
 };
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_abc_t_isEquivalent_overloads, curve_abc_t::isEquivalent, 1, 3)
+
 struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
@@ -30,6 +32,8 @@ struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
 };
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_3_t_isEquivalent_overloads, curve_3_t::isEquivalent, 1, 3)
+
 struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
@@ -38,6 +42,8 @@ struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
 };
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_rotation_t_isEquivalent_overloads, curve_rotation_t::isEquivalent, 1, 3)
+
 struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
   point_t operator()(const real) { return this->get_override("operator()")(); }
   point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
@@ -46,6 +52,8 @@ struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
   real min() { return this->get_override("min")(); }
   real max() { return this->get_override("max")(); }
 };
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_SE3_t_isEquivalent_overloads, curve_SE3_t::isEquivalent, 1, 3)
+
 /* end base wrap of curve_abc */
 
 /* Template constructor bezier */
@@ -405,6 +413,11 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_abc_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
+      .def("isEquivalent",&curve_abc_t::isEquivalent,curve_abc_t_isEquivalent_overloads(
+             (bp::arg("other"),
+             bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(),
+             bp::arg("order") = 5),
+           "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
       .def("compute_derivate", pure_virtual(&curve_abc_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_abc_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_abc_t::max), "Get the HIGHER bound on interval definition of the curve.")
@@ -427,6 +440,11 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_3_t::derivate), "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
+      .def("isEquivalent",&curve_3_t::isEquivalent,curve_3_t_isEquivalent_overloads(
+             (bp::arg("other"),
+             bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(),
+             bp::arg("order") = 5),
+           "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
       .def("compute_derivate", pure_virtual(&curve_3_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_3_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_3_t::max), "Get the HIGHER bound on interval definition of the curve.")
@@ -437,6 +455,11 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_rotation_t::derivate),
            "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
+      .def("isEquivalent",&curve_rotation_t::isEquivalent,curve_rotation_t_isEquivalent_overloads(
+             (bp::arg("other"),
+             bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(),
+             bp::arg("order") = 5),
+           "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
       .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_rotation_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_rotation_t::max), "Get the HIGHER bound on interval definition of the curve.")
@@ -447,7 +470,12 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_SE3_t::derivate),
            "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
-      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
+      .def("isEquivalent",&curve_SE3_t::isEquivalent,curve_SE3_t_isEquivalent_overloads(
+             (bp::arg("other"),
+             bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(),
+             bp::arg("order") = 5),
+           "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
+      .def("compute_derivate", pure_virtual(&curve_SE3_t::compute_derivate_ptr),return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",  args("self", "N"))
       .def("min", pure_virtual(&curve_SE3_t::min), "Get the LOWER bound on interval definition of the curve.")
       .def("max", pure_virtual(&curve_SE3_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.")
@@ -486,6 +514,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &bezier3_t::loadFromBinary<bezier3_t>, bp::args("filename"),
            "Loads *this from a binary file.")
       //.def(SerializableVisitor<bezier_t>())
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
       ;
   /** END bezier3 curve**/
   /** BEGIN bezier curve**/
@@ -509,6 +539,8 @@ BOOST_PYTHON_MODULE(curves) {
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &bezier_t::loadFromBinary<bezier_t>, bp::args("filename"),
            "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
       //.def(SerializableVisitor<bezier_t>())
       ;
   /** END bezier curve**/
@@ -549,7 +581,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
       .def("waypointAtIndex", &bezier_linear_variable_t::waypointAtIndex)
       .def_readonly("degree", &bezier_linear_variable_t::degree_)
-      .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_);
+      .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   class_<quadratic_variable_t>("cost", no_init)
       .add_property("A", &cost_t_quad)
@@ -601,7 +636,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", &polynomial_t::saveAsBinary<polynomial_t>, bp::args("filename"),
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &polynomial_t::loadFromBinary<polynomial_t>, bp::args("filename"),
-           "Loads *this from a binary file.");
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   /** END polynomial function**/
   /** BEGIN piecewise curve function **/
@@ -665,7 +703,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", &piecewise_t::saveAsBinary<piecewise_t>,
            bp::args("filename"), "Saves *this inside a binary file.")
       .def("loadFromBinary", &piecewise_t::loadFromBinary<piecewise_t>,
-           bp::args("filename"), "Loads *this from a binary file.");
+           bp::args("filename"), "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   class_<piecewise_SE3_t, bases<curve_SE3_t> >("piecewise_SE3", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor, default_call_policies(), arg("curve")),
@@ -696,6 +737,8 @@ BOOST_PYTHON_MODULE(curves) {
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &piecewise_SE3_t::loadFromBinary<piecewise_SE3_t>, bp::args("filename"),
            "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
         #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
           .def("append", &addFinalSE3,
            "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
@@ -722,7 +765,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", &exact_cubic_t::saveAsBinary<exact_cubic_t>, bp::args("filename"),
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &exact_cubic_t::loadFromBinary<exact_cubic_t>, bp::args("filename"),
-           "Loads *this from a binary file.");
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   /** END exact_cubic curve**/
   /** BEGIN cubic_hermite_spline **/
@@ -739,7 +785,10 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", &cubic_hermite_spline_t::saveAsBinary<cubic_hermite_spline_t>, bp::args("filename"),
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &cubic_hermite_spline_t::loadFromBinary<cubic_hermite_spline_t>, bp::args("filename"),
-           "Loads *this from a binary file.");
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
 
   /** END cubic_hermite_spline **/
   /** BEGIN curve constraints**/
@@ -753,7 +802,10 @@ BOOST_PYTHON_MODULE(curves) {
   /** END curve constraints**/
   /** BEGIN bernstein polynomial**/
   class_<bernstein_t>("bernstein", init<const unsigned int, const unsigned int>())
-      .def("__call__", &bernstein_t::operator());
+      .def("__call__", &bernstein_t::operator())
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
   /** END bernstein polynomial**/
 
   /** BEGIN SO3 Linear**/
@@ -783,6 +835,8 @@ BOOST_PYTHON_MODULE(curves) {
       "Saves *this inside a binary file.")
       .def("loadFromBinary",&SO3Linear_t::loadFromBinary<SO3Linear_t>,bp::args("filename"),
       "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
       ;
 
   /** END  SO3 Linear**/
@@ -834,6 +888,8 @@ BOOST_PYTHON_MODULE(curves) {
       "Saves *this inside a binary file.")
       .def("loadFromBinary",&SE3Curve_t::loadFromBinary<SE3Curve_t>,bp::args("filename"),
       "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("__init__",
            make_constructor(&wrapSE3CurveFromSE3Pinocchio, default_call_policies(),

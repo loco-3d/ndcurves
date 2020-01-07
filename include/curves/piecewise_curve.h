@@ -80,6 +80,39 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     return (*curves_.at(find_interval(t)))(t);
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const piecewise_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    if(num_curves() != other.num_curves())
+      return false;
+    for (size_t i = 0 ; i < num_curves() ; ++i) {
+      if(! curve_at_index(i)->isApprox(other.curve_at_index(i).get(),prec))
+        return false;
+    }
+    return true;
+  }
+
+  virtual bool isApprox(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    const piecewise_curve_t* other_cast = dynamic_cast<const piecewise_curve_t*>(other);
+    if(other_cast)
+      return isApprox(*other_cast,prec);
+    else
+      return false;
+  }
+
+  virtual bool operator==(const piecewise_curve_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const piecewise_curve_t& other) const {
+    return !(*this == other);
+  }
+
   ///  \brief Evaluate the derivative of order N of curve at time t.
   ///  \param t : time when to evaluate the spline.
   ///  \param order : order of derivative.

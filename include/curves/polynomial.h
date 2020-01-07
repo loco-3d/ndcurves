@@ -254,6 +254,40 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     return h;
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const polynomial_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    return curves::isApprox<num_t> (T_min_, other.min())
+        && curves::isApprox<num_t> (T_max_, other.max())
+        && dim_ == other.dim()
+        && degree_ == other.degree()
+        && coefficients_.isApprox(other.coefficients_,prec);
+  }
+
+  virtual bool isApprox(const curve_abc_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    const polynomial_t* other_cast = dynamic_cast<const polynomial_t*>(other);
+    if(other_cast)
+      return isApprox(*other_cast,prec);
+    else
+      return false;
+  }
+
+
+  virtual bool operator==(const polynomial_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const polynomial_t& other) const {
+    return !(*this == other);
+  }
+
+
+
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.

@@ -150,6 +150,38 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
     return res;
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const SE3Curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    return curves::isApprox<Numeric> (T_min_, other.min())
+        && curves::isApprox<Numeric> (T_max_, other.max())
+        && (translation_curve_ == other.translation_curve_ || translation_curve_->isApprox(other.translation_curve_.get(),prec))
+        && (rotation_curve_ == other.rotation_curve_ || rotation_curve_->isApprox(other.rotation_curve_.get(),prec));
+  }
+
+  virtual bool isApprox(const curve_abc_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    const SE3Curve_t* other_cast = dynamic_cast<const SE3Curve_t*>(other);
+    if(other_cast)
+      return isApprox(*other_cast,prec);
+    else
+      return false;
+  }
+
+
+  virtual bool operator==(const SE3Curve_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const SE3Curve_t& other) const {
+    return !(*this == other);
+  }
+
+
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.

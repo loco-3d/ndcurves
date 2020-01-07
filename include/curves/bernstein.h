@@ -45,6 +45,17 @@ struct Bern {
     return bin_m_i_ * (pow(u, i_)) * pow((1 - u), m_minus_i);
   }
 
+  virtual bool operator== (const Bern& other) const{
+    return curves::isApprox<Numeric>(m_minus_i, other.m_minus_i)
+        && curves::isApprox<Numeric>(i_, other.i_)
+        && curves::isApprox<Numeric>(bin_m_i_, other.bin_m_i_);
+  }
+
+  virtual bool operator!=(const Bern& other) const {
+    return !(*this == other);
+  }
+
+
   /* Attributes */
   Numeric m_minus_i;
   Numeric i_;

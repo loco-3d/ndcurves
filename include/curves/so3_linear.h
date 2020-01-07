@@ -107,6 +107,39 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   ///  \return \f$x(t)\f$ point corresponding on spline at time t.
   virtual matrix3_t operator()(const time_t t) const { return computeAsQuaternion(t).toRotationMatrix(); }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const SO3Linear_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    return  curves::isApprox<Numeric> (T_min_, other.min())
+        && curves::isApprox<Numeric> (T_max_, other.max())
+        && dim_ == other.dim()
+        && init_rot_.toRotationMatrix().isApprox(other.init_rot_.toRotationMatrix(),prec)
+        && end_rot_.toRotationMatrix().isApprox(other.end_rot_.toRotationMatrix(),prec);
+  }
+
+  virtual bool isApprox(const curve_abc_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    const SO3Linear_t* other_cast = dynamic_cast<const SO3Linear_t*>(other);
+    if(other_cast)
+      return isApprox(*other_cast,prec);
+    else
+      return false;
+  }
+
+
+  virtual bool operator==(const SO3Linear_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const SO3Linear_t& other) const {
+    return !(*this == other);
+  }
+
+
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.

@@ -72,6 +72,39 @@ class rotation_spline : public curve_abc_quat_t {
     return quat_from_.slerp(time_reparam_(u)[0], quat_to_).coeffs();
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const rotation_spline& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    return curves::isApprox<Numeric> (min_, other.min_)
+        && curves::isApprox<Numeric> (max_, other.max_)
+        && dim_ == other.dim_
+        && quat_from_.isApprox(other.quat_from_,prec)
+        && quat_to_.isApprox(other.quat_to_,prec)
+        && time_reparam_.isApprox(other.time_reparam_,prec);
+  }
+
+  virtual bool isApprox(const curve_abc_quat_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    const rotation_spline* other_cast = dynamic_cast<const rotation_spline*>(other);
+    if(other_cast)
+      return isApprox(*other_cast,prec);
+    else
+      return false;
+  }
+
+  virtual bool operator==(const rotation_spline& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const rotation_spline& other) const {
+    return !(*this == other);
+  }
+
+
   virtual quat_t derivate(time_t /*t*/, std::size_t /*order*/) const {
     throw std::runtime_error("TODO quaternion spline does not implement derivate");
   }

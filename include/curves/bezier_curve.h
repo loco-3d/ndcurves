@@ -140,6 +140,49 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const bezier_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    bool equal = curves::isApprox<num_t> (T_min_, other.min())
+        && curves::isApprox<num_t> (T_max_, other.max())
+        && dim_ == other.dim()
+        && degree_ == other.degree()
+        && size_ == other.size_
+        && curves::isApprox<Numeric>(mult_T_, other.mult_T_)
+        && bernstein_ == other.bernstein_;
+    if(!equal)
+      return false;
+    for (size_t i = 0 ;i < size_;++i)
+    {
+      if(!control_points_.at(i).isApprox(other.control_points_.at(i),prec))
+        return false;
+    }
+    return true;
+  }
+
+  virtual bool isApprox(const curve_abc_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    const bezier_curve_t* other_cast = dynamic_cast<const bezier_curve_t*>(other);
+    if(other_cast)
+      return isApprox(*other_cast,prec);
+    else
+      return false;
+  }
+
+
+  virtual bool operator==(const bezier_curve_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const bezier_curve_t& other) const {
+    return !(*this == other);
+  }
+
+
   ///  \brief Compute the derived curve at order N.
   ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
   ///  \param order : order of derivative.

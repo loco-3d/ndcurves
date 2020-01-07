@@ -103,6 +103,50 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     }
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const cubic_hermite_spline_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    bool equal =  curves::isApprox<num_t> (T_min_, other.min())
+        && curves::isApprox<num_t> (T_max_, other.max())
+        && dim_ == other.dim()
+        && degree_ == other.degree()
+        && size_ == other.size()
+        && time_control_points_ == other.time_control_points_
+        && duration_splines_ == other.duration_splines_;
+    if(!equal)
+      return false;
+    for (std::size_t i = 0 ; i < size_ ;++i)
+    {
+      if((!control_points_[i].first.isApprox(other.control_points_[i].first,prec)) ||
+         (!control_points_[i].second.isApprox(other.control_points_[i].second,prec)) )
+        return false;
+    }
+    return true;
+  }
+
+  virtual bool isApprox(const curve_abc_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+    const cubic_hermite_spline_t* other_cast = dynamic_cast<const cubic_hermite_spline_t*>(other);
+    if(other_cast)
+      return isApprox(*other_cast,prec);
+    else
+      return false;
+  }
+
+  virtual bool operator==(const cubic_hermite_spline_t& other) const {
+    return isApprox(other);
+  }
+
+  virtual bool operator!=(const cubic_hermite_spline_t& other) const {
+    return !(*this == other);
+  }
+
+
+
   ///  \brief Evaluate the derivative of order N of spline at time t.
   ///  \param t : time when to evaluate the spline.
   ///  \param order : order of derivative.

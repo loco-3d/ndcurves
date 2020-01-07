@@ -62,7 +62,7 @@ typedef Eigen::Matrix<double, 3, 3> matrix3_t;
 typedef Eigen::Matrix<double, 4, 4> matrix4_t;
 typedef Eigen::Quaternion<double> quaternion_t;
 typedef Eigen::Transform<double, 3, Eigen::Affine> transform_t;
-typedef std::vector<pointX_t, Eigen::aligned_allocator<point3_t> > t_point3_t;
+typedef std::vector<point3_t, Eigen::aligned_allocator<point3_t> > t_point3_t;
 typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_pointX_t;
 
 // abstract curves types:
