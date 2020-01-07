@@ -80,8 +80,8 @@ class rotation_spline : public curve_abc_quat_t {
    * @return true is the two curves are approximately equals
    */
   bool isApprox(const rotation_spline& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
-    return min_ == other.min_
-        && max_ == other.max_
+    return curves::isApprox<Numeric> (min_, other.min_)
+        && curves::isApprox<Numeric> (max_, other.max_)
         && dim_ == other.dim_
         && quat_from_.isApprox(other.quat_from_,prec)
         && quat_to_.isApprox(other.quat_to_,prec)

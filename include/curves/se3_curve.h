@@ -158,8 +158,8 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
    * @return true is the two curves are approximately equals
    */
   bool isApprox(const SE3Curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
-    return T_min_ == other.min()
-        && T_max_ == other.max()
+    return curves::isApprox<Numeric> (T_min_, other.min())
+        && curves::isApprox<Numeric> (T_max_, other.max())
         && (translation_curve_ == other.translation_curve_ || translation_curve_->isApprox(other.translation_curve_.get(),prec))
         && (rotation_curve_ == other.rotation_curve_ || rotation_curve_->isApprox(other.rotation_curve_.get(),prec));
   }
