@@ -176,6 +176,21 @@ piecewise_SE3_t* wrapPiecewiseSE3EmptyConstructor() {
   return new piecewise_SE3_t();
 }
 
+typedef bezier_t::piecewise_curve_t piecewise_bezier_t;
+piecewise_bezier_t* wrapPiecewiseBezierConstructor(const bezier_t::bezier_curve_ptr_t& curve) {
+  return new piecewise_bezier_t(curve);
+}
+piecewise_bezier_t* wrapPiecewiseBezierEmptyConstructor() {
+  return new piecewise_bezier_t();
+}
+typedef bezier_linear_variable_t::piecewise_curve_t piecewise_linear_bezier_t;
+piecewise_linear_bezier_t* wrapPiecewiseBezierLinearConstructor(const bezier_linear_variable_t::bezier_curve_ptr_t& curve) {
+  return new piecewise_linear_bezier_t(curve);
+}
+piecewise_linear_bezier_t* wrapPiecewiseBezierLinearEmptyConstructor() {
+  return new piecewise_linear_bezier_t();
+}
+
 static piecewise_t discretPointToPolynomialC0(const pointX_list_t& points,
                                                                const time_waypoints_t& time_points) {
   t_pointX_t points_list = vectorFromEigenArray<pointX_list_t, t_pointX_t>(points);
@@ -703,6 +718,68 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", &piecewise_t::saveAsBinary<piecewise_t>,
            bp::args("filename"), "Saves *this inside a binary file.")
       .def("loadFromBinary", &piecewise_t::loadFromBinary<piecewise_t>,
+           bp::args("filename"), "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
+
+  class_<piecewise_bezier_t, bases<curve_abc_t> >("piecewise_bezier", init<>())
+      .def("__init__",
+           make_constructor(&wrapPiecewiseBezierConstructor, default_call_policies(), arg("curve")),
+           "Create a peicewise Bezier curve containing the given curve.")
+          .def("__init__", make_constructor(&wrapPiecewiseBezierEmptyConstructor),
+          "Create an empty piecewise-Beziercurve.")
+      .def("append", &piecewise_bezier_t::add_curve_ptr,
+           "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
+           "where T_{min} is equal toT_{max} of the actual piecewise curve.")
+      .def("is_continuous", &piecewise_bezier_t::is_continuous,
+           "Check if the curve is continuous at the given order.",args("self,order"))
+      .def("curve_at_index", &piecewise_bezier_t::curve_at_index,
+           return_value_policy<copy_const_reference>())
+      .def("curve_at_time", &piecewise_bezier_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("num_curves", &piecewise_bezier_t::num_curves)
+      .def("saveAsText", &piecewise_bezier_t::saveAsText<piecewise_bezier_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &piecewise_bezier_t::loadFromText<piecewise_bezier_t>,
+           bp::args("filename"), "Loads *this from a text file.")
+      .def("saveAsXML", &piecewise_bezier_t::saveAsXML<piecewise_bezier_t>,
+           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
+      .def("loadFromXML", &piecewise_bezier_t::loadFromXML<piecewise_bezier_t>,
+           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
+      .def("saveAsBinary", &piecewise_bezier_t::saveAsBinary<piecewise_bezier_t>,
+           bp::args("filename"), "Saves *this inside a binary file.")
+      .def("loadFromBinary", &piecewise_bezier_t::loadFromBinary<piecewise_bezier_t>,
+           bp::args("filename"), "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      ;
+
+  class_<piecewise_linear_bezier_t, bases<curve_abc_t> >("piecewise_bezier_linear", init<>())
+      .def("__init__",
+           make_constructor(&wrapPiecewiseBezierLinearConstructor, default_call_policies(), arg("curve")),
+           "Create a peicewise Bezier curve containing the given curve.")
+          .def("__init__", make_constructor(&wrapPiecewiseBezierLinearEmptyConstructor),
+          "Create an empty piecewise-Beziercurve.")
+      .def("append", &piecewise_linear_bezier_t::add_curve_ptr,
+           "Add a new curve to piecewise curve, which should be defined in T_{min},T_{max}] "
+           "where T_{min} is equal toT_{max} of the actual piecewise curve.")
+      .def("is_continuous", &piecewise_linear_bezier_t::is_continuous,
+           "Check if the curve is continuous at the given order.",args("self,order"))
+      .def("curve_at_index", &piecewise_linear_bezier_t::curve_at_index,
+           return_value_policy<copy_const_reference>())
+      .def("curve_at_time", &piecewise_linear_bezier_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("num_curves", &piecewise_linear_bezier_t::num_curves)
+      .def("saveAsText", &piecewise_linear_bezier_t::saveAsText<piecewise_linear_bezier_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &piecewise_linear_bezier_t::loadFromText<piecewise_linear_bezier_t>,
+           bp::args("filename"), "Loads *this from a text file.")
+      .def("saveAsXML", &piecewise_linear_bezier_t::saveAsXML<piecewise_linear_bezier_t>,
+           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
+      .def("loadFromXML", &piecewise_linear_bezier_t::loadFromXML<piecewise_linear_bezier_t>,
+           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
+      .def("saveAsBinary", &piecewise_linear_bezier_t::saveAsBinary<piecewise_linear_bezier_t>,
+           bp::args("filename"), "Saves *this inside a binary file.")
+      .def("loadFromBinary", &piecewise_linear_bezier_t::loadFromBinary<piecewise_linear_bezier_t>,
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
