@@ -1,38 +1,8 @@
-SET(${PY_NAME}_BINDINGS_SOURCES
-  curves_python.cpp
-  optimization_python.cpp
-  optimization_python.h
-  python_variables.cpp
-  python_variables.h
-  namespace.cpp
-  namespace.h
-  )
+ADD_SUBDIRECTORY(${PY_NAME})
 
-ADD_LIBRARY(${PY_NAME} SHARED ${${PY_NAME}_BINDINGS_SOURCES})
-SET_TARGET_PROPERTIES(${PY_NAME} PROPERTIES PREFIX "")
-TARGET_COMPILE_OPTIONS(${PY_NAME} PRIVATE "-Wno-conversion")
-PKG_CONFIG_USE_DEPENDENCY(${PY_NAME} eigenpy)
-IF(CURVES_WITH_PINOCCHIO_SUPPORT)
-  PKG_CONFIG_USE_DEPENDENCY(${PY_NAME} pinocchio)
-ENDIF(CURVES_WITH_PINOCCHIO_SUPPORT)
-
-TARGET_LINK_LIBRARIES(${PY_NAME} ${Boost_LIBRARIES})
-# MESSAGE(WARNING "Boost libraries are : ${Boost_LIBRARIES}")
-
-IF(APPLE)
-  # We need to change the extension for python bindings
-  SET_TARGET_PROPERTIES(${PY_NAME} PROPERTIES SUFFIX ".so")
-ENDIF(APPLE)
-
-INSTALL(TARGETS ${PY_NAME} DESTINATION ${PYTHON_SITELIB}/${PY_NAME})
-
-install (FILES plot/plot.py
-  deploy/__init__.py
-  DESTINATION ${PYTHON_SITELIB}/${PY_NAME})
-  
-install (FILES deploy/optimization/__init__.py
-  DESTINATION ${PYTHON_SITELIB}/${PY_NAME}/optimization)
-  
+PYTHON_INSTALL_ON_SITE(${PY_NAME} __init__.py)
+PYTHON_INSTALL_ON_SITE(${PY_NAME} plot.py)
+PYTHON_INSTALL_ON_SITE(${PY_NAME} optimization.py)
 
 ADD_PYTHON_UNIT_TEST("python-curves" "python/test/test.py" "python")
 ADD_PYTHON_UNIT_TEST("python-optimization" "python/test/optimization.py" "python")

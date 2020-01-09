@@ -2,6 +2,4 @@
 # Copyright (c) 2019 CNRS
 # Author : Steve Tonneau
 
-from curves import * 
-import plot
-
+from .curves.optimization import *

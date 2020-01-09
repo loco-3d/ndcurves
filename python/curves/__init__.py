@@ -2,4 +2,4 @@
 # Copyright (c) 2019 CNRS
 # Author : Steve Tonneau
 
-from curves.curves.optimization import *
+from .curves import *
