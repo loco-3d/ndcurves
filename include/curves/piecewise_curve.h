@@ -25,7 +25,7 @@ namespace curves {
 ///
 template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
-          typename Point_derivate = Point >
+          typename Point_derivate = Point, typename CurveType = curve_abc<Time, Numeric, Safe, Point,Point_derivate> >
 struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_derivate> {
   typedef Point point_t;
   typedef Point_derivate   point_derivate_t;
@@ -33,11 +33,12 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
   typedef std::vector<point_derivate_t, Eigen::aligned_allocator<point_derivate_t> > t_point_derivate_t;
   typedef Time time_t;
   typedef Numeric num_t;
-  typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_t; // parent class
+  typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> base_curve_t; // parent class
+  typedef CurveType curve_t; // contained curves base class
   typedef boost::shared_ptr<curve_t> curve_ptr_t;
   typedef typename std::vector<curve_ptr_t> t_curve_ptr_t;
   typedef typename std::vector<Time> t_time_t;
-  typedef piecewise_curve<Time, Numeric, Safe, Point,Point_derivate> piecewise_curve_t;
+  typedef piecewise_curve<Time, Numeric, Safe, Point,Point_derivate,CurveType> piecewise_curve_t;
  public:
   /// \brief Empty constructor. Add at least one curve to call other class functions.
   ///
@@ -97,7 +98,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     return true;
   }
 
-  virtual bool isApprox(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+  virtual bool isApprox(const base_curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
     const piecewise_curve_t* other_cast = dynamic_cast<const piecewise_curve_t*>(other);
     if(other_cast)
       return isApprox(*other_cast,prec);
@@ -435,7 +436,7 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
     if (version) {
       // Do something depending on version ?
     }
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_t);
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(base_curve_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("curves", curves_);
     ar& boost::serialization::make_nvp("time_curves", time_curves_);
@@ -446,8 +447,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point,Point_deriv
 };  // End struct piecewise curve
 
 
-template <typename Time, typename Numeric, bool Safe, typename Point, typename Point_derivate>
-const double piecewise_curve<Time, Numeric, Safe, Point,Point_derivate >::MARGIN(0.001);
+template <typename Time, typename Numeric, bool Safe, typename Point, typename Point_derivate, typename CurveType>
+const double piecewise_curve<Time, Numeric, Safe, Point,Point_derivate, CurveType >::MARGIN(0.001);
 
 }  // namespace curves
 

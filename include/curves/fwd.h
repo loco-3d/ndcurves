@@ -29,7 +29,7 @@ template <typename Time, typename Numeric, bool Safe, typename Point,
   struct exact_cubic;
 
 template <typename Time, typename Numeric, bool Safe, typename Point,
-            typename Point_derivate>
+            typename Point_derivate, typename CurveType>
   struct piecewise_curve;
 
 template <typename Time, typename Numeric, bool Safe,typename Point, typename T_Point>
@@ -82,19 +82,19 @@ typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
 typedef exact_cubic<double, double, true, pointX_t,t_pointX_t, polynomial_t> exact_cubic_t;
 typedef bezier_curve<double, double, true, pointX_t> bezier_t;
 typedef cubic_hermite_spline<double, double, true, pointX_t> cubic_hermite_spline_t;
-typedef piecewise_curve <double, double, true, pointX_t,pointX_t> piecewise_t;
+typedef piecewise_curve <double, double, true, pointX_t,pointX_t, curve_abc_t> piecewise_t;
 
 // definition of all curves class with point3 as return type:
 typedef polynomial<double, double, true, point3_t, t_point3_t> polynomial3_t;
 typedef exact_cubic<double, double, true, point3_t,t_point3_t, polynomial_t> exact_cubic3_t;
 typedef bezier_curve<double, double, true, point3_t> bezier3_t;
 typedef cubic_hermite_spline<double, double, true, point3_t> cubic_hermite_spline3_t;
-typedef piecewise_curve <double, double, true, point3_t,point3_t> piecewise3_t;
+typedef piecewise_curve <double, double, true, point3_t,point3_t, curve_3_t> piecewise3_t;
 
 // special curves with return type fixed:
 typedef SO3Linear<double, double, true> SO3Linear_t;
 typedef SE3Curve<double, double, true> SE3Curve_t;
-typedef piecewise_curve <double, double, true,  transform_t, point6_t> piecewise_SE3_t;
+typedef piecewise_curve <double, double, true,  transform_t, point6_t, curve_SE3_t> piecewise_SE3_t;
 
 }
 
