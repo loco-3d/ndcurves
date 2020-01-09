@@ -56,12 +56,13 @@ linear_variable_t* wayPointsToLists(const bezier_linear_variable_t& self) {
   const t_point& wps = self.waypoints();
   // retrieve num variables.
   std::size_t dim = wps[0].B().cols();
-  Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> matrices(dim, wps.size() * 3);
-  Eigen::Matrix<real, Eigen::Dynamic, 1> vectors = Eigen::Matrix<real, Eigen::Dynamic, 1>::Zero(3 * wps.size());
+  std::size_t dimRows = wps[0].c().rows();
+  Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> matrices(dim, wps.size() * dimRows);
+  Eigen::Matrix<real, Eigen::Dynamic, 1> vectors = Eigen::Matrix<real, Eigen::Dynamic, 1>::Zero(dimRows * wps.size());
   int i = 0;
   for (cit_point cit = wps.begin(); cit != wps.end(); ++cit, ++i) {
-    matrices.block(0, i * 3, dim, 3) = cit->B().transpose();
-    vectors.segment<3>(i * 3) = cit->c();
+    matrices.block(0, i * dimRows, dim, dimRows) = cit->B().transpose();
+    vectors.segment(i * dimRows, dimRows) = cit->c();
   }
   return new linear_variable_t(matrices.transpose(), vectors.transpose());
 }
