@@ -127,7 +127,7 @@ class TestNotebook(unittest.TestCase):
         err = False
         try:
             prob = setup_control_points(pD)
-        except RuntimeError,e:
+        except RuntimeError:
             err = True
         assert err
 
