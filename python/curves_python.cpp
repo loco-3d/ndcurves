@@ -509,7 +509,7 @@ BOOST_PYTHON_MODULE(curves) {
 
 
   /** BEGIN bezier3 curve**/
-  class_<bezier3_t, bases<curve_3_t> >("bezier3", init<>())
+  class_<bezier3_t, bases<curve_3_t>, boost::shared_ptr<bezier3_t> >("bezier3", init<>())
       .def("__init__", make_constructor(&wrapBezier3Constructor))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
       .def("__init__", make_constructor(&wrapBezier3ConstructorConstraints))
