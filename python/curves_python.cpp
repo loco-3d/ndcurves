@@ -534,7 +534,7 @@ BOOST_PYTHON_MODULE(curves) {
       ;
   /** END bezier3 curve**/
   /** BEGIN bezier curve**/
-  class_<bezier_t, bases<curve_abc_t> >("bezier", init<>())
+  class_<bezier_t, bases<curve_abc_t>, boost::shared_ptr<bezier_t> >("bezier", init<>())
       .def("__init__", make_constructor(&wrapBezierConstructor))
       .def("__init__", make_constructor(&wrapBezierConstructorBounds))
       .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
@@ -582,7 +582,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("isZero", &linear_variable_t::isZero)
       .def("norm", &linear_variable_t::norm);
 
-  class_<bezier_linear_variable_t>("bezier_linear_variable", no_init)
+  class_<bezier_linear_variable_t, bases<curve_abc_t>, boost::shared_ptr<bezier_linear_variable_t> >("bezier_linear_variable", no_init)
       .def("__init__", make_constructor(&wrapBezierLinearConstructor))
       .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
       .def("min", &bezier_linear_variable_t::min)
