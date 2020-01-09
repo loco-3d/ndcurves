@@ -36,3 +36,4 @@ install (FILES deploy/optimization/__init__.py
 
 ADD_PYTHON_UNIT_TEST("python-curves" "python/test/test.py" "python")
 ADD_PYTHON_UNIT_TEST("python-optimization" "python/test/optimization.py" "python")
+ADD_PYTHON_UNIT_TEST("python-notebook" "python/test/notebook.py" "python")
