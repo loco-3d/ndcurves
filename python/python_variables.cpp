@@ -61,7 +61,7 @@ linear_variable_t* wayPointsToLists(const bezier_linear_variable_t& self) {
   int i = 0;
   for (cit_point cit = wps.begin(); cit != wps.end(); ++cit, ++i) {
     matrices.block(0, i * 3, dim, 3) = cit->B().transpose();
-    vectors.segment<3>(i * 3, i * 3 + 2) = cit->c();
+    vectors.segment<3>(i * 3) = cit->c();
   }
   return new linear_variable_t(matrices.transpose(), vectors.transpose());
 }
