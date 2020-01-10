@@ -22,35 +22,6 @@ Several type of formulation are provided:
 
 The library is template-based, thus generic:  the curves can be of any dimension, and can be implemented in double or float and can work with kind variables like Vector, Transform, Matrix, ...
 
-----------
-Example of use for and end-effector trajectory
--------------
-The library comes with an helper class to automatically generate end-effector trajectories.
-For instance, to create a 2 second long trajectory from the point (0,0,0) to (1,1,0), with a waypoint
-at (0.5,0.5,0.5), one can use the following code:
-
-```cpp
-typedef std::pair<double, Eigen::Vector3d> Waypoint;
-typedef std::vector<Waypoint> T_Waypoint;
-
-// loading helper class namespace
-using namespace spline::helpers;
-
-// Create waypoints
-waypoints.push_back(std::make_pair(0., Eigen::Vector3d(0,0,0)));
-waypoints.push_back(std::make_pair(1., Eigen::Vector3d(0.5,0.5,0.5)));
-waypoints.push_back(std::make_pair(2., Eigen::Vector3d(1,1,0)));
-
-exact_cubic_t* eff_traj = effector_spline(waypoints.begin(),waypoints.end());
-
-// evaluate spline
-(*eff_traj)(0.); // (0,0,0)
-(*eff_traj)(2.); // (1,1,0)
-```
-If rotation of the effector must be considered, the code is almost the same:
-
-The library is template-based, thus generic:  the curves can be of any dimension, and can be implemented in double, float  ...
-
 
 Installation
 -------------
