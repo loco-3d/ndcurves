@@ -7,9 +7,9 @@ import numpy as np
 from numpy import array, array_equal, isclose, random, zeros
 from numpy.linalg import norm
 
-from curves import (CURVES_WITH_PINOCCHIO_SUPPORT, Quaternion, SE3Curve, SO3Linear, bezier, bezier3,
-                    cubic_hermite_spline, curve_constraints, exact_cubic,polynomial,
-                    piecewise, piecewise_SE3, convert_to_polynomial,convert_to_bezier,convert_to_hermite)
+from curves import (CURVES_WITH_PINOCCHIO_SUPPORT, Quaternion, SE3Curve, SO3Linear, bezier, bezier3, convert_to_bezier,
+                    convert_to_hermite, convert_to_polynomial, cubic_hermite_spline, curve_constraints, exact_cubic,
+                    piecewise, piecewise_SE3, polynomial)
 
 eigenpy.switchToNumpyArray()
 
@@ -17,26 +17,27 @@ if CURVES_WITH_PINOCCHIO_SUPPORT:
     from pinocchio import SE3, Motion
 
 
-
 class TestCurves(unittest.TestCase):
     # def print_str(self, inStr):
     #   print inStr
     #   return
 
-    def compareCurves(self,c1,c2):
+    def compareCurves(self, c1, c2):
         t_min = c1.min()
         t_max = c1.max()
-        self.assertEqual(t_min,c2.min(),"c1 min : "+str(t_min)+" ; c2 min : "+str(c2.min()))
-        self.assertEqual(t_max,c2.max(),"c1 max : "+str(t_max)+" ; c2 max : "+str(c2.max()))
-        self.assertTrue(norm(c1.derivate(t_min, 1) - c2.derivate(t_min, 1)) < 1e-10,
-        "dc1(tmin) = "+str(c1.derivate(t_min, 1))+" ; dc2(tmin) = "+str(c2.derivate(t_min, 1)))
-        self.assertTrue(norm(c1.derivate(t_max, 1) - c2.derivate(t_max, 1)) < 1e-10,
-        "dc1(tmax) = "+str(c1.derivate(t_max, 1))+" ; dc2(tmax) = "+str(c2.derivate(t_max, 1)))
+        self.assertEqual(t_min, c2.min(), "c1 min : " + str(t_min) + " ; c2 min : " + str(c2.min()))
+        self.assertEqual(t_max, c2.max(), "c1 max : " + str(t_max) + " ; c2 max : " + str(c2.max()))
+        self.assertTrue(
+            norm(c1.derivate(t_min, 1) - c2.derivate(t_min, 1)) < 1e-10,
+            "dc1(tmin) = " + str(c1.derivate(t_min, 1)) + " ; dc2(tmin) = " + str(c2.derivate(t_min, 1)))
+        self.assertTrue(
+            norm(c1.derivate(t_max, 1) - c2.derivate(t_max, 1)) < 1e-10,
+            "dc1(tmax) = " + str(c1.derivate(t_max, 1)) + " ; dc2(tmax) = " + str(c2.derivate(t_max, 1)))
         t = t_min
         while t < t_max:
-          self.assertTrue(norm(c1(t) - c2(t)) < 1e-10," at t = "+str(t)+" c1 = "+str(c1(t))+" ; c2 = "+str(c2(t)))
-          t = t+0.01
-
+            self.assertTrue(
+                norm(c1(t) - c2(t)) < 1e-10, " at t = " + str(t) + " c1 = " + str(c1(t)) + " ; c2 = " + str(c2(t)))
+            t = t + 0.01
 
     def test_bezier(self):
         print("test_bezier")
@@ -350,35 +351,34 @@ class TestCurves(unittest.TestCase):
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
 
-
-        waypoints3 = array([[1., 2., 3.,0.6,-9.], [-1., 1.6, 1.7,6.7,14]]).transpose()
+        waypoints3 = array([[1., 2., 3., 0.6, -9.], [-1., 1.6, 1.7, 6.7, 14]]).transpose()
         c = polynomial(waypoints3, 3., 5.2)
-        with self.assertRaises(ValueError):# a and c doesn't have the same dimension
-          pc.append(c)
+        with self.assertRaises(ValueError):  # a and c doesn't have the same dimension
+            pc.append(c)
 
-        ### Test the different append methods :
+        # Test the different append methods :
         pc = piecewise()
-        self.assertEqual(pc.num_curves(),0)
-        end_point1 = array([1.,3.,5.,6.5,-2.])
+        self.assertEqual(pc.num_curves(), 0)
+        end_point1 = array([1., 3., 5., 6.5, -2.])
         max1 = 2.5
-        with self.assertRaises(RuntimeError): # cannot add final point in an empty curve
-          pc.append(end_point1,max1)
-        with self.assertRaises(ValueError):# a and end_point1 doesn't have the same dimension
-          pc.append(a)
-          pc.append(end_point1,max1)
+        with self.assertRaises(RuntimeError):  # cannot add final point in an empty curve
+            pc.append(end_point1, max1)
+        with self.assertRaises(ValueError):  # a and end_point1 doesn't have the same dimension
+            pc.append(a)
+            pc.append(end_point1, max1)
 
         pc = piecewise()
         d = polynomial(waypoints3, 0., 1.2)
-        self.assertEqual(pc.num_curves(),0)
+        self.assertEqual(pc.num_curves(), 0)
         pc.append(d)
-        self.assertEqual(pc.num_curves(),1)
-        pc.append(end_point1,max1)
-        self.assertEqual(pc.num_curves(),2)
-        self.assertEqual(pc.min(),0.)
-        self.assertEqual(pc.max(),max1)
+        self.assertEqual(pc.num_curves(), 1)
+        pc.append(end_point1, max1)
+        self.assertEqual(pc.num_curves(), 2)
+        self.assertEqual(pc.min(), 0.)
+        self.assertEqual(pc.max(), max1)
         self.assertTrue(pc.is_continuous(0))
-        self.assertTrue(isclose(pc(0.),d(0.)).all())
-        self.assertTrue(isclose(pc(max1),end_point1).all())
+        self.assertTrue(isclose(pc(0.), d(0.)).all())
+        self.assertTrue(isclose(pc(max1), end_point1).all())
 
         return
 
@@ -407,8 +407,7 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(isclose(polC1(time_points[i, 0]), points[:, i]).all())
             self.assertTrue(isclose(polC1.derivate(time_points[i, 0], 1), points_derivative[:, i]).all())
 
-        polC2 = piecewise.FromPointsList(points, points_derivative, points_second_derivative,
-                                                          time_points)
+        polC2 = piecewise.FromPointsList(points, points_derivative, points_second_derivative, time_points)
         self.assertEqual(polC2.min(), time_points[0, 0])
         self.assertEqual(polC2.max(), time_points[-1, 0])
         self.assertTrue(polC2.is_continuous(0))
@@ -430,8 +429,7 @@ class TestCurves(unittest.TestCase):
             polC1 = piecewise.FromPointsList(points, points_derivative, time_points)
 
         with self.assertRaises(ValueError):
-            polC2 = piecewise.FromPointsList(points, points_derivative, points_second_derivative,
-                                                              time_points)
+            polC2 = piecewise.FromPointsList(points, points_derivative, points_second_derivative, time_points)
 
     def test_piecewise_bezier_curve(self):
         # To test :
@@ -440,8 +438,8 @@ class TestCurves(unittest.TestCase):
         a = bezier(waypoints, 0., 1.)
         b = bezier(waypoints, 1., 2.)
         pc = piecewise(a)
-        pc.append(b)        
-        a.split(array([0.4,0.8])).curve_at_index(0)
+        pc.append(b)
+        a.split(array([0.4, 0.8])).curve_at_index(0)
         pc.min()
         pc.max()
         pc(0.4)
@@ -569,133 +567,132 @@ class TestCurves(unittest.TestCase):
         return
 
     def test_piecewise_se3_curve(self):
-      init_quat = Quaternion.Identity()
-      end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
-      init_rot = init_quat.matrix()
-      end_rot = end_quat.matrix()
-      waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
-      min = 0.2
-      max = 1.5
-      translation = bezier(waypoints, min, max)
-      # test with bezier
-      se3 = SE3Curve(translation, init_rot, end_rot)
-      pc = piecewise_SE3(se3)
-      self.assertEqual(pc.num_curves(),1)
-      self.assertEqual(pc.min(), min)
-      self.assertEqual(pc.max(), max)
-      pmin = pc(min)
-      pmax = pc(max)
-      self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
-      self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
-      self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
-      self.assertTrue(isclose(pmax[0:3, 3], translation(max)).all())
-      # add another curve :
-      end_pos2 = array([-2,0.2,1.6])
-      max2 = 2.7
-      se3_2 = SE3Curve(translation(max),end_pos2,end_rot,end_rot,max,max2)
-      pc.append(se3_2)
-      self.assertEqual(pc.num_curves(),2)
-      pmin2 = pc(max)
-      pmax2 = pc(max2)
-      self.assertTrue(isclose(pmin2[:3, :3], end_rot).all())
-      self.assertTrue(isclose(pmax2[:3, :3], end_rot).all())
-      self.assertTrue(isclose(pmin2[0:3, 3], se3_2.translation(max)).all())
-      self.assertTrue(isclose(pmax2[0:3, 3], se3_2.translation(max2)).all())
-      self.assertTrue(pc.is_continuous(0))
-      self.assertFalse(pc.is_continuous(1))
-
-      # check if error are correctly raised :
-      with self.assertRaises(ValueError): # time intervals do not match
-        se3_3 = SE3Curve(se3_2(max2),se3_2(max2-0.5),max2-0.5,max2+1.5)
-        pc.append(se3_3)
-      with self.assertRaises(ValueError):
-        se3_3 = SE3Curve(se3_2(max2),se3_2(max2-0.5),max2+0.1,max2+1.5)
-        pc.append(se3_3)
-
-      pc.saveAsText("serialization_curve.txt")
-      pc_txt = piecewise_SE3()
-      pc_txt.loadFromText("serialization_curve.txt")
-      self.compareCurves(pc,pc_txt)
-
-      pc.saveAsXML("serialization_curve.xml","pc")
-      pc_xml = piecewise_SE3()
-      pc_xml.loadFromXML("serialization_curve.xml","pc")
-      self.compareCurves(pc,pc_xml)
-
-      pc.saveAsBinary("serialization_curve")
-      pc_bin = piecewise_SE3()
-      pc_bin.loadFromBinary("serialization_curve")
-      self.compareCurves(pc,pc_bin)
-
-      se3_3 = SE3Curve(se3(max),se3_2(max2-0.5),max2,max2+1.5)
-      pc.append(se3_3)
-      self.assertFalse(pc.is_continuous(0))
-
-
-      ###  test the different append methods :
-      init_quat = Quaternion.Identity()
-      end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
-      init_rot = init_quat.matrix()
-      end_rot = end_quat.matrix()
-      waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
-      min = 0.2
-      max = 1.5
-      translation = bezier(waypoints, min, max)
-      # test with bezier
-      se3 = SE3Curve(translation, init_rot, end_rot)
-      pc = piecewise_SE3()
-      self.assertEqual(pc.num_curves(),0)
-      pc.append(se3)
-      self.assertEqual(pc.num_curves(),1)
-      self.assertEqual(pc.min(), min)
-      self.assertEqual(pc.max(), max)
-      pmin = pc(min)
-      pmax = pc(max)
-      self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
-      self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
-      self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
-      self.assertTrue(isclose(pmax[0:3, 3], translation(max)).all())
-      # append a final tranform :
-      end_quat = Quaternion(sqrt(2.) / 2., 0., sqrt(2.) / 2., 0)
-      end_rot = end_quat.matrix()
-      end_translation = array([1.7, -0.8, 3.]).T
-      end_pose = array(np.identity(4))
-      end_pose[:3, :3] = end_rot
-      end_pose[:3, 3] = end_translation
-      max2 = 3.8
-      pc.append(end_pose,max2)
-      self.assertEqual(pc.num_curves(),2)
-      self.assertEqual(pc.min(), min)
-      self.assertEqual(pc.max(), max2)
-      pmin = pc(min)
-      pmax = pc(max2)
-      self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
-      self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
-      self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
-      self.assertTrue(isclose(pmax[0:3, 3], end_translation).all())
-      self.assertTrue(pc.is_continuous(0))
-      if CURVES_WITH_PINOCCHIO_SUPPORT:
-        end_quat = Quaternion(sqrt(2.) / 2., 0., 0, sqrt(2.) / 2.)
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
+        init_rot = init_quat.matrix()
         end_rot = end_quat.matrix()
-        end_translation = array([-17., 3.7, 1.])
-        end_pose = SE3.Identity()
-        end_pose.rotation = end_rot
-        end_pose.translation = end_translation
-        max3 = 6.5
-        pc.append(end_pose,max3)
-        self.assertEqual(pc.num_curves(),3)
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        min = 0.2
+        max = 1.5
+        translation = bezier(waypoints, min, max)
+        # test with bezier
+        se3 = SE3Curve(translation, init_rot, end_rot)
+        pc = piecewise_SE3(se3)
+        self.assertEqual(pc.num_curves(), 1)
         self.assertEqual(pc.min(), min)
-        self.assertEqual(pc.max(), max3)
+        self.assertEqual(pc.max(), max)
         pmin = pc(min)
-        pmax = pc(max3)
+        pmax = pc(max)
+        self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+        self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+        self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+        self.assertTrue(isclose(pmax[0:3, 3], translation(max)).all())
+        # add another curve :
+        end_pos2 = array([-2, 0.2, 1.6])
+        max2 = 2.7
+        se3_2 = SE3Curve(translation(max), end_pos2, end_rot, end_rot, max, max2)
+        pc.append(se3_2)
+        self.assertEqual(pc.num_curves(), 2)
+        pmin2 = pc(max)
+        pmax2 = pc(max2)
+        self.assertTrue(isclose(pmin2[:3, :3], end_rot).all())
+        self.assertTrue(isclose(pmax2[:3, :3], end_rot).all())
+        self.assertTrue(isclose(pmin2[0:3, 3], se3_2.translation(max)).all())
+        self.assertTrue(isclose(pmax2[0:3, 3], se3_2.translation(max2)).all())
+        self.assertTrue(pc.is_continuous(0))
+        self.assertFalse(pc.is_continuous(1))
+
+        # check if error are correctly raised :
+        with self.assertRaises(ValueError):  # time intervals do not match
+            se3_3 = SE3Curve(se3_2(max2), se3_2(max2 - 0.5), max2 - 0.5, max2 + 1.5)
+            pc.append(se3_3)
+        with self.assertRaises(ValueError):
+            se3_3 = SE3Curve(se3_2(max2), se3_2(max2 - 0.5), max2 + 0.1, max2 + 1.5)
+            pc.append(se3_3)
+
+        pc.saveAsText("serialization_curve.txt")
+        pc_txt = piecewise_SE3()
+        pc_txt.loadFromText("serialization_curve.txt")
+        self.compareCurves(pc, pc_txt)
+
+        pc.saveAsXML("serialization_curve.xml", "pc")
+        pc_xml = piecewise_SE3()
+        pc_xml.loadFromXML("serialization_curve.xml", "pc")
+        self.compareCurves(pc, pc_xml)
+
+        pc.saveAsBinary("serialization_curve")
+        pc_bin = piecewise_SE3()
+        pc_bin.loadFromBinary("serialization_curve")
+        self.compareCurves(pc, pc_bin)
+
+        se3_3 = SE3Curve(se3(max), se3_2(max2 - 0.5), max2, max2 + 1.5)
+        pc.append(se3_3)
+        self.assertFalse(pc.is_continuous(0))
+
+        #  test the different append methods :
+        init_quat = Quaternion.Identity()
+        end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
+        init_rot = init_quat.matrix()
+        end_rot = end_quat.matrix()
+        waypoints = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        min = 0.2
+        max = 1.5
+        translation = bezier(waypoints, min, max)
+        # test with bezier
+        se3 = SE3Curve(translation, init_rot, end_rot)
+        pc = piecewise_SE3()
+        self.assertEqual(pc.num_curves(), 0)
+        pc.append(se3)
+        self.assertEqual(pc.num_curves(), 1)
+        self.assertEqual(pc.min(), min)
+        self.assertEqual(pc.max(), max)
+        pmin = pc(min)
+        pmax = pc(max)
+        self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+        self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+        self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+        self.assertTrue(isclose(pmax[0:3, 3], translation(max)).all())
+        # append a final tranform :
+        end_quat = Quaternion(sqrt(2.) / 2., 0., sqrt(2.) / 2., 0)
+        end_rot = end_quat.matrix()
+        end_translation = array([1.7, -0.8, 3.]).T
+        end_pose = array(np.identity(4))
+        end_pose[:3, :3] = end_rot
+        end_pose[:3, 3] = end_translation
+        max2 = 3.8
+        pc.append(end_pose, max2)
+        self.assertEqual(pc.num_curves(), 2)
+        self.assertEqual(pc.min(), min)
+        self.assertEqual(pc.max(), max2)
+        pmin = pc(min)
+        pmax = pc(max2)
         self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
         self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
         self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
         self.assertTrue(isclose(pmax[0:3, 3], end_translation).all())
         self.assertTrue(pc.is_continuous(0))
-      pc = piecewise_SE3()
-      with self.assertRaises(RuntimeError):
-        pc.append(end_pose,max)
+        if CURVES_WITH_PINOCCHIO_SUPPORT:
+            end_quat = Quaternion(sqrt(2.) / 2., 0., 0, sqrt(2.) / 2.)
+            end_rot = end_quat.matrix()
+            end_translation = array([-17., 3.7, 1.])
+            end_pose = SE3.Identity()
+            end_pose.rotation = end_rot
+            end_pose.translation = end_translation
+            max3 = 6.5
+            pc.append(end_pose, max3)
+            self.assertEqual(pc.num_curves(), 3)
+            self.assertEqual(pc.min(), min)
+            self.assertEqual(pc.max(), max3)
+            pmin = pc(min)
+            pmax = pc(max3)
+            self.assertTrue(isclose(pmin[:3, :3], init_rot).all())
+            self.assertTrue(isclose(pmax[:3, :3], end_rot).all())
+            self.assertTrue(isclose(pmin[0:3, 3], translation(min)).all())
+            self.assertTrue(isclose(pmax[0:3, 3], end_translation).all())
+            self.assertTrue(pc.is_continuous(0))
+        pc = piecewise_SE3()
+        with self.assertRaises(RuntimeError):
+            pc.append(end_pose, max)
 
     if CURVES_WITH_PINOCCHIO_SUPPORT:
 
@@ -717,7 +714,7 @@ class TestCurves(unittest.TestCase):
             max = 12.
             se3 = SE3Curve(init_pose, end_pose, min, max)
             pc = piecewise_SE3(se3)
-            self.assertEqual(pc.num_curves(),1)
+            self.assertEqual(pc.num_curves(), 1)
             p = pc.evaluateAsSE3(min)
             self.assertTrue(isinstance(p, SE3))
             self.assertTrue(pc.evaluateAsSE3(min).isApprox(init_pose, 1e-6))
@@ -736,7 +733,7 @@ class TestCurves(unittest.TestCase):
             max2 = 23.9
             se3_2 = SE3Curve(end_pose, end_pose2, max, max2)
             pc.append(se3_2)
-            self.assertEqual(pc.num_curves(),2)
+            self.assertEqual(pc.num_curves(), 2)
             p = pc.evaluateAsSE3(max2)
             self.assertTrue(isinstance(p, SE3))
             self.assertTrue(pc.evaluateAsSE3(max2).isApprox(end_pose2, 1e-6))
@@ -745,9 +742,7 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(isclose(pc.rotation(max2), end_rot).all())
             self.assertTrue(isclose(pc.translation(max2), end_translation2).all())
 
-
     def test_conversion_piecewise_curves(self):
-        __EPS = 1e-6
         waypoints = array([[1., 2., 3.], [4., 5., 6.]]).transpose()
         a = bezier(waypoints, 0., 1.)
         b = bezier(waypoints, 1., 2.)
@@ -821,12 +816,12 @@ class TestCurves(unittest.TestCase):
         with self.assertRaises(ValueError):
             so3Rot.derivate(1., 0)
         with self.assertRaises(ValueError):
-            test = SO3Linear(init_rot,end_rot,max,min)
+            SO3Linear(init_rot, end_rot, max, min)
 
     def test_so3_linear_serialization(self):
         print("test SO3 Linear")
-        init_quat = Quaternion( 0.590,-0.002, -0.766,  0.255)
-        end_quat = Quaternion(-0.820,  0.162,  0.381,  0.396)
+        init_quat = Quaternion(0.590, -0.002, -0.766, 0.255)
+        end_quat = Quaternion(-0.820, 0.162, 0.381, 0.396)
         init_quat.normalize()
         end_quat.normalize()
         init_rot = init_quat.matrix()
@@ -837,18 +832,17 @@ class TestCurves(unittest.TestCase):
         so3Rot.saveAsText("serialization_curve.txt")
         so3_txt = SO3Linear()
         so3_txt.loadFromText("serialization_curve.txt")
-        self.compareCurves(so3Rot,so3_txt)
+        self.compareCurves(so3Rot, so3_txt)
 
-        so3Rot.saveAsXML("serialization_curve.xml","so3")
+        so3Rot.saveAsXML("serialization_curve.xml", "so3")
         so3_xml = SO3Linear()
-        so3_xml.loadFromXML("serialization_curve.xml","so3")
-        self.compareCurves(so3Rot,so3_xml)
+        so3_xml.loadFromXML("serialization_curve.xml", "so3")
+        self.compareCurves(so3Rot, so3_xml)
 
         so3Rot.saveAsBinary("serialization_curve")
         so3_bin = SO3Linear()
         so3_bin.loadFromBinary("serialization_curve")
-        self.compareCurves(so3Rot,so3_bin)
-
+        self.compareCurves(so3Rot, so3_bin)
 
     def test_se3_curve_linear(self):
         print("test SE3 Linear")
@@ -917,7 +911,7 @@ class TestCurves(unittest.TestCase):
         with self.assertRaises(ValueError):
             se3.derivate(1., 0)
         with self.assertRaises(ValueError):
-            test = SE3Curve(init_pose,end_pose,max,min)
+            SE3Curve(init_pose, end_pose, max, min)
 
     def test_se3_from_translation_curve(self):
         print("test SE3 From translation curves")
@@ -1126,8 +1120,8 @@ class TestCurves(unittest.TestCase):
 
     def test_se3_serialization(self):
         print("test serialization SE3")
-        init_quat = Quaternion( 0.590,-0.002, -0.766,  0.255)
-        end_quat = Quaternion(-0.820,  0.162,  0.381,  0.396)
+        init_quat = Quaternion(0.590, -0.002, -0.766, 0.255)
+        end_quat = Quaternion(-0.820, 0.162, 0.381, 0.396)
         init_quat.normalize()
         end_quat.normalize()
         init_rot = init_quat.matrix()
@@ -1147,19 +1141,19 @@ class TestCurves(unittest.TestCase):
         se3_linear.saveAsText("serialization_curve.txt")
         se3_txt = SE3Curve()
         se3_txt.loadFromText("serialization_curve.txt")
-        self.compareCurves(se3_linear,se3_txt)
+        self.compareCurves(se3_linear, se3_txt)
 
-        se3_linear.saveAsXML("serialization_curve.xml","se3")
+        se3_linear.saveAsXML("serialization_curve.xml", "se3")
         se3_xml = SE3Curve()
-        se3_xml.loadFromXML("serialization_curve.xml","se3")
-        self.compareCurves(se3_linear,se3_xml)
+        se3_xml.loadFromXML("serialization_curve.xml", "se3")
+        self.compareCurves(se3_linear, se3_xml)
 
         se3_linear.saveAsBinary("serialization_curve")
         se3_bin = SE3Curve()
         se3_bin.loadFromBinary("serialization_curve")
-        self.compareCurves(se3_linear,se3_bin)
+        self.compareCurves(se3_linear, se3_bin)
 
-        ## test from two curves :
+        # test from two curves :
         init_quat = Quaternion.Identity()
         end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
         init_rot = init_quat.matrix()
@@ -1174,17 +1168,17 @@ class TestCurves(unittest.TestCase):
         se3_curves.saveAsText("serialization_curve.txt")
         se3_txt = SE3Curve()
         se3_txt.loadFromText("serialization_curve.txt")
-        self.compareCurves(se3_curves,se3_txt)
+        self.compareCurves(se3_curves, se3_txt)
 
-        se3_curves.saveAsXML("serialization_curve.xml","se3")
+        se3_curves.saveAsXML("serialization_curve.xml", "se3")
         se3_xml = SE3Curve()
-        se3_xml.loadFromXML("serialization_curve.xml","se3")
-        self.compareCurves(se3_curves,se3_xml)
+        se3_xml.loadFromXML("serialization_curve.xml", "se3")
+        self.compareCurves(se3_curves, se3_xml)
 
         se3_curves.saveAsBinary("serialization_curve")
         se3_bin = SE3Curve()
         se3_bin.loadFromBinary("serialization_curve")
-        self.compareCurves(se3_curves,se3_bin)
+        self.compareCurves(se3_curves, se3_bin)
 
     def test_operatorEqual(self):
         # test with bezier
@@ -1214,11 +1208,11 @@ class TestCurves(unittest.TestCase):
         pol_4 = polynomial(p0, dp0, p1, dp1, min, max)
         b_4 = convert_to_bezier(pol_4)
         self.assertTrue(pol_4.isEquivalent(b_4))
-        self.assertTrue(pol_4.isEquivalent(b_4,1e-6))
-        self.assertTrue(pol_4.isEquivalent(b_4,1e-6,2))
+        self.assertTrue(pol_4.isEquivalent(b_4, 1e-6))
+        self.assertTrue(pol_4.isEquivalent(b_4, 1e-6, 2))
         self.assertFalse(pol_4.isEquivalent(a1))
 
-        #test with SE3 :
+        # test with SE3:
         init_quat = Quaternion.Identity()
         end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
         init_rot = init_quat.matrix()
@@ -1232,7 +1226,7 @@ class TestCurves(unittest.TestCase):
         waypoints2 = array([[1., 2., 3.5], [4., 5., 6.], [-4, 5., 6.], [4., 8., 6.], [4., 5., 6.]]).transpose()
         translation3 = bezier(waypoints2, min, max)
         se3_3 = SE3Curve(translation3, init_rot, end_rot)
-        end_quat2 = Quaternion(sqrt(2.) / 2.,0.,  sqrt(2.) / 2., 0)
+        end_quat2 = Quaternion(sqrt(2.) / 2., 0., sqrt(2.) / 2., 0)
         end_rot2 = end_quat2.matrix()
         se3_4 = SE3Curve(translation, init_rot, end_rot2)
         self.assertTrue(se3_1 == se3_2)

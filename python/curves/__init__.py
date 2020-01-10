@@ -2,4 +2,4 @@
 # Copyright (c) 2019 CNRS
 # Author : Steve Tonneau
 
-from .curves import *
+from .curves import *  # noqa
