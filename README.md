@@ -69,7 +69,7 @@ For instance, using http:
 ```
 git clone --recursive https://github.com/loco-3d/curves $CURVES_DIR
 ```
-
+Where $CURVES_DIR is to be replaced to your selected source folder.
 The library is header only, so the build only serves to build the tests and python bindings:
 
 ```sh
