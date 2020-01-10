@@ -55,7 +55,7 @@ The library is template-based, thus generic:  the curves can be of any dimension
 Installation
 -------------
 
-This package is available as binary in [robotpkg/wip](http://robotpkg.openrobots.org/robotpkg-wip.html)
+This package is available as binary in [robotpkg](http://robotpkg.openrobots.org)
 
 ## Dependencies
 * [Eigen (version >= 3.2.2)](http://eigen.tuxfamily.org/index.php?title=Main_Page)
@@ -100,5 +100,5 @@ In spite of an exhaustive documentation, please refer to the C++ documentation, 
 Documentation and tutorial
 -------------
 
-For a python tutorial, you can refer to the [jupyter notebook](https://github.com/loco-3d/curves/blob/devel/python/test/sandbox/test.ipynb).
+For a python tutorial, you can refer to the [jupyter notebook](https://github.com/loco-3d/curves/blob/master/python/test/sandbox/test.ipynb).
 The [test file](https://github.com/loco-3d/curves/blob/master/python/test/test.py) is more exhaustive and rather self explanatory.
