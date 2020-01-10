@@ -12,6 +12,7 @@
 #include "curve_abc.h"
 #include "bernstein.h"
 #include "curve_constraint.h"
+#include "piecewise_curve.h"
 
 #include "MathDefs.h"
 
@@ -30,12 +31,18 @@ template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
 struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   typedef Point point_t;
+  typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
+  typedef Eigen::Ref<const vector_x_t> vector_x_ref_t;
   typedef Time time_t;
   typedef Numeric num_t;
   typedef curve_constraints<point_t> curve_constraints_t;
   typedef std::vector<point_t, Eigen::aligned_allocator<point_t> > t_point_t;
   typedef typename t_point_t::const_iterator cit_point_t;
   typedef bezier_curve<Time, Numeric, Safe, Point> bezier_curve_t;
+  typedef boost::shared_ptr<bezier_curve_t> bezier_curve_ptr_t;
+  typedef piecewise_curve<Time, Numeric, Safe, point_t, point_t, bezier_curve_t> piecewise_curve_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
+  typedef typename curve_abc_t::curve_ptr_t curve_ptr_t;
 
   /* Constructors - destructors */
  public:
@@ -133,6 +140,38 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see
+   * isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const bezier_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    bool equal = curves::isApprox<num_t>(T_min_, other.min()) && curves::isApprox<num_t>(T_max_, other.max()) &&
+                 dim_ == other.dim() && degree_ == other.degree() && size_ == other.size_ &&
+                 curves::isApprox<Numeric>(mult_T_, other.mult_T_) && bernstein_ == other.bernstein_;
+    if (!equal) return false;
+    for (size_t i = 0; i < size_; ++i) {
+      if (!control_points_.at(i).isApprox(other.control_points_.at(i), prec)) return false;
+    }
+    return true;
+  }
+
+  virtual bool isApprox(const curve_abc_t* other,
+                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    const bezier_curve_t* other_cast = dynamic_cast<const bezier_curve_t*>(other);
+    if (other_cast)
+      return isApprox(*other_cast, prec);
+    else
+      return false;
+  }
+
+  virtual bool operator==(const bezier_curve_t& other) const { return isApprox(other); }
+
+  virtual bool operator!=(const bezier_curve_t& other) const { return !(*this == other); }
+
   ///  \brief Compute the derived curve at order N.
   ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
   ///  \param order : order of derivative.
@@ -151,6 +190,13 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
     bezier_curve_t deriv(derived_wp.begin(), derived_wp.end(), T_min_, T_max_, mult_T_ * (1. / (T_max_ - T_min_)));
     return deriv.compute_derivate(order - 1);
+  }
+
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  bezier_curve_t* compute_derivate_ptr(const std::size_t order) const {
+    return new bezier_curve_t(compute_derivate(order));
   }
 
   ///  \brief Compute the primitive of the curve at order N.
@@ -184,10 +230,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param t : time when to evaluate the curve.
   ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derived curve of order N at time t.
   ///
-  virtual point_t derivate(const time_t t, const std::size_t order) const {
-    bezier_curve_t deriv = compute_derivate(order);
-    return deriv(t);
-  }
+  virtual point_t derivate(const time_t t, const std::size_t order) const { return compute_derivate(order)(t); }
 
   /// \brief Evaluate all Bernstein polynomes for a certain degree.
   /// A bezier curve with N control points is represented by : \f$x(t) = \sum_{i=0}^{N} B_i^N(t) P_i\f$
@@ -241,7 +284,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
   const point_t waypointAtIndex(const std::size_t index) const {
     point_t waypoint;
-    if (index <= control_points_.size()) {
+    if (index < control_points_.size()) {
       waypoint = control_points_[index];
     }
     return waypoint;
@@ -297,7 +340,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   /// \param u : unNormalized time.
   /// \return pair containing the first element of both bezier curve obtained.
   ///
-  std::pair<bezier_curve_t, bezier_curve_t> split(const Numeric t) {
+  std::pair<bezier_curve_t, bezier_curve_t> split(const Numeric t) const {
     check_conditions();
     if (fabs(t - T_max_) < MARGIN) {
       throw std::runtime_error("can't split curve, interval range is equal to original curve");
@@ -317,6 +360,28 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     bezier_curve_t c_first(wps_first.begin(), wps_first.end(), T_min_, t, mult_T_);
     bezier_curve_t c_second(wps_second.begin(), wps_second.end(), t, T_max_, mult_T_);
     return std::make_pair(c_first, c_second);
+  }
+
+  /// \brief Split the bezier curve in several curves, all accessible
+  /// within a piecewise_curve_t.
+  /// \param times : list of times of size n.
+  /// \return a piecewise_curve_t comprising n+1 curves
+  ///
+  piecewise_curve_t split(const vector_x_t& times) const {
+    std::vector<bezier_curve_t> curves;
+    bezier_curve_t current = *this;
+    for (int i = 0; i < times.rows(); ++i) {
+      std::pair<bezier_curve_t, bezier_curve_t> pairsplit = current.split(times[i]);
+      curves.push_back(pairsplit.first);
+      current = pairsplit.second;
+    }
+    curves.push_back(current);
+    piecewise_curve_t res;
+    for (typename std::vector<bezier_curve_t>::const_iterator cit = curves.begin(); cit != curves.end(); ++cit) {
+      typename piecewise_curve_t::curve_ptr_t ptr(new bezier_curve_t(*cit));
+      res.add_curve_ptr(ptr);
+    }
+    return res;
   }
 
   /// \brief Extract a bezier curve defined between \f$[t_1,t_2]\f$ from the actual bezier curve
@@ -392,6 +457,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$, upper bound of time range.
   virtual time_t max() const { return T_max_; }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t degree() const { return degree_; }
   /*Helpers*/
 
   /* Attributes */
@@ -423,6 +491,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     if (version) {
       // Do something depending on version ?
     }
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("T_min", T_min_);
     ar& boost::serialization::make_nvp("T_max", T_max_);

@@ -41,6 +41,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   typedef Eigen::MatrixXd coeff_t;
   typedef Eigen::Ref<coeff_t> coeff_t_ref;
   typedef polynomial<Time, Numeric, Safe, Point, T_Point> polynomial_t;
+  typedef typename curve_abc_t::curve_ptr_t curve_ptr_t;
 
   /* Constructors - destructors */
  public:
@@ -253,6 +254,32 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     return h;
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see
+   * isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const polynomial_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    return curves::isApprox<num_t>(T_min_, other.min()) && curves::isApprox<num_t>(T_max_, other.max()) &&
+           dim_ == other.dim() && degree_ == other.degree() && coefficients_.isApprox(other.coefficients_, prec);
+  }
+
+  virtual bool isApprox(const curve_abc_t* other,
+                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    const polynomial_t* other_cast = dynamic_cast<const polynomial_t*>(other);
+    if (other_cast)
+      return isApprox(*other_cast, prec);
+    else
+      return false;
+  }
+
+  virtual bool operator==(const polynomial_t& other) const { return isApprox(other); }
+
+  virtual bool operator!=(const polynomial_t& other) const { return !(*this == other); }
+
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.
@@ -280,6 +307,13 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     coeff_t coeff_derivated = deriv_coeff(coefficients_);
     polynomial_t deriv(coeff_derivated, T_min_, T_max_);
     return deriv.compute_derivate(order - 1);
+  }
+
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  polynomial_t* compute_derivate_ptr(const std::size_t order) const {
+    return new polynomial_t(compute_derivate(order));
   }
 
   Eigen::MatrixXd coeff() const { return coefficients_; }
@@ -329,6 +363,9 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$ upper bound of time range.
   num_t virtual max() const { return T_max_; }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t degree() const { return degree_; }
   /*Helpers*/
 
   /*Attributes*/
@@ -359,6 +396,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     if (version) {
       // Do something depending on version ?
     }
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("coefficients", coefficients_);
     ar& boost::serialization::make_nvp("dim", dim_);

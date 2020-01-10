@@ -12,6 +12,8 @@ To do so, tools are provided to:
  - constrain initial / end velocities and acceleration for the spline.
  - constrain take-off and landing phases to follow a straight line along a given normal (to avoid undesired collisions between the effector and the contact surface)
  - automatically handle 3d rotation of the effector.
+ - create curves in SO3
+ - support partial symbolic differentiation of curves. You can represent control points as linear variables, and integrate / differentiate those variable curves. You can also compute the cross product of two curves, which is relevant for centroidal dynamics.
 
 Several type of formulation are provided:
  - Polynomials
@@ -47,20 +49,8 @@ exact_cubic_t* eff_traj = effector_spline(waypoints.begin(),waypoints.end());
 ```
 If rotation of the effector must be considered, the code is almost the same:
 
-```
-// initial rotation is 0, end rotation is a rotation by Pi around x axis
-quat_t init_rot(0,0,0,1), end_rot(1,0,0,0);
-effector_spline_rotation eff_traj_rot(waypoints.begin(),waypoints.end(), init_quat, end_quat);
+The library is template-based, thus generic:  the curves can be of any dimension, and can be implemented in double, float  ...
 
-// evaluate spline
-eff_traj_rot(0.); // (0,0,0,0,0,0,1)
-eff_traj_rot(1.); // (0.5,0.5,0.5,0.707107,0,0,0.707107) // Pi/2 around x axis
-eff_traj_rot(2.); // (0,0,0,1,0,0,0)
-```
-
-Additional parameters for the same methods an be used to specify parameters for the take off and
-landing phases: height and duration of the phase, and along which normal.
-Please refer to the Main.cpp files to see all the unit tests and possibilities offered by the library
 
 Installation
 -------------
@@ -77,34 +67,38 @@ This package is available as binary in [robotpkg/wip](http://robotpkg.openrobots
 To handle this with cmake, use the recursive option to clone the repository.
 For instance, using http:
 ```
-git clone --recursive https://github.com/loco-3d/curves.git
+git clone --recursive https://github.com/loco-3d/curves $CURVES_DIR
 ```
+
 The library is header only, so the build only serves to build the tests and python bindings:
 
-```
-	cd curves && mkdir build && cd build
-	cmake .. && make
-	make test
+```sh
+cd $CURVES_DIR && mkdir build && cd build
+cmake .. && make && make test
 ```
 
 If everything went fine you should obtain the following output:
-```
-performing tests...
-no errors found
+```sh
+100% tests passed, 0 tests failed out of 3
 ```
 ### Optional: Python bindings installation
-To install the Python bindings first enable the BUILD_PYTHON_INTERFACE option:
+To install the Python bindings first enable the `BUILD_PYTHON_INTERFACE` option:
 ```
 cmake -DBUILD_PYTHON_INTERFACE=ON ..
 ```
 
 Then rebuild the library:
 ```
-cd curves/build
-make install
+cd ${CURVES_DIR}/build
+make && make test
 ```
 To see example of use, you can refer to the [test file](https://github.com/loco-3d/curves/blob/master/python/test/test.py)
 which is rather self explanatory:
 
-In spite of an exhaustive documentation, please refer to the C++ documentation, which mostly applies
-to python.
+In spite of an exhaustive documentation, please refer to the C++ documentation, which mostly applies to python.
+
+Documentation and tutorial
+-------------
+
+For a python tutorial, you can refer to the [jupyter notebook](https://github.com/loco-3d/curves/blob/devel/python/test/sandbox/test.ipynb).
+The [test file](https://github.com/loco-3d/curves/blob/master/python/test/test.py) is more exhaustive and rather self explanatory.

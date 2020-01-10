@@ -33,10 +33,13 @@ namespace curves {
 template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1> >
 struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
+  typedef Point point_t;
   typedef std::pair<Point, Point> pair_point_tangent_t;
   typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
   typedef std::vector<Time> vector_time_t;
   typedef Numeric num_t;
+  typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
+  typedef cubic_hermite_spline<Time, Numeric, Safe, point_t> cubic_hermite_spline_t;
 
  public:
   /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
@@ -99,6 +102,41 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     }
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see
+   * isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const cubic_hermite_spline_t& other,
+                const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    bool equal = curves::isApprox<num_t>(T_min_, other.min()) && curves::isApprox<num_t>(T_max_, other.max()) &&
+                 dim_ == other.dim() && degree_ == other.degree() && size_ == other.size() &&
+                 time_control_points_ == other.time_control_points_ && duration_splines_ == other.duration_splines_;
+    if (!equal) return false;
+    for (std::size_t i = 0; i < size_; ++i) {
+      if ((!control_points_[i].first.isApprox(other.control_points_[i].first, prec)) ||
+          (!control_points_[i].second.isApprox(other.control_points_[i].second, prec)))
+        return false;
+    }
+    return true;
+  }
+
+  virtual bool isApprox(const curve_abc_t* other,
+                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    const cubic_hermite_spline_t* other_cast = dynamic_cast<const cubic_hermite_spline_t*>(other);
+    if (other_cast)
+      return isApprox(*other_cast, prec);
+    else
+      return false;
+  }
+
+  virtual bool operator==(const cubic_hermite_spline_t& other) const { return isApprox(other); }
+
+  virtual bool operator!=(const cubic_hermite_spline_t& other) const { return !(*this == other); }
+
   ///  \brief Evaluate the derivative of order N of spline at time t.
   ///  \param t : time when to evaluate the spline.
   ///  \param order : order of derivative.
@@ -107,6 +145,17 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   virtual Point derivate(const Time t, const std::size_t order) const {
     check_conditions();
     return evalCubicHermiteSpline(t, order);
+  }
+
+  cubic_hermite_spline_t compute_derivate(const std::size_t /*order*/) const {
+    throw std::logic_error("Compute derivate for cubic hermite spline is not implemented yet.");
+  }
+
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  cubic_hermite_spline_t* compute_derivate_ptr(const std::size_t order) const {
+    return new cubic_hermite_spline_t(compute_derivate(order));
   }
 
   /// \brief Set time of each control point of cubic hermite spline.
@@ -322,6 +371,9 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Get the maximum time for which the curve is defined.
   /// \return \f$t_{max}\f$, upper bound of time range.
   Time virtual max() const { return time_control_points_.back(); }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t degree() const { return degree_; }
   /*Helpers*/
 
   /*Attributes*/
@@ -356,6 +408,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     if (version) {
       // Do something depending on version ?
     }
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
     ar& boost::serialization::make_nvp("dim", dim_);
     ar& boost::serialization::make_nvp("control_points", control_points_);
     ar& boost::serialization::make_nvp("time_control_points", time_control_points_);

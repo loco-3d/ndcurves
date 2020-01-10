@@ -44,6 +44,7 @@ class rotation_spline : public curve_abc_quat_t {
       : curve_abc_quat_t(),
         quat_from_(quat_from.data()),
         quat_to_(quat_to.data()),
+        dim_(4),
         min_(min),
         max_(max),
         time_reparam_(computeWayPoints()) {}
@@ -54,6 +55,7 @@ class rotation_spline : public curve_abc_quat_t {
   rotation_spline& operator=(const rotation_spline& from) {
     quat_from_ = from.quat_from_;
     quat_to_ = from.quat_to_;
+    dim_ = from.dim_;
     min_ = from.min_;
     max_ = from.max_;
     time_reparam_ = exact_cubic_constraint_one_dim(from.time_reparam_);
@@ -70,8 +72,43 @@ class rotation_spline : public curve_abc_quat_t {
     return quat_from_.slerp(time_reparam_(u)[0], quat_to_).coeffs();
   }
 
+  /**
+   * @brief isApprox check if other and *this are approximately equals.
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see
+   * isEquivalent
+   * @param other the other curve to check
+   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @return true is the two curves are approximately equals
+   */
+  bool isApprox(const rotation_spline& other,
+                const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    return curves::isApprox<Numeric>(min_, other.min_) && curves::isApprox<Numeric>(max_, other.max_) &&
+           dim_ == other.dim_ && quat_from_.isApprox(other.quat_from_, prec) &&
+           quat_to_.isApprox(other.quat_to_, prec) && time_reparam_.isApprox(other.time_reparam_, prec);
+  }
+
+  virtual bool isApprox(const curve_abc_quat_t* other,
+                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    const rotation_spline* other_cast = dynamic_cast<const rotation_spline*>(other);
+    if (other_cast)
+      return isApprox(*other_cast, prec);
+    else
+      return false;
+  }
+
+  virtual bool operator==(const rotation_spline& other) const { return isApprox(other); }
+
+  virtual bool operator!=(const rotation_spline& other) const { return !(*this == other); }
+
   virtual quat_t derivate(time_t /*t*/, std::size_t /*order*/) const {
     throw std::runtime_error("TODO quaternion spline does not implement derivate");
+  }
+
+  ///  \brief Compute the derived curve at order N.
+  ///  \param order : order of derivative.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  curve_abc_quat_t* compute_derivate_ptr(const std::size_t /*order*/) const {
+    throw std::logic_error("Compute derivate for quaternion spline is not implemented yet.");
   }
 
   /// \brief Initialize time reparametrization for spline.
@@ -85,11 +122,14 @@ class rotation_spline : public curve_abc_quat_t {
   virtual std::size_t dim() const { return dim_; }
   virtual time_t min() const { return min_; }
   virtual time_t max() const { return max_; }
+  /// \brief Get the degree of the curve.
+  /// \return \f$degree\f$, the degree of the curve.
+  virtual std::size_t degree() const { return 1; }
 
   /*Attributes*/
-  std::size_t dim_;                              // const
   Eigen::Quaterniond quat_from_;                 // const
   Eigen::Quaterniond quat_to_;                   // const
+  std::size_t dim_;                              // const
   double min_;                                   // const
   double max_;                                   // const
   exact_cubic_constraint_one_dim time_reparam_;  // const
