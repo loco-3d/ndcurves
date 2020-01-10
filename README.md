@@ -29,7 +29,7 @@ The library comes with an helper class to automatically generate end-effector tr
 For instance, to create a 2 second long trajectory from the point (0,0,0) to (1,1,0), with a waypoint
 at (0.5,0.5,0.5), one can use the following code:
 
-```
+```cpp
 typedef std::pair<double, Eigen::Vector3d> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
 
