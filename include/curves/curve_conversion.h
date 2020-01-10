@@ -28,7 +28,6 @@ Polynomial polynomial_from_curve(const typename Polynomial::curve_abc_t& curve) 
     coefficients.push_back(curve.derivate(curve.min(), i) / fact);
   }
 
-
   return Polynomial(coefficients, curve.min(), curve.max());
 }
 

@@ -32,7 +32,8 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   typedef Time time_t;
   typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;  // parent class
   typedef curve_abc<Time, Numeric, Safe, pointX_t> curve_X_t;                     // generic class of curve
-  typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
+  typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t>
+      curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
   typedef boost::shared_ptr<curve_X_t> curve_ptr_t;
   typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
 
@@ -152,35 +153,31 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
 
   /**
    * @brief isApprox check if other and *this are approximately equals.
-   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see
+   * isEquivalent
    * @param other the other curve to check
    * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  bool isApprox(const SE3Curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
-    return curves::isApprox<Numeric> (T_min_, other.min())
-        && curves::isApprox<Numeric> (T_max_, other.max())
-        && (translation_curve_ == other.translation_curve_ || translation_curve_->isApprox(other.translation_curve_.get(),prec))
-        && (rotation_curve_ == other.rotation_curve_ || rotation_curve_->isApprox(other.rotation_curve_.get(),prec));
+  bool isApprox(const SE3Curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    return curves::isApprox<Numeric>(T_min_, other.min()) && curves::isApprox<Numeric>(T_max_, other.max()) &&
+           (translation_curve_ == other.translation_curve_ ||
+            translation_curve_->isApprox(other.translation_curve_.get(), prec)) &&
+           (rotation_curve_ == other.rotation_curve_ || rotation_curve_->isApprox(other.rotation_curve_.get(), prec));
   }
 
-  virtual bool isApprox(const curve_abc_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+  virtual bool isApprox(const curve_abc_t* other,
+                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
     const SE3Curve_t* other_cast = dynamic_cast<const SE3Curve_t*>(other);
-    if(other_cast)
-      return isApprox(*other_cast,prec);
+    if (other_cast)
+      return isApprox(*other_cast, prec);
     else
       return false;
   }
 
+  virtual bool operator==(const SE3Curve_t& other) const { return isApprox(other); }
 
-  virtual bool operator==(const SE3Curve_t& other) const {
-    return isApprox(other);
-  }
-
-  virtual bool operator!=(const SE3Curve_t& other) const {
-    return !(*this == other);
-  }
-
+  virtual bool operator!=(const SE3Curve_t& other) const { return !(*this == other); }
 
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
@@ -203,9 +200,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
   ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  SE3Curve_t* compute_derivate_ptr(const std::size_t order) const {
-    return new SE3Curve_t(compute_derivate(order));
-  }
+  SE3Curve_t* compute_derivate_ptr(const std::size_t order) const { return new SE3Curve_t(compute_derivate(order)); }
 
   /*Helpers*/
   /// \brief Get dimension of curve.
@@ -219,7 +214,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   time_t max() const { return T_max_; }
   /// \brief Get the degree of the curve.
   /// \return \f$degree\f$, the degree of the curve.
-  virtual std::size_t  degree() const {return translation_curve_->degree();}
+  virtual std::size_t degree() const { return translation_curve_->degree(); }
   /*Helpers*/
 
   /*Attributes*/

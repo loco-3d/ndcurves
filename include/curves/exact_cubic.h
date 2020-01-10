@@ -68,11 +68,9 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   /// \param wayPointsEns   : an iterator pointing to the last element of a waypoint container.
   ///
   template <typename In>
-  exact_cubic(In wayPointsBegin, In wayPointsEnd)
-      : piecewise_curve_t()
-  {
+  exact_cubic(In wayPointsBegin, In wayPointsEnd) : piecewise_curve_t() {
     t_spline_t subSplines = computeWayPoints<In>(wayPointsBegin, wayPointsEnd);
-    for (cit_spline_t it = subSplines.begin() ; it != subSplines.end() ; ++it){
+    for (cit_spline_t it = subSplines.begin(); it != subSplines.end(); ++it) {
       this->add_curve(*it);
     }
   }
@@ -83,25 +81,22 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   /// \param constraints    : constraints on the init and end velocity / accelerations of the spline.
   ///
   template <typename In>
-  exact_cubic(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints)
-      : piecewise_curve_t()
-  {
-    t_spline_t subSplines = computeWayPoints<In>(wayPointsBegin, wayPointsEnd,constraints);
-    for (cit_spline_t it = subSplines.begin() ; it != subSplines.end() ; ++it){
+  exact_cubic(In wayPointsBegin, In wayPointsEnd, const spline_constraints& constraints) : piecewise_curve_t() {
+    t_spline_t subSplines = computeWayPoints<In>(wayPointsBegin, wayPointsEnd, constraints);
+    for (cit_spline_t it = subSplines.begin(); it != subSplines.end(); ++it) {
       this->add_curve(*it);
     }
   }
 
   /// \brief Constructor.
   /// \param subSplines: vector of subSplines.
-  exact_cubic(const t_spline_t& subSplines) : piecewise_curve_t()
-  {
-    for (cit_spline_t it = subSplines.begin() ; it != subSplines.end() ; ++it){
+  exact_cubic(const t_spline_t& subSplines) : piecewise_curve_t() {
+    for (cit_spline_t it = subSplines.begin(); it != subSplines.end(); ++it) {
       this->add_curve(*it);
     }
   }
 
-  exact_cubic(const t_curve_ptr_t& subSplines) : piecewise_curve_t(subSplines)  { }
+  exact_cubic(const t_curve_ptr_t& subSplines) : piecewise_curve_t(subSplines) {}
 
   /// \brief Copy Constructor.
   exact_cubic(const exact_cubic& other) : piecewise_curve_t(other) {}
@@ -111,23 +106,25 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
 
   /**
    * @brief isApprox check if other and *this are approximately equals.
-   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see
+   * isEquivalent
    * @param other the other curve to check
    * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  bool isApprox(const exact_cubic_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
-    return piecewise_curve_t::isApprox(other,prec);
+  bool isApprox(const exact_cubic_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    return piecewise_curve_t::isApprox(other, prec);
   }
 
   std::size_t getNumberSplines() { return this->getNumberCurves(); }
 
   spline_t getSplineAt(std::size_t index) {
     boost::shared_ptr<spline_t> s_ptr = boost::dynamic_pointer_cast<spline_t>(this->curves_.at(index));
-    if(s_ptr)
+    if (s_ptr)
       return *s_ptr;
     else
-      throw std::runtime_error("Parent piecewise curve do not contain only curves created from exact_cubic class methods");
+      throw std::runtime_error(
+          "Parent piecewise curve do not contain only curves created from exact_cubic class methods");
   }
 
  private:

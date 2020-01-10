@@ -29,8 +29,9 @@ typedef bezier_curve<real, real, true, linear_variable_t> bezier_linear_variable
 
 /*linear variable control points*/
 bezier_linear_variable_t* wrapBezierLinearConstructor(const point_list3_t& matrices, const point_list3_t& vectors);
-bezier_linear_variable_t* wrapBezierLinearConstructorBounds(const point_list3_t& matrices, const point_list3_t& vectors,
-                                                            const real T_min, const real T_max);
+bezier_linear_variable_t* wrapBezierLinearConstructorBounds(const point_list3_t& matrices,
+                                                            const point_list3_t& vectors, const real T_min,
+                                                            const real T_max);
 
 typedef Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> matrix_x_t;
 
@@ -58,7 +59,6 @@ struct LinearBezierVector {
   }
 };
 
-
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 }  // namespace curves
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::bernstein_t)
@@ -81,6 +81,5 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::SO3Linear_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::SE3Curve_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_SE3_t)
-
 
 #endif  //_VARIABLES_PYTHON_BINDINGS

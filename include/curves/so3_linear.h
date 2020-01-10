@@ -10,7 +10,6 @@
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/vector.hpp>
 
-
 namespace curves {
 
 /// \class SO3Linear.
@@ -37,10 +36,13 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
 
   /// \brief constructor with initial and final rotation and time bounds
   SO3Linear(const quaternion_t& init_rot, const quaternion_t& end_rot, const time_t t_min, const time_t t_max)
-      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot),
+      : curve_abc_t(),
+        dim_(3),
+        init_rot_(init_rot),
+        end_rot_(end_rot),
         angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix()) / (t_max - t_min)),
-        T_min_(t_min), T_max_(t_max)
-  {
+        T_min_(t_min),
+        T_max_(t_max) {
     safe_check();
   }
 
@@ -52,17 +54,19 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         end_rot_(quaternion_t(end_rot)),
         angular_vel_(log3(init_rot.transpose() * end_rot) / (t_max - t_min)),
         T_min_(t_min),
-        T_max_(t_max)
-  {
+        T_max_(t_max) {
     safe_check();
   }
 
   /// \brief constructor with initial and final rotation, time bounds are set to [0;1]
   SO3Linear(const quaternion_t& init_rot, const quaternion_t& end_rot)
-      : curve_abc_t(), dim_(3), init_rot_(init_rot), end_rot_(end_rot),
+      : curve_abc_t(),
+        dim_(3),
+        init_rot_(init_rot),
+        end_rot_(end_rot),
         angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
-        T_min_(0.), T_max_(1.)
-  {
+        T_min_(0.),
+        T_max_(1.) {
     safe_check();
   }
 
@@ -74,8 +78,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         end_rot_(quaternion_t(end_rot)),
         angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
         T_min_(0.),
-        T_max_(1.)
-  {
+        T_max_(1.) {
     safe_check();
   }
 
@@ -109,36 +112,30 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
 
   /**
    * @brief isApprox check if other and *this are approximately equals.
-   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see isEquivalent
+   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see
+   * isEquivalent
    * @param other the other curve to check
    * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  bool isApprox(const SO3Linear_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
-    return  curves::isApprox<Numeric> (T_min_, other.min())
-        && curves::isApprox<Numeric> (T_max_, other.max())
-        && dim_ == other.dim()
-        && init_rot_.toRotationMatrix().isApprox(other.init_rot_.toRotationMatrix(),prec)
-        && end_rot_.toRotationMatrix().isApprox(other.end_rot_.toRotationMatrix(),prec);
+  bool isApprox(const SO3Linear_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    return curves::isApprox<Numeric>(T_min_, other.min()) && curves::isApprox<Numeric>(T_max_, other.max()) &&
+           dim_ == other.dim() && init_rot_.toRotationMatrix().isApprox(other.init_rot_.toRotationMatrix(), prec) &&
+           end_rot_.toRotationMatrix().isApprox(other.end_rot_.toRotationMatrix(), prec);
   }
 
-  virtual bool isApprox(const curve_abc_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const{
+  virtual bool isApprox(const curve_abc_t* other,
+                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
     const SO3Linear_t* other_cast = dynamic_cast<const SO3Linear_t*>(other);
-    if(other_cast)
-      return isApprox(*other_cast,prec);
+    if (other_cast)
+      return isApprox(*other_cast, prec);
     else
       return false;
   }
 
+  virtual bool operator==(const SO3Linear_t& other) const { return isApprox(other); }
 
-  virtual bool operator==(const SO3Linear_t& other) const {
-    return isApprox(other);
-  }
-
-  virtual bool operator!=(const SO3Linear_t& other) const {
-    return !(*this == other);
-  }
-
+  virtual bool operator!=(const SO3Linear_t& other) const { return !(*this == other); }
 
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
@@ -165,10 +162,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
   ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  SO3Linear_t* compute_derivate_ptr(const std::size_t order) const {
-    return new SO3Linear_t(compute_derivate(order));
-  }
-
+  SO3Linear_t* compute_derivate_ptr(const std::size_t order) const { return new SO3Linear_t(compute_derivate(order)); }
 
   /*Helpers*/
   /// \brief Get dimension of curve.
@@ -182,11 +176,11 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   time_t max() const { return T_max_; }
   /// \brief Get the degree of the curve.
   /// \return \f$degree\f$, the degree of the curve.
-  virtual std::size_t  degree() const {return 1;}
-  matrix3_t getInitRotation()const {return init_rot_.toRotationMatrix();}
-  matrix3_t getEndRotation()const {return end_rot_.toRotationMatrix();}
-  matrix3_t getInitRotation() {return init_rot_.toRotationMatrix();}
-  matrix3_t getEndRotation() {return end_rot_.toRotationMatrix();}
+  virtual std::size_t degree() const { return 1; }
+  matrix3_t getInitRotation() const { return init_rot_.toRotationMatrix(); }
+  matrix3_t getEndRotation() const { return end_rot_.toRotationMatrix(); }
+  matrix3_t getInitRotation() { return init_rot_.toRotationMatrix(); }
+  matrix3_t getEndRotation() { return end_rot_.toRotationMatrix(); }
 
   /*Helpers*/
 
@@ -205,9 +199,9 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     if (version) {
       // Do something depending on version ?
     }
-    ar>> BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
-    ar>> boost::serialization::make_nvp("dim", dim_);
-    matrix3_t init,end;
+    ar >> BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
+    ar >> boost::serialization::make_nvp("dim", dim_);
+    matrix3_t init, end;
     ar >> boost::serialization::make_nvp("init_rotation", init);
     ar >> boost::serialization::make_nvp("end_rotation", end);
     init_rot_ = quaternion_t(init);
@@ -215,7 +209,6 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     ar >> boost::serialization::make_nvp("angular_vel", angular_vel_);
     ar >> boost::serialization::make_nvp("T_min", T_min_);
     ar >> boost::serialization::make_nvp("T_max", T_max_);
-
   }
 
   template <class Archive>
@@ -223,15 +216,15 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
     if (version) {
       // Do something depending on version ?
     }
-    ar<< BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
-    ar<< boost::serialization::make_nvp("dim", dim_);
+    ar << BOOST_SERIALIZATION_BASE_OBJECT_NVP(curve_abc_t);
+    ar << boost::serialization::make_nvp("dim", dim_);
     matrix3_t init_matrix(getInitRotation());
     matrix3_t end_matrix(getEndRotation());
-    ar<< boost::serialization::make_nvp("init_rotation", init_matrix);
-    ar<< boost::serialization::make_nvp("end_rotation", end_matrix);
-    ar<< boost::serialization::make_nvp("angular_vel", angular_vel_);
-    ar<< boost::serialization::make_nvp("T_min", T_min_);
-    ar<< boost::serialization::make_nvp("T_max", T_max_);
+    ar << boost::serialization::make_nvp("init_rotation", init_matrix);
+    ar << boost::serialization::make_nvp("end_rotation", end_matrix);
+    ar << boost::serialization::make_nvp("angular_vel", angular_vel_);
+    ar << boost::serialization::make_nvp("T_min", T_min_);
+    ar << boost::serialization::make_nvp("T_max", T_max_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

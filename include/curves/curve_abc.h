@@ -22,9 +22,8 @@
 namespace curves {
 
 template <typename T>
-bool isApprox(const T a, const T b, const T eps = 1e-6)
-{
-    return fabs(a - b) < eps;
+bool isApprox(const T a, const T b, const T eps = 1e-6) {
+  return fabs(a - b) < eps;
 }
 
 /// \struct curve_abc.
@@ -37,7 +36,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   typedef Point_derivate point_derivate_t;
   typedef Time time_t;
   typedef Numeric num_t;
-  typedef curve_abc<Time, Numeric, Safe, point_t,point_derivate_t> curve_t; // parent class
+  typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_t;  // parent class
   typedef boost::shared_ptr<curve_t> curve_ptr_t;
 
   /* Constructors - destructors */
@@ -54,7 +53,6 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   ///  \param t : time when to evaluate the spine
   ///  \return \f$x(t)\f$, point corresponding on curve at time t.
   virtual point_t operator()(const time_t t) const = 0;
-
 
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
@@ -75,27 +73,27 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
    * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  bool isEquivalent(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),const size_t order = 5) const{
-    bool equal  = curves::isApprox<num_t> (min(), other->min())
-               && curves::isApprox<num_t> (max(), other->max())
-               && (dim() == other->dim());
-    if(!equal){
+  bool isEquivalent(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),
+                    const size_t order = 5) const {
+    bool equal = curves::isApprox<num_t>(min(), other->min()) && curves::isApprox<num_t>(max(), other->max()) &&
+                 (dim() == other->dim());
+    if (!equal) {
       return false;
     }
-    time_t inc = (max() - min()) / 10.; // FIXME : define this step somewhere ??
+    time_t inc = (max() - min()) / 10.;  // FIXME : define this step somewhere ??
     // check the value along the two curves
     time_t t = min();
-    while(t<= max()){
-      if(!(*this)(t).isApprox(other->operator()(t),prec)){
+    while (t <= max()) {
+      if (!(*this)(t).isApprox(other->operator()(t), prec)) {
         return false;
       }
       t += inc;
     }
     //  check if the derivatives are equals
-    for(size_t n = 1 ; n <= order ; ++n){
+    for (size_t n = 1; n <= order; ++n) {
       t = min();
-      while(t<= max()){
-        if(!derivate(t,n).isApprox(other->derivate(t,n),prec)){
+      while (t <= max()) {
+        if (!derivate(t, n).isApprox(other->derivate(t, n), prec)) {
           return false;
         }
         t += inc;
@@ -112,7 +110,8 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
    * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  virtual bool isApprox(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const = 0;
+  virtual bool isApprox(const curve_t* other,
+                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const = 0;
 
   /*Operations*/
 
@@ -128,7 +127,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   virtual time_t max() const = 0;
   /// \brief Get the degree of the curve.
   /// \return \f$degree\f$, the degree of the curve.
-  virtual std::size_t  degree() const =0;
+  virtual std::size_t degree() const = 0;
 
   std::pair<time_t, time_t> timeRange() { return std::make_pair(min(), max()); }
   /*Helpers*/

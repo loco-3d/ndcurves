@@ -13,7 +13,6 @@
  *
  */
 
-
 #ifndef CURVES_REGISTERATION_H
 #define CURVES_REGISTERATION_H
 #include <Eigen/Dense>
@@ -24,27 +23,25 @@
 namespace curves {
 namespace serialization {
 
-  template <class Archive>
-  void register_types(Archive& ar){
-
-    //register derived class
-    ar.template register_type<polynomial_t >();
-    ar.template register_type<exact_cubic_t >();
-    ar.template register_type<bezier_t >();
-    ar.template register_type<cubic_hermite_spline_t >();
-    ar.template register_type<piecewise_t >();
-    ar.template register_type<polynomial3_t >();
-    ar.template register_type<exact_cubic3_t >();
-    ar.template register_type<bezier3_t >();
-    ar.template register_type<cubic_hermite_spline3_t >();
-    ar.template register_type<piecewise3_t >();
-    ar.template register_type<SO3Linear_t >();
-    ar.template register_type<SE3Curve_t >();
-    ar.template register_type<piecewise_SE3_t >();
-
-  }
-
-}
+template <class Archive>
+void register_types(Archive& ar) {
+  // register derived class
+  ar.template register_type<polynomial_t>();
+  ar.template register_type<exact_cubic_t>();
+  ar.template register_type<bezier_t>();
+  ar.template register_type<cubic_hermite_spline_t>();
+  ar.template register_type<piecewise_t>();
+  ar.template register_type<polynomial3_t>();
+  ar.template register_type<exact_cubic3_t>();
+  ar.template register_type<bezier3_t>();
+  ar.template register_type<cubic_hermite_spline3_t>();
+  ar.template register_type<piecewise3_t>();
+  ar.template register_type<SO3Linear_t>();
+  ar.template register_type<SE3Curve_t>();
+  ar.template register_type<piecewise_SE3_t>();
 }
 
-#endif // CURVES_REGISTERATION_H
+}  // namespace serialization
+}  // namespace curves
+
+#endif  // CURVES_REGISTERATION_H

@@ -19,7 +19,8 @@ linear_variable_t fillWithZeros(const linear_variable_t& var, const std::size_t 
   return linear_variable_t(B, var.c());
 }
 
-std::vector<linear_variable_t> computeLinearControlPoints(const point_list3_t& matrices, const point_list3_t& vectors) {
+std::vector<linear_variable_t> computeLinearControlPoints(const point_list3_t& matrices,
+                                                          const point_list3_t& vectors) {
   std::vector<linear_variable_t> res;
   std::vector<linear_variable_t> variables = matrix3DFromEigenArray(matrices, vectors);
   // now need to fill all this with zeros...
@@ -34,8 +35,9 @@ bezier_linear_variable_t* wrapBezierLinearConstructor(const point_list3_t& matri
   return new bezier_linear_variable_t(asVector.begin(), asVector.end());
 }
 
-bezier_linear_variable_t* wrapBezierLinearConstructorBounds(const point_list3_t& matrices, const point_list3_t& vectors,
-                                                            const real T_min, const real T_max) {
+bezier_linear_variable_t* wrapBezierLinearConstructorBounds(const point_list3_t& matrices,
+                                                            const point_list3_t& vectors, const real T_min,
+                                                            const real T_max) {
   std::vector<linear_variable_t> asVector = computeLinearControlPoints(matrices, vectors);
   return new bezier_linear_variable_t(asVector.begin(), asVector.end(), T_min, T_max);
 }
