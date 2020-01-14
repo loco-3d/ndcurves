@@ -37,7 +37,9 @@ typedef exact_cubic_t::spline_t spline_t;
 /// \brief Compute time such that the equation from source to offsetpoint is necessarily a line.
 Waypoint compute_offset(const Waypoint& source, const Point& normal, const Numeric offset, const Time time_offset) {
   Numeric norm = normal.norm();
-  assert(norm > 0.);
+  if (norm < 0.) {
+    throw std::runtime_error("Norm of normal is less than 0!");
+  }
   return std::make_pair(source.first + time_offset, (source.second + normal / norm * offset));
 }
 
@@ -46,7 +48,9 @@ Waypoint compute_offset(const Waypoint& source, const Point& normal, const Numer
 spline_t make_end_spline(const Point& normal, const Point& from, const Numeric offset, const Time init_time,
                          const Time time_offset) {
   Numeric norm = normal.norm();
-  assert(norm > 0.);
+  if (norm < 0.) {
+    throw std::runtime_error("Norm of normal is less than 0!");
+  }
   Point n = normal / norm;
   Point d = offset / (time_offset * time_offset * time_offset) * -n;
   Point c = -3 * d * time_offset;

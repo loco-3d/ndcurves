@@ -174,8 +174,12 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
   // add remaining variables (only if no end_pos constraints)
   for (; i < numControlPoints; ++i) variables_.push_back(var_t::Zero(pDef.dim_));
 
-  assert(numControlPoints > numConstants);
-  assert(numControlPoints == variables_.size());
+  if (numControlPoints < numConstants) {
+    throw std::runtime_error("numControlPoints < numConstants");
+  }
+  if (numControlPoints != variables_.size()) {
+    throw std::runtime_error("numControlPoints != variables_.size()");
+  }
 
   problemData.numControlPoints = numControlPoints;
   problemData.numVariables = numControlPoints - numConstants;
@@ -246,8 +250,12 @@ void initInequalityMatrix(const problem_definition<Point, Numeric>& pDef, proble
   // compute sub-bezier curves
   T_bezier_t beziers = split<Point, Numeric>(pDef, pData);
 
-  assert(pDef.inequalityMatrices_.size() == pDef.inequalityVectors_.size());
-  assert(pDef.inequalityMatrices_.size() == beziers.size());
+  if (pDef.inequalityMatrices_.size() != pDef.inequalityVectors_.size()) {
+    throw std::invalid_argument("The sizes of the inequality matrices and vectors do not match.");
+  }
+  if (pDef.inequalityMatrices_.size() != beziers.size()) {
+    throw std::invalid_argument("The sizes of the inequality matrices and the bezier degree do not match.");
+  }
 
   long currentRowIdx = 0;
   typename problem_definition_t::CIT_matrix_x_t cmit = pDef.inequalityMatrices_.begin();
@@ -264,7 +272,7 @@ void initInequalityMatrix(const problem_definition<Point, Numeric>& pDef, proble
       currentRowIdx += cmit->rows();
     }
   }
-  assert(rows == currentRowIdx);  // we filled all the constraints
+  assert(rows == currentRowIdx);  // we filled all the constraints - NB: leave assert for Debug tests
 }
 
 template <typename Point, typename Numeric, typename In>
@@ -273,8 +281,9 @@ quadratic_variable<Numeric> bezier_product(In PointsBegin1, In PointsEnd1, In Po
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
   unsigned int nPoints1 = (unsigned int)(std::distance(PointsBegin1, PointsEnd1)),
                nPoints2 = (unsigned int)(std::distance(PointsBegin2, PointsEnd2));
-  assert(nPoints1 > 0);
-  assert(nPoints2 > 0);
+  if (nPoints1 < 0 || nPoints2 < 0) {
+    throw std::runtime_error("This should never happen because an unsigned int cannot go negative without underflowing.");
+  }
   unsigned int deg1 = nPoints1 - 1, deg2 = nPoints2 - 1;
   unsigned int newDeg = (deg1 + deg2);
   // the integral of the primitive will simply be the last control points of the primitive,

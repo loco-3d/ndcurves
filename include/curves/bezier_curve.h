@@ -66,10 +66,12 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
         size_(std::distance(PointsBegin, PointsEnd)),
         degree_(size_ - 1),
         bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_)) {
-    assert(bernstein_.size() == size_);
+    if (bernstein_.size() != size_) {
+      throw std::invalid_argument("Invalid size of polynomial");
+    }
     In it(PointsBegin);
     if (Safe && (size_ < 1 || T_max_ <= T_min_)) {
-      throw std::invalid_argument("can't create bezier min bound is higher than max bound");  // TODO
+      throw std::invalid_argument("can't create bezier min bound is higher than max bound");
     }
     for (; it != PointsEnd; ++it) {
       control_points_.push_back(*it);
