@@ -448,6 +448,14 @@ class TestCurves(unittest.TestCase):
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
         pc.is_continuous(1)
+        # test access to curves :
+        self.assertTrue(array_equal(pc.curve_at_index(0)(0.5), a(0.5)))
+        waypoints = array([[3., 4., -3.], [5., 1., 2.]]).transpose()
+        c = bezier(waypoints, 1.5, 2.)
+        c0 = pc.curve_at_index(0)
+        c0 = c # should not have any effect
+        self.assertTrue(array_equal(pc.curve_at_index(0)(0.5), a(0.5)))
+
         # Test serialization
         pc.saveAsText("serialization_pc.test")
         pc_test = piecewise()
