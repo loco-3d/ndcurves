@@ -98,6 +98,14 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(norm(a0.derivate(t, 2) - a1.derivate(3 * t, 2) * 9.) < __EPS)
             self.assertTrue(norm(prim0(t) - prim1(t * 3) / 3.) < __EPS)
         self.assertTrue((prim(0) == array([0., 0., 0.])).all())
+        # testing accessor to waypoints :
+        wp_getter = a0.waypoints()
+        self.assertEqual(wp_getter.shape[0],waypoints.shape[0])
+        self.assertEqual(wp_getter.shape[1],waypoints.shape[1])
+        self.assertTrue(array_equal(wp_getter,waypoints))
+        # check that it return a copy:
+        a0.waypoints()[1,1] = -15.
+        self.assertEqual(a0.waypoints()[1,1],waypoints[1,1])
         # testing bezier with constraints
         c = curve_constraints(3)
         c.init_vel = array([[0., 1., 1.]]).transpose()
@@ -189,6 +197,14 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(norm(a0.derivate(t, 2) - a1.derivate(3 * t, 2) * 9.) < __EPS)
             self.assertTrue(norm(prim0(t) - prim1(t * 3) / 3.) < __EPS)
         self.assertTrue((prim(0) == array([0., 0., 0.])).all())
+        # testing accessor to waypoints :
+        wp_getter = a0.waypoints()
+        self.assertEqual(wp_getter.shape[0],waypoints.shape[0])
+        self.assertEqual(wp_getter.shape[1],waypoints.shape[1])
+        self.assertTrue(array_equal(wp_getter,waypoints))
+        # check that it return a copy:
+        a0.waypoints()[1,1] = -15.
+        self.assertEqual(a0.waypoints()[1,1],waypoints[1,1])
         # testing bezier with constraints
         c = curve_constraints(3)
         c.init_vel = array([[0., 1., 1.]]).transpose()
