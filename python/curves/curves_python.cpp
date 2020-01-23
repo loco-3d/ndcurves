@@ -356,6 +356,14 @@ SE3Curve_t* wrapSE3CurveFromTwoCurves(const curve_ptr_t& translation_curve,
   return new SE3Curve_t(translation_curve, rotation_curve);
 }
 
+curve_abc_t* SE3getTranslationCurve(SE3Curve_t& self){
+  return self.translation_curve().get();
+}
+
+curve_rotation_t* SE3getRotationCurve(SE3Curve_t& self){
+  return self.rotation_curve().get();
+}
+
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
 typedef pinocchio::SE3Tpl<real, 0> SE3_t;
 typedef pinocchio::MotionTpl<real, 0> Motion_t;
@@ -944,6 +952,10 @@ BOOST_PYTHON_MODULE(curves) {
            "translation curve."
            "The orientation along the SE3Curve will be a slerp between the two given rotations."
            "The orientations should be represented as 3x3 rotation matrix")
+      .def("translation_curve",&SE3getTranslationCurve,return_internal_reference<>(),
+      "Return a curve corresponding to the translation part of self.")
+       .def("rotation_curve",&SE3getRotationCurve,return_internal_reference<>(),
+      "Return a curve corresponding to the rotation part of self.")
       .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>, bp::args("filename"), "Saves *this inside a text file.")
       .def("loadFromText", &SE3Curve_t::loadFromText<SE3Curve_t>, bp::args("filename"),
            "Loads *this from a text file.")
