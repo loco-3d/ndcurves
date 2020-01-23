@@ -25,9 +25,6 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   typedef Eigen::Transform<Numeric, 3, Eigen::Affine> transform_t;
   typedef transform_t point_t;
   typedef Eigen::Matrix<Scalar, 6, 1> point_derivate_t;
-  typedef Eigen::Matrix<Scalar, 3, 1> point3_t;
-  typedef Eigen::Matrix<Scalar, -1, 1> pointX_t;
-  typedef Eigen::Matrix<Scalar, 3, 3> matrix3_t;
   typedef Eigen::Quaternion<Scalar> Quaternion;
   typedef Time time_t;
   typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;  // parent class
