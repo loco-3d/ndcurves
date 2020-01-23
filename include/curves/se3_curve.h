@@ -215,6 +215,10 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   /// \brief Get the degree of the curve.
   /// \return \f$degree\f$, the degree of the curve.
   virtual std::size_t degree() const { return translation_curve_->degree(); }
+  /// \brief const accessor to the translation curve
+  const curve_ptr_t translation_curve(){return translation_curve_;}
+  /// \brief const accessor to the rotation curve
+  const curve_rotation_ptr_t rotation_curve(){return rotation_curve_;}
   /*Helpers*/
 
   /*Attributes*/
