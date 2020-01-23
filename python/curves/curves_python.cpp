@@ -24,8 +24,8 @@ struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_abc_t_isEquivalent_overloads, curve_abc_t::isEquivalent, 1, 3)
 
 struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  point3_t operator()(const real) { return this->get_override("operator()")(); }
+  point3_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
   curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
@@ -34,8 +34,8 @@ struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_3_t_isEquivalent_overloads, curve_3_t::isEquivalent, 1, 3)
 
 struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_rotation_t::point_t operator()(const real) { return this->get_override("operator()")(); }
+  curve_rotation_t::point_derivate_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
   curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
@@ -44,8 +44,8 @@ struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_rotation_t_isEquivalent_overloads, curve_rotation_t::isEquivalent, 1, 3)
 
 struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_SE3_t::point_t operator()(const real) { return this->get_override("operator()")(); }
+  curve_SE3_t::point_derivate_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
   curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
