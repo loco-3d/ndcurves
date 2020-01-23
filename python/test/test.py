@@ -360,6 +360,11 @@ class TestCurves(unittest.TestCase):
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
         pc.is_continuous(1)
+        a0 = pc.curve_at_index(0)
+        self.assertTrue(array_equal(a0(0.5), pc(0.5)))
+        self.assertTrue(a0 == a)
+        a0 = b # should not have any effect
+        self.assertTrue(array_equal(pc.curve_at_index(0)(0.5), a(0.5)))
         # Test serialization
         pc.saveAsText("serialization_pc.test")
         pc_test = piecewise()
@@ -412,6 +417,12 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(not polC0.is_continuous(1))
         for i in range(N):
             self.assertTrue(isclose(polC0(time_points[i, 0]), points[:, i]).all())
+
+        c0 = polC0.curve_at_index(0)
+        self.assertEqual(c0.min(), time_points[0])
+        self.assertEqual(c0.max(), time_points[1])
+        self.assertEqual(c0.dim(), 3)
+        self.assertTrue(array_equal(polC0(0.5), c0(0.5)))
 
         polC1 = piecewise.FromPointsList(points, points_derivative, time_points)
         self.assertEqual(polC1.min(), time_points[0, 0])
@@ -500,6 +511,11 @@ class TestCurves(unittest.TestCase):
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
         pc.is_continuous(1)
+        a0 = pc.curve_at_index(0)
+        self.assertTrue(array_equal(a0(0.5), pc(0.5)))
+        self.assertTrue(a0 == a)
+        a0 = b # should not have any effect
+        self.assertTrue(array_equal(pc.curve_at_index(0)(0.5), a(0.5)))
         # Test serialization
         pc.saveAsText("serialization_pc.test")
         pc_test = piecewise()
