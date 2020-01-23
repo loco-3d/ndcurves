@@ -212,9 +212,9 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
 
   std::size_t num_curves() const { return curves_.size(); }
 
-  const curve_ptr_t& curve_at_time(const time_t t) const { return curves_[find_interval(t)]; }
+  curve_ptr_t curve_at_time(const time_t t) const { return curves_[find_interval(t)]; }
 
-  const curve_ptr_t& curve_at_index(const std::size_t idx) const {
+  curve_ptr_t curve_at_index(const std::size_t idx) const {
     if (Safe && idx >= num_curves()) {
       throw std::length_error(
           "curve_at_index: requested index greater than number of curves in piecewise_curve instance");
