@@ -96,6 +96,10 @@ bezier3_t* wrapBezier3ConstructorBoundsConstraints(const pointX_list_t& array, c
   return wrapBezierConstructorConstraintsTemplate<bezier3_t, pointX_list_t, t_point3_t, curve_constraints3_t>(
       array, convertToConstraints3(constraints), T_min, T_max);
 }
+
+pointX_list_t wrapBezier3Waypoints(bezier3_t& self){
+  return vectorToEigenArray<bezier3_t::t_point_t,pointX_list_t>(self.waypoints());
+}
 /*END 3D constructors bezier */
 
 /*constructors bezier */
@@ -113,6 +117,9 @@ bezier_t* wrapBezierConstructorBoundsConstraints(const pointX_list_t& array, con
                                                  const real T_min, const real T_max) {
   return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(
       array, constraints, T_min, T_max);
+}
+pointX_list_t wrapBezierWaypoints(bezier_t& self){
+  return vectorToEigenArray<bezier_t::t_point_t,pointX_list_t>(self.waypoints());
 }
 /*END constructors bezier */
 
@@ -513,6 +520,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezier3ConstructorBoundsConstraints))
       .def("compute_primitive", &bezier3_t::compute_primitive)
       .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
+      .def("waypoints",&wrapBezier3Waypoints)
       .def_readonly("degree", &bezier3_t::degree_)
       .def_readonly("nbWaypoints", &bezier3_t::size_)
       .def("saveAsText", &bezier3_t::saveAsText<bezier3_t>, bp::args("filename"), "Saves *this inside a text file.")
@@ -537,6 +545,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
       .def("compute_primitive", &bezier_t::compute_primitive)
       .def("waypointAtIndex", &bezier_t::waypointAtIndex)
+      .def("waypoints",&wrapBezierWaypoints)
       .def_readonly("degree", &bezier_t::degree_)
       .def_readonly("nbWaypoints", &bezier_t::size_)
       .def("split", splitspe)
