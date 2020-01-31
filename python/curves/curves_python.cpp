@@ -24,8 +24,8 @@ struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_abc_t_isEquivalent_overloads, curve_abc_t::isEquivalent, 1, 3)
 
 struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  point3_t operator()(const real) { return this->get_override("operator()")(); }
+  point3_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
   curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
@@ -34,8 +34,8 @@ struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_3_t_isEquivalent_overloads, curve_3_t::isEquivalent, 1, 3)
 
 struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_rotation_t::point_t operator()(const real) { return this->get_override("operator()")(); }
+  curve_rotation_t::point_derivate_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
   curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
@@ -44,8 +44,8 @@ struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_rotation_t_isEquivalent_overloads, curve_rotation_t::isEquivalent, 1, 3)
 
 struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
+  curve_SE3_t::point_t operator()(const real) { return this->get_override("operator()")(); }
+  curve_SE3_t::point_derivate_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
   curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
   std::size_t dim() { return this->get_override("dim")(); }
   real min() { return this->get_override("min")(); }
@@ -96,6 +96,10 @@ bezier3_t* wrapBezier3ConstructorBoundsConstraints(const pointX_list_t& array, c
   return wrapBezierConstructorConstraintsTemplate<bezier3_t, pointX_list_t, t_point3_t, curve_constraints3_t>(
       array, convertToConstraints3(constraints), T_min, T_max);
 }
+
+pointX_list_t wrapBezier3Waypoints(bezier3_t& self){
+  return vectorToEigenArray<bezier3_t::t_point_t,pointX_list_t>(self.waypoints());
+}
 /*END 3D constructors bezier */
 
 /*constructors bezier */
@@ -113,6 +117,9 @@ bezier_t* wrapBezierConstructorBoundsConstraints(const pointX_list_t& array, con
                                                  const real T_min, const real T_max) {
   return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(
       array, constraints, T_min, T_max);
+}
+pointX_list_t wrapBezierWaypoints(bezier_t& self){
+  return vectorToEigenArray<bezier_t::t_point_t,pointX_list_t>(self.waypoints());
 }
 /*END constructors bezier */
 
@@ -349,6 +356,14 @@ SE3Curve_t* wrapSE3CurveFromTwoCurves(const curve_ptr_t& translation_curve,
   return new SE3Curve_t(translation_curve, rotation_curve);
 }
 
+curve_abc_t* SE3getTranslationCurve(SE3Curve_t& self){
+  return self.translation_curve().get();
+}
+
+curve_rotation_t* SE3getRotationCurve(SE3Curve_t& self){
+  return self.rotation_curve().get();
+}
+
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
 typedef pinocchio::SE3Tpl<real, 0> SE3_t;
 typedef pinocchio::MotionTpl<real, 0> Motion_t;
@@ -417,7 +432,7 @@ BOOST_PYTHON_MODULE(curves) {
   /*eigenpy::exposeAngleAxis();
   eigenpy::exposeQuaternion();*/
   /** END eigenpy init**/
-  class_<CurveWrapper, boost::noncopyable>("curve", no_init)
+  class_<CurveWrapper, boost::noncopyable, boost::shared_ptr<curve_abc_t> >("curve", no_init)
       .def("__call__", pure_virtual(&curve_abc_t::operator()), "Evaluate the curve at the given time.",
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_abc_t::derivate), "Evaluate the derivative of order N of curve at time t.",
@@ -445,7 +460,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", pure_virtual(&curve_abc_t::loadFromBinary<curve_abc_t>), bp::args("filename"),
            "Loads *this from a binary file.");
 
-  class_<Curve3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve3", no_init)
+  class_<Curve3Wrapper, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_3_t> >("curve3", no_init)
       .def("__call__", pure_virtual(&curve_3_t::operator()), "Evaluate the curve at the given time.",
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_3_t::derivate), "Evaluate the derivative of order N of curve at time t.",
@@ -461,7 +476,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("max", pure_virtual(&curve_3_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_3_t::dim), "Get the dimension of the curve.");
 
-  class_<CurveRotationWrapper, boost::noncopyable, bases<curve_abc_t> >("curve_rotation", no_init)
+  class_<CurveRotationWrapper, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_rotation_t> >("curve_rotation", no_init)
       .def("__call__", pure_virtual(&curve_rotation_t::operator()), "Evaluate the curve at the given time.",
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_rotation_t::derivate),
@@ -477,7 +492,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("max", pure_virtual(&curve_rotation_t::max), "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", pure_virtual(&curve_rotation_t::dim), "Get the dimension of the curve.");
 
-  class_<CurveSE3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve_SE3", no_init)
+  class_<CurveSE3Wrapper, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_SE3_t> >("curve_SE3", no_init)
       .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix.",
            args("self", "t"))
       .def("derivate", pure_virtual(&curve_SE3_t::derivate),
@@ -513,6 +528,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezier3ConstructorBoundsConstraints))
       .def("compute_primitive", &bezier3_t::compute_primitive)
       .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
+      .def("waypoints",&wrapBezier3Waypoints)
       .def_readonly("degree", &bezier3_t::degree_)
       .def_readonly("nbWaypoints", &bezier3_t::size_)
       .def("saveAsText", &bezier3_t::saveAsText<bezier3_t>, bp::args("filename"), "Saves *this inside a text file.")
@@ -537,6 +553,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
       .def("compute_primitive", &bezier_t::compute_primitive)
       .def("waypointAtIndex", &bezier_t::waypointAtIndex)
+      .def("waypoints",&wrapBezierWaypoints)
       .def_readonly("degree", &bezier_t::degree_)
       .def_readonly("nbWaypoints", &bezier_t::size_)
       .def("split", splitspe)
@@ -605,7 +622,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END variable points bezier curve**/
   /** BEGIN polynomial curve function**/
-  class_<polynomial_t, bases<curve_abc_t> >("polynomial", init<>())
+  class_<polynomial_t, bases<curve_abc_t>, boost::shared_ptr<polynomial_t> >("polynomial", init<>())
       .def("__init__",
            make_constructor(&wrapPolynomialConstructor1, default_call_policies(), args("coeffs", "min", "max")),
            "Create polynomial spline from an Eigen matrix of coefficient defined for t in [min,max]."
@@ -654,7 +671,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END polynomial function**/
   /** BEGIN piecewise curve function **/
-  class_<piecewise_t, bases<curve_abc_t> >("piecewise", init<>())
+  class_<piecewise_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_t>  >("piecewise", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseCurveConstructor, default_call_policies(), arg("curve")),
            "Create a peicewise curve containing the given curve.")
       .def("FromPointsList", &discretPointToPolynomialC0,
@@ -714,7 +731,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def(bp::self == bp::self)
       .def(bp::self != bp::self);
 
-  class_<piecewise_bezier_t, bases<curve_abc_t> >("piecewise_bezier", init<>())
+  class_<piecewise_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_bezier_t>  >("piecewise_bezier", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseBezierConstructor, default_call_policies(), arg("curve")),
            "Create a peicewise Bezier curve containing the given curve.")
       .def("__init__", make_constructor(&wrapPiecewiseBezierEmptyConstructor),
@@ -742,7 +759,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def(bp::self == bp::self)
       .def(bp::self != bp::self);
 
-  class_<piecewise_linear_bezier_t, bases<curve_abc_t> >("piecewise_bezier_linear", init<>())
+  class_<piecewise_linear_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_linear_bezier_t>  >("piecewise_bezier_linear", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseBezierLinearConstructor, default_call_policies(), arg("curve")),
            "Create a peicewise Bezier curve containing the given curve.")
       .def("__init__", make_constructor(&wrapPiecewiseBezierLinearEmptyConstructor),
@@ -770,7 +787,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def(bp::self == bp::self)
       .def(bp::self != bp::self);
 
-  class_<piecewise_SE3_t, bases<curve_SE3_t> >("piecewise_SE3", init<>())
+  class_<piecewise_SE3_t, bases<curve_SE3_t>, boost::shared_ptr<piecewise_SE3_t>  >("piecewise_SE3", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor, default_call_policies(), arg("curve")),
            "Create a piecewise-se3 curve containing the given se3 curve.")
       .def("__init__", make_constructor(&wrapPiecewiseSE3EmptyConstructor), "Create an empty piecewise-se3 curve.")
@@ -811,7 +828,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END piecewise curve function **/
   /** BEGIN exact_cubic curve**/
-  class_<exact_cubic_t, bases<curve_abc_t> >("exact_cubic", init<>())
+  class_<exact_cubic_t, bases<curve_abc_t>, boost::shared_ptr<exact_cubic_t>  >("exact_cubic", init<>())
       .def("__init__", make_constructor(&wrapExactCubicConstructor))
       .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
       .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
@@ -833,7 +850,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END exact_cubic curve**/
   /** BEGIN cubic_hermite_spline **/
-  class_<cubic_hermite_spline_t, bases<curve_abc_t> >("cubic_hermite_spline", init<>())
+  class_<cubic_hermite_spline_t, bases<curve_abc_t>, boost::shared_ptr<cubic_hermite_spline_t>  >("cubic_hermite_spline", init<>())
       .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor))
       .def("saveAsText", &cubic_hermite_spline_t::saveAsText<cubic_hermite_spline_t>, bp::args("filename"),
            "Saves *this inside a text file.")
@@ -868,7 +885,7 @@ BOOST_PYTHON_MODULE(curves) {
   /** END bernstein polynomial**/
 
   /** BEGIN SO3 Linear**/
-  class_<SO3Linear_t, bases<curve_rotation_t> >("SO3Linear", init<>())
+  class_<SO3Linear_t, bases<curve_rotation_t>, boost::shared_ptr<SO3Linear_t>  >("SO3Linear", init<>())
       .def("__init__",
            make_constructor(&wrapSO3LinearConstructorFromMatrix, default_call_policies(),
                             args("init_rotation", "end_rotation", "min", "max")),
@@ -899,7 +916,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END  SO3 Linear**/
   /** BEGIN SE3 Curve**/
-  class_<SE3Curve_t, bases<curve_SE3_t> >("SE3Curve", init<>())
+  class_<SE3Curve_t, bases<curve_SE3_t>, boost::shared_ptr<SE3Curve_t>  >("SE3Curve", init<>())
       .def("__init__",
            make_constructor(&wrapSE3CurveFromTransform, default_call_policies(),
                             args("init_transform", "end_transform", "min", "max")),
@@ -935,6 +952,10 @@ BOOST_PYTHON_MODULE(curves) {
            "translation curve."
            "The orientation along the SE3Curve will be a slerp between the two given rotations."
            "The orientations should be represented as 3x3 rotation matrix")
+      .def("translation_curve",&SE3getTranslationCurve,return_internal_reference<>(),
+      "Return a curve corresponding to the translation part of self.")
+       .def("rotation_curve",&SE3getRotationCurve,return_internal_reference<>(),
+      "Return a curve corresponding to the rotation part of self.")
       .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>, bp::args("filename"), "Saves *this inside a text file.")
       .def("loadFromText", &SE3Curve_t::loadFromText<SE3Curve_t>, bp::args("filename"),
            "Loads *this from a text file.")

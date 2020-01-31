@@ -17,10 +17,8 @@ namespace curves {
 ///
 ///
 template <typename Time = double, typename Numeric = Time, bool Safe = false>
-struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 3, 3>, Eigen::Matrix<Numeric, 3, 1> > {
+struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
   typedef Numeric Scalar;
-  typedef Eigen::Matrix<Scalar, 3, 1> point3_t;
-  typedef Eigen::Matrix<Scalar, 3, 3> matrix3_t;
   typedef matrix3_t point_t;
   typedef point3_t point_derivate_t;
   typedef Eigen::Quaternion<Scalar> quaternion_t;
@@ -76,7 +74,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         dim_(3),
         init_rot_(quaternion_t(init_rot)),
         end_rot_(quaternion_t(end_rot)),
-        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
+        angular_vel_(log3(init_rot.transpose() * end_rot)),
         T_min_(0.),
         T_max_(1.) {
     safe_check();
@@ -108,7 +106,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   ///  \brief Evaluation of the SO3Linear at time t using Eigen slerp.
   ///  \param t : time when to evaluate the spline.
   ///  \return \f$x(t)\f$ point corresponding on spline at time t.
-  virtual matrix3_t operator()(const time_t t) const { return computeAsQuaternion(t).toRotationMatrix(); }
+  virtual point_t operator()(const time_t t) const { return computeAsQuaternion(t).toRotationMatrix(); }
 
   /**
    * @brief isApprox check if other and *this are approximately equals.
@@ -141,7 +139,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.
   ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
-  virtual point3_t derivate(const time_t t, const std::size_t order) const {
+  virtual point_derivate_t derivate(const time_t t, const std::size_t order) const {
     if ((t < T_min_ || t > T_max_) && Safe) {
       throw std::invalid_argument(
           "error in SO3_linear : time t to evaluate derivative should be in range [Tmin, Tmax] of the curve");
