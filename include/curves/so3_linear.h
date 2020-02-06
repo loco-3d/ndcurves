@@ -97,8 +97,8 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       throw std::invalid_argument("can't evaluate bezier curve, time t is out of range");  // TODO
     }
-    if (t > T_max_) return end_rot_;
-    if (t < T_min_) return init_rot_;
+    if (t >= T_max_) return end_rot_;
+    if (t <= T_min_) return init_rot_;
     Scalar u = (t - T_min_) / (T_max_ - T_min_);
     return init_rot_.slerp(u, end_rot_);
   }
