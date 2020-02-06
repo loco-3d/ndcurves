@@ -106,6 +106,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   ///
   polynomial(const Point& init, const Point& end, const time_t min, const time_t max)
       : dim_(init.size()), degree_(1), T_min_(min), T_max_(max) {
+    if (T_min_ >= T_max_) throw std::invalid_argument("T_min must be strictly lower than T_max");
     if (init.size() != end.size()) throw std::invalid_argument("init and end points must have the same dimensions.");
     t_point_t coeffs;
     coeffs.push_back(init);
@@ -127,6 +128,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   polynomial(const Point& init, const Point& d_init, const Point& end, const Point& d_end, const time_t min,
              const time_t max)
       : dim_(init.size()), degree_(3), T_min_(min), T_max_(max) {
+    if (T_min_ >= T_max_) throw std::invalid_argument("T_min must be strictly lower than T_max");
     if (init.size() != end.size()) throw std::invalid_argument("init and end points must have the same dimensions.");
     if (init.size() != d_init.size())
       throw std::invalid_argument("init and d_init points must have the same dimensions.");
@@ -170,6 +172,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   polynomial(const Point& init, const Point& d_init, const Point& dd_init, const Point& end, const Point& d_end,
              const Point& dd_end, const time_t min, const time_t max)
       : dim_(init.size()), degree_(5), T_min_(min), T_max_(max) {
+    if (T_min_ >= T_max_) throw std::invalid_argument("T_min must be strictly lower than T_max");
     if (init.size() != end.size()) throw std::invalid_argument("init and end points must have the same dimensions.");
     if (init.size() != d_init.size())
       throw std::invalid_argument("init and d_init points must have the same dimensions.");
