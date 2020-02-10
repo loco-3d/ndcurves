@@ -8,48 +8,76 @@
 #include "optimization_python.h"
 
 #include <boost/python.hpp>
+#include <boost/python/class.hpp>
+#include <boost/python/module_init.hpp>
+#include <boost/python/def.hpp>
+#include <boost/python/call_method.hpp>
+#include <boost/ref.hpp>
+#include <boost/utility.hpp>
 
 namespace curves {
 using namespace boost::python;
 
 /* base wrap of curve_abc and others parent abstract class: must implement all pure virtual methods */
-struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
-  std::size_t dim() { return this->get_override("dim")(); }
-  real min() { return this->get_override("min")(); }
-  real max() { return this->get_override("max")(); }
+struct curve_abc_callback : curve_abc_t {
+  curve_abc_callback(PyObject *p) : self(p) {}
+  virtual point_t operator()(const real t) const { return call_method<point_t>(self, "operator()", t); }
+  virtual point_t derivate(const real t, const std::size_t n) const  { return call_method<point_t>(self, "derivate", t, n); }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const  { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual std::size_t dim() const  { return call_method<std::size_t>(self, "dim"); }
+  virtual real min() const  { return call_method<real>(self,"min"); }
+  virtual real max() const  { return call_method<real>(self,"max"); }
+  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
+  {return call_method<bool>(self,"isApprox", other, prec); }
+  PyObject *self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_abc_t_isEquivalent_overloads, curve_abc_t::isEquivalent, 1, 3)
 
-struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
-  point3_t operator()(const real) { return this->get_override("operator()")(); }
-  point3_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
-  std::size_t dim() { return this->get_override("dim")(); }
-  real min() { return this->get_override("min")(); }
-  real max() { return this->get_override("max")(); }
+struct curve_3_callback : curve_3_t {
+  curve_3_callback(PyObject *p) : self(p) {}
+  virtual point3_t operator()(const real t) const { return call_method<point3_t>(self, "operator()", t); }
+  virtual point3_t derivate(const real t, const std::size_t n) const { return call_method<point3_t>(self, "derivate", t, n); }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
+  virtual real min() const { return call_method<real>(self,"min"); }
+  virtual real max() const { return call_method<real>(self,"max"); }
+  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
+  {return call_method<bool>(self,"isApprox", other, prec); }
+  PyObject *self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_3_t_isEquivalent_overloads, curve_3_t::isEquivalent, 1, 3)
 
-struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
-  curve_rotation_t::point_t operator()(const real) { return this->get_override("operator()")(); }
-  curve_rotation_t::point_derivate_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
-  std::size_t dim() { return this->get_override("dim")(); }
-  real min() { return this->get_override("min")(); }
-  real max() { return this->get_override("max")(); }
+struct curve_rotation_callback : curve_rotation_t {
+  curve_rotation_callback(PyObject *p) : self(p) {}
+  virtual curve_rotation_t::point_t operator()(const real t) const { return call_method<curve_rotation_t::point_t>(self, "operator()", t); }
+  virtual curve_rotation_t::point_derivate_t derivate(const real t, const std::size_t n) const
+{ return call_method<curve_rotation_t::point_derivate_t>(self, "derivate", t, n); }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
+  virtual real min() const { return call_method<real>(self,"min"); }
+  virtual real max() const { return call_method<real>(self,"max"); }
+  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
+  {return call_method<bool>(self,"isApprox", other, prec); }
+  PyObject *self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_rotation_t_isEquivalent_overloads, curve_rotation_t::isEquivalent, 1, 3)
 
-struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
-  curve_SE3_t::point_t operator()(const real) { return this->get_override("operator()")(); }
-  curve_SE3_t::point_derivate_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
-  std::size_t dim() { return this->get_override("dim")(); }
-  real min() { return this->get_override("min")(); }
-  real max() { return this->get_override("max")(); }
+struct curve_SE3_callback : curve_SE3_t {
+  curve_SE3_callback(PyObject *p) : self(p) {}
+  virtual curve_SE3_t::point_t operator()(const real t) const { return call_method<curve_SE3_t::point_t>(self, "operator()", t); }
+  virtual curve_SE3_t::point_derivate_t derivate(const real t, const std::size_t n) const
+  { return call_method<curve_SE3_t::point_derivate_t>(self, "derivate", t, n); }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
+  virtual real min() const { return call_method<real>(self,"min"); }
+  virtual real max() const { return call_method<real>(self,"max"); }
+  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
+  {return call_method<bool>(self,"isApprox", other, prec); }
+  PyObject *self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_SE3_t_isEquivalent_overloads, curve_SE3_t::isEquivalent, 1, 3)
 
@@ -432,21 +460,21 @@ BOOST_PYTHON_MODULE(curves) {
   /*eigenpy::exposeAngleAxis();
   eigenpy::exposeQuaternion();*/
   /** END eigenpy init**/
-  class_<CurveWrapper, boost::noncopyable, boost::shared_ptr<curve_abc_t> >("curve", no_init)
-      .def("__call__", pure_virtual(&curve_abc_t::operator()), "Evaluate the curve at the given time.",
+  class_<curve_abc_t, boost::noncopyable, boost::shared_ptr<curve_abc_callback> >("curve")
+      .def("__call__", &curve_abc_t::operator(), "Evaluate the curve at the given time.",
            args("self", "t"))
-      .def("derivate", pure_virtual(&curve_abc_t::derivate), "Evaluate the derivative of order N of curve at time t.",
+      .def("derivate", &curve_abc_t::derivate, "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("isEquivalent", &curve_abc_t::isEquivalent,
            curve_abc_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", pure_virtual(&curve_abc_t::compute_derivate_ptr),
+      .def("compute_derivate", &curve_abc_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
            args("self", "N"))
-      .def("min", pure_virtual(&curve_abc_t::min), "Get the LOWER bound on interval definition of the curve.")
-      .def("max", pure_virtual(&curve_abc_t::max), "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", pure_virtual(&curve_abc_t::dim), "Get the dimension of the curve.")
+      .def("min", &curve_abc_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &curve_abc_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &curve_abc_t::dim, "Get the dimension of the curve.")
       .def("saveAsText", pure_virtual(&curve_abc_t::saveAsText<curve_abc_t>), bp::args("filename"),
            "Saves *this inside a text file.")
       .def("loadFromText", pure_virtual(&curve_abc_t::loadFromText<curve_abc_t>), bp::args("filename"),
@@ -460,53 +488,53 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", pure_virtual(&curve_abc_t::loadFromBinary<curve_abc_t>), bp::args("filename"),
            "Loads *this from a binary file.");
 
-  class_<Curve3Wrapper, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_3_t> >("curve3", no_init)
-      .def("__call__", pure_virtual(&curve_3_t::operator()), "Evaluate the curve at the given time.",
+  class_<curve_3_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_3_callback> >("curve3")
+      .def("__call__", &curve_3_t::operator(), "Evaluate the curve at the given time.",
            args("self", "t"))
-      .def("derivate", pure_virtual(&curve_3_t::derivate), "Evaluate the derivative of order N of curve at time t.",
+      .def("derivate", &curve_3_t::derivate, "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("isEquivalent", &curve_3_t::isEquivalent,
            curve_3_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", pure_virtual(&curve_3_t::compute_derivate_ptr),
+      .def("compute_derivate", &curve_3_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
            args("self", "N"))
-      .def("min", pure_virtual(&curve_3_t::min), "Get the LOWER bound on interval definition of the curve.")
-      .def("max", pure_virtual(&curve_3_t::max), "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", pure_virtual(&curve_3_t::dim), "Get the dimension of the curve.");
+      .def("min", &curve_3_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &curve_3_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &curve_3_t::dim, "Get the dimension of the curve.");
 
-  class_<CurveRotationWrapper, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_rotation_t> >("curve_rotation", no_init)
-      .def("__call__", pure_virtual(&curve_rotation_t::operator()), "Evaluate the curve at the given time.",
+  class_<curve_rotation_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_rotation_callback> >("curve_rotation")
+      .def("__call__", &curve_rotation_t::operator(), "Evaluate the curve at the given time.",
            args("self", "t"))
-      .def("derivate", pure_virtual(&curve_rotation_t::derivate),
+      .def("derivate", &curve_rotation_t::derivate,
            "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
       .def("isEquivalent", &curve_rotation_t::isEquivalent,
            curve_rotation_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate_ptr),
+      .def("compute_derivate", &curve_rotation_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
            args("self", "N"))
-      .def("min", pure_virtual(&curve_rotation_t::min), "Get the LOWER bound on interval definition of the curve.")
-      .def("max", pure_virtual(&curve_rotation_t::max), "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", pure_virtual(&curve_rotation_t::dim), "Get the dimension of the curve.");
+      .def("min", &curve_rotation_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &curve_rotation_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &curve_rotation_t::dim, "Get the dimension of the curve.");
 
-  class_<CurveSE3Wrapper, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_SE3_t> >("curve_SE3", no_init)
+  class_<curve_SE3_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_SE3_callback> >("curve_SE3")
       .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix.",
            args("self", "t"))
-      .def("derivate", pure_virtual(&curve_SE3_t::derivate),
+      .def("derivate", &curve_SE3_t::derivate,
            "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
       .def("isEquivalent", &curve_SE3_t::isEquivalent,
            curve_SE3_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", pure_virtual(&curve_SE3_t::compute_derivate_ptr),
+      .def("compute_derivate", &curve_SE3_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
            args("self", "N"))
-      .def("min", pure_virtual(&curve_SE3_t::min), "Get the LOWER bound on interval definition of the curve.")
-      .def("max", pure_virtual(&curve_SE3_t::max), "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.")
+      .def("min", &curve_SE3_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &curve_SE3_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &curve_SE3_t::dim, "Get the dimension of the curve.")
       .def("rotation", &se3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
            args("self", "time"))
       .def("translation", &se3returnTranslation, "Output the rotation (as a vector 3) at the given time.",
