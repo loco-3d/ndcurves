@@ -240,13 +240,6 @@ static piecewise_t discretPointToPolynomialC2(const pointX_list_t& points, const
       points_list, points_derivative_list, points_second_derivative_list, time_points_list);
 }
 
-curve_abc_t* getCurveAtIndex(piecewise_t& self, const std::size_t idx){
-  return self.curve_at_index(idx).get();
-}
-
-curve_abc_t* getCurveAtTime(piecewise_t& self, const time_t t){
-  return self.curve_at_time(t).get();
-}
 
 void addFinalPointC0(piecewise_t& self, const pointX_t& end, const real time) {
   if (self.num_curves() == 0)
@@ -393,13 +386,6 @@ SE3Curve_t* wrapSE3CurveFromTwoCurves(const curve_ptr_t& translation_curve,
   return new SE3Curve_t(translation_curve, rotation_curve);
 }
 
-curve_abc_t* SE3getTranslationCurve(SE3Curve_t& self){
-  return self.translation_curve().get();
-}
-
-curve_rotation_t* SE3getRotationCurve(SE3Curve_t& self){
-  return self.rotation_curve().get();
-}
 
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
 typedef pinocchio::SE3Tpl<real, 0> SE3_t;
@@ -756,8 +742,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("convert_piecewise_curve_to_cubic_hermite",
            &piecewise_t::convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>,
            "Convert a piecewise curve to to a piecewise cubic hermite spline")
-      .def("curve_at_index", &getCurveAtIndex, return_internal_reference<>())
-      .def("curve_at_time", &getCurveAtTime, return_internal_reference<>())
+      .def("curve_at_index", &piecewise_t::curve_at_index)
+      .def("curve_at_time", &piecewise_t::curve_at_time)
       .def("num_curves", &piecewise_t::num_curves)
       .def("saveAsText", &piecewise_t::saveAsText<piecewise_t>, bp::args("filename"),
            "Saves *this inside a text file.")
@@ -784,8 +770,8 @@ BOOST_PYTHON_MODULE(curves) {
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_bezier_t::is_continuous, "Check if the curve is continuous at the given order.",
            args("self,order"))
-      .def("curve_at_index", &getCurveAtIndex, return_internal_reference<>())
-      .def("curve_at_time", &getCurveAtTime, return_internal_reference<>())
+      .def("curve_at_index", &piecewise_bezier_t::curve_at_index)
+      .def("curve_at_time", &piecewise_bezier_t::curve_at_time)
       .def("num_curves", &piecewise_bezier_t::num_curves)
       .def("saveAsText", &piecewise_bezier_t::saveAsText<piecewise_bezier_t>, bp::args("filename"),
            "Saves *this inside a text file.")
@@ -812,8 +798,8 @@ BOOST_PYTHON_MODULE(curves) {
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_linear_bezier_t::is_continuous,
            "Check if the curve is continuous at the given order.", args("self,order"))
-      .def("curve_at_index", &getCurveAtIndex, return_internal_reference<>())
-      .def("curve_at_time", &getCurveAtTime, return_internal_reference<>())
+      .def("curve_at_index", &piecewise_linear_bezier_t::curve_at_index)
+      .def("curve_at_time", &piecewise_linear_bezier_t::curve_at_time)
       .def("num_curves", &piecewise_linear_bezier_t::num_curves)
       .def("saveAsText", &piecewise_linear_bezier_t::saveAsText<piecewise_linear_bezier_t>, bp::args("filename"),
            "Saves *this inside a text file.")
@@ -840,8 +826,8 @@ BOOST_PYTHON_MODULE(curves) {
            args("self,curve"))
       .def("is_continuous", &piecewise_SE3_t::is_continuous, "Check if the curve is continuous at the given order.",
            args("self,order"))
-      .def("curve_at_index", &getCurveAtIndex, return_internal_reference<>())
-      .def("curve_at_time", &getCurveAtTime, return_internal_reference<>())
+      .def("curve_at_index", &piecewise_SE3_t::curve_at_index)
+      .def("curve_at_time", &piecewise_SE3_t::curve_at_time)
       .def("num_curves", &piecewise_SE3_t::num_curves)
       .def("append", &addFinalTransform,
            "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
@@ -995,9 +981,9 @@ BOOST_PYTHON_MODULE(curves) {
            "translation curve."
            "The orientation along the SE3Curve will be a slerp between the two given rotations."
            "The orientations should be represented as 3x3 rotation matrix")
-      .def("translation_curve",&SE3getTranslationCurve,return_internal_reference<>(),
+      .def("translation_curve",&SE3Curve_t::translation_curve,
       "Return a curve corresponding to the translation part of self.")
-       .def("rotation_curve",&SE3getRotationCurve,return_internal_reference<>(),
+       .def("rotation_curve",&SE3Curve_t::rotation_curve,
       "Return a curve corresponding to the rotation part of self.")
       .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>, bp::args("filename"), "Saves *this inside a text file.")
       .def("loadFromText", &SE3Curve_t::loadFromText<SE3Curve_t>, bp::args("filename"),
