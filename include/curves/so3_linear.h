@@ -38,7 +38,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
         dim_(3),
         init_rot_(init_rot),
         end_rot_(end_rot),
-        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix()) / (t_max - t_min)),
+        angular_vel_(computeAngularVelocity(init_rot.toRotationMatrix(), end_rot.toRotationMatrix(), t_min, t_max)),
         T_min_(t_min),
         T_max_(t_max) {
     safe_check();
@@ -50,7 +50,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
         dim_(3),
         init_rot_(quaternion_t(init_rot)),
         end_rot_(quaternion_t(end_rot)),
-        angular_vel_(log3(init_rot.transpose() * end_rot) / (t_max - t_min)),
+        angular_vel_(computeAngularVelocity(init_rot, end_rot, t_min, t_max)),
         T_min_(t_min),
         T_max_(t_max) {
     safe_check();
@@ -62,7 +62,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
         dim_(3),
         init_rot_(init_rot),
         end_rot_(end_rot),
-        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
+        angular_vel_(computeAngularVelocity(init_rot.toRotationMatrix(), end_rot.toRotationMatrix(), 0., 1.)),
         T_min_(0.),
         T_max_(1.) {
     safe_check();
@@ -74,7 +74,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
         dim_(3),
         init_rot_(quaternion_t(init_rot)),
         end_rot_(quaternion_t(end_rot)),
-        angular_vel_(log3(init_rot.transpose() * end_rot)),
+        angular_vel_(computeAngularVelocity(init_rot, end_rot, 0., 1.)),
         T_min_(0.),
         T_max_(1.) {
     safe_check();
@@ -93,12 +93,20 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
         T_min_(other.T_min_),
         T_max_(other.T_max_) {}
 
+  point3_t computeAngularVelocity(const matrix3_t& init_rot, const matrix3_t& end_rot, const double t_min, const double t_max){
+    if(t_min == t_max){
+      return point3_t::Zero();
+    }else{
+      return log3(init_rot.transpose() * end_rot) / (t_max - t_min);
+    }
+  }
+
   quaternion_t computeAsQuaternion(const time_t t) const {
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       throw std::invalid_argument("can't evaluate bezier curve, time t is out of range");  // TODO
     }
-    if (t > T_max_) return end_rot_;
-    if (t < T_min_) return init_rot_;
+    if (t >= T_max_) return end_rot_;
+    if (t <= T_min_) return init_rot_;
     Scalar u = (t - T_min_) / (T_max_ - T_min_);
     return init_rot_.slerp(u, end_rot_);
   }
