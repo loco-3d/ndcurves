@@ -422,7 +422,8 @@ class TestCurves(unittest.TestCase):
         self.assertEqual(c0.min(), time_points[0])
         self.assertEqual(c0.max(), time_points[1])
         self.assertEqual(c0.dim(), 3)
-        self.assertTrue(array_equal(polC0(0.5), c0(0.5)))
+        mid_t = (c0.max() + c0.min()) /2.
+        self.assertTrue(array_equal(polC0(mid_t), c0(mid_t)))
 
         polC1 = piecewise.FromPointsList(points, points_derivative, time_points)
         self.assertEqual(polC1.min(), time_points[0, 0])
