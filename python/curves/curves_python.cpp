@@ -14,6 +14,7 @@
 #include <boost/python/call_method.hpp>
 #include <boost/ref.hpp>
 #include <boost/utility.hpp>
+#include <boost/python/register_ptr_to_python.hpp>
 
 namespace curves {
 using namespace boost::python;
@@ -468,6 +469,7 @@ BOOST_PYTHON_MODULE(curves) {
   /*eigenpy::exposeAngleAxis();
   eigenpy::exposeQuaternion();*/
   /** END eigenpy init**/
+  /** Expose base abstracts class for each dimension/type : **/
   class_<curve_abc_t, boost::noncopyable, boost::shared_ptr<curve_abc_callback> >("curve")
       .def("__call__", &curve_abc_t::operator(), "Evaluate the curve at the given time.",
            args("self", "t"))
@@ -555,6 +557,11 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t", "N"))
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
       ;
+  register_ptr_to_python<curve_ptr_t>();
+  register_ptr_to_python<curve3_ptr_t>();
+  register_ptr_to_python<curve_rotation_ptr_t>();
+  register_ptr_to_python<curve_SE3_ptr_t>();
+  /** END base abstracts class for each dimension/type : **/
 
   /** BEGIN bezier3 curve**/
   class_<bezier3_t, bases<curve_3_t>, boost::shared_ptr<bezier3_t> >("bezier3", init<>())
