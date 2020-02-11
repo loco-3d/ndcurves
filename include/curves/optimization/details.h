@@ -174,7 +174,7 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
   // add remaining variables (only if no end_pos constraints)
   for (; i < numControlPoints; ++i) variables_.push_back(var_t::Zero(pDef.dim_));
 
-  if (numControlPoints < numConstants) {
+  if (numControlPoints <= numConstants) {
     throw std::runtime_error("numControlPoints < numConstants");
   }
   if (numControlPoints != variables_.size()) {
@@ -281,7 +281,7 @@ quadratic_variable<Numeric> bezier_product(In PointsBegin1, In PointsEnd1, In Po
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
   unsigned int nPoints1 = (unsigned int)(std::distance(PointsBegin1, PointsEnd1)),
                nPoints2 = (unsigned int)(std::distance(PointsBegin2, PointsEnd2));
-  if (nPoints1 < 0 || nPoints2 < 0) {
+  if (nPoints1 <= 0 || nPoints2 <= 0) {
     throw std::runtime_error("This should never happen because an unsigned int cannot go negative without underflowing.");
   }
   unsigned int deg1 = nPoints1 - 1, deg2 = nPoints2 - 1;
