@@ -38,7 +38,9 @@ struct SplineOptimizer {
   ///\brief Initializes optimizer environment.
   SplineOptimizer() {
     MSKrescodee r_ = MSK_makeenv(&env_, NULL);
-    assert(r_ == MSK_RES_OK);
+    if (r_ != MSK_RES_OK) {
+      throw std::runtime_error("Issue initializing MSK_makeenv");
+    }
   }
 
   ///\brief Destructor.

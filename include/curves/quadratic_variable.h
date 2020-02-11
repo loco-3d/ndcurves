@@ -35,7 +35,9 @@ struct quadratic_variable {
   }
 
   quadratic_variable(const matrix_x_t& A, const point_t& b, const Numeric c = 0) : c_(c), b_(b), A_(A), zero(false) {
-    assert(A.cols() == b.rows() && A.cols() == A.rows());
+    if (A.cols() != b.rows() || A.cols() != A.rows()) {
+      throw std::invalid_argument("The dimensions of A and b are incorrect.");
+    }
   }
 
   quadratic_variable(const point_t& b, const Numeric c = 0)
@@ -45,7 +47,9 @@ struct quadratic_variable {
 
   // linear evaluation
   Numeric operator()(const Eigen::Ref<const point_t>& val) const {
-    assert(!isZero());
+    if (isZero()) {
+      throw std::runtime_error("Not initialized! (isZero)");
+    }
     return val.transpose() * A() * val + b().transpose() * val + c();
   }
 
@@ -98,15 +102,21 @@ struct quadratic_variable {
   }
 
   const matrix_x_t& A() const {
-    assert(!isZero());
+    if (isZero()) {
+      throw std::runtime_error("Not initialized! (isZero)");
+    }
     return A_;
   }
   const point_t& b() const {
-    assert(!isZero());
+    if (isZero()) {
+      throw std::runtime_error("Not initialized! (isZero)");
+    }
     return b_;
   }
   const Numeric c() const {
-    assert(!isZero());
+    if (isZero()) {
+      throw std::runtime_error("Not initialized! (isZero)");
+    }
     return c_;
   }
   bool isZero() const { return zero; }

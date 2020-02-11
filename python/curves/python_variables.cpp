@@ -5,7 +5,9 @@
 
 namespace curves {
 std::vector<linear_variable_t> matrix3DFromEigenArray(const point_list3_t& matrices, const point_list3_t& vectors) {
-  assert(vectors.cols() * 3 == matrices.cols());
+  if (vectors.cols() * 3 != matrices.cols()) {
+    throw std::invalid_argument("vectors.cols() * 3 != matrices.cols()");
+  }
   std::vector<linear_variable_t> res;
   for (int i = 0; i < vectors.cols(); ++i) {
     res.push_back(linear_variable_t(matrices.block<3, 3>(0, i * 3), vectors.col(i)));

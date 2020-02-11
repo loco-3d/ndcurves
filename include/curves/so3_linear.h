@@ -256,7 +256,9 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
       theta = PI_value;  // acos((-1-1)/2)
     else
       theta = acos((tr - Scalar(1)) / Scalar(2));
-    assert(theta == theta && "theta contains some NaN");  // theta != NaN
+    if (!std::isfinite(theta)) {
+      throw std::runtime_error("theta contains some NaN");
+    }
 
     // From runs of hpp-constraints/tests/logarithm.cc: 1e-6 is too small.
     if (theta < PI_value - 1e-2) {
