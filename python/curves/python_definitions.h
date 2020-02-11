@@ -1,5 +1,6 @@
 #include "curves/fwd.h"
 #include "curves/bezier_curve.h"
+#include "curves/polynomial.h"
 #include "curves/linear_variable.h"
 #include "curves/quadratic_variable.h"
 
@@ -25,8 +26,8 @@ typedef std::vector<waypoint_t> t_waypoint_t;
 typedef Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic> point_listX_t;
 typedef Eigen::Matrix<real, 3, Eigen::Dynamic> point_list3_t;
 typedef Eigen::Matrix<real, 6, Eigen::Dynamic> point_list6_t;
-
 typedef polynomial_t::coeff_t coeff_t;
+
 typedef curves::Bern<double> bernstein_t;
 
 template <typename PointList, typename T_Point>
