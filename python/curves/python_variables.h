@@ -10,7 +10,7 @@
 #include "curves/piecewise_curve.h"
 #include "curves/so3_linear.h"
 #include "curves/se3_curve.h"
-#include "python_definitions.h"
+#include "curves/python/python_definitions.h"
 #include <eigenpy/memory.hpp>
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/geometry.hpp>

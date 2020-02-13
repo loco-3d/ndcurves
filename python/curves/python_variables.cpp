@@ -1,5 +1,5 @@
 #include "python_variables.h"
-#include "python_definitions.h"
+#include "curves/python/python_definitions.h"
 
 #include <Eigen/Core>
 

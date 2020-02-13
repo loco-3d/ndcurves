@@ -1,0 +1,8 @@
+SET(${PROJECT_NAME}_PYTHON_HEADERS
+  python_definitions.h
+  )
+
+INSTALL(FILES
+  ${${PROJECT_NAME}_PYTHON_HEADERS}
+  DESTINATION include/${PROJECT_NAME}/python
+  )
