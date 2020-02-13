@@ -59,7 +59,9 @@ struct Serializable {
   /// \brief Loads a Derived object from an XML file.
   template <class Derived>
   void loadFromXML(const std::string& filename, const std::string& tag_name) {
-    assert(!tag_name.empty());
+    if (tag_name.empty()) {
+      throw std::invalid_argument("tag_name cannot be empty.");
+    }
     std::ifstream ifs(filename.c_str());
     if (ifs) {
       boost::archive::xml_iarchive ia(ifs);
@@ -74,7 +76,9 @@ struct Serializable {
   /// \brief Saved a Derived object as an XML file.
   template <class Derived>
   void saveAsXML(const std::string& filename, const std::string& tag_name) const {
-    assert(!tag_name.empty());
+    if (tag_name.empty()) {
+      throw std::invalid_argument("tag_name cannot be empty.");
+    }
     std::ofstream ofs(filename.c_str());
     if (ofs) {
       boost::archive::xml_oarchive oa(ofs);

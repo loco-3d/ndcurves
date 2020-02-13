@@ -8,48 +8,77 @@
 #include "optimization_python.h"
 
 #include <boost/python.hpp>
+#include <boost/python/class.hpp>
+#include <boost/python/module_init.hpp>
+#include <boost/python/def.hpp>
+#include <boost/python/call_method.hpp>
+#include <boost/ref.hpp>
+#include <boost/utility.hpp>
+#include <boost/python/register_ptr_to_python.hpp>
 
 namespace curves {
 using namespace boost::python;
 
 /* base wrap of curve_abc and others parent abstract class: must implement all pure virtual methods */
-struct CurveWrapper : curve_abc_t, wrapper<curve_abc_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
-  std::size_t dim() { return this->get_override("dim")(); }
-  real min() { return this->get_override("min")(); }
-  real max() { return this->get_override("max")(); }
+struct curve_abc_callback : curve_abc_t {
+  curve_abc_callback(PyObject *p) : self(p) {}
+  virtual point_t operator()(const real t) const { return call_method<point_t>(self, "operator()", t); }
+  virtual point_t derivate(const real t, const std::size_t n) const  { return call_method<point_t>(self, "derivate", t, n); }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const  { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual std::size_t dim() const  { return call_method<std::size_t>(self, "dim"); }
+  virtual real min() const  { return call_method<real>(self,"min"); }
+  virtual real max() const  { return call_method<real>(self,"max"); }
+  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
+  {return call_method<bool>(self,"isApprox", other, prec); }
+  PyObject *self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_abc_t_isEquivalent_overloads, curve_abc_t::isEquivalent, 1, 3)
 
-struct Curve3Wrapper : curve_3_t, wrapper<curve_3_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
-  std::size_t dim() { return this->get_override("dim")(); }
-  real min() { return this->get_override("min")(); }
-  real max() { return this->get_override("max")(); }
+struct curve_3_callback : curve_3_t {
+  curve_3_callback(PyObject *p) : self(p) {}
+  virtual point3_t operator()(const real t) const { return call_method<point3_t>(self, "operator()", t); }
+  virtual point3_t derivate(const real t, const std::size_t n) const { return call_method<point3_t>(self, "derivate", t, n); }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
+  virtual real min() const { return call_method<real>(self,"min"); }
+  virtual real max() const { return call_method<real>(self,"max"); }
+  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
+  {return call_method<bool>(self,"isApprox", other, prec); }
+  PyObject *self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_3_t_isEquivalent_overloads, curve_3_t::isEquivalent, 1, 3)
 
-struct CurveRotationWrapper : curve_rotation_t, wrapper<curve_rotation_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
-  std::size_t dim() { return this->get_override("dim")(); }
-  real min() { return this->get_override("min")(); }
-  real max() { return this->get_override("max")(); }
+struct curve_rotation_callback : curve_rotation_t {
+  curve_rotation_callback(PyObject *p) : self(p) {}
+  virtual curve_rotation_t::point_t operator()(const real t) const { return call_method<curve_rotation_t::point_t>(self, "operator()", t); }
+  virtual curve_rotation_t::point_derivate_t derivate(const real t, const std::size_t n) const
+{ return call_method<curve_rotation_t::point_derivate_t>(self, "derivate", t, n); }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
+  virtual real min() const { return call_method<real>(self,"min"); }
+  virtual real max() const { return call_method<real>(self,"max"); }
+  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
+  {return call_method<bool>(self,"isApprox", other, prec); }
+  PyObject *self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_rotation_t_isEquivalent_overloads, curve_rotation_t::isEquivalent, 1, 3)
 
-struct CurveSE3Wrapper : curve_SE3_t, wrapper<curve_SE3_t> {
-  point_t operator()(const real) { return this->get_override("operator()")(); }
-  point_t derivate(const real, const std::size_t) { return this->get_override("derivate")(); }
-  curve_t* compute_derivate_ptr(const real) { return this->get_override("compute_derivate")(); }
-  std::size_t dim() { return this->get_override("dim")(); }
-  real min() { return this->get_override("min")(); }
-  real max() { return this->get_override("max")(); }
+struct curve_SE3_callback : curve_SE3_t {
+  curve_SE3_callback(PyObject *p) : self(p) {}
+  virtual curve_SE3_t::point_t operator()(const real t) const { return call_method<curve_SE3_t::point_t>(self, "operator()", t); }
+  virtual curve_SE3_t::point_derivate_t derivate(const real t, const std::size_t n) const
+  { return call_method<curve_SE3_t::point_derivate_t>(self, "derivate", t, n); }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
+  virtual real min() const { return call_method<real>(self,"min"); }
+  virtual real max() const { return call_method<real>(self,"max"); }
+  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
+  {return call_method<bool>(self,"isApprox", other, prec); }
+  PyObject *self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_SE3_t_isEquivalent_overloads, curve_SE3_t::isEquivalent, 1, 3)
 
@@ -96,6 +125,10 @@ bezier3_t* wrapBezier3ConstructorBoundsConstraints(const pointX_list_t& array, c
   return wrapBezierConstructorConstraintsTemplate<bezier3_t, pointX_list_t, t_point3_t, curve_constraints3_t>(
       array, convertToConstraints3(constraints), T_min, T_max);
 }
+
+pointX_list_t wrapBezier3Waypoints(bezier3_t& self){
+  return vectorToEigenArray<bezier3_t::t_point_t,pointX_list_t>(self.waypoints());
+}
 /*END 3D constructors bezier */
 
 /*constructors bezier */
@@ -113,6 +146,9 @@ bezier_t* wrapBezierConstructorBoundsConstraints(const pointX_list_t& array, con
                                                  const real T_min, const real T_max) {
   return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(
       array, constraints, T_min, T_max);
+}
+pointX_list_t wrapBezierWaypoints(bezier_t& self){
+  return vectorToEigenArray<bezier_t::t_point_t,pointX_list_t>(self.waypoints());
 }
 /*END constructors bezier */
 
@@ -203,6 +239,7 @@ static piecewise_t discretPointToPolynomialC2(const pointX_list_t& points, const
   return piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(
       points_list, points_derivative_list, points_second_derivative_list, time_points_list);
 }
+
 
 void addFinalPointC0(piecewise_t& self, const pointX_t& end, const real time) {
   if (self.num_curves() == 0)
@@ -349,6 +386,7 @@ SE3Curve_t* wrapSE3CurveFromTwoCurves(const curve_ptr_t& translation_curve,
   return new SE3Curve_t(translation_curve, rotation_curve);
 }
 
+
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
 typedef pinocchio::SE3Tpl<real, 0> SE3_t;
 typedef pinocchio::MotionTpl<real, 0> Motion_t;
@@ -417,21 +455,22 @@ BOOST_PYTHON_MODULE(curves) {
   /*eigenpy::exposeAngleAxis();
   eigenpy::exposeQuaternion();*/
   /** END eigenpy init**/
-  class_<CurveWrapper, boost::noncopyable>("curve", no_init)
-      .def("__call__", pure_virtual(&curve_abc_t::operator()), "Evaluate the curve at the given time.",
+  /** Expose base abstracts class for each dimension/type : **/
+  class_<curve_abc_t, boost::noncopyable, boost::shared_ptr<curve_abc_callback> >("curve")
+      .def("__call__", &curve_abc_t::operator(), "Evaluate the curve at the given time.",
            args("self", "t"))
-      .def("derivate", pure_virtual(&curve_abc_t::derivate), "Evaluate the derivative of order N of curve at time t.",
+      .def("derivate", &curve_abc_t::derivate, "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("isEquivalent", &curve_abc_t::isEquivalent,
            curve_abc_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", pure_virtual(&curve_abc_t::compute_derivate_ptr),
+      .def("compute_derivate", &curve_abc_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
            args("self", "N"))
-      .def("min", pure_virtual(&curve_abc_t::min), "Get the LOWER bound on interval definition of the curve.")
-      .def("max", pure_virtual(&curve_abc_t::max), "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", pure_virtual(&curve_abc_t::dim), "Get the dimension of the curve.")
+      .def("min", &curve_abc_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &curve_abc_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &curve_abc_t::dim, "Get the dimension of the curve.")
       .def("saveAsText", pure_virtual(&curve_abc_t::saveAsText<curve_abc_t>), bp::args("filename"),
            "Saves *this inside a text file.")
       .def("loadFromText", pure_virtual(&curve_abc_t::loadFromText<curve_abc_t>), bp::args("filename"),
@@ -445,53 +484,53 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", pure_virtual(&curve_abc_t::loadFromBinary<curve_abc_t>), bp::args("filename"),
            "Loads *this from a binary file.");
 
-  class_<Curve3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve3", no_init)
-      .def("__call__", pure_virtual(&curve_3_t::operator()), "Evaluate the curve at the given time.",
+  class_<curve_3_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_3_callback> >("curve3")
+      .def("__call__", &curve_3_t::operator(), "Evaluate the curve at the given time.",
            args("self", "t"))
-      .def("derivate", pure_virtual(&curve_3_t::derivate), "Evaluate the derivative of order N of curve at time t.",
+      .def("derivate", &curve_3_t::derivate, "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("isEquivalent", &curve_3_t::isEquivalent,
            curve_3_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", pure_virtual(&curve_3_t::compute_derivate_ptr),
+      .def("compute_derivate", &curve_3_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
            args("self", "N"))
-      .def("min", pure_virtual(&curve_3_t::min), "Get the LOWER bound on interval definition of the curve.")
-      .def("max", pure_virtual(&curve_3_t::max), "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", pure_virtual(&curve_3_t::dim), "Get the dimension of the curve.");
+      .def("min", &curve_3_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &curve_3_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &curve_3_t::dim, "Get the dimension of the curve.");
 
-  class_<CurveRotationWrapper, boost::noncopyable, bases<curve_abc_t> >("curve_rotation", no_init)
-      .def("__call__", pure_virtual(&curve_rotation_t::operator()), "Evaluate the curve at the given time.",
+  class_<curve_rotation_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_rotation_callback> >("curve_rotation")
+      .def("__call__", &curve_rotation_t::operator(), "Evaluate the curve at the given time.",
            args("self", "t"))
-      .def("derivate", pure_virtual(&curve_rotation_t::derivate),
+      .def("derivate", &curve_rotation_t::derivate,
            "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
       .def("isEquivalent", &curve_rotation_t::isEquivalent,
            curve_rotation_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", pure_virtual(&curve_rotation_t::compute_derivate_ptr),
+      .def("compute_derivate", &curve_rotation_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
            args("self", "N"))
-      .def("min", pure_virtual(&curve_rotation_t::min), "Get the LOWER bound on interval definition of the curve.")
-      .def("max", pure_virtual(&curve_rotation_t::max), "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", pure_virtual(&curve_rotation_t::dim), "Get the dimension of the curve.");
+      .def("min", &curve_rotation_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &curve_rotation_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &curve_rotation_t::dim, "Get the dimension of the curve.");
 
-  class_<CurveSE3Wrapper, boost::noncopyable, bases<curve_abc_t> >("curve_SE3", no_init)
+  class_<curve_SE3_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_SE3_callback> >("curve_SE3")
       .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix.",
            args("self", "t"))
-      .def("derivate", pure_virtual(&curve_SE3_t::derivate),
+      .def("derivate", &curve_SE3_t::derivate,
            "Evaluate the derivative of order N of curve at time t. Return as a vector 6.", args("self", "t", "N"))
       .def("isEquivalent", &curve_SE3_t::isEquivalent,
            curve_SE3_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", pure_virtual(&curve_SE3_t::compute_derivate_ptr),
+      .def("compute_derivate", &curve_SE3_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
            args("self", "N"))
-      .def("min", pure_virtual(&curve_SE3_t::min), "Get the LOWER bound on interval definition of the curve.")
-      .def("max", pure_virtual(&curve_SE3_t::max), "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", pure_virtual(&curve_SE3_t::dim), "Get the dimension of the curve.")
+      .def("min", &curve_SE3_t::min, "Get the LOWER bound on interval definition of the curve.")
+      .def("max", &curve_SE3_t::max, "Get the HIGHER bound on interval definition of the curve.")
+      .def("dim", &curve_SE3_t::dim, "Get the dimension of the curve.")
       .def("rotation", &se3returnRotation, "Output the rotation (as a 3x3 matrix) at the given time.",
            args("self", "time"))
       .def("translation", &se3returnTranslation, "Output the rotation (as a vector 3) at the given time.",
@@ -504,6 +543,11 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "t", "N"))
 #endif  // CURVES_WITH_PINOCCHIO_SUPPORT
       ;
+  register_ptr_to_python<curve_ptr_t>();
+  register_ptr_to_python<curve3_ptr_t>();
+  register_ptr_to_python<curve_rotation_ptr_t>();
+  register_ptr_to_python<curve_SE3_ptr_t>();
+  /** END base abstracts class for each dimension/type : **/
 
   /** BEGIN bezier3 curve**/
   class_<bezier3_t, bases<curve_3_t>, boost::shared_ptr<bezier3_t> >("bezier3", init<>())
@@ -513,6 +557,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezier3ConstructorBoundsConstraints))
       .def("compute_primitive", &bezier3_t::compute_primitive)
       .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
+      .def("waypoints",&wrapBezier3Waypoints)
       .def_readonly("degree", &bezier3_t::degree_)
       .def_readonly("nbWaypoints", &bezier3_t::size_)
       .def("saveAsText", &bezier3_t::saveAsText<bezier3_t>, bp::args("filename"), "Saves *this inside a text file.")
@@ -537,6 +582,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
       .def("compute_primitive", &bezier_t::compute_primitive)
       .def("waypointAtIndex", &bezier_t::waypointAtIndex)
+      .def("waypoints",&wrapBezierWaypoints)
       .def_readonly("degree", &bezier_t::degree_)
       .def_readonly("nbWaypoints", &bezier_t::size_)
       .def("split", splitspe)
@@ -605,7 +651,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END variable points bezier curve**/
   /** BEGIN polynomial curve function**/
-  class_<polynomial_t, bases<curve_abc_t> >("polynomial", init<>())
+  class_<polynomial_t, bases<curve_abc_t>, boost::shared_ptr<polynomial_t> >("polynomial", init<>())
       .def("__init__",
            make_constructor(&wrapPolynomialConstructor1, default_call_policies(), args("coeffs", "min", "max")),
            "Create polynomial spline from an Eigen matrix of coefficient defined for t in [min,max]."
@@ -654,7 +700,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END polynomial function**/
   /** BEGIN piecewise curve function **/
-  class_<piecewise_t, bases<curve_abc_t> >("piecewise", init<>())
+  class_<piecewise_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_t>  >("piecewise", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseCurveConstructor, default_call_policies(), arg("curve")),
            "Create a peicewise curve containing the given curve.")
       .def("FromPointsList", &discretPointToPolynomialC0,
@@ -696,8 +742,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("convert_piecewise_curve_to_cubic_hermite",
            &piecewise_t::convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>,
            "Convert a piecewise curve to to a piecewise cubic hermite spline")
-      .def("curve_at_index", &piecewise_t::curve_at_index, return_value_policy<copy_const_reference>())
-      .def("curve_at_time", &piecewise_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("curve_at_index", &piecewise_t::curve_at_index)
+      .def("curve_at_time", &piecewise_t::curve_at_time)
       .def("num_curves", &piecewise_t::num_curves)
       .def("saveAsText", &piecewise_t::saveAsText<piecewise_t>, bp::args("filename"),
            "Saves *this inside a text file.")
@@ -714,7 +760,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def(bp::self == bp::self)
       .def(bp::self != bp::self);
 
-  class_<piecewise_bezier_t, bases<curve_abc_t> >("piecewise_bezier", init<>())
+  class_<piecewise_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_bezier_t>  >("piecewise_bezier", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseBezierConstructor, default_call_policies(), arg("curve")),
            "Create a peicewise Bezier curve containing the given curve.")
       .def("__init__", make_constructor(&wrapPiecewiseBezierEmptyConstructor),
@@ -724,8 +770,8 @@ BOOST_PYTHON_MODULE(curves) {
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_bezier_t::is_continuous, "Check if the curve is continuous at the given order.",
            args("self,order"))
-      .def("curve_at_index", &piecewise_bezier_t::curve_at_index, return_value_policy<copy_const_reference>())
-      .def("curve_at_time", &piecewise_bezier_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("curve_at_index", &piecewise_bezier_t::curve_at_index)
+      .def("curve_at_time", &piecewise_bezier_t::curve_at_time)
       .def("num_curves", &piecewise_bezier_t::num_curves)
       .def("saveAsText", &piecewise_bezier_t::saveAsText<piecewise_bezier_t>, bp::args("filename"),
            "Saves *this inside a text file.")
@@ -742,7 +788,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def(bp::self == bp::self)
       .def(bp::self != bp::self);
 
-  class_<piecewise_linear_bezier_t, bases<curve_abc_t> >("piecewise_bezier_linear", init<>())
+  class_<piecewise_linear_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_linear_bezier_t>  >("piecewise_bezier_linear", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseBezierLinearConstructor, default_call_policies(), arg("curve")),
            "Create a peicewise Bezier curve containing the given curve.")
       .def("__init__", make_constructor(&wrapPiecewiseBezierLinearEmptyConstructor),
@@ -752,8 +798,8 @@ BOOST_PYTHON_MODULE(curves) {
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_linear_bezier_t::is_continuous,
            "Check if the curve is continuous at the given order.", args("self,order"))
-      .def("curve_at_index", &piecewise_linear_bezier_t::curve_at_index, return_value_policy<copy_const_reference>())
-      .def("curve_at_time", &piecewise_linear_bezier_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("curve_at_index", &piecewise_linear_bezier_t::curve_at_index)
+      .def("curve_at_time", &piecewise_linear_bezier_t::curve_at_time)
       .def("num_curves", &piecewise_linear_bezier_t::num_curves)
       .def("saveAsText", &piecewise_linear_bezier_t::saveAsText<piecewise_linear_bezier_t>, bp::args("filename"),
            "Saves *this inside a text file.")
@@ -770,7 +816,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def(bp::self == bp::self)
       .def(bp::self != bp::self);
 
-  class_<piecewise_SE3_t, bases<curve_SE3_t> >("piecewise_SE3", init<>())
+  class_<piecewise_SE3_t, bases<curve_SE3_t>, boost::shared_ptr<piecewise_SE3_t>  >("piecewise_SE3", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor, default_call_policies(), arg("curve")),
            "Create a piecewise-se3 curve containing the given se3 curve.")
       .def("__init__", make_constructor(&wrapPiecewiseSE3EmptyConstructor), "Create an empty piecewise-se3 curve.")
@@ -780,8 +826,8 @@ BOOST_PYTHON_MODULE(curves) {
            args("self,curve"))
       .def("is_continuous", &piecewise_SE3_t::is_continuous, "Check if the curve is continuous at the given order.",
            args("self,order"))
-      .def("curve_at_index", &piecewise_SE3_t::curve_at_index, return_value_policy<copy_const_reference>())
-      .def("curve_at_time", &piecewise_SE3_t::curve_at_time, return_value_policy<copy_const_reference>())
+      .def("curve_at_index", &piecewise_SE3_t::curve_at_index)
+      .def("curve_at_time", &piecewise_SE3_t::curve_at_time)
       .def("num_curves", &piecewise_SE3_t::num_curves)
       .def("append", &addFinalTransform,
            "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
@@ -811,7 +857,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END piecewise curve function **/
   /** BEGIN exact_cubic curve**/
-  class_<exact_cubic_t, bases<curve_abc_t> >("exact_cubic", init<>())
+  class_<exact_cubic_t, bases<curve_abc_t>, boost::shared_ptr<exact_cubic_t>  >("exact_cubic", init<>())
       .def("__init__", make_constructor(&wrapExactCubicConstructor))
       .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
       .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
@@ -833,7 +879,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END exact_cubic curve**/
   /** BEGIN cubic_hermite_spline **/
-  class_<cubic_hermite_spline_t, bases<curve_abc_t> >("cubic_hermite_spline", init<>())
+  class_<cubic_hermite_spline_t, bases<curve_abc_t>, boost::shared_ptr<cubic_hermite_spline_t>  >("cubic_hermite_spline", init<>())
       .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor))
       .def("saveAsText", &cubic_hermite_spline_t::saveAsText<cubic_hermite_spline_t>, bp::args("filename"),
            "Saves *this inside a text file.")
@@ -868,7 +914,7 @@ BOOST_PYTHON_MODULE(curves) {
   /** END bernstein polynomial**/
 
   /** BEGIN SO3 Linear**/
-  class_<SO3Linear_t, bases<curve_rotation_t> >("SO3Linear", init<>())
+  class_<SO3Linear_t, bases<curve_rotation_t>, boost::shared_ptr<SO3Linear_t>  >("SO3Linear", init<>())
       .def("__init__",
            make_constructor(&wrapSO3LinearConstructorFromMatrix, default_call_policies(),
                             args("init_rotation", "end_rotation", "min", "max")),
@@ -899,7 +945,7 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END  SO3 Linear**/
   /** BEGIN SE3 Curve**/
-  class_<SE3Curve_t, bases<curve_SE3_t> >("SE3Curve", init<>())
+  class_<SE3Curve_t, bases<curve_SE3_t>, boost::shared_ptr<SE3Curve_t>  >("SE3Curve", init<>())
       .def("__init__",
            make_constructor(&wrapSE3CurveFromTransform, default_call_policies(),
                             args("init_transform", "end_transform", "min", "max")),
@@ -935,6 +981,10 @@ BOOST_PYTHON_MODULE(curves) {
            "translation curve."
            "The orientation along the SE3Curve will be a slerp between the two given rotations."
            "The orientations should be represented as 3x3 rotation matrix")
+      .def("translation_curve",&SE3Curve_t::translation_curve,
+      "Return a curve corresponding to the translation part of self.")
+       .def("rotation_curve",&SE3Curve_t::rotation_curve,
+      "Return a curve corresponding to the rotation part of self.")
       .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>, bp::args("filename"), "Saves *this inside a text file.")
       .def("loadFromText", &SE3Curve_t::loadFromText<SE3Curve_t>, bp::args("filename"),
            "Loads *this from a text file.")

@@ -1855,6 +1855,36 @@ void se3CurveTest(bool& error) {
     std::cout << "SE3 curve : second order derivative for rotation should be null" << std::endl;
   }
 
+  // check accessor to translation curves :
+  curve_ptr_t translation = cBezier.translation_curve();
+  if (translation->operator()(min) != cBezier(min).translation()) {
+    error = true;
+    std::cout << "SE3 curve : translation curve not equal to se3.translation" << std::endl;
+  }
+  if (translation->operator()(max) != cBezier(max).translation()) {
+    error = true;
+    std::cout << "SE3 curve : translation curve not equal to se3.translation" << std::endl;
+  }
+  if (translation->operator()((max+min)/2.) != cBezier((max+min)/2.).translation()) {
+    error = true;
+    std::cout << "SE3 curve : translation curve not equal to se3.translation" << std::endl;
+  }
+  // check accessor to rotation curves :
+  curve_rotation_ptr_t rotation = cBezier.rotation_curve();
+  if (! rotation->operator()(min).isApprox(cBezier(min).rotation())) {
+    error = true;
+    std::cout << "SE3 curve : rotation curve not equal to se3.rotation" << std::endl;
+  }
+  if (! rotation->operator()(max).isApprox(cBezier(max).rotation())) {
+    error = true;
+    std::cout << "SE3 curve : rotation curve not equal to se3.rotation" << std::endl;
+  }
+  if (! rotation->operator()((max+min)/2.).isApprox(cBezier((max+min)/2.).rotation())) {
+    error = true;
+    std::cout << "SE3 curve : rotation curve not equal to se3.rotation" << std::endl;
+  }
+
+
   // check if errors are correctly raised
   try {
     cBezier(0.1);

@@ -98,6 +98,14 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(norm(a0.derivate(t, 2) - a1.derivate(3 * t, 2) * 9.) < __EPS)
             self.assertTrue(norm(prim0(t) - prim1(t * 3) / 3.) < __EPS)
         self.assertTrue((prim(0) == array([0., 0., 0.])).all())
+        # testing accessor to waypoints :
+        wp_getter = a0.waypoints()
+        self.assertEqual(wp_getter.shape[0],waypoints.shape[0])
+        self.assertEqual(wp_getter.shape[1],waypoints.shape[1])
+        self.assertTrue(array_equal(wp_getter,waypoints))
+        # check that it return a copy:
+        a0.waypoints()[1,1] = -15.
+        self.assertEqual(a0.waypoints()[1,1],waypoints[1,1])
         # testing bezier with constraints
         c = curve_constraints(3)
         c.init_vel = array([[0., 1., 1.]]).transpose()
@@ -189,6 +197,14 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(norm(a0.derivate(t, 2) - a1.derivate(3 * t, 2) * 9.) < __EPS)
             self.assertTrue(norm(prim0(t) - prim1(t * 3) / 3.) < __EPS)
         self.assertTrue((prim(0) == array([0., 0., 0.])).all())
+        # testing accessor to waypoints :
+        wp_getter = a0.waypoints()
+        self.assertEqual(wp_getter.shape[0],waypoints.shape[0])
+        self.assertEqual(wp_getter.shape[1],waypoints.shape[1])
+        self.assertTrue(array_equal(wp_getter,waypoints))
+        # check that it return a copy:
+        a0.waypoints()[1,1] = -15.
+        self.assertEqual(a0.waypoints()[1,1],waypoints[1,1])
         # testing bezier with constraints
         c = curve_constraints(3)
         c.init_vel = array([[0., 1., 1.]]).transpose()
@@ -344,6 +360,11 @@ class TestCurves(unittest.TestCase):
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
         pc.is_continuous(1)
+        a0 = pc.curve_at_index(0)
+        self.assertTrue(array_equal(a0(0.5), pc(0.5)))
+        self.assertTrue(a0 == a)
+        a0 = b # should not have any effect
+        self.assertTrue(array_equal(pc.curve_at_index(0)(0.5), a(0.5)))
         # Test serialization
         pc.saveAsText("serialization_pc.test")
         pc_test = piecewise()
@@ -397,6 +418,13 @@ class TestCurves(unittest.TestCase):
         for i in range(N):
             self.assertTrue(isclose(polC0(time_points[i, 0]), points[:, i]).all())
 
+        c0 = polC0.curve_at_index(0)
+        self.assertEqual(c0.min(), time_points[0])
+        self.assertEqual(c0.max(), time_points[1])
+        self.assertEqual(c0.dim(), 3)
+        mid_t = (c0.max() + c0.min()) /2.
+        self.assertTrue(array_equal(polC0(mid_t), c0(mid_t)))
+
         polC1 = piecewise.FromPointsList(points, points_derivative, time_points)
         self.assertEqual(polC1.min(), time_points[0, 0])
         self.assertEqual(polC1.max(), time_points[-1, 0])
@@ -448,6 +476,14 @@ class TestCurves(unittest.TestCase):
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
         pc.is_continuous(1)
+        # test access to curves :
+        self.assertTrue(array_equal(pc.curve_at_index(0)(0.5), a(0.5)))
+        waypoints = array([[3., 4., -3.], [5., 1., 2.]]).transpose()
+        c = bezier(waypoints, 1.5, 2.)
+        c0 = pc.curve_at_index(0)
+        c0 = c # should not have any effect
+        self.assertTrue(array_equal(pc.curve_at_index(0)(0.5), a(0.5)))
+
         # Test serialization
         pc.saveAsText("serialization_pc.test")
         pc_test = piecewise()
@@ -476,6 +512,11 @@ class TestCurves(unittest.TestCase):
         pc.derivate(0.4, 2)
         pc.is_continuous(0)
         pc.is_continuous(1)
+        a0 = pc.curve_at_index(0)
+        self.assertTrue(array_equal(a0(0.5), pc(0.5)))
+        self.assertTrue(a0 == a)
+        a0 = b # should not have any effect
+        self.assertTrue(array_equal(pc.curve_at_index(0)(0.5), a(0.5)))
         # Test serialization
         pc.saveAsText("serialization_pc.test")
         pc_test = piecewise()
@@ -897,6 +938,18 @@ class TestCurves(unittest.TestCase):
         self.assertTrue(isclose(d, se3.derivate(max, 1)).all())
         self.assertTrue(isclose(se3.derivate(min, 2), zeros((6, 1))).all())
         self.assertTrue(isclose(se3.derivate(min, 3), zeros((6, 1))).all())
+
+        # test accessor to translation_curve :
+        tr_se3 = se3.translation_curve()
+        self.assertTrue(array_equal(tr_se3((max+min)/2.), se3.translation((max+min)/2.)))
+        # test accessor to rotation :
+        rot_se3 = se3.rotation_curve()
+        rot_se3((max+min)/2.)
+        self.assertTrue(isclose(rot_se3((max+min)/2.),(se3.rotation((max+min)/2.))).all())
+        # check that it return a CONST reference :
+        waypoints2 = array([[1., -2., 3.5], [5.6, 5., -6.], [4.,1.2, 0.5]]).transpose()
+        tr_se3 = bezier3(waypoints2, min, max) # should not have any effect
+        self.assertFalse(array_equal(tr_se3((max+min)/2.), se3.translation((max+min)/2.)))
         # check that errors are correctly raised when necessary :
         with self.assertRaises(ValueError):
             se3(0.)
@@ -948,6 +1001,21 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(isclose(se3(t)[0:3, 3], translation(t)).all())
             self.assertTrue(isclose(se3.derivate(t, 1)[0:3], translation.derivate(t, 1)).all())
             t += 0.02
+
+        # test accessor to translation_curve :
+        tr_se3 = se3.translation_curve()
+        self.assertTrue(tr_se3 == translation)
+        self.assertTrue(array_equal(tr_se3((max+min)/2.), se3.translation((max+min)/2.)))
+        # test accessor to rotation :
+        rot_se3 = se3.rotation_curve()
+        rot_se3((max+min)/2.)
+        se3.rotation((max+min)/2.)
+        self.assertTrue(isclose(rot_se3((max+min)/2.), se3.rotation((max+min)/2.)).all())
+        # check that it return a CONST reference :
+        waypoints2 = array([[1., -2., 3.5], [5.6, 5., -6.], [4.,1.2, 0.5]]).transpose()
+        tr_se3 = bezier3(waypoints2, min, max) # should not have any effect
+        self.assertFalse(array_equal(tr_se3((max+min)/2.), se3.translation((max+min)/2.)))
+
 
         # test with bezier3
         translation = bezier3(waypoints, min, max)
@@ -1050,6 +1118,20 @@ class TestCurves(unittest.TestCase):
             self.assertTrue(isclose(se3.derivate(t, 1)[0:3], translation.derivate(t, 1)).all())
             self.assertTrue(isclose(se3.derivate(t, 1)[3:6], rotation.derivate(t, 1)).all())
             t += 0.02
+
+        # test accessor to translation_curve :
+        tr_se3 = se3.translation_curve()
+        self.assertTrue(tr_se3 == translation)
+        self.assertTrue(array_equal(tr_se3((max+min)/2.), se3.translation((max+min)/2.)))
+        # test accessor to rotation :
+        rot_se3 = se3.rotation_curve()
+        rot_se3((max+min)/2.)
+        se3.rotation((max+min)/2.)
+        self.assertTrue(array_equal(rot_se3((max+min)/2.), se3.rotation((max+min)/2.)))
+        # check that it return a CONST reference :
+        waypoints2 = array([[1., -2., 3.5], [5.6, 5., -6.], [4.,1.2, 0.5]]).transpose()
+        tr_se3 = bezier3(waypoints2, min, max) # should not have any effect
+        self.assertFalse(array_equal(tr_se3((max+min)/2.), se3.translation((max+min)/2.)))
 
         # check if errors are correctly raised :
         rotation = SO3Linear(init_rot, end_rot, min + 0.2, max)

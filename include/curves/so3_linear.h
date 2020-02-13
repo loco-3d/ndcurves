@@ -17,10 +17,8 @@ namespace curves {
 ///
 ///
 template <typename Time = double, typename Numeric = Time, bool Safe = false>
-struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 3, 3>, Eigen::Matrix<Numeric, 3, 1> > {
+struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
   typedef Numeric Scalar;
-  typedef Eigen::Matrix<Scalar, 3, 1> point3_t;
-  typedef Eigen::Matrix<Scalar, 3, 3> matrix3_t;
   typedef matrix3_t point_t;
   typedef point3_t point_derivate_t;
   typedef Eigen::Quaternion<Scalar> quaternion_t;
@@ -40,7 +38,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         dim_(3),
         init_rot_(init_rot),
         end_rot_(end_rot),
-        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix()) / (t_max - t_min)),
+        angular_vel_(computeAngularVelocity(init_rot.toRotationMatrix(), end_rot.toRotationMatrix(), t_min, t_max)),
         T_min_(t_min),
         T_max_(t_max) {
     safe_check();
@@ -52,7 +50,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         dim_(3),
         init_rot_(quaternion_t(init_rot)),
         end_rot_(quaternion_t(end_rot)),
-        angular_vel_(log3(init_rot.transpose() * end_rot) / (t_max - t_min)),
+        angular_vel_(computeAngularVelocity(init_rot, end_rot, t_min, t_max)),
         T_min_(t_min),
         T_max_(t_max) {
     safe_check();
@@ -64,7 +62,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         dim_(3),
         init_rot_(init_rot),
         end_rot_(end_rot),
-        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
+        angular_vel_(computeAngularVelocity(init_rot.toRotationMatrix(), end_rot.toRotationMatrix(), 0., 1.)),
         T_min_(0.),
         T_max_(1.) {
     safe_check();
@@ -76,7 +74,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         dim_(3),
         init_rot_(quaternion_t(init_rot)),
         end_rot_(quaternion_t(end_rot)),
-        angular_vel_(log3(init_rot.toRotationMatrix().transpose() * end_rot.toRotationMatrix())),
+        angular_vel_(computeAngularVelocity(init_rot, end_rot, 0., 1.)),
         T_min_(0.),
         T_max_(1.) {
     safe_check();
@@ -95,12 +93,20 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
         T_min_(other.T_min_),
         T_max_(other.T_max_) {}
 
+  point3_t computeAngularVelocity(const matrix3_t& init_rot, const matrix3_t& end_rot, const double t_min, const double t_max){
+    if(t_min == t_max){
+      return point3_t::Zero();
+    }else{
+      return log3(init_rot.transpose() * end_rot) / (t_max - t_min);
+    }
+  }
+
   quaternion_t computeAsQuaternion(const time_t t) const {
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       throw std::invalid_argument("can't evaluate bezier curve, time t is out of range");  // TODO
     }
-    if (t > T_max_) return end_rot_;
-    if (t < T_min_) return init_rot_;
+    if (t >= T_max_) return end_rot_;
+    if (t <= T_min_) return init_rot_;
     Scalar u = (t - T_min_) / (T_max_ - T_min_);
     return init_rot_.slerp(u, end_rot_);
   }
@@ -108,7 +114,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   ///  \brief Evaluation of the SO3Linear at time t using Eigen slerp.
   ///  \param t : time when to evaluate the spline.
   ///  \return \f$x(t)\f$ point corresponding on spline at time t.
-  virtual matrix3_t operator()(const time_t t) const { return computeAsQuaternion(t).toRotationMatrix(); }
+  virtual point_t operator()(const time_t t) const { return computeAsQuaternion(t).toRotationMatrix(); }
 
   /**
    * @brief isApprox check if other and *this are approximately equals.
@@ -141,7 +147,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.
   ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
-  virtual point3_t derivate(const time_t t, const std::size_t order) const {
+  virtual point_derivate_t derivate(const time_t t, const std::size_t order) const {
     if ((t < T_min_ || t > T_max_) && Safe) {
       throw std::invalid_argument(
           "error in SO3_linear : time t to evaluate derivative should be in range [Tmin, Tmax] of the curve");
@@ -250,7 +256,9 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, Eigen::Matrix<Numeric, 
       theta = PI_value;  // acos((-1-1)/2)
     else
       theta = acos((tr - Scalar(1)) / Scalar(2));
-    assert(theta == theta && "theta contains some NaN");  // theta != NaN
+    if (!std::isfinite(theta)) {
+      throw std::runtime_error("theta contains some NaN");
+    }
 
     // From runs of hpp-constraints/tests/logarithm.cc: 1e-6 is too small.
     if (theta < PI_value - 1e-2) {
