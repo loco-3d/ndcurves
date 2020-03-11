@@ -1,6 +1,3 @@
-ADD_UNIT_TEST(
-  curves_tests Main.cpp
-  )
-PKG_CONFIG_USE_DEPENDENCY(curves_tests eigen3)
-TARGET_LINK_LIBRARIES(curves_tests ${Boost_LIBRARIES})
+ADD_UNIT_TEST(curves_tests Main.cpp)
+TARGET_LINK_LIBRARIES(curves_tests ${PROJECT_NAME} ${Boost_LIBRARIES})
 TARGET_COMPILE_DEFINITIONS(curves_tests PRIVATE -DTEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
