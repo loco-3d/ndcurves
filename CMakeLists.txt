@@ -77,7 +77,7 @@ SET(${PROJECT_NAME}_HEADERS
   include/${PROJECT_NAME}/serialization/archive.hpp
   include/${PROJECT_NAME}/serialization/registeration.hpp
   include/${PROJECT_NAME}/serialization/eigen-matrix.hpp
-  include/${PROJECT_NAME}/serialization/fwd.hpp
+  include/${PROJECT_NAME}/serialization/curves.hpp
   )
 
 ADD_LIBRARY(${PROJECT_NAME} INTERFACE)
