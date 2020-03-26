@@ -20,6 +20,12 @@
 
 #include "curves/fwd.h"
 
+/**
+ *This file define a method register_types that
+ * register all the curves class of this package for a boost::Archive
+ * This is used to serialize pointer of the abstract class curve_abc
+ */
+
 namespace curves {
 namespace serialization {
 
