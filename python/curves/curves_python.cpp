@@ -6,6 +6,7 @@
 #include "python_variables.h"
 #include "archive_python_binding.h"
 #include "optimization_python.h"
+#include <curves/serialization/curves.hpp>
 
 #include <boost/python.hpp>
 #include <boost/python/class.hpp>
@@ -83,6 +84,29 @@ struct curve_SE3_callback : curve_SE3_t {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_SE3_t_isEquivalent_overloads, curve_SE3_t::isEquivalent, 1, 3)
 
 /* end base wrap of curve_abc */
+
+/* Structure used to define pickle serialization of python curves */
+template <typename Curve>
+struct curve_pickle_suite : pickle_suite {
+
+    static object getstate (const Curve& curve) {
+        std::ostringstream os;
+        boost::archive::text_oarchive oa(os);
+        curves::serialization::register_types(oa);
+        oa << curve;
+        return str(os.str());
+    }
+
+    static void
+    setstate(Curve& curve, object entries) {
+        str s = extract<str> (entries)();
+        std::string st = extract<std::string> (s)();
+        std::istringstream is (st);
+        boost::archive::text_iarchive ia (is);
+        curves::serialization::register_types(ia);
+        ia >> curve;
+    }
+};
 
 /* Template constructor bezier */
 template <typename Bezier, typename PointList, typename T_Point>
@@ -482,7 +506,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("saveAsBinary", pure_virtual(&curve_abc_t::saveAsBinary<curve_abc_t>), bp::args("filename"),
            "Saves *this inside a binary file.")
       .def("loadFromBinary", pure_virtual(&curve_abc_t::loadFromBinary<curve_abc_t>), bp::args("filename"),
-           "Loads *this from a binary file.");
+           "Loads *this from a binary file.")
+      .def_pickle(curve_pickle_suite<curve_abc_t>());
 
   class_<curve_3_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_3_callback> >("curve3")
       .def("__call__", &curve_3_t::operator(), "Evaluate the curve at the given time.",
@@ -498,7 +523,8 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "N"))
       .def("min", &curve_3_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_3_t::max, "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", &curve_3_t::dim, "Get the dimension of the curve.");
+      .def("dim", &curve_3_t::dim, "Get the dimension of the curve.")
+      .def_pickle(curve_pickle_suite<curve_3_t>());
 
   class_<curve_rotation_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_rotation_callback> >("curve_rotation")
       .def("__call__", &curve_rotation_t::operator(), "Evaluate the curve at the given time.",
@@ -514,7 +540,8 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "N"))
       .def("min", &curve_rotation_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_rotation_t::max, "Get the HIGHER bound on interval definition of the curve.")
-      .def("dim", &curve_rotation_t::dim, "Get the dimension of the curve.");
+      .def("dim", &curve_rotation_t::dim, "Get the dimension of the curve.")
+      .def_pickle(curve_pickle_suite<curve_rotation_t>());
 
   class_<curve_SE3_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_SE3_callback> >("curve_SE3")
       .def("__call__", &se3Return, "Evaluate the curve at the given time. Return as an homogeneous matrix.",
@@ -535,6 +562,7 @@ BOOST_PYTHON_MODULE(curves) {
            args("self", "time"))
       .def("translation", &se3returnTranslation, "Output the rotation (as a vector 3) at the given time.",
            args("self", "time"))
+      .def_pickle(curve_pickle_suite<curve_SE3_t>())
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("evaluateAsSE3", &se3ReturnPinocchio,
            "Evaluate the curve at the given time. Return as a pinocchio.SE3 object", args("self", "t"))
@@ -572,7 +600,8 @@ BOOST_PYTHON_MODULE(curves) {
            "Loads *this from a binary file.")
       //.def(SerializableVisitor<bezier_t>())
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self);
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<bezier3_t>());
   /** END bezier3 curve**/
   /** BEGIN bezier curve**/
   class_<bezier_t, bases<curve_abc_t>, boost::shared_ptr<bezier_t> >("bezier", init<>())
@@ -599,6 +628,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
       //.def(SerializableVisitor<bezier_t>())
+      .def_pickle(curve_pickle_suite<bezier_t>())
       ;
   /** END bezier curve**/
   /** BEGIN variable points bezier curve**/
@@ -642,7 +672,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def_readonly("degree", &bezier_linear_variable_t::degree_)
       .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self);
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<bezier_linear_variable_t>());
 
   class_<quadratic_variable_t>("cost", no_init)
       .add_property("A", &cost_t_quad)
@@ -696,7 +727,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &polynomial_t::loadFromBinary<polynomial_t>, bp::args("filename"),
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self);
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<polynomial_t>());
 
   /** END polynomial function**/
   /** BEGIN piecewise curve function **/
@@ -758,7 +790,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &piecewise_t::loadFromBinary<piecewise_t>, bp::args("filename"),
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self);
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<piecewise_t>());
 
   class_<piecewise_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_bezier_t>  >("piecewise_bezier", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseBezierConstructor, default_call_policies(), arg("curve")),
@@ -786,7 +819,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &piecewise_bezier_t::loadFromBinary<piecewise_bezier_t>, bp::args("filename"),
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self);
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<piecewise_bezier_t>());
 
   class_<piecewise_linear_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_linear_bezier_t>  >("piecewise_bezier_linear", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseBezierLinearConstructor, default_call_policies(), arg("curve")),
@@ -814,7 +848,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &piecewise_linear_bezier_t::loadFromBinary<piecewise_linear_bezier_t>,
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self);
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<piecewise_linear_bezier_t>());
 
   class_<piecewise_SE3_t, bases<curve_SE3_t>, boost::shared_ptr<piecewise_SE3_t>  >("piecewise_SE3", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor, default_call_policies(), arg("curve")),
@@ -847,6 +882,7 @@ BOOST_PYTHON_MODULE(curves) {
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<piecewise_SE3_t>())
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("append", &addFinalSE3,
            "Append a new linear SE3 curve at the end of the piecewise curve, defined between self.max() "
@@ -875,7 +911,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &exact_cubic_t::loadFromBinary<exact_cubic_t>, bp::args("filename"),
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self);
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<exact_cubic_t>());
 
   /** END exact_cubic curve**/
   /** BEGIN cubic_hermite_spline **/
@@ -894,7 +931,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &cubic_hermite_spline_t::loadFromBinary<cubic_hermite_spline_t>, bp::args("filename"),
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self);
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<cubic_hermite_spline_t>());
 
   /** END cubic_hermite_spline **/
   /** BEGIN curve constraints**/
@@ -941,7 +979,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("loadFromBinary", &SO3Linear_t::loadFromBinary<SO3Linear_t>, bp::args("filename"),
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self);
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<SO3Linear_t>());
 
   /** END  SO3 Linear**/
   /** BEGIN SE3 Curve**/
@@ -998,6 +1037,7 @@ BOOST_PYTHON_MODULE(curves) {
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<SE3Curve_t>())
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("__init__",
            make_constructor(&wrapSE3CurveFromSE3Pinocchio, default_call_policies(),
