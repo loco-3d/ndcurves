@@ -6,7 +6,7 @@ import eigenpy
 import numpy as np
 from numpy import array, array_equal, isclose, random, zeros
 from numpy.linalg import norm
-
+import pickle
 from curves import (CURVES_WITH_PINOCCHIO_SUPPORT, Quaternion, SE3Curve, SO3Linear, bezier, bezier3, convert_to_bezier,
                     convert_to_hermite, convert_to_polynomial, cubic_hermite_spline, curve_constraints, exact_cubic,
                     piecewise, piecewise_SE3, polynomial)
@@ -136,6 +136,10 @@ class TestCurves(unittest.TestCase):
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
+
+        a_pickled = pickle.dumps(a)
+        a_from_pickle = pickle.loads(a_pickled)
+        self.assertEqual(a_from_pickle, a)
         return
 
     def test_bezier3(self):
@@ -235,6 +239,9 @@ class TestCurves(unittest.TestCase):
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
+        a_pickled = pickle.dumps(a)
+        a_from_pickle = pickle.loads(a_pickled)
+        self.assertEqual(a_from_pickle, a)
         return
 
     def test_polynomial(self):
@@ -263,6 +270,9 @@ class TestCurves(unittest.TestCase):
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
+        a_pickled = pickle.dumps(a)
+        a_from_pickle = pickle.loads(a_pickled)
+        self.assertEqual(a_from_pickle, a)
         return
 
     def test_polynomial_from_boundary_condition(self):
@@ -338,6 +348,9 @@ class TestCurves(unittest.TestCase):
         b.loadFromText("serialization_curve.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_curve.test")
+        a_pickled = pickle.dumps(a)
+        a_from_pickle = pickle.loads(a_pickled)
+        self.assertEqual(a_from_pickle, a)
         return
 
     def test_piecewise_polynomial_curve(self):
@@ -371,6 +384,9 @@ class TestCurves(unittest.TestCase):
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
+        pc_pickled = pickle.dumps(pc)
+        pc_from_pickle = pickle.loads(pc_pickled)
+        self.assertEqual(pc_from_pickle, pc)
 
         waypoints3 = array([[1., 2., 3., 0.6, -9.], [-1., 1.6, 1.7, 6.7, 14]]).transpose()
         c = polynomial(waypoints3, 3., 5.2)
@@ -490,6 +506,9 @@ class TestCurves(unittest.TestCase):
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
+        pc_pickled = pickle.dumps(pc)
+        pc_from_pickle = pickle.loads(pc_pickled)
+        self.assertEqual(pc_from_pickle, pc)
         return
 
     def test_piecewise_cubic_hermite_curve(self):
@@ -523,6 +542,9 @@ class TestCurves(unittest.TestCase):
         pc_test.loadFromText("serialization_pc.test")
         self.assertTrue((pc(0.4) == pc_test(0.4)).all())
         os.remove("serialization_pc.test")
+        pc_pickled = pickle.dumps(pc)
+        pc_from_pickle = pickle.loads(pc_pickled)
+        self.assertEqual(pc_from_pickle, pc)
         return
 
     def test_exact_cubic(self):
@@ -545,6 +567,9 @@ class TestCurves(unittest.TestCase):
         b.loadFromText("serialization_pc.test")
         self.assertTrue((a(0.4) == b(0.4)).all())
         os.remove("serialization_pc.test")
+        a_pickled = pickle.dumps(a)
+        a_from_pickle = pickle.loads(a_pickled)
+        self.assertEqual(a_from_pickle, a)
         return
 
     def test_exact_cubic_constraint(self):
@@ -665,6 +690,10 @@ class TestCurves(unittest.TestCase):
         pc_bin = piecewise_SE3()
         pc_bin.loadFromBinary("serialization_curve")
         self.compareCurves(pc, pc_bin)
+
+        pc_pickled = pickle.dumps(pc)
+        pc_from_pickle = pickle.loads(pc_pickled)
+        self.assertEqual(pc_from_pickle, pc)
 
         se3_3 = SE3Curve(se3(max), se3_2(max2 - 0.5), max2, max2 + 1.5)
         pc.append(se3_3)
@@ -884,6 +913,10 @@ class TestCurves(unittest.TestCase):
         so3_bin = SO3Linear()
         so3_bin.loadFromBinary("serialization_curve")
         self.compareCurves(so3Rot, so3_bin)
+
+        so3Rot_pickled = pickle.dumps(so3Rot)
+        so3Rot_from_pickle = pickle.loads(so3Rot_pickled)
+        self.assertEqual(so3Rot_from_pickle, so3Rot)
 
     def test_se3_curve_linear(self):
         print("test SE3 Linear")
@@ -1235,6 +1268,10 @@ class TestCurves(unittest.TestCase):
         se3_bin.loadFromBinary("serialization_curve")
         self.compareCurves(se3_linear, se3_bin)
 
+        se3_pickled = pickle.dumps(se3_linear)
+        se3_from_pickle = pickle.loads(se3_pickled)
+        self.assertEqual(se3_from_pickle, se3_linear)
+
         # test from two curves :
         init_quat = Quaternion.Identity()
         end_quat = Quaternion(sqrt(2.) / 2., sqrt(2.) / 2., 0, 0)
@@ -1261,6 +1298,10 @@ class TestCurves(unittest.TestCase):
         se3_bin = SE3Curve()
         se3_bin.loadFromBinary("serialization_curve")
         self.compareCurves(se3_curves, se3_bin)
+
+        se3_pickled = pickle.dumps(se3_curves)
+        se3_from_pickle = pickle.loads(se3_pickled)
+        self.assertEqual(se3_from_pickle, se3_curves)
 
     def test_operatorEqual(self):
         # test with bezier
