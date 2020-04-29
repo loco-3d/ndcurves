@@ -11,6 +11,7 @@
 #include "load_problem.h"
 #include "curves/so3_linear.h"
 #include "curves/se3_curve.h"
+#include "curves/serialization/curves.hpp"
 #include <string>
 #include <iostream>
 #include <cmath>

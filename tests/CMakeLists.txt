@@ -1,3 +1,6 @@
 ADD_UNIT_TEST(curves_tests Main.cpp)
+ADD_UNIT_TEST(test-constant test-constant.cpp)
+
 TARGET_LINK_LIBRARIES(curves_tests ${PROJECT_NAME} ${Boost_LIBRARIES})
 TARGET_COMPILE_DEFINITIONS(curves_tests PRIVATE -DTEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
+TARGET_LINK_LIBRARIES(test-constant ${PROJECT_NAME} ${Boost_LIBRARIES})
