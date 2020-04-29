@@ -56,7 +56,8 @@ struct curve_rotation_callback : curve_rotation_t {
   virtual curve_rotation_t::point_t operator()(const real t) const { return call_method<curve_rotation_t::point_t>(self, "operator()", t); }
   virtual curve_rotation_t::point_derivate_t derivate(const real t, const std::size_t n) const
 { return call_method<curve_rotation_t::point_derivate_t>(self, "derivate", t, n); }
-  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual curve_rotation_t::curve_derivate_t* compute_derivate_ptr(const std::size_t n) const {
+                                     return call_method<curve_rotation_t::curve_derivate_t*>(self, "compute_derivate", n); }
   virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
   virtual real min() const { return call_method<real>(self,"min"); }
   virtual real max() const { return call_method<real>(self,"max"); }
@@ -72,7 +73,8 @@ struct curve_SE3_callback : curve_SE3_t {
   virtual curve_SE3_t::point_t operator()(const real t) const { return call_method<curve_SE3_t::point_t>(self, "operator()", t); }
   virtual curve_SE3_t::point_derivate_t derivate(const real t, const std::size_t n) const
   { return call_method<curve_SE3_t::point_derivate_t>(self, "derivate", t, n); }
-  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual curve_SE3_t::curve_derivate_t* compute_derivate_ptr(const std::size_t n) const {
+                                return call_method<curve_SE3_t::curve_derivate_t*>(self, "compute_derivate", n); }
   virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
   virtual real min() const { return call_method<real>(self,"min"); }
   virtual real max() const { return call_method<real>(self,"max"); }
