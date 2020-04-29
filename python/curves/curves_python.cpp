@@ -497,6 +497,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("min", &curve_abc_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_abc_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_abc_t::dim, "Get the dimension of the curve.")
+      .def("degree", &curve_abc_t::degree, "Get the degree of the representation of the curve (if applicable).")
       .def("saveAsText", pure_virtual(&curve_abc_t::saveAsText<curve_abc_t>), bp::args("filename"),
            "Saves *this inside a text file.")
       .def("loadFromText", pure_virtual(&curve_abc_t::loadFromText<curve_abc_t>), bp::args("filename"),
@@ -526,6 +527,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("min", &curve_3_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_3_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_3_t::dim, "Get the dimension of the curve.")
+      .def("degree", &curve_3_t::degree, "Get the degree of the representation of the curve (if applicable).")
       .def_pickle(curve_pickle_suite<curve_3_t>());
 
   class_<curve_rotation_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_rotation_callback> >("curve_rotation")
@@ -543,6 +545,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("min", &curve_rotation_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_rotation_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_rotation_t::dim, "Get the dimension of the curve.")
+      .def("degree", &curve_rotation_t::degree, "Get the degree of the representation of the curve (if applicable).")
       .def_pickle(curve_pickle_suite<curve_rotation_t>());
 
   class_<curve_SE3_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_SE3_callback> >("curve_SE3")
