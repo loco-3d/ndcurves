@@ -18,6 +18,7 @@
 #include "curves/se3_curve.h"
 #include "curves/polynomial.h"
 #include "curves/bezier_curve.h"
+#include "curves/constant_curve.h"
 #include "curves/piecewise_curve.h"
 #include "curves/exact_cubic.h"
 #include "curves/cubic_hermite_spline.h"

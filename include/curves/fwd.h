@@ -21,6 +21,9 @@ struct curve_abc;
 template <typename Time, typename Numeric, bool Safe, typename Point>
 struct bezier_curve;
 
+template <typename Time, typename Numeric, bool Safe, typename Point,typename Point_derivate>
+struct constant_curve;
+
 template <typename Time, typename Numeric, bool Safe, typename Point>
 struct cubic_hermite_spline;
 
@@ -81,6 +84,7 @@ typedef boost::shared_ptr<curve_SE3_t> curve_SE3_ptr_t;
 typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
 typedef exact_cubic<double, double, true, pointX_t, t_pointX_t, polynomial_t> exact_cubic_t;
 typedef bezier_curve<double, double, true, pointX_t> bezier_t;
+typedef constant_curve<double, double, true, pointX_t, pointX_t> constant_t;
 typedef cubic_hermite_spline<double, double, true, pointX_t> cubic_hermite_spline_t;
 typedef piecewise_curve<double, double, true, pointX_t, pointX_t, curve_abc_t> piecewise_t;
 
@@ -88,6 +92,7 @@ typedef piecewise_curve<double, double, true, pointX_t, pointX_t, curve_abc_t> p
 typedef polynomial<double, double, true, point3_t, t_point3_t> polynomial3_t;
 typedef exact_cubic<double, double, true, point3_t, t_point3_t, polynomial_t> exact_cubic3_t;
 typedef bezier_curve<double, double, true, point3_t> bezier3_t;
+typedef constant_curve<double, double, true, point3_t, point3_t> constant3_t;
 typedef cubic_hermite_spline<double, double, true, point3_t> cubic_hermite_spline3_t;
 typedef piecewise_curve<double, double, true, point3_t, point3_t, curve_3_t> piecewise3_t;
 
