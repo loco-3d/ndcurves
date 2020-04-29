@@ -1679,6 +1679,20 @@ void so3LinearTest(bool& error) {
     error = true;
     std::cout << "Angular velocity around y and z axis should be null" << std::endl;
   }
+
+  constant3_t so3Derivate1 = so3Traj.compute_derivate(1);
+  if (so3Derivate1(1.) != so3Traj.derivate(1., 1)) {
+      error = true;
+      std::cout << "compute_derivate curve do not equal derivate call" << std::endl;
+  }
+
+  constant3_t so3Derivate2 = so3Traj.compute_derivate(2);
+  if (so3Derivate2(1.) != point3_t::Zero(3)) {
+      error = true;
+      std::cout << "compute_derivate curve do not equal derivate call" << std::endl;
+  }
+
+
   // check if errors are correctly raised :
   try {
     so3Traj(-0.1);
