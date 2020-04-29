@@ -4,6 +4,7 @@
 #include "MathDefs.h"
 
 #include "curve_abc.h"
+#include "fwd.h"
 #include <Eigen/Geometry>
 #include <boost/math/constants/constants.hpp>
 
@@ -24,7 +25,9 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
   typedef Eigen::Quaternion<Scalar> quaternion_t;
   typedef Time time_t;
   typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;
+  typedef polynomial<Time, Numeric, Safe, point_derivate_t, point_derivate_t> curve_derivate_t;
   typedef SO3Linear<Time, Numeric, Safe> SO3Linear_t;
+
 
  public:
   /* Constructors - destructors */
@@ -161,14 +164,14 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
     }
   }
 
-  SO3Linear_t compute_derivate(const std::size_t /*order*/) const {
+  curve_derivate_t compute_derivate(const std::size_t /*order*/) const {
     throw std::logic_error("Compute derivate for SO3Linear is not implemented yet.");
   }
 
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
   ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  SO3Linear_t* compute_derivate_ptr(const std::size_t order) const { return new SO3Linear_t(compute_derivate(order)); }
+  curve_derivate_t* compute_derivate_ptr(const std::size_t order) const { return new curve_derivate_t(compute_derivate(order)); }
 
   /*Helpers*/
   /// \brief Get dimension of curve.

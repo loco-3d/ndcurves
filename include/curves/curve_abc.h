@@ -37,6 +37,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   typedef Time time_t;
   typedef Numeric num_t;
   typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_t;  // parent class
+  typedef curve_abc<Time, Numeric, Safe, point_derivate_t> curve_derivate_t;  // parent class
   typedef boost::shared_ptr<curve_t> curve_ptr_t;
 
   /* Constructors - destructors */
@@ -57,7 +58,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
   ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  virtual curve_t* compute_derivate_ptr(const std::size_t order) const = 0;
+  virtual curve_derivate_t* compute_derivate_ptr(const std::size_t order) const = 0;
 
   /// \brief Evaluate the derivative of order N of curve at time t.
   /// \param t : time when to evaluate the spline.
