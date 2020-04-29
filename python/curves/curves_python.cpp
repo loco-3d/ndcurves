@@ -464,6 +464,23 @@ void addFinalTransform(piecewise_SE3_t& self, const matrix4_t& end, const real t
 
 /* End wrap piecewiseSE3Curves */
 
+/* Wrap constant */
+constant_t* wrapConstantConstructorTime(const pointX_t& value, const real min, const real max) {
+  return new constant_t(value, min, max);
+}
+constant_t* wrapConstantConstructor(const pointX_t& value) {
+    return new constant_t(value);
+}
+/* End wrap constant */
+/* Wrap constant 3*/
+constant3_t* wrapConstant3ConstructorTime(const pointX_t& value, const real min, const real max) {
+  return new constant3_t(value, min, max);
+}
+constant3_t* wrapConstant3Constructor(const pointX_t& value) {
+    return new constant3_t(value);
+}
+/* End wrap constant 3*/
+
 // TO DO : Replace all load and save function for serialization in class by using
 //         SerializableVisitor in archive_python_binding.
 BOOST_PYTHON_MODULE(curves) {
@@ -1053,6 +1070,56 @@ BOOST_PYTHON_MODULE(curves) {
       ;
 
   /** END SE3 Curve**/
+  /** BEGIN constant curve function**/
+  class_<constant_t, bases<curve_abc_t>, boost::shared_ptr<constant_t> >("constant", init<>())
+      .def("__init__",
+           make_constructor(&wrapConstantConstructorTime, default_call_policies(), args("value", "min", "max")),
+           "Create a constant curve defined for t in [min,max]."
+           " This curve always evaluate to the given value and derivate to zero value.")
+      .def("__init__", make_constructor(&wrapConstantConstructor, default_call_policies(), arg("value")),
+           "Create a constant curve defined for t in [0,inf]."
+           " This curve always evaluate to the given value and derivate to zero value.")
+      .def("saveAsText", &constant_t::saveAsText<constant_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &constant_t::loadFromText<constant_t>, bp::args("filename"),
+           "Loads *this from a text file.")
+      .def("saveAsXML", &constant_t::saveAsXML<constant_t>, bp::args("filename", "tag_name"),
+           "Saves *this inside a XML file.")
+      .def("loadFromXML", &constant_t::loadFromXML<constant_t>, bp::args("filename", "tag_name"),
+           "Loads *this from a XML file.")
+      .def("saveAsBinary", &constant_t::saveAsBinary<constant_t>, bp::args("filename"),
+           "Saves *this inside a binary file.")
+      .def("loadFromBinary", &constant_t::loadFromBinary<constant_t>, bp::args("filename"),
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<constant_t>());
+  /** END constant function**/
+  /** BEGIN constant 3 curve function**/
+  class_<constant3_t, bases<curve_3_t>, boost::shared_ptr<constant3_t> >("constant3", init<>())
+      .def("__init__",
+           make_constructor(&wrapConstant3ConstructorTime, default_call_policies(), args("value", "min", "max")),
+           "Create a constant curve defined for t in [min,max]."
+           " This curve always evaluate to the given value and derivate to zero value.")
+      .def("__init__", make_constructor(&wrapConstant3Constructor, default_call_policies(), arg("value")),
+           "Create a constant curve defined for t in [0,inf]."
+           " This curve always evaluate to the given value and derivate to zero value.")
+      .def("saveAsText", &constant3_t::saveAsText<constant3_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &constant3_t::loadFromText<constant3_t>, bp::args("filename"),
+           "Loads *this from a text file.")
+      .def("saveAsXML", &constant3_t::saveAsXML<constant3_t>, bp::args("filename", "tag_name"),
+           "Saves *this inside a XML file.")
+      .def("loadFromXML", &constant3_t::loadFromXML<constant3_t>, bp::args("filename", "tag_name"),
+           "Loads *this from a XML file.")
+      .def("saveAsBinary", &constant3_t::saveAsBinary<constant3_t>, bp::args("filename"),
+           "Saves *this inside a binary file.")
+      .def("loadFromBinary", &constant3_t::loadFromBinary<constant3_t>, bp::args("filename"),
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<constant3_t>());
+  /** END constant 3 function**/
   /** BEGIN curves conversion**/
   def("convert_to_polynomial", polynomial_from_curve<polynomial_t>);
   def("convert_to_bezier", bezier_from_curve<bezier_t>);
