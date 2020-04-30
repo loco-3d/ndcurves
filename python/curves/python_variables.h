@@ -11,6 +11,7 @@
 #include "curves/piecewise_curve.h"
 #include "curves/so3_linear.h"
 #include "curves/se3_curve.h"
+#include "curves/sinusoidal.h"
 #include "curves/python/python_definitions.h"
 #include <eigenpy/memory.hpp>
 #include <eigenpy/eigenpy.hpp>
@@ -83,6 +84,7 @@ EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::cubic_hermite_spline3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise3_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::SO3Linear_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::SE3Curve_t)
+EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::sinusoidal_t)
 EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(curves::piecewise_SE3_t)
 
 #endif  //_VARIABLES_PYTHON_BINDINGS

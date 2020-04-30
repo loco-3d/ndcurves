@@ -480,7 +480,25 @@ constant3_t* wrapConstant3Constructor(const pointX_t& value) {
     return new constant3_t(value);
 }
 /* End wrap constant 3*/
-
+/* Wrap sinusoidal */
+sinusoidal_t* wrapSinusoidalConstructorTime(const pointX_t& p0, const pointX_t& amplitude,
+                                            const real T, const real phi, const real min, const real max) {
+  return new sinusoidal_t(p0, amplitude, T, phi, min, max);
+}
+sinusoidal_t* wrapSinusoidalConstructor(const pointX_t& p0, const pointX_t& amplitude,
+                                        const real T, const real phi) {
+  return new sinusoidal_t(p0, amplitude, T, phi);
+}
+sinusoidal_t* wrapSinusoidalConstructorStationaryTime(const real time_traj,
+                                                      const pointX_t& p_init, const pointX_t& p_final,
+                                                      const real min, const real max) {
+  return new sinusoidal_t(time_traj, p_init, p_final, min, max);
+}
+sinusoidal_t* wrapSinusoidalConstructorStationary(const real time_traj,
+                                                  const pointX_t& p_init, const pointX_t& p_final) {
+  return new sinusoidal_t(time_traj, p_init, p_final);
+}
+/* End wrap sinusoidal */
 // TO DO : Replace all load and save function for serialization in class by using
 //         SerializableVisitor in archive_python_binding.
 BOOST_PYTHON_MODULE(curves) {
@@ -1120,6 +1138,40 @@ BOOST_PYTHON_MODULE(curves) {
       .def(bp::self != bp::self)
       .def_pickle(curve_pickle_suite<constant3_t>());
   /** END constant 3 function**/
+  /** BEGIN sinusoidal curve function**/
+  class_<sinusoidal_t, bases<curve_abc_t>, boost::shared_ptr<sinusoidal_t> >("sinusoidal", init<>())
+      .def("__init__", make_constructor(&wrapSinusoidalConstructor, default_call_policies(),
+           args("Offset", "Amplitude", "Period", "Phase")),
+           "Create a sinusoidal curve defined for t in [0, inf]."
+           " c(t) = offset + amplitude * sin(2pi/T * t + phi)")
+      .def("__init__", make_constructor(&wrapSinusoidalConstructorTime, default_call_policies(),
+           args("Offset", "Amplitude", "Period", "Phase", "min", "max")),
+           "Create a sinusoidal curve defined for t in [min, max]."
+           " c(t) = offset + amplitude * sin(2pi/T * t + phi)")
+      .def("__init__", make_constructor(&wrapSinusoidalConstructorStationary, default_call_policies(),
+           args("duration", "p_init", "p_final")),
+           "Create a sinusoidal curve defined for t in [0, inf]."
+           "That connect the two stationnary points p_init and p_final in duration (an half period)")
+      .def("__init__", make_constructor(&wrapSinusoidalConstructorStationaryTime, default_call_policies(),
+           args("duration", "p_init", "p_final", "min", "max")),
+           "Create a sinusoidal curve defined for t in [min, max]."
+           "That connect the two stationnary points p_init and p_final in duration (an half period)")
+      .def("saveAsText", &sinusoidal_t::saveAsText<sinusoidal_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &sinusoidal_t::loadFromText<sinusoidal_t>, bp::args("filename"),
+           "Loads *this from a text file.")
+      .def("saveAsXML", &sinusoidal_t::saveAsXML<sinusoidal_t>, bp::args("filename", "tag_name"),
+           "Saves *this inside a XML file.")
+      .def("loadFromXML", &sinusoidal_t::loadFromXML<sinusoidal_t>, bp::args("filename", "tag_name"),
+           "Loads *this from a XML file.")
+      .def("saveAsBinary", &sinusoidal_t::saveAsBinary<sinusoidal_t>, bp::args("filename"),
+           "Saves *this inside a binary file.")
+      .def("loadFromBinary", &sinusoidal_t::loadFromBinary<sinusoidal_t>, bp::args("filename"),
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<sinusoidal_t>());
+  /** END sinusoidal function**/
   /** BEGIN curves conversion**/
   def("convert_to_polynomial", polynomial_from_curve<polynomial_t>);
   def("convert_to_bezier", bezier_from_curve<bezier_t>);
