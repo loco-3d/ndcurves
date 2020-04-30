@@ -46,6 +46,7 @@ void register_types(Archive& ar) {
   ar.template register_type<piecewise3_t>();
   ar.template register_type<SO3Linear_t>();
   ar.template register_type<SE3Curve_t>();
+  ar.template register_type<sinusoidal_t>();
   ar.template register_type<piecewise_SE3_t>();
 }
 

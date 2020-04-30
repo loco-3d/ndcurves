@@ -39,6 +39,9 @@ struct polynomial;
 template <typename Time, typename Numeric, bool Safe>
 struct SE3Curve;
 
+template <typename Time, typename Numeric, bool Safe, typename Point>
+struct sinusoidal;
+
 template <typename Time, typename Numeric, bool Safe>
 struct SO3Linear;
 
@@ -87,6 +90,7 @@ typedef bezier_curve<double, double, true, pointX_t> bezier_t;
 typedef constant_curve<double, double, true, pointX_t, pointX_t> constant_t;
 typedef cubic_hermite_spline<double, double, true, pointX_t> cubic_hermite_spline_t;
 typedef piecewise_curve<double, double, true, pointX_t, pointX_t, curve_abc_t> piecewise_t;
+typedef sinusoidal<double, double, true, pointX_t> sinusoidal_t;
 
 // definition of all curves class with point3 as return type:
 typedef polynomial<double, double, true, point3_t, t_point3_t> polynomial3_t;

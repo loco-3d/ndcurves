@@ -16,6 +16,7 @@
 #include "curves/curve_abc.h"
 #include "curves/so3_linear.h"
 #include "curves/se3_curve.h"
+#include "curves/sinusoidal.h"
 #include "curves/polynomial.h"
 #include "curves/bezier_curve.h"
 #include "curves/constant_curve.h"
