@@ -20,10 +20,9 @@
 #define _CLASS_EXACTCUBIC
 
 #include "curve_abc.h"
-#include "cubic_spline.h"
-#include "quintic_spline.h"
 #include "curve_constraint.h"
 #include "piecewise_curve.h"
+#include "polynomial.h"
 
 #include "MathDefs.h"
 
@@ -41,6 +40,7 @@ template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename SplineBase = polynomial<Time, Numeric, Safe, Point, T_Point> >
 struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   typedef Point point_t;
+  typedef const Eigen::Ref<const point_t> point_ref_t;
   typedef T_Point t_point_t;
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
   typedef Eigen::Matrix<Numeric, 3, 3> Matrix3;
@@ -52,9 +52,10 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   typedef typename t_spline_t::const_iterator cit_spline_t;
   typedef curve_constraints<Point> spline_constraints;
 
-  typedef exact_cubic<Time, Numeric, Safe, Point, T_Point, SplineBase> exact_cubic_t;
+  typedef exact_cubic<Time, Numeric, Safe, point_t, T_Point, SplineBase> exact_cubic_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
-  typedef piecewise_curve<Time, Numeric, Safe, Point> piecewise_curve_t;
+  typedef piecewise_curve<Time, Numeric, Safe, point_t> piecewise_curve_t;
+  typedef polynomial<Time, Numeric, Safe, point_t> polynomial_t;
   typedef typename piecewise_curve_t::t_curve_ptr_t t_curve_ptr_t;
 
   /* Constructors - destructors */
@@ -128,6 +129,29 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   }
 
  private:
+
+  static polynomial_t create_cubic(point_ref_t a,point_ref_t b, point_ref_t c, point_ref_t d,
+                                   const time_t t_min,  const time_t t_max){
+      typename polynomial_t::t_point_t coeffs;
+      coeffs.push_back(a);
+      coeffs.push_back(b);
+      coeffs.push_back(c);
+      coeffs.push_back(d);
+      return polynomial_t(coeffs.begin(), coeffs.end(), t_min, t_max);
+  }
+  static polynomial_t create_quintic(point_ref_t a,point_ref_t b, point_ref_t c, point_ref_t d,
+                                     point_ref_t e, point_ref_t f,
+                                     const time_t t_min,  const time_t t_max){
+      typename polynomial_t::t_point_t coeffs;
+      coeffs.push_back(a);
+      coeffs.push_back(b);
+      coeffs.push_back(c);
+      coeffs.push_back(d);
+      coeffs.push_back(e);
+      coeffs.push_back(f);
+      return polynomial_t(coeffs.begin(), coeffs.end(), t_min, t_max);
+  }
+
   /// \brief Compute polynom of exact cubic spline from waypoints.
   /// Compute the coefficients of polynom as in paper : "Task-Space Trajectories via Cubic Spline Optimization".<br>
   /// \f$x_i(t)=a_i+b_i(t-t_i)+c_i(t-t_i)^2\f$<br>
@@ -198,7 +222,7 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
     it = wayPointsBegin, next = wayPointsBegin;
     ++next;
     for (int i = 0; next != wayPointsEnd; ++i, ++it, ++next) {
-      subSplines.push_back(create_cubic<Time, Numeric, Safe, Point, T_Point>(a.row(i), b.row(i), c.row(i), d.row(i),
+      subSplines.push_back(create_cubic(a.row(i), b.row(i), c.row(i), d.row(i),
                                                                              (*it).first, (*next).first));
     }
     return subSplines;
@@ -230,7 +254,7 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
     const num_t &init_t = wayPointsBegin->first, end_t = wayPointsNext->first;
     const num_t dt = end_t - init_t, dt_2 = dt * dt, dt_3 = dt_2 * dt;
     const point_t d0 = (a1 - a0 - b0 * dt - c0 * dt_2) / dt_3;
-    subSplines.push_back(create_cubic<Time, Numeric, Safe, Point, T_Point>(a0, b0, c0, d0, init_t, end_t));
+    subSplines.push_back(create_cubic(a0, b0, c0, d0, init_t, end_t));
     constraints.init_vel = subSplines.back().derivate(end_t, 1);
     constraints.init_acc = subSplines.back().derivate(end_t, 2);
   }
@@ -270,7 +294,7 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
     d = rhs.row(0);
     e = rhs.row(1);
     f = rhs.row(2);
-    subSplines.push_back(create_quintic<Time, Numeric, Safe, Point, T_Point>(a0, b0, c0, d, e, f, init_t, end_t));
+    subSplines.push_back(create_quintic(a0, b0, c0, d, e, f, init_t, end_t));
   }
 
  public:

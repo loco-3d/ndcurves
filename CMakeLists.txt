@@ -58,9 +58,7 @@ SET(${PROJECT_NAME}_HEADERS
   include/${PROJECT_NAME}/MathDefs.h
   include/${PROJECT_NAME}/polynomial.h
   include/${PROJECT_NAME}/bezier_curve.h
-  include/${PROJECT_NAME}/cubic_spline.h
   include/${PROJECT_NAME}/curve_constraint.h
-  include/${PROJECT_NAME}/quintic_spline.h
   include/${PROJECT_NAME}/linear_variable.h
   include/${PROJECT_NAME}/quadratic_variable.h
   include/${PROJECT_NAME}/cubic_hermite_spline.h
