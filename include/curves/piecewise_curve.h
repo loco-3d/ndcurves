@@ -12,6 +12,8 @@
 #include "curve_conversion.h"
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/serialization/vector.hpp>
+#include <fstream>
+#include <sstream>
 
 namespace curves {
 /// \class PiecewiseCurve.
@@ -356,6 +358,125 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
                                          points[i], points_derivative[i], points_second_derivative[i],
                                          time_points[i - 1], time_points[i]));
     }
+    return piecewise_res;
+  }
+
+  /**
+   * @brief load_piecewise_from_text_file build a piecewise polynomial from a list of discrete points read from a file.
+   * The file should contains one points per line, optionally with it's derivative and second derivatives.
+   * Each lines should then contains dim, 2*dim or 3*dim values
+   * @param filename the (absolute) name of the file to load
+   * @param dt the time step between each points in the file
+   * @param dim the dimension of the curve
+   * @return a piecewise curves containing polynomial connectiong all the points in the file
+   */
+  template <typename Polynomial>
+  static piecewise_curve_t load_piecewise_from_text_file(const std::string& filename, const time_t dt, const size_t dim){
+    if(dim <= 0)
+      throw std::invalid_argument("The dimension should be strictly positive.");
+    if(dt <= 0.)
+      throw std::invalid_argument("The time step should be strictly positive.");
+
+    piecewise_curve_t piecewise_res;
+    std::ifstream file;
+    file.open(filename.c_str());
+    point_t last_pos = point_t::Zero(dim),
+        last_vel = point_t::Zero(dim),
+        last_acc = point_t::Zero(dim),
+        new_pos = point_t::Zero(dim),
+        new_vel = point_t::Zero(dim),
+        new_acc = point_t::Zero(dim);
+    bool use_vel, use_acc;
+    std::string line;
+    // read first line to found out if we use velocity / acceleration :
+    std::getline(file, line);
+    std::istringstream iss_length(line);
+    const size_t length = std::distance(std::istream_iterator<std::string>(iss_length), std::istream_iterator<std::string>());
+    if(length == dim){
+      use_vel = false;
+      use_acc = false;
+    }else if(length == dim * 2){
+      use_vel = true;
+      use_acc = false;
+    }else if(length == dim * 3){
+      use_vel = true;
+      use_acc = true;
+    }else{
+      std::stringstream error;
+      error<<"The first line of the file shold contains either " << dim << ", " << dim * 2 << " or " << dim * 3 <<
+             "values, got : " << length;
+      throw std::invalid_argument(error.str());
+    }
+    // initialize the first points of the trajectory:
+    num_t val;
+    std::istringstream iss(line);
+    for(size_t i = 0 ; i < dim ; ++i){
+      iss >> val;
+      last_pos[i] = val;
+    }
+    if(use_vel){
+      for(size_t i = 0 ; i < dim ; ++i){
+        iss >> val;
+        last_vel[i] = val;
+      }
+    }
+    if(use_acc){
+      for(size_t i = 0 ; i < dim ; ++i){
+        iss >> val;
+        last_acc[i] = val;
+      }
+    }
+
+    size_t current_length;
+    size_t line_id = 0;
+    // parse all lines of the file:
+    while (std::getline(file, line))
+    {
+        ++line_id;
+        std::istringstream iss_length(line);
+        current_length = std::distance(std::istream_iterator<std::string>(iss_length), std::istream_iterator<std::string>());
+        if(current_length != length){
+          std::stringstream error;
+          error<<"Cannot parse line " << line_id << " got " << current_length << " values instead of " << length;
+          throw std::invalid_argument(error.str());
+        }
+        std::istringstream iss(line);
+        // parse the points values from the file:
+        for(size_t i = 0 ; i < dim ; ++i){
+          iss >> val;
+          new_pos[i] = val;
+        }
+        if(use_vel){
+          for(size_t i = 0 ; i < dim ; ++i){
+            iss >> val;
+            new_vel[i] = val;
+          }
+        }
+        if(use_acc){
+          for(size_t i = 0 ; i < dim ; ++i){
+            iss >> val;
+            new_acc[i] = val;
+          }
+        }
+        // append a new curves connectiong this points
+        if(use_acc){
+          piecewise_res.add_curve(Polynomial(last_pos, last_vel, last_acc,
+                                             new_pos, new_vel, new_acc,
+                                             dt * static_cast<time_t>(line_id - 1), dt * static_cast<time_t>(line_id)));
+        }else if(use_vel){
+          piecewise_res.add_curve(Polynomial(last_pos, last_vel,
+                                             new_pos, new_vel,
+                                             dt * static_cast<time_t>(line_id - 1), dt * static_cast<time_t>(line_id)));
+        }else{
+          piecewise_res.add_curve(Polynomial(last_pos, new_pos,
+                                             dt * static_cast<time_t>(line_id - 1), dt * static_cast<time_t>(line_id)));
+        }
+        last_pos = new_pos;
+        last_vel = new_vel;
+        last_acc = new_acc;
+    }
+
+    file.close();
     return piecewise_res;
   }
 
