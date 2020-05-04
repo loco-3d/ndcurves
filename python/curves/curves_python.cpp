@@ -6,6 +6,7 @@
 #include "python_variables.h"
 #include "archive_python_binding.h"
 #include "optimization_python.h"
+#include "registration.h"
 #include <curves/serialization/curves.hpp>
 
 #include <boost/python.hpp>
@@ -475,9 +476,8 @@ BOOST_PYTHON_MODULE(curves) {
   ENABLE_SPECIFIC_MATRIX_TYPE(matrix3_t);
   ENABLE_SPECIFIC_MATRIX_TYPE(matrix4_t);
   // ENABLE_SPECIFIC_MATRIX_TYPE(quaternion_t);
-  eigenpy::exposeQuaternion();
-  /*eigenpy::exposeAngleAxis();
-  eigenpy::exposeQuaternion();*/
+  if(not register_symbolic_link_to_registered_type<Eigen::Quaterniond>())
+    eigenpy::exposeQuaternion();
   /** END eigenpy init**/
   /** Expose base abstracts class for each dimension/type : **/
   class_<curve_abc_t, boost::noncopyable, boost::shared_ptr<curve_abc_callback> >("curve")

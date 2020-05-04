@@ -6,6 +6,7 @@ SET(${PROJECT_NAME}_WRAP_SOURCES
   python_variables.h
   namespace.cpp
   namespace.h
+  registration.h
   )
 
 SET(wrap ${PROJECT_NAME}_wrap)
