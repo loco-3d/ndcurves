@@ -36,6 +36,8 @@ Polynomial polynomial_from_curve(const typename Polynomial::curve_abc_t& curve) 
 /// \return the equivalent cubic bezier curve.
 template <typename Bezier>
 Bezier bezier_from_curve(const typename Bezier::curve_abc_t& curve) {
+  if(curve.degree() > 3)
+    throw std::invalid_argument("bezier_from_curve is only implemented for curves of degree <= 3.");
   typedef typename Bezier::point_t point_t;
   typedef typename Bezier::t_point_t t_point_t;
   typedef typename Bezier::num_t num_t;
@@ -68,6 +70,8 @@ Bezier bezier_from_curve(const typename Bezier::curve_abc_t& curve) {
 /// \return the equivalent cubic hermite spline.
 template <typename Hermite>
 Hermite hermite_from_curve(const typename Hermite::curve_abc_t& curve) {
+  if(curve.degree() > 3)
+    throw std::invalid_argument("hermite_from_curve is only implemented for curves of degree <= 3.");
   typedef typename Hermite::pair_point_tangent_t pair_point_tangent_t;
   typedef typename Hermite::t_pair_point_tangent_t t_pair_point_tangent_t;
   typedef typename Hermite::point_t point_t;
