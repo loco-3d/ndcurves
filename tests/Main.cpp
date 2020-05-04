@@ -1401,6 +1401,113 @@ void PiecewisePolynomialCurveFromDiscretePoints(bool& error) {
   }
 }
 
+void PiecewisePolynomialCurveFromFile(bool& error){
+  std::string filename_pos(TEST_DATA_PATH "discrete_points_pos.txt");
+  std::string filename_vel(TEST_DATA_PATH "discrete_points_vel.txt");
+  std::string filename_acc(TEST_DATA_PATH "discrete_points_acc.txt");
+  std::string filename_error(TEST_DATA_PATH "discrete_points_error.txt");
+
+  piecewise_t c_pos = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_pos, 0.01, 3);
+  if(c_pos.min() != 0.){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
+    error = true;
+  }
+  if(c_pos.max() != 0.03){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 0.03" << std::endl;
+    error = true;
+  }
+  pointX_t p0(3), p2(3);
+  p0<<-0.003860389372941039, 0.0012353625242474164, 0.009005041639999767;
+  p2<<-0.0028803627898293283, 0.0011918668401150736, 0.009005041639999767;
+  if(! c_pos(0.).isApprox(p0)){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    error = true;
+  }
+  if(! c_pos(0.02).isApprox(p2)){
+   std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+   error = true;
+  }
+
+  piecewise_t c_vel = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_vel, 0.05, 3);
+  if(c_pos.min() != 0.){
+   std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
+   error = true;
+  }
+  if(! QuasiEqual(c_vel.max(), 0.15)){
+   std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 0.15" << std::endl;
+   error = true;
+  }
+  pointX_t p3(3);
+  p3<<0.2968141884672718, 0.0012916907964522569, 0.00951023474821927;
+  if(! c_vel(0.).isApprox(p0)){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    error = true;
+  }
+  if(! c_vel(0.15).isApprox(p3)){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    error = true;
+  }
+  if(! c_vel.derivate(0., 1).isZero()){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_vel derivative at 0. should be null" << std::endl;
+    error = true;
+  }
+  if(! c_vel.derivate(0.1, 1).isZero()){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_vel derivative at 0.1 should be null" << std::endl;
+    error = true;
+  }
+
+  piecewise_t c_acc = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_acc, 0.001, 3);
+  if(c_acc.min() != 0.){
+  std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
+  error = true;
+  }
+  if(! QuasiEqual(c_acc.max(), 7.85)){
+  std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 7.85" << std::endl;
+  error = true;
+  }
+  if(! c_acc(0.).isApprox(p0)){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    error = true;
+  }
+  pointX_t p5200(3);
+  p5200<<0.30273356072723845, -0.07619420199174821, 0.010015348526727433;
+  if(! c_acc(5.2).isApprox(p5200)){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    error = true;
+  }
+  if(! c_acc.derivate(0., 1).isZero()){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc derivative at 0 should be null" << std::endl;
+    error = true;
+  }
+  if(! c_acc.derivate(0.5, 1).isZero()){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc derivative should at 0.5 be null" << std::endl;
+    error = true;
+  }
+  if(! c_acc.derivate(0., 2).isZero()){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc second derivative at 0 should be null" << std::endl;
+    error = true;
+  }
+  if(! c_acc.derivate(5., 2).isZero()){
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc second derivative at 5 should be null" << std::endl;
+    error = true;
+  }
+
+  try {
+    piecewise_t c_error = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_acc, 0.01, 4);
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, dimension do not match, an error should be raised" << std::endl;
+    error = true;
+  } catch (std::invalid_argument e) {
+  }
+  try {
+    piecewise_t c_error = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_error, 0.01, 3);
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, discrete_points_error should not be parsed correctly" << std::endl;
+    error = true;
+  } catch (std::invalid_argument e) {
+  }
+
+}
+
+
 void serializationCurvesTest(bool& error) {
   try {
     std::string errMsg1("in serializationCurveTest, Error While serializing Polynomial : ");
@@ -2708,6 +2815,7 @@ int main(int /*argc*/, char** /*argv[]*/) {
   CubicHermitePairsPositionDerivativeTest(error);
   piecewiseCurveTest(error);
   PiecewisePolynomialCurveFromDiscretePoints(error);
+  PiecewisePolynomialCurveFromFile(error);
   toPolynomialConversionTest(error);
   cubicConversionTest(error);
   curveAbcDimDynamicTest(error);
