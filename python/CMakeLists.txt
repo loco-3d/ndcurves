@@ -10,3 +10,4 @@ ADD_PYTHON_UNIT_TEST("python-sinusoidal" "python/test/test-sinusoidal.py" "pytho
 ADD_PYTHON_UNIT_TEST("python-minjerk" "python/test/test-minjerk.py" "python")
 ADD_PYTHON_UNIT_TEST("python-optimization" "python/test/optimization.py" "python")
 ADD_PYTHON_UNIT_TEST("python-notebook" "python/test/notebook.py" "python")
+ADD_PYTHON_UNIT_TEST("python-registration" "python/test/registration.py" "python")
