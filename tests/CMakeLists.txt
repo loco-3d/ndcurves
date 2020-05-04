@@ -1,10 +1,15 @@
 ADD_UNIT_TEST(curves_tests Main.cpp)
-ADD_UNIT_TEST(test-constant test-constant.cpp)
-ADD_UNIT_TEST(test-sinusoidal test-sinusoidal.cpp)
-ADD_UNIT_TEST(test-minjerk test-minjerk.cpp)
-
 TARGET_LINK_LIBRARIES(curves_tests ${PROJECT_NAME} ${Boost_LIBRARIES})
 TARGET_COMPILE_DEFINITIONS(curves_tests PRIVATE -DTEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
-TARGET_LINK_LIBRARIES(test-constant ${PROJECT_NAME} ${Boost_LIBRARIES})
-TARGET_LINK_LIBRARIES(test-sinusoidal ${PROJECT_NAME} ${Boost_LIBRARIES})
-TARGET_LINK_LIBRARIES(test-minjerk ${PROJECT_NAME} ${Boost_LIBRARIES})
+
+SET(${PROJECT_NAME}_TESTS
+  test-constant
+  test-sinusoidal
+  test-minjerk
+  )
+
+FOREACH(TEST ${${PROJECT_NAME}_TESTS})
+  ADD_UNIT_TEST(${TEST} ${TEST})
+  TARGET_LINK_LIBRARIES(${TEST} ${PROJECT_NAME} ${Boost_LIBRARIES})
+ENDFOREACH(TEST ${${PROJECT_NAME}_TESTS})
+
