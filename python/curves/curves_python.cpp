@@ -221,6 +221,13 @@ polynomial_t* wrapPolynomialConstructorFromBoundaryConditionsDegree5(const point
                                                                      const real min, const real max) {
   return new polynomial_t(init, d_init, dd_init, end, d_end, dd_end, min, max);
 }
+static polynomial_t minimumJerk(const pointX_t& init, const pointX_t& end) {
+  return polynomial_t::MinimumJerk(init, end);
+}
+static polynomial_t minimumJerkWithTiming(const pointX_t& init, const pointX_t& end,
+                                          const real min, const real max) {
+  return polynomial_t::MinimumJerk(init, end, min, max);
+}
 /* End wrap polynomial */
 
 /* Wrap piecewise curve */
@@ -752,6 +759,15 @@ BOOST_PYTHON_MODULE(curves) {
            "such that c(min) == init and c(max) == end"
            " dc(min) == d_init and dc(max) == d_end"
            " ddc(min) == dd_init and ddc(max) == dd_end")
+      .def("MinimumJerk", &minimumJerk, args("init", "end"),
+           "Build a polynomial curve connecting init to end minimizing the time integral of the squared jerk,"
+           "with a zero initial and final velocity and acceleration."
+           "The curve is defined in [0; 1], of duration 1.")
+      .def("MinimumJerk", &minimumJerkWithTiming, args("init", "end", "t_min", "t_max"),
+           "Build a polynomial curve connecting init to end minimizing the time integral of the squared jerk,"
+           "with a zero initial and final velocity and acceleration."
+           "The curve is defined in [t_min; t_max], of duration t_max - t_min.")
+      .staticmethod("MinimumJerk")
       .def("coeffAtDegree", &polynomial_t::coeffAtDegree)
       .def("coeff", &polynomial_t::coeff)
       .def("saveAsText", &polynomial_t::saveAsText<polynomial_t>, bp::args("filename"),
