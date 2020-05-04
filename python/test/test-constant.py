@@ -18,10 +18,10 @@ class ConstantCurveTest(unittest.TestCase):
         self.assertEqual(c.degree(), 0)
 
         # constructor from a point
-        p = array([1, 23. ,5., 9, -5])
+        p = array([1, 23., 5., 9, -5])
         c = constant(p)
         self.assertEqual(c.min(), 0.)
-        self.assertTrue(c.max() > 1e100) # convert std::numeric_limits<time_t>::max() to python ?
+        self.assertTrue(c.max() > 1e100)  # convert std::numeric_limits<time_t>::max() to python ?
         self.assertEqual(c.dim(), 5)
         self.assertEqual(c.degree(), 0)
 
@@ -77,8 +77,8 @@ class ConstantCurveTest(unittest.TestCase):
         c2 = constant(p, 1., 3.)
         c3 = c1
 
-        pn = array([1,23., 5., 9])
-        p2 = array([1,17., 5., 9, -5])
+        pn = array([1, 23., 5., 9])
+        p2 = array([1, 17., 5., 9, -5])
         cn1 = constant(pn, 1., 3.)
         cn2 = constant(p, 1.5, 3.)
         cn3 = constant(p, 1., 2.)
@@ -126,7 +126,7 @@ class Constant3CurveTest(unittest.TestCase):
         p = array([1, 23., 5.])
         c = constant3(p)
         self.assertEqual(c.min(), 0.)
-        self.assertTrue(c.max() > 1e100) # convert std::numeric_limits<time_t>::max() to python ?
+        self.assertTrue(c.max() > 1e100)  # convert std::numeric_limits<time_t>::max() to python ?
         self.assertEqual(c.dim(), 3)
         self.assertEqual(c.degree(), 0)
 

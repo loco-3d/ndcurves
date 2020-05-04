@@ -25,7 +25,7 @@ class SinusoidalCurveTest(unittest.TestCase):
         c = sinusoidal(p0, amp, T, phi)
 
         self.assertEqual(c.min(), 0.)
-        self.assertTrue(c.max() > 1e100) # convert std::numeric_limits<time_t>::max() to python ?
+        self.assertTrue(c.max() > 1e100)  # convert std::numeric_limits<time_t>::max() to python ?
         self.assertEqual(c.dim(), 3)
         self.assertEqual(c.degree(), 1)
 
@@ -41,17 +41,16 @@ class SinusoidalCurveTest(unittest.TestCase):
         p_end = array([-1.2, -3, 2.7, -3.2])
         c = sinusoidal(1.5, p_init, p_end)
         self.assertEqual(c.min(), 0.)
-        self.assertTrue(c.max() > 1e100) # convert std::numeric_limits<time_t>::max() to python ?
+        self.assertTrue(c.max() > 1e100)  # convert std::numeric_limits<time_t>::max() to python ?
         self.assertEqual(c.dim(), 4)
         self.assertEqual(c.degree(), 1)
-
 
         # constructor from stationary points with timing
         p_init = array([1.2, -5, 3.6, 5.])
         p_end = array([-1.2, -3, 2.7, -3.2])
         c = sinusoidal(1.5, p_init, p_end, 1.5, 25)
         self.assertEqual(c.min(), 1.5)
-        self.assertEqual(c.max(), 25.) # convert std::numeric_limits<time_t>::max() to python ?
+        self.assertEqual(c.max(), 25.)  # convert std::numeric_limits<time_t>::max() to python ?
         self.assertEqual(c.dim(), 4)
         self.assertEqual(c.degree(), 1)
 
@@ -64,7 +63,6 @@ class SinusoidalCurveTest(unittest.TestCase):
         T = 1.5
         phi = 0.
         c = sinusoidal(p0, amp, T, phi, 0., 20.)
-
 
         self.assertTrue(isclose(c(0), p0).all())
         self.assertTrue(isclose(c(T), p0).all())
@@ -88,7 +86,7 @@ class SinusoidalCurveTest(unittest.TestCase):
 
         self.assertTrue(isclose(c.derivate(0., 1), (amp * 2. * np.pi / T)).all())
         self.assertTrue(isclose(c.derivate(T, 1), (amp * 2. * np.pi / T)).all())
-        self.assertTrue(isclose(c.derivate(T / 2., 1), (- amp * 2. * np.pi / T)).all())
+        self.assertTrue(isclose(c.derivate(T / 2., 1), (-amp * 2. * np.pi / T)).all())
         self.assertTrue(isclose(c.derivate(T / 4., 1), np.zeros(3)).all())
         self.assertTrue(isclose(c.derivate(3. * T / 4., 1), np.zeros(3)).all())
 
@@ -121,7 +119,6 @@ class SinusoidalCurveTest(unittest.TestCase):
             self.assertTrue(isclose(c_deriv(0.9), c.derivate(0.9, i)).all())
             self.assertTrue(isclose(c_deriv(T), c.derivate(T, i)).all())
             self.assertTrue(isclose(c_deriv(T * 2.), c.derivate(T * 2., i)).all())
-
 
     def test_comparator(self):
         p0 = array([1, -23., 5.])
