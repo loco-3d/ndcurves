@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(comparison) {
 }
 
 BOOST_AUTO_TEST_CASE(serialization) {
-  std::string fileName("fileTest");
+  std::string fileName("fileTest_constant");
   pointX_t p(4);
   p << -1, 0.5, 2., 1.2;
 
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(serialization) {
 }
 
 BOOST_AUTO_TEST_CASE(serialization_3) {
-  std::string fileName("fileTest");
+  std::string fileName("fileTest_constant3");
   point3_t p;
   p << -1, 0.5, 2.;
 

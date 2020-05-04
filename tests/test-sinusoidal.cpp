@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(comparison) {
 }
 
 BOOST_AUTO_TEST_CASE(serialization) {
-  std::string fileName("fileTest");
+  std::string fileName("fileTest_sinusoidal");
   pointX_t p0(3), amp(3);
   p0 << -1, 0.5, 2.;
   amp << 2, -0.8, -1;

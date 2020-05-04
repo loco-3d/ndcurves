@@ -143,20 +143,20 @@ class Constant3CurveTest(unittest.TestCase):
     def test_serialization(self):
         p = array([1, 23., 5.])
         c = constant3(p, 0., 2.)
-        c.saveAsText("serialization_curve.txt")
-        c.saveAsXML("serialization_curve.xml", "constant")
-        c.saveAsBinary("serialization_curve")
+        c.saveAsText("serialization_constant.txt")
+        c.saveAsXML("serialization_constant.xml", "constant")
+        c.saveAsBinary("serialization_constant")
 
         c_txt = constant3()
-        c_txt.loadFromText("serialization_curve.txt")
+        c_txt.loadFromText("serialization_constant.txt")
         self.assertEqual(c, c_txt)
 
         c_xml = constant3()
-        c_xml.loadFromXML("serialization_curve.xml", "constant")
+        c_xml.loadFromXML("serialization_constant.xml", "constant")
         self.assertEqual(c, c_xml)
 
         c_bin = constant3()
-        c_bin.loadFromBinary("serialization_curve")
+        c_bin.loadFromBinary("serialization_constant")
         self.assertEqual(c, c_bin)
 
 

@@ -160,20 +160,20 @@ class SinusoidalCurveTest(unittest.TestCase):
         phi = 0.2
 
         c = sinusoidal(p0, amp, T, phi, 2., 5.)
-        c.saveAsText("serialization_curve.txt")
-        c.saveAsXML("serialization_curve.xml", "sinusoidal")
-        c.saveAsBinary("serialization_curve")
+        c.saveAsText("serialization_sinusoidal.txt")
+        c.saveAsXML("serialization_sinusoidal.xml", "sinusoidal")
+        c.saveAsBinary("serialization_sinusoidal")
 
         c_txt = sinusoidal()
-        c_txt.loadFromText("serialization_curve.txt")
+        c_txt.loadFromText("serialization_sinusoidal.txt")
         self.assertEqual(c, c_txt)
 
         c_xml = sinusoidal()
-        c_xml.loadFromXML("serialization_curve.xml", "sinusoidal")
+        c_xml.loadFromXML("serialization_sinusoidal.xml", "sinusoidal")
         self.assertEqual(c, c_xml)
 
         c_bin = sinusoidal()
-        c_bin.loadFromBinary("serialization_curve")
+        c_bin.loadFromBinary("serialization_sinusoidal")
         self.assertEqual(c, c_bin)
 
 
