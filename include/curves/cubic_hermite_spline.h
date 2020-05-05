@@ -210,16 +210,6 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   ///
   Point evalCubicHermiteSpline(const Numeric t, std::size_t degree_derivative) const {
     const std::size_t id = findInterval(t);
-    // ID is on the last control point
-    if (id == size_ - 1) {
-      if (degree_derivative == 0) {
-        return control_points_.back().first;
-      } else if (degree_derivative == 1) {
-        return control_points_.back().second;
-      } else {
-        return control_points_.back().first * 0.;  // To modify, create a new Tangent ininitialized with 0.
-      }
-    }
     const pair_point_tangent_t Pair0 = control_points_.at(id);
     const pair_point_tangent_t Pair1 = control_points_.at(id + 1);
     const Time& t0 = time_control_points_[id];
@@ -297,16 +287,15 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   /// \param t : time where to look for interval.
   /// \return Index of interval for time t.
   ///
-  std::size_t findInterval(const Numeric t) const {
+  std::size_t findInterval(const Time t) const {
     // time before first control point time.
-    if (t < time_control_points_[0]) {
+    if (t <= time_control_points_[0]) {
       return 0;
     }
     // time is after last control point time
-    if (t > time_control_points_[size_ - 1]) {
-      return size_ - 1;
+    if (t >= time_control_points_[size_ - 1]) {
+      return size_ - 2;
     }
-
     std::size_t left_id = 0;
     std::size_t right_id = size_ - 1;
     while (left_id <= right_id) {
