@@ -71,7 +71,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
    * @param other the other curve to check
    * @param order the order up to which the derivatives of the curves are checked for equality
    * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
-   * @return true is the two curves are approximately equals
+   * @return true if the two curves are approximately equal
    */
   bool isEquivalent(const curve_t* other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision(),
                     const size_t order = 5) const {
@@ -89,7 +89,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
       }
       t += inc;
     }
-    //  check if the derivatives are equals
+    //  check if the derivatives are equal
     for (size_t n = 1; n <= order; ++n) {
       t = min();
       while (t <= max()) {
@@ -103,12 +103,12 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   }
 
   /**
-   * @brief isApprox check if other and *this are approximately equals given a precision treshold
-   * Only two curves of the same class can be approximately equals,
+   * @brief isApprox check if other and *this are approximately equal given a precision treshold
+   * Only two curves of the same class can be approximately equal,
    * for comparison between different type of curves see isEquivalent.
    * @param other the other curve to check
    * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
-   * @return true is the two curves are approximately equals
+   * @return true if the two curves are approximately equal
    */
   virtual bool isApprox(const curve_t* other,
                         const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const = 0;
