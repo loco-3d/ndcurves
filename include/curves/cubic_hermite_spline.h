@@ -37,6 +37,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   typedef std::pair<Point, Point> pair_point_tangent_t;
   typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
   typedef std::vector<Time> vector_time_t;
+  typedef Time time_t;
   typedef Numeric num_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
   typedef cubic_hermite_spline<Time, Numeric, Safe, point_t> cubic_hermite_spline_t;
@@ -90,7 +91,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param t : time when to evaluate the spline.
   ///  \return \f$p(t)\f$ point corresponding on spline at time t.
   ///
-  virtual Point operator()(const Time t) const {
+  virtual Point operator()(const time_t t) const {
     check_conditions();
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       throw std::invalid_argument("can't evaluate cubic hermite spline, out of range");
@@ -142,7 +143,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param order : order of derivative.
   ///  \return \f$\frac{d^Np(t)}{dt^N}\f$ point corresponding on derivative spline of order N at time t.
   ///
-  virtual Point derivate(const Time t, const std::size_t order) const {
+  virtual Point derivate(const time_t t, const std::size_t order) const {
     check_conditions();
     return evalCubicHermiteSpline(t, order);
   }
@@ -287,7 +288,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   /// \param t : time where to look for interval.
   /// \return Index of interval for time t.
   ///
-  std::size_t findInterval(const Time t) const {
+  std::size_t findInterval(const time_t t) const {
     // time before first control point time.
     if (t <= time_control_points_[0]) {
       return 0;
