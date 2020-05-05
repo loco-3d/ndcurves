@@ -31,7 +31,7 @@ inline unsigned int bin(const unsigned int n, const unsigned int k) {
 }
 
 /// \class Bernstein.
-/// \brief Computes a Bernstein polynome.
+/// \brief Computes a Bernstein polynomial.
 ///
 template <typename Numeric = double>
 struct Bern {
@@ -40,6 +40,9 @@ struct Bern {
 
   ~Bern() {}
 
+  /// \brief Evaluation of Bernstein polynomial at value u.
+  /// \param u : value between 0 and 1.
+  /// \return Evaluation corresponding at value u.
   Numeric operator()(const Numeric u) const {
     if (!(u >= 0. && u <= 1.)) {
       throw std::invalid_argument("u needs to be betwen 0 and 1.");
@@ -47,11 +50,17 @@ struct Bern {
     return bin_m_i_ * (pow(u, i_)) * pow((1 - u), m_minus_i);
   }
 
+  /// \brief Check if actual Bernstein polynomial and other are approximately equal.
+  /// \param other : the other Bernstein polynomial to check.
+  /// \return true if the two Bernstein polynomials are approximately equals.
   virtual bool operator==(const Bern& other) const {
     return curves::isApprox<Numeric>(m_minus_i, other.m_minus_i) && curves::isApprox<Numeric>(i_, other.i_) &&
            curves::isApprox<Numeric>(bin_m_i_, other.bin_m_i_);
   }
 
+  /// \brief Check if actual Bernstein polynomial and other are different.
+  /// \param other : the other Bernstein polynomial to check.
+  /// \return true if the two Bernstein polynomials are different.
   virtual bool operator!=(const Bern& other) const { return !(*this == other); }
 
   /* Attributes */

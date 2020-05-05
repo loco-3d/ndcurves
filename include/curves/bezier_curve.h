@@ -54,7 +54,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   /// Given the first and last point of a control points set, create the bezier curve.
   /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
   /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
-  /// \param T             : upper bound of time which is between \f$[0;T]\f$ (default \f$[0;1]\f$).
+  /// \param T_min         : lower bound of time, curve will be defined for time in [T_min, T_max].
+  /// \param T_max         : upper bound of time, curve will be defined for time in [T_min, T_max].
   /// \param mult_T        : ... (default value is 1.0).
   ///
   template <typename In>
@@ -65,7 +66,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
         mult_T_(mult_T),
         size_(std::distance(PointsBegin, PointsEnd)),
         degree_(size_ - 1),
-        bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_)) {
+        bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_)) 
+  {
     if (bernstein_.size() != size_) {
       throw std::invalid_argument("Invalid size of polynomial");
     }
@@ -82,12 +84,15 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
   }
 
-  /// \brief Constructor
+  /// \brief Constructor with constraints.
   /// This constructor will add 4 points (2 after the first one, 2 before the last one)
   /// to ensure that velocity and acceleration constraints are respected.
   /// \param PointsBegin   : an iterator pointing to the first element of a control point container.
   /// \param PointsEnd     : an iterator pointing to the last element of a control point container.
   /// \param constraints : constraints applying on start / end velocities and acceleration.
+  /// \param T_min         : lower bound of time, curve will be defined for time in [T_min, T_max].
+  /// \param T_max         : upper bound of time, curve will be defined for time in [T_min, T_max].
+  /// \param mult_T        : ... (default value is 1.0).
   ///
   template <typename In>
   bezier_curve(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints, const time_t T_min = 0.,
@@ -97,7 +102,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
         mult_T_(mult_T),
         size_(std::distance(PointsBegin, PointsEnd) + 4),
         degree_(size_ - 1),
-        bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_)) {
+        bernstein_(curves::makeBernstein<num_t>((unsigned int)degree_)) 
+  {
     if (Safe && (size_ < 1 || T_max_ <= T_min_)) {
       throw std::invalid_argument("can't create bezier min bound is higher than max bound");
     }
@@ -148,7 +154,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
    * isEquivalent
    * @param other the other curve to check
    * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
-   * @return true is the two curves are approximately equals
+   * @return true if the two curves are approximately equals
    */
   bool isApprox(const bezier_curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
     bool equal = curves::isApprox<num_t>(T_min_, other.min()) && curves::isApprox<num_t>(T_max_, other.max()) &&
@@ -339,7 +345,6 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
   /// \brief Split the bezier curve in 2 at time t.
   /// \param t : list of points.
-  /// \param u : unNormalized time.
   /// \return pair containing the first element of both bezier curve obtained.
   ///
   std::pair<bezier_curve_t, bezier_curve_t> split(const Numeric t) const {
@@ -413,6 +418,10 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
  private:
+  /// \brief Ensure constraints of bezier curve.
+  /// Add 4 points (2 after the first one, 2 before the last one) to biezer curve
+  /// to ensure that velocity and acceleration constraints are respected.
+  ///
   template <typename In>
   t_point_t add_constraints(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints) {
     t_point_t res;
