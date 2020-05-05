@@ -60,7 +60,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   template <typename In>
   bezier_curve(In PointsBegin, In PointsEnd, const time_t T_min = 0., const time_t T_max = 1.,
                const time_t mult_T = 1.)
-      : T_min_(T_min),
+      : dim_(PointsBegin->size()),
+        T_min_(T_min),
         T_max_(T_max),
         mult_T_(mult_T),
         size_(std::distance(PointsBegin, PointsEnd)),
@@ -74,11 +75,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
       throw std::invalid_argument("can't create bezier min bound is higher than max bound");
     }
     for (; it != PointsEnd; ++it) {
+      if(Safe && static_cast<size_t>(it->size()) != dim_)
+        throw std::invalid_argument("All the control points must have the same dimension.");
       control_points_.push_back(*it);
-    }
-    // set dim
-    if (control_points_.size() != 0) {
-      dim_ = PointsBegin->size();
     }
   }
 
@@ -92,7 +91,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   template <typename In>
   bezier_curve(In PointsBegin, In PointsEnd, const curve_constraints_t& constraints, const time_t T_min = 0.,
                const time_t T_max = 1., const time_t mult_T = 1.)
-      : T_min_(T_min),
+      : dim_(PointsBegin->size()),
+        T_min_(T_min),
         T_max_(T_max),
         mult_T_(mult_T),
         size_(std::distance(PointsBegin, PointsEnd) + 4),
@@ -103,11 +103,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
     t_point_t updatedList = add_constraints<In>(PointsBegin, PointsEnd, constraints);
     for (cit_point_t cit = updatedList.begin(); cit != updatedList.end(); ++cit) {
+      if(Safe && static_cast<size_t>(cit->size()) != dim_)
+        throw std::invalid_argument("All the control points must have the same dimension.");
       control_points_.push_back(*cit);
-    }
-    // set dim
-    if (control_points_.size() != 0) {
-      dim_ = PointsBegin->size();
     }
   }
 
