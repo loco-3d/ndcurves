@@ -21,7 +21,7 @@
 #include <vector>
 #include <utility>
 namespace curves {
-// REF: boulic et al An inverse kinematics architecture enforcing an arbitrary number of strict priority levels
+///  \brief An inverse kinematics architecture enforcing an arbitrary number of strict priority levels (Reference : Boulic et Al. 2003)
 template <typename _Matrix_Type_>
 void PseudoInverse(_Matrix_Type_& pinvmat) {
   Eigen::JacobiSVD<_Matrix_Type_> svd(pinvmat, Eigen::ComputeFullU | Eigen::ComputeFullV);
