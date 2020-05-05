@@ -119,8 +119,14 @@ class rotation_spline : public curve_abc_quat_t {
     return exact_cubic_constraint_one_dim(waypoints.begin(), waypoints.end());
   }
 
+  /// \brief Get dimension of curve.
+  /// \return dimension of curve.
   virtual std::size_t dim() const { return dim_; }
+  /// \brief Get the minimum time for which the curve is defined.
+  /// \return \f$t_{min}\f$, lower bound of time range.
   virtual time_t min() const { return min_; }
+  /// \brief Get the maximum time for which the curve is defined.
+  /// \return \f$t_{max}\f$, upper bound of time range.
   virtual time_t max() const { return max_; }
   /// \brief Get the degree of the curve.
   /// \return \f$degree\f$, the degree of the curve.
