@@ -58,14 +58,14 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     if (Safe && size_ < 1) {
       throw std::length_error("can not create cubic_hermite_spline, number of pairs is inferior to 2.");
     }
+    // Set dimension according to size of points
+    dim_ = PairsBegin->first.size();
     // Push all pairs in controlPoints
     In it(PairsBegin);
     for (; it != PairsEnd; ++it) {
+      if(Safe && (static_cast<size_t>(it->first.size()) != dim_ || static_cast<size_t>(it->second.size()) != dim_))
+        throw std::invalid_argument("All the control points and their derivatives must have the same dimension.");
       control_points_.push_back(*it);
-    }
-    // Set dimension according to size of points
-    if (control_points_.size() != 0) {
-      dim_ = control_points_[0].first.size();
     }
     // Set time
     setTime(time_control_points);
