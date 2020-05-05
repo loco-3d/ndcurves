@@ -490,6 +490,36 @@ void cubicConversionTest(bool& error) {
   curve_abc_t* bc_der = bc0.compute_derivate_ptr(1);
   polynomial_t pol_test = polynomial_from_curve<polynomial_t>(*bc_der);
   CompareCurves<curve_abc_t, polynomial_t>(*bc_der, pol_test, errMsg1, error);
+
+  // check that an error is correctly raised when degree > 3:
+  point3_t a(1, 2, 3);
+  point3_t b(2, 3, 4);
+  point3_t c(3, 4, 5);
+  point3_t d(3, 6, 7);
+  point3_t e(3, 6, 7);
+  t_pointX_t vec;
+  vec.push_back(a);
+  vec.push_back(b);
+  vec.push_back(c);
+  vec.push_back(d);
+  vec.push_back(e);
+  polynomial_t pol_4(vec.begin(), vec.end(), 0, 1);
+  if(pol_4.degree() != 4){
+    std::cout<<"In test CubicConversionTest - Error in the creatin of the polynomial"<<std::endl;
+    error = true;
+  }
+  try {
+    cubic_hermite_spline_t chs3 = hermite_from_curve<cubic_hermite_spline_t>(pol_4);
+    std::cout<<"In test CubicConversionTest - Cannot convert to hermite from degree > 3, should raise an error"<<std::endl;
+    error = true;
+  } catch (std::invalid_argument e) {
+  }
+  try {
+    bezier_t b3 = bezier_from_curve<bezier_t>(pol_4);
+    std::cout<<"In test CubicConversionTest - Cannot convert to bezier from degree > 3, should raise an error"<<std::endl;
+    error = true;
+  } catch (std::invalid_argument e) {
+  }
 }
 
 /*Exact Cubic Function tests*/
