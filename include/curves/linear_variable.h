@@ -32,7 +32,10 @@ struct linear_variable : public serialization::Serializable {
   linear_variable(const vector_x_t& c) : B_(matrix_x_t::Zero(c.size(), c.size())), c_(c), zero(false) {}  // constant
   linear_variable(const matrix_x_t& B, const vector_x_t& c) : B_(B), c_(c), zero(false) {}                // mixed
 
-  // linear evaluation
+  ///  \brief Linear evaluation for vector x.
+  ///  \param val : vector to evaluate the linear variable.
+  ///  \return Evaluation of linear variable for vector x.
+  ///
   vector_x_t operator()(const Eigen::Ref<const vector_x_t>& val) const {
     if (isZero()) return c();
     if (Safe && B().cols() != val.rows())
@@ -40,6 +43,10 @@ struct linear_variable : public serialization::Serializable {
     return B() * val + c();
   }
 
+  /// \brief Add another linear variable.
+  /// \param w1 : linear variable to add.
+  /// \return Linear variable after operation.
+  ///
   linear_variable_t& operator+=(const linear_variable_t& w1) {
     if (w1.isZero()) return *this;
     if (isZero()) {
@@ -51,6 +58,11 @@ struct linear_variable : public serialization::Serializable {
     this->c_ += w1.c_;
     return *this;
   }
+
+  /// \brief Substract another linear variable.
+  /// \param w1 : linear variable to substract.
+  /// \return Linear variable after operation.
+  ///
   linear_variable_t& operator-=(const linear_variable_t& w1) {
     if (w1.isZero()) return *this;
     if (isZero()) {
@@ -62,25 +74,48 @@ struct linear_variable : public serialization::Serializable {
     this->c_ -= w1.c_;
     return *this;
   }
+
+  /// \brief Divide by a constant : p_i / d = B_i*x/d + c_i/d.
+  /// \param d : constant.
+  /// \return Linear variable after operation.
+  ///
   linear_variable_t& operator/=(const double d) {
     B_ /= d;
     c_ /= d;
     return *this;
   }
+
+  /// \brief Multiply by a constant : p_i / d = B_i*x*d + c_i*d.
+  /// \param d : constant.
+  /// \return Linear variable after operation.
+  ///
   linear_variable_t& operator*=(const double d) {
     B_ *= d;
     c_ *= d;
     return *this;
   }
 
+  /// \brief Get a linear variable equal to zero.
+  /// \param dim : Dimension of linear variable.
+  /// \return Linear variable equal to zero.
+  ///
   static linear_variable_t Zero(size_t dim = 0) {
     return linear_variable_t(matrix_x_t::Identity(dim, dim), vector_x_t::Zero(dim));
   }
 
+  /// \brief Get dimension of linear variable.
+  /// \return Dimension of linear variable.
+  ///
   std::size_t size() const { return zero ? 0 : std::max(B_.cols(), c_.size()); }
 
+  /// \brief Get norm of linear variable (Norm of B plus norm of C).
+  /// \return Norm of linear variable.
   Numeric norm() const { return isZero() ? 0 : (B_.norm() + c_.norm()); }
 
+  /// \brief Check if actual linear variable and other are approximately equal given a precision treshold.
+  /// \param prec : the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+  /// \return true if the two linear variables are approximately equal.
+   * Only two curves of the same class can be approximately equal,
   bool isApprox(const linear_variable_t& other,
                 const double prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
     return (*this - other).norm() < prec;
