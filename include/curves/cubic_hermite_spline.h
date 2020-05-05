@@ -47,8 +47,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   cubic_hermite_spline() : dim_(0), T_min_(0), T_max_(0) {}
 
   /// \brief Constructor.
-  /// \param wayPointsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
-  /// \param wayPointsEns   : an iterator pointing to the last  element of a pair(position, derivative) container.
+  /// \param PairsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
+  /// \param PairsEnd   : an iterator pointing to the last  element of a pair(position, derivative) container.
   /// \param time_control_points : vector containing time for each waypoint.
   ///
   template <typename In>
@@ -204,7 +204,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   /// we define \f$\alpha=(t-t_0)/(t_1-t_0) \in [0, 1]\f$ where \f$t \in [t_0, t_1]\f$.<br>
   /// Polynom \f$p(t) \in [t_0, t_1]\f$ becomes \f$p(\alpha) \in [0, 1]\f$
   /// and \f$p(\alpha) = p((t-t_0)/(t_1-t_0))\f$.
-  /// \param t : time when to evaluate the curve.
+  /// \param t : time to evaluate the curve.
   /// \param degree_derivative : Order of derivate of cubic hermite spline (set value to 0 if you do not want derivate)
   /// \return point corresponding \f$p(t)\f$ on spline at time t or its derivate order N \f$\frac{d^Np(t)}{dt^N}\f$.
   ///
@@ -322,6 +322,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     return left_id - 1;
   }
 
+  /// \brief Check if control points list is not empty and dimension of point superior to zero.
+  ///
   void check_conditions() const {
     if (control_points_.size() == 0) {
       throw std::runtime_error(
