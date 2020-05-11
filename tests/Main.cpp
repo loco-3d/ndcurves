@@ -1071,6 +1071,22 @@ void CubicHermitePairsPositionDerivativeTest(bool& error) {
     ComparePoints(t1, res1, errmsg3, error);
     res1 = cubic_hermite_spline_2Pairs.derivate(1., 1);
     ComparePoints(t2, res1, errmsg3, error);
+
+    pointX_t p_derivate, p_compute_derivate;
+    for(size_t order = 1 ; order < 5 ; ++order){
+      std::stringstream ss;
+      ss <<"in Cubic Hermite 2 points, "
+           "compute_derivate do not lead to the same results as derivate for order = ";
+      ss << order << std::endl;
+      curve_ptr_t derivate_ptr(cubic_hermite_spline_2Pairs.compute_derivate_ptr(order));
+      double t = 0.;
+      while(t <= 1.){
+        p_derivate = cubic_hermite_spline_2Pairs.derivate(t, order);
+        p_compute_derivate = derivate_ptr->operator()(t);
+        ComparePoints(p_derivate, p_compute_derivate, ss.str(), error);
+        t += 0.1;
+      }
+    }
   } catch (...) {
     error = true;
     std::cout << "Error in CubicHermitePairsPositionDerivativeTest" << std::endl;

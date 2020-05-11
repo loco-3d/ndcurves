@@ -9,7 +9,8 @@
 #define _CLASS_CUBICHERMITESPLINE
 
 #include "curve_abc.h"
-#include "curve_constraint.h"
+#include "bezier_curve.h"
+#include "piecewise_curve.h"
 
 #include "MathDefs.h"
 
@@ -37,9 +38,13 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   typedef std::pair<Point, Point> pair_point_tangent_t;
   typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<Point> > t_pair_point_tangent_t;
   typedef std::vector<Time> vector_time_t;
+  typedef Time time_t;
   typedef Numeric num_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class
   typedef cubic_hermite_spline<Time, Numeric, Safe, point_t> cubic_hermite_spline_t;
+  typedef bezier_curve<Time, Numeric, Safe, point_t> bezier_t;
+  typedef typename bezier_t::t_point_t t_point_t;
+  typedef piecewise_curve<Time, Numeric, Safe, point_t, point_t, bezier_t> piecewise_bezier_t;
 
  public:
   /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
@@ -58,14 +63,14 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     if (Safe && size_ < 1) {
       throw std::length_error("can not create cubic_hermite_spline, number of pairs is inferior to 2.");
     }
+    // Set dimension according to size of points
+    dim_ = PairsBegin->first.size();
     // Push all pairs in controlPoints
     In it(PairsBegin);
     for (; it != PairsEnd; ++it) {
+      if(Safe && (static_cast<size_t>(it->first.size()) != dim_ || static_cast<size_t>(it->second.size()) != dim_))
+        throw std::invalid_argument("All the control points and their derivatives must have the same dimension.");
       control_points_.push_back(*it);
-    }
-    // Set dimension according to size of points
-    if (control_points_.size() != 0) {
-      dim_ = control_points_[0].first.size();
     }
     // Set time
     setTime(time_control_points);
@@ -90,7 +95,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param t : time when to evaluate the spline.
   ///  \return \f$p(t)\f$ point corresponding on spline at time t.
   ///
-  virtual Point operator()(const Time t) const {
+  virtual Point operator()(const time_t t) const {
     check_conditions();
     if (Safe & !(T_min_ <= t && t <= T_max_)) {
       throw std::invalid_argument("can't evaluate cubic hermite spline, out of range");
@@ -98,7 +103,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     if (size_ == 1) {
       return control_points_.front().first;
     } else {
-      return evalCubicHermiteSpline(t, 0);
+      const bezier_t bezier = buildCurrentBezier(t);
+      return bezier(t);
     }
   }
 
@@ -142,20 +148,33 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param order : order of derivative.
   ///  \return \f$\frac{d^Np(t)}{dt^N}\f$ point corresponding on derivative spline of order N at time t.
   ///
-  virtual Point derivate(const Time t, const std::size_t order) const {
+  virtual Point derivate(const time_t t, const std::size_t order) const {
     check_conditions();
-    return evalCubicHermiteSpline(t, order);
+    if (Safe & !(T_min_ <= t && t <= T_max_)) {
+      throw std::invalid_argument("can't derivate cubic hermite spline, out of range");
+    }
+    if (size_ == 1) {
+      return control_points_.front().second;
+    } else {
+      const bezier_t bezier = buildCurrentBezier(t);
+      return bezier.derivate(t, order);
+    }
   }
 
-  cubic_hermite_spline_t compute_derivate(const std::size_t /*order*/) const {
-    throw std::logic_error("Compute derivate for cubic hermite spline is not implemented yet.");
+  piecewise_bezier_t compute_derivate(const std::size_t order) const {
+    piecewise_bezier_t res;
+    for(size_t i = 0 ; i < size_ - 1 ; ++i){
+      const bezier_t curve = buildCurrentBezier(time_control_points_[i]);
+      res.add_curve(curve.compute_derivate(order));
+    }
+    return res;
   }
 
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
   ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  cubic_hermite_spline_t* compute_derivate_ptr(const std::size_t order) const {
-    return new cubic_hermite_spline_t(compute_derivate(order));
+  piecewise_bezier_t* compute_derivate_ptr(const std::size_t order) const {
+    return new piecewise_bezier_t(compute_derivate(order));
   }
 
   /// \brief Set time of each control point of cubic hermite spline.
@@ -196,117 +215,21 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   ///
   std::size_t numIntervals() const { return size() - 1; }
 
-  /// \brief Evaluate value of cubic hermite spline or its derivate at specified order at time \f$t\f$.
-  /// A cubic hermite spline on unit interval \f$[0,1]\f$ and given two control points defined by
-  /// their position and derivative \f$\{p_0,m_0\}\f$ and \f$\{p_1,m_1\}\f$, is defined by the polynom : <br>
-  ///     \f$p(t)=h_{00}(t)P_0 + h_{10}(t)m_0 + h_{01}(t)p_1 + h_{11}(t)m_1\f$<br>
-  /// To extend this formula to a cubic hermite spline on any arbitrary interval,
-  /// we define \f$\alpha=(t-t_0)/(t_1-t_0) \in [0, 1]\f$ where \f$t \in [t_0, t_1]\f$.<br>
-  /// Polynom \f$p(t) \in [t_0, t_1]\f$ becomes \f$p(\alpha) \in [0, 1]\f$
-  /// and \f$p(\alpha) = p((t-t_0)/(t_1-t_0))\f$.
-  /// \param t : time when to evaluate the curve.
-  /// \param degree_derivative : Order of derivate of cubic hermite spline (set value to 0 if you do not want derivate)
-  /// \return point corresponding \f$p(t)\f$ on spline at time t or its derivate order N \f$\frac{d^Np(t)}{dt^N}\f$.
-  ///
-  Point evalCubicHermiteSpline(const Numeric t, std::size_t degree_derivative) const {
-    const std::size_t id = findInterval(t);
-    // ID is on the last control point
-    if (id == size_ - 1) {
-      if (degree_derivative == 0) {
-        return control_points_.back().first;
-      } else if (degree_derivative == 1) {
-        return control_points_.back().second;
-      } else {
-        return control_points_.back().first * 0.;  // To modify, create a new Tangent ininitialized with 0.
-      }
-    }
-    const pair_point_tangent_t Pair0 = control_points_.at(id);
-    const pair_point_tangent_t Pair1 = control_points_.at(id + 1);
-    const Time& t0 = time_control_points_[id];
-    const Time& t1 = time_control_points_[id + 1];
-    // Polynom for a cubic hermite spline defined on [0., 1.] is :
-    //      p(t) = h00(t)*p0 + h10(t)*m0 + h01(t)*p1 + h11(t)*m1 with t in [0., 1.]
-    //
-    // For a cubic hermite spline defined on [t0, t1], we define alpha=(t-t0)/(t1-t0) in [0., 1.].
-    // Polynom p(t) defined on [t0, t1] becomes p(alpha) defined on [0., 1.]
-    //      p(alpha) = p((t-t0)/(t1-t0))
-    //
-    const Time dt = (t1 - t0);
-    const Time alpha = (t - t0) / dt;
-    if (!(0. <= alpha && alpha <= 1.)) {
-      throw std::runtime_error("alpha must be in [0,1]");
-    }
-    Numeric h00, h10, h01, h11;
-    evalCoeffs(alpha, h00, h10, h01, h11, degree_derivative);
-    // std::cout << "for val t="<<t<<" alpha="<<alpha<<" coef : h00="<<h00<<" h10="<<h10<<" h01="<<h01<<"
-    // h11="<<h11<<std::endl;
-    Point p_ = (h00 * Pair0.first + h10 * dt * Pair0.second + h01 * Pair1.first + h11 * dt * Pair1.second);
-    // if derivative, divide by dt^degree_derivative
-    for (std::size_t i = 0; i < degree_derivative; i++) {
-      p_ /= dt;
-    }
-    return p_;
-  }
-
-  /// \brief Evaluate coefficient for polynom of cubic hermite spline.
-  /// Coefficients of polynom :<br>
-  ///  - \f$h00(t)=2t^3-3t^2+1\f$;
-  ///  - \f$h10(t)=t^3-2t^2+t\f$;
-  ///  - \f$h01(t)=-2t^3+3t^2\f$;
-  ///  - \f$h11(t)=t^3-t^2\f$.<br>
-  /// From it, we can calculate their derivate order N :
-  /// \f$\frac{d^Nh00(t)}{dt^N}\f$, \f$\frac{d^Nh10(t)}{dt^N}\f$,\f$\frac{d^Nh01(t)}{dt^N}\f$,
-  /// \f$\frac{d^Nh11(t)}{dt^N}\f$. \param t : time to calculate coefficients. \param h00 : variable to store value of
-  /// coefficient. \param h10 : variable to store value of coefficient. \param h01 : variable to store value of
-  /// coefficient. \param h11 : variable to store value of coefficient. \param degree_derivative : order of derivative.
-  ///
-  static void evalCoeffs(const Numeric t, Numeric& h00, Numeric& h10, Numeric& h01, Numeric& h11,
-                         std::size_t degree_derivative) {
-    Numeric t_square = t * t;
-    Numeric t_cube = t_square * t;
-    if (degree_derivative == 0) {
-      h00 = 2 * t_cube - 3 * t_square + 1.;
-      h10 = t_cube - 2 * t_square + t;
-      h01 = -2 * t_cube + 3 * t_square;
-      h11 = t_cube - t_square;
-    } else if (degree_derivative == 1) {
-      h00 = 6 * t_square - 6 * t;
-      h10 = 3 * t_square - 4 * t + 1.;
-      h01 = -6 * t_square + 6 * t;
-      h11 = 3 * t_square - 2 * t;
-    } else if (degree_derivative == 2) {
-      h00 = 12 * t - 6.;
-      h10 = 6 * t - 4.;
-      h01 = -12 * t + 6.;
-      h11 = 6 * t - 2.;
-    } else if (degree_derivative == 3) {
-      h00 = 12.;
-      h10 = 6.;
-      h01 = -12.;
-      h11 = 6.;
-    } else {
-      h00 = 0.;
-      h10 = 0.;
-      h01 = 0.;
-      h11 = 0.;
-    }
-  }
 
  private:
   /// \brief Get index of the interval (subspline) corresponding to time t for the interpolation.
   /// \param t : time where to look for interval.
   /// \return Index of interval for time t.
   ///
-  std::size_t findInterval(const Numeric t) const {
+  std::size_t findInterval(const time_t t) const {
     // time before first control point time.
-    if (t < time_control_points_[0]) {
+    if (t <= time_control_points_[0]) {
       return 0;
     }
     // time is after last control point time
-    if (t > time_control_points_[size_ - 1]) {
-      return size_ - 1;
+    if (t >= time_control_points_[size_ - 1]) {
+      return size_ - 2;
     }
-
     std::size_t left_id = 0;
     std::size_t right_id = size_ - 1;
     while (left_id <= right_id) {
@@ -320,6 +243,27 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
       }
     }
     return left_id - 1;
+  }
+
+  /**
+   * @brief buildCurrentBezier set up the current_bezier_ attribut to represent the curve of the interval that contain t.
+   * This bezier is defined by the following control points: p0, p0 + m0/3, p1 - m1/3, p1
+   * @param t the time for which the bezier is build
+   * @return the bezier curve
+   */
+  bezier_t buildCurrentBezier(const time_t t) const{
+    size_t id_interval = findInterval(t);
+    const pair_point_tangent_t pair0 = control_points_.at(id_interval);
+    const pair_point_tangent_t pair1 = control_points_.at(id_interval + 1);
+    const Time& t0 = time_control_points_[id_interval];
+    const Time& t1 = time_control_points_[id_interval + 1];
+    t_point_t control_points;
+    control_points.reserve(4);
+    control_points.push_back(pair0.first);
+    control_points.push_back(pair0.first + pair0.second / 3. * (t1 - t0));
+    control_points.push_back(pair1.first - pair1.second / 3. * (t1 - t0));
+    control_points.push_back(pair1.first);
+    return bezier_t(control_points.begin(), control_points.end(), t0, t1);
   }
 
   void check_conditions() const {

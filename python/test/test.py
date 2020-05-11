@@ -600,7 +600,7 @@ class TestCurves(unittest.TestCase):
         a.max()
         a(0.4)
         self.assertTrue((a(0.) == array([1., 2., 3.])).all())
-        self.assertTrue((a.derivate(0., 1) == array([[2., 2., 2.]]).transpose()).all())
+        self.assertTrue(isclose(a.derivate(0., 1), array([[2., 2., 2.]]).transpose()).all())
         self.assertTrue((a.derivate(0.4, 0) == a(0.4)).all())
         a.derivate(0.4, 2)
         return
