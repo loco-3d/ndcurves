@@ -272,6 +272,9 @@ static piecewise_t discretPointToPolynomialC2(const pointX_list_t& points, const
   return piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(
       points_list, points_derivative_list, points_second_derivative_list, time_points_list);
 }
+static piecewise_t load_piecewise_from_text_file(const std::string& filename, const real dt, const std::size_t dim){
+  return piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename, dt, dim);
+}
 
 
 void addFinalPointC0(piecewise_t& self, const pointX_t& end, const real time) {
@@ -804,6 +807,11 @@ BOOST_PYTHON_MODULE(curves) {
            "given points derivative and second derivative values. The created piecewise is C2 continuous.",
            args("points", "points_derivative", "points_second_derivative", "time_points"))
       .staticmethod("FromPointsList")
+      .def("FromPointsFile", &load_piecewise_from_text_file, args("filename", "dt", "dimension"),
+           "Create a piecewise-polynomial connecting exactly all the points in the given text file."
+           "The file should contains one points per line, optionally with it's derivative and second derivatives."
+           "Each lines should thus contains dim, 2*dim or 3*dim values")
+      .staticmethod("FromPointsFile")
       .def("append", &addFinalPointC0,
            "Append a new polynomial curve of degree 1 at the end of the piecewise curve, defined between self.max() "
            "and time and connecting exactly self(self.max()) and end",
