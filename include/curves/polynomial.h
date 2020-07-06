@@ -224,6 +224,35 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
   // polynomial& operator=(const polynomial& other);
 
+  /**
+   * @brief MinimumJerk Build a polynomial curve connecting p_init to p_final minimizing the time integral of the
+   * squared jerk with a zero initial and final velocity and acceleration
+   * @param p_init the initial point
+   * @param p_final the final point
+   * @param t_min initial time
+   * @param t_max final time
+   * @return the polynomial curve
+   */
+  static polynomial_t MinimumJerk(const point_t& p_init, const point_t& p_final, const time_t t_min = 0.,
+                                  const time_t t_max = 1.) {
+    if (t_min > t_max) throw std::invalid_argument("final time should be superior or equal to initial time.");
+    const size_t dim(p_init.size());
+    if (static_cast<size_t>(p_final.size()) != dim)
+      throw std::invalid_argument("Initial and final points must have the same dimension.");
+    const double T = t_max - t_min;
+    const double T2 = T * T;
+    const double T3 = T2 * T;
+    const double T4 = T3 * T;
+    const double T5 = T4 * T;
+
+    coeff_t coeffs = coeff_t::Zero(dim, 6);  // init coefficient matrix with the right size
+    coeffs.col(0) = p_init;
+    coeffs.col(3) = 10 * (p_final - p_init) / T3;
+    coeffs.col(4) = -15 * (p_final - p_init) / T4;
+    coeffs.col(5) = 6 * (p_final - p_init) / T5;
+    return polynomial_t(coeffs, t_min, t_max);
+  }
+
  private:
   void safe_check() {
     if (Safe) {

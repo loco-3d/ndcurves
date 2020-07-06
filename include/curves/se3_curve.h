@@ -28,6 +28,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   typedef Eigen::Quaternion<Scalar> Quaternion;
   typedef Time time_t;
   typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;  // parent class
+  typedef polynomial<Time, Numeric, Safe, point_derivate_t> curve_derivate_t;
   typedef curve_abc<Time, Numeric, Safe, pointX_t> curve_X_t;                     // generic class of curve
   typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t>
       curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
@@ -190,14 +191,14 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
     return res;
   }
 
-  SE3Curve_t compute_derivate(const std::size_t /*order*/) const {
+  curve_derivate_t compute_derivate(const std::size_t /*order*/) const {
     throw std::logic_error("Compute derivate for SE3 is not implemented yet.");
   }
 
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
   ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  SE3Curve_t* compute_derivate_ptr(const std::size_t order) const { return new SE3Curve_t(compute_derivate(order)); }
+  curve_derivate_t* compute_derivate_ptr(const std::size_t order) const { return new curve_derivate_t(compute_derivate(order)); }
 
   /*Helpers*/
   /// \brief Get dimension of curve.

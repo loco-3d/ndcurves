@@ -56,7 +56,8 @@ struct curve_rotation_callback : curve_rotation_t {
   virtual curve_rotation_t::point_t operator()(const real t) const { return call_method<curve_rotation_t::point_t>(self, "operator()", t); }
   virtual curve_rotation_t::point_derivate_t derivate(const real t, const std::size_t n) const
 { return call_method<curve_rotation_t::point_derivate_t>(self, "derivate", t, n); }
-  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual curve_rotation_t::curve_derivate_t* compute_derivate_ptr(const std::size_t n) const {
+                                     return call_method<curve_rotation_t::curve_derivate_t*>(self, "compute_derivate", n); }
   virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
   virtual real min() const { return call_method<real>(self,"min"); }
   virtual real max() const { return call_method<real>(self,"max"); }
@@ -72,7 +73,8 @@ struct curve_SE3_callback : curve_SE3_t {
   virtual curve_SE3_t::point_t operator()(const real t) const { return call_method<curve_SE3_t::point_t>(self, "operator()", t); }
   virtual curve_SE3_t::point_derivate_t derivate(const real t, const std::size_t n) const
   { return call_method<curve_SE3_t::point_derivate_t>(self, "derivate", t, n); }
-  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual curve_SE3_t::curve_derivate_t* compute_derivate_ptr(const std::size_t n) const {
+                                return call_method<curve_SE3_t::curve_derivate_t*>(self, "compute_derivate", n); }
   virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
   virtual real min() const { return call_method<real>(self,"min"); }
   virtual real max() const { return call_method<real>(self,"max"); }
@@ -218,6 +220,13 @@ polynomial_t* wrapPolynomialConstructorFromBoundaryConditionsDegree5(const point
                                                                      const pointX_t& d_end, const pointX_t& dd_end,
                                                                      const real min, const real max) {
   return new polynomial_t(init, d_init, dd_init, end, d_end, dd_end, min, max);
+}
+static polynomial_t minimumJerk(const pointX_t& init, const pointX_t& end) {
+  return polynomial_t::MinimumJerk(init, end);
+}
+static polynomial_t minimumJerkWithTiming(const pointX_t& init, const pointX_t& end,
+                                          const real min, const real max) {
+  return polynomial_t::MinimumJerk(init, end, min, max);
 }
 /* End wrap polynomial */
 
@@ -462,6 +471,41 @@ void addFinalTransform(piecewise_SE3_t& self, const matrix4_t& end, const real t
 
 /* End wrap piecewiseSE3Curves */
 
+/* Wrap constant */
+constant_t* wrapConstantConstructorTime(const pointX_t& value, const real min, const real max) {
+  return new constant_t(value, min, max);
+}
+constant_t* wrapConstantConstructor(const pointX_t& value) {
+    return new constant_t(value);
+}
+/* End wrap constant */
+/* Wrap constant 3*/
+constant3_t* wrapConstant3ConstructorTime(const pointX_t& value, const real min, const real max) {
+  return new constant3_t(value, min, max);
+}
+constant3_t* wrapConstant3Constructor(const pointX_t& value) {
+    return new constant3_t(value);
+}
+/* End wrap constant 3*/
+/* Wrap sinusoidal */
+sinusoidal_t* wrapSinusoidalConstructorTime(const pointX_t& p0, const pointX_t& amplitude,
+                                            const real T, const real phi, const real min, const real max) {
+  return new sinusoidal_t(p0, amplitude, T, phi, min, max);
+}
+sinusoidal_t* wrapSinusoidalConstructor(const pointX_t& p0, const pointX_t& amplitude,
+                                        const real T, const real phi) {
+  return new sinusoidal_t(p0, amplitude, T, phi);
+}
+sinusoidal_t* wrapSinusoidalConstructorStationaryTime(const real time_traj,
+                                                      const pointX_t& p_init, const pointX_t& p_final,
+                                                      const real min, const real max) {
+  return new sinusoidal_t(time_traj, p_init, p_final, min, max);
+}
+sinusoidal_t* wrapSinusoidalConstructorStationary(const real time_traj,
+                                                  const pointX_t& p_init, const pointX_t& p_final) {
+  return new sinusoidal_t(time_traj, p_init, p_final);
+}
+/* End wrap sinusoidal */
 // TO DO : Replace all load and save function for serialization in class by using
 //         SerializableVisitor in archive_python_binding.
 BOOST_PYTHON_MODULE(curves) {
@@ -495,6 +539,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("min", &curve_abc_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_abc_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_abc_t::dim, "Get the dimension of the curve.")
+      .def("degree", &curve_abc_t::degree, "Get the degree of the representation of the curve (if applicable).")
       .def("saveAsText", pure_virtual(&curve_abc_t::saveAsText<curve_abc_t>), bp::args("filename"),
            "Saves *this inside a text file.")
       .def("loadFromText", pure_virtual(&curve_abc_t::loadFromText<curve_abc_t>), bp::args("filename"),
@@ -524,6 +569,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("min", &curve_3_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_3_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_3_t::dim, "Get the dimension of the curve.")
+      .def("degree", &curve_3_t::degree, "Get the degree of the representation of the curve (if applicable).")
       .def_pickle(curve_pickle_suite<curve_3_t>());
 
   class_<curve_rotation_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_rotation_callback> >("curve_rotation")
@@ -541,6 +587,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("min", &curve_rotation_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_rotation_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_rotation_t::dim, "Get the dimension of the curve.")
+      .def("degree", &curve_rotation_t::degree, "Get the degree of the representation of the curve (if applicable).")
       .def_pickle(curve_pickle_suite<curve_rotation_t>());
 
   class_<curve_SE3_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_SE3_callback> >("curve_SE3")
@@ -712,6 +759,15 @@ BOOST_PYTHON_MODULE(curves) {
            "such that c(min) == init and c(max) == end"
            " dc(min) == d_init and dc(max) == d_end"
            " ddc(min) == dd_init and ddc(max) == dd_end")
+      .def("MinimumJerk", &minimumJerk, args("init", "end"),
+           "Build a polynomial curve connecting init to end minimizing the time integral of the squared jerk,"
+           "with a zero initial and final velocity and acceleration."
+           "The curve is defined in [0; 1], of duration 1.")
+      .def("MinimumJerk", &minimumJerkWithTiming, args("init", "end", "t_min", "t_max"),
+           "Build a polynomial curve connecting init to end minimizing the time integral of the squared jerk,"
+           "with a zero initial and final velocity and acceleration."
+           "The curve is defined in [t_min; t_max], of duration t_max - t_min.")
+      .staticmethod("MinimumJerk")
       .def("coeffAtDegree", &polynomial_t::coeffAtDegree)
       .def("coeff", &polynomial_t::coeff)
       .def("saveAsText", &polynomial_t::saveAsText<polynomial_t>, bp::args("filename"),
@@ -1048,6 +1104,90 @@ BOOST_PYTHON_MODULE(curves) {
       ;
 
   /** END SE3 Curve**/
+  /** BEGIN constant curve function**/
+  class_<constant_t, bases<curve_abc_t>, boost::shared_ptr<constant_t> >("constant", init<>())
+      .def("__init__",
+           make_constructor(&wrapConstantConstructorTime, default_call_policies(), args("value", "min", "max")),
+           "Create a constant curve defined for t in [min,max]."
+           " This curve always evaluate to the given value and derivate to zero value.")
+      .def("__init__", make_constructor(&wrapConstantConstructor, default_call_policies(), arg("value")),
+           "Create a constant curve defined for t in [0,inf]."
+           " This curve always evaluate to the given value and derivate to zero value.")
+      .def("saveAsText", &constant_t::saveAsText<constant_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &constant_t::loadFromText<constant_t>, bp::args("filename"),
+           "Loads *this from a text file.")
+      .def("saveAsXML", &constant_t::saveAsXML<constant_t>, bp::args("filename", "tag_name"),
+           "Saves *this inside a XML file.")
+      .def("loadFromXML", &constant_t::loadFromXML<constant_t>, bp::args("filename", "tag_name"),
+           "Loads *this from a XML file.")
+      .def("saveAsBinary", &constant_t::saveAsBinary<constant_t>, bp::args("filename"),
+           "Saves *this inside a binary file.")
+      .def("loadFromBinary", &constant_t::loadFromBinary<constant_t>, bp::args("filename"),
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<constant_t>());
+  /** END constant function**/
+  /** BEGIN constant 3 curve function**/
+  class_<constant3_t, bases<curve_3_t>, boost::shared_ptr<constant3_t> >("constant3", init<>())
+      .def("__init__",
+           make_constructor(&wrapConstant3ConstructorTime, default_call_policies(), args("value", "min", "max")),
+           "Create a constant curve defined for t in [min,max]."
+           " This curve always evaluate to the given value and derivate to zero value.")
+      .def("__init__", make_constructor(&wrapConstant3Constructor, default_call_policies(), arg("value")),
+           "Create a constant curve defined for t in [0,inf]."
+           " This curve always evaluate to the given value and derivate to zero value.")
+      .def("saveAsText", &constant3_t::saveAsText<constant3_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &constant3_t::loadFromText<constant3_t>, bp::args("filename"),
+           "Loads *this from a text file.")
+      .def("saveAsXML", &constant3_t::saveAsXML<constant3_t>, bp::args("filename", "tag_name"),
+           "Saves *this inside a XML file.")
+      .def("loadFromXML", &constant3_t::loadFromXML<constant3_t>, bp::args("filename", "tag_name"),
+           "Loads *this from a XML file.")
+      .def("saveAsBinary", &constant3_t::saveAsBinary<constant3_t>, bp::args("filename"),
+           "Saves *this inside a binary file.")
+      .def("loadFromBinary", &constant3_t::loadFromBinary<constant3_t>, bp::args("filename"),
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<constant3_t>());
+  /** END constant 3 function**/
+  /** BEGIN sinusoidal curve function**/
+  class_<sinusoidal_t, bases<curve_abc_t>, boost::shared_ptr<sinusoidal_t> >("sinusoidal", init<>())
+      .def("__init__", make_constructor(&wrapSinusoidalConstructor, default_call_policies(),
+           args("Offset", "Amplitude", "Period", "Phase")),
+           "Create a sinusoidal curve defined for t in [0, inf]."
+           " c(t) = offset + amplitude * sin(2pi/T * t + phi)")
+      .def("__init__", make_constructor(&wrapSinusoidalConstructorTime, default_call_policies(),
+           args("Offset", "Amplitude", "Period", "Phase", "min", "max")),
+           "Create a sinusoidal curve defined for t in [min, max]."
+           " c(t) = offset + amplitude * sin(2pi/T * t + phi)")
+      .def("__init__", make_constructor(&wrapSinusoidalConstructorStationary, default_call_policies(),
+           args("duration", "p_init", "p_final")),
+           "Create a sinusoidal curve defined for t in [0, inf]."
+           "That connect the two stationnary points p_init and p_final in duration (an half period)")
+      .def("__init__", make_constructor(&wrapSinusoidalConstructorStationaryTime, default_call_policies(),
+           args("duration", "p_init", "p_final", "min", "max")),
+           "Create a sinusoidal curve defined for t in [min, max]."
+           "That connect the two stationnary points p_init and p_final in duration (an half period)")
+      .def("saveAsText", &sinusoidal_t::saveAsText<sinusoidal_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &sinusoidal_t::loadFromText<sinusoidal_t>, bp::args("filename"),
+           "Loads *this from a text file.")
+      .def("saveAsXML", &sinusoidal_t::saveAsXML<sinusoidal_t>, bp::args("filename", "tag_name"),
+           "Saves *this inside a XML file.")
+      .def("loadFromXML", &sinusoidal_t::loadFromXML<sinusoidal_t>, bp::args("filename", "tag_name"),
+           "Loads *this from a XML file.")
+      .def("saveAsBinary", &sinusoidal_t::saveAsBinary<sinusoidal_t>, bp::args("filename"),
+           "Saves *this inside a binary file.")
+      .def("loadFromBinary", &sinusoidal_t::loadFromBinary<sinusoidal_t>, bp::args("filename"),
+           "Loads *this from a binary file.")
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      .def_pickle(curve_pickle_suite<sinusoidal_t>());
+  /** END sinusoidal function**/
   /** BEGIN curves conversion**/
   def("convert_to_polynomial", polynomial_from_curve<polynomial_t>);
   def("convert_to_bezier", bezier_from_curve<bezier_t>);

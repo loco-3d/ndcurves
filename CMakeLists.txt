@@ -65,7 +65,9 @@ SET(${PROJECT_NAME}_HEADERS
   include/${PROJECT_NAME}/piecewise_curve.h
   include/${PROJECT_NAME}/so3_linear.h
   include/${PROJECT_NAME}/se3_curve.h
+  include/${PROJECT_NAME}/sinusoidal.h
   include/${PROJECT_NAME}/fwd.h
+  include/${PROJECT_NAME}/constant_curve.h
   include/${PROJECT_NAME}/helpers/effector_spline.h
   include/${PROJECT_NAME}/helpers/effector_spline_rotation.h
   include/${PROJECT_NAME}/optimization/definitions.h

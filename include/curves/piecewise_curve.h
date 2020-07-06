@@ -39,6 +39,9 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
   typedef typename std::vector<curve_ptr_t> t_curve_ptr_t;
   typedef typename std::vector<Time> t_time_t;
   typedef piecewise_curve<Time, Numeric, Safe, Point, Point_derivate, CurveType> piecewise_curve_t;
+  typedef piecewise_curve<Time, Numeric, Safe, Point_derivate, Point_derivate,
+    typename CurveType::curve_derivate_t> piecewise_curve_derivate_t;
+  typedef boost::shared_ptr<typename piecewise_curve_derivate_t::curve_t> curve_derivate_ptr_t;
 
  public:
   /// \brief Empty constructor. Add at least one curve to call other class functions.
@@ -124,10 +127,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
    * @param order order of derivative
    * @return
    */
-  piecewise_curve_t* compute_derivate_ptr(const std::size_t order) const {
-    piecewise_curve_t* res(new piecewise_curve_t());
+  piecewise_curve_derivate_t* compute_derivate_ptr(const std::size_t order) const {
+    piecewise_curve_derivate_t* res(new piecewise_curve_derivate_t());
     for (typename t_curve_ptr_t::const_iterator itc = curves_.begin(); itc < curves_.end(); ++itc) {
-      curve_ptr_t ptr((*itc)->compute_derivate_ptr(order));
+      curve_derivate_ptr_t ptr((*itc)->compute_derivate_ptr(order));
       res->add_curve_ptr(ptr);
     }
     return res;
