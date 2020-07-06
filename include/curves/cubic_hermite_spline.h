@@ -52,8 +52,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   cubic_hermite_spline() : dim_(0), T_min_(0), T_max_(0) {}
 
   /// \brief Constructor.
-  /// \param wayPointsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
-  /// \param wayPointsEns   : an iterator pointing to the last  element of a pair(position, derivative) container.
+  /// \param PairsBegin : an iterator pointing to the first element of a pair(position, derivative) container.
+  /// \param PairsEnd   : an iterator pointing to the last  element of a pair(position, derivative) container.
   /// \param time_control_points : vector containing time for each waypoint.
   ///
   template <typename In>
@@ -215,7 +215,6 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   ///
   std::size_t numIntervals() const { return size() - 1; }
 
-
  private:
   /// \brief Get index of the interval (subspline) corresponding to time t for the interpolation.
   /// \param t : time where to look for interval.
@@ -266,6 +265,8 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     return bezier_t(control_points.begin(), control_points.end(), t0, t1);
   }
 
+  /// \brief Check if control points list is not empty and dimension of point superior to zero.
+  ///
   void check_conditions() const {
     if (control_points_.size() == 0) {
       throw std::runtime_error(

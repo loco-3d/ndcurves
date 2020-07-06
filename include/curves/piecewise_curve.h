@@ -215,10 +215,20 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
     return isContinuous;
   }
 
+  /// \brief Get number of curves in piecewise curve.
+  /// \return Number of curves in piecewise curve.
   std::size_t num_curves() const { return curves_.size(); }
 
+  /// \brief Get curve corresponding to time t in piecewise curve.
+  /// Example : A piecewise curve PC made of two curves : c1 for t in [0,1] and c2 for t in ]1,2].
+  ///           PC.curve_at_time(0.5) will return c1.
+  /// \param t : time to select curve.
+  /// \return Curve corresponding to time t in piecewise curve.
   curve_ptr_t curve_at_time(const time_t t) const { return curves_[find_interval(t)]; }
 
+  /// \brief Get curve at specified index in piecewise curve.
+  /// \param idx : Index of curve to return, from 0 to num_curves-1.
+  /// \return curve corresonding to index in piecewise curve.
   curve_ptr_t curve_at_index(const std::size_t idx) const {
     if (Safe && idx >= num_curves()) {
       throw std::length_error(
@@ -227,6 +237,9 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
     return curves_[idx];
   }
 
+  /// \brief Convert all curves in piecewise curve into bezier curves.
+  /// \return piecewise bezier curve.
+  ///
   template <typename Bezier>
   piecewise_curve_t convert_piecewise_curve_to_bezier() {
     check_if_not_empty();
@@ -242,6 +255,10 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
     return pc_res;
   }
 
+  /// \brief Convert all curves in piecewise curve into cubic hermite curves.
+  /// Curves need to be of degree inferior or equal to three.
+  /// \return piecewise cubic hermite curve.
+  ///
   template <typename Hermite>
   piecewise_curve_t convert_piecewise_curve_to_cubic_hermite() {
     check_if_not_empty();
@@ -257,6 +274,9 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
     return pc_res;
   }
 
+  /// \brief Convert all curves in piecewise curve into polynomial curves.
+  /// \return piecewise polynomial curve.
+  ///
   template <typename Polynomial>
   piecewise_curve_t convert_piecewise_curve_to_polynomial() {
     check_if_not_empty();
@@ -272,6 +292,11 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
     return pc_res;
   }
 
+  /// \brief Convert discrete points into piecewise polynomial curve with C0 continuity.
+  /// \param points : discrete points to convert.
+  /// \param time_points : time corresponding to each point in piecewise curve.
+  /// \return piecewise polynomial curve of C0 continuity.
+  ///
   template <typename Polynomial>
   static piecewise_curve_t convert_discrete_points_to_polynomial(t_point_t points, t_time_t time_points) {
     if (Safe & !(points.size() > 1)) {
@@ -295,6 +320,12 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
     return piecewise_res;
   }
 
+  /// \brief Convert discrete points into piecewise polynomial curve with C1 continuity.
+  /// \param points : discrete points to convert.
+  /// \param points_derivative : derivative of order 1 corresponding to each point in piecewise curve.
+  /// \param time_points : time corresponding to each point in piecewise curve.
+  /// \return piecewise polynomial curve of C1 continuity.
+  ///
   template <typename Polynomial>
   static piecewise_curve_t convert_discrete_points_to_polynomial(t_point_t points,
                                                                  t_point_derivate_t points_derivative,
@@ -326,6 +357,13 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
     return piecewise_res;
   }
 
+  /// \brief Convert discrete points into piecewise polynomial curve with C2 continuity.
+  /// \param points : discrete points to convert.
+  /// \param points_derivative : derivative of order 1 corresponding to each point in piecewise curve.
+  /// \param points_second_derivative : derivative of order 2 corresponding to each point in piecewise curve.
+  /// \param time_points : time corresponding to each point in piecewise curve.
+  /// \return piecewise polynomial curve of C2 continuity.
+  ///
   template <typename Polynomial>
   static piecewise_curve_t convert_discrete_points_to_polynomial(t_point_t points,
                                                                  t_point_derivate_t points_derivative,
