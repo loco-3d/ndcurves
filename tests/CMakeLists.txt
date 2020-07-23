@@ -5,6 +5,7 @@ TARGET_COMPILE_DEFINITIONS(curves_tests PRIVATE -DTEST_DATA_PATH="${CMAKE_CURREN
 SET(${PROJECT_NAME}_TESTS
   test-constant
   test-sinusoidal
+  test-sinusoidal-serialization
   test-minjerk
   )
 
