@@ -302,4 +302,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
 
 }  // namespace curves
 
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe),
+                              SINGLE_ARG(curves::SO3Linear<Time, Numeric, Safe>))
+
 #endif  // _STRUCT_SO3_LINEAR_H

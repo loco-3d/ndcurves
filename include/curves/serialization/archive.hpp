@@ -12,7 +12,28 @@
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/serialization/version.hpp>
 #include "registeration.hpp"
+
+/* Define the current version number for the serialization
+ * Must be increased everytime the save() method of a class is modified
+ * Or when a change is made to register_types()
+ * */
+const unsigned int CURVES_API_VERSION = 1;
+
+#define SINGLE_ARG(...) __VA_ARGS__ // Macro used to be able to put comma in the following macro arguments
+// Macro used to define the serialization version of a templated class
+#define DEFINE_CLASS_TEMPLATE_VERSION(Template, Type)  \
+  namespace boost {                                    \
+  namespace serialization {                            \
+  template <Template>                                  \
+  struct version<Type> {                               \
+    static constexpr unsigned int value = CURVES_API_VERSION; \
+  };                                                   \
+  template <Template>                                  \
+  constexpr unsigned int version<Type>::value;         \
+  }                                                    \
+  }
 
 namespace curves {
 namespace serialization {

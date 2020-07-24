@@ -608,4 +608,8 @@ const double piecewise_curve<Time, Numeric, Safe, Point, Point_derivate, CurveTy
 
 }  // namespace curves
 
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
+                                         typename Point_derivate, typename CurveType),
+                              SINGLE_ARG(curves::piecewise_curve<Time, Numeric, Safe, Point, Point_derivate, CurveType>))
+
 #endif  // _CLASS_PIECEWISE_CURVE

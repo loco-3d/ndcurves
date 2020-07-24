@@ -516,4 +516,8 @@ template <typename Time, typename Numeric, bool Safe, typename Point>
 const double bezier_curve<Time, Numeric, Safe, Point>::MARGIN(0.001);
 
 }  // namespace curves
+
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point),
+                              SINGLE_ARG(curves::bezier_curve<Time, Numeric, Safe, Point>))
+
 #endif  //_CLASS_BEZIERCURVE

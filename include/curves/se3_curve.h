@@ -258,4 +258,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
 
 }  // namespace curves
 
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe),
+                              SINGLE_ARG(curves::SE3Curve<Time, Numeric, Safe>))
+
 #endif  // SE3_CURVE_H
