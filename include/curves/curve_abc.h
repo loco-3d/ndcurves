@@ -137,7 +137,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   friend class boost::serialization::access;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    serialization::register_types<Archive>(ar);
+    serialization::register_types<Archive>(ar, version);
     if (version) {
       // Do something depending on version ?
     }
