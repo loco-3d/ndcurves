@@ -173,27 +173,30 @@ BOOST_AUTO_TEST_CASE(serialization) {
   BOOST_CHECK(c == c_txt);
   BOOST_CHECK(c == c_xml);
   BOOST_CHECK(c == c_binary);
-}
 
-BOOST_AUTO_TEST_CASE(serialization_3) {
-  std::string fileName("fileTest_constant3");
-  point3_t p;
-  p << -1, 0.5, 2.;
+  // } BOOST_AUTO_TEST_CASE(serialization_3) {
+  // This test used to be split in two, but this raise
+  // a weird "free(): invalid pointer" after test completion
+  // without failures on Boost 1.72.0
 
-  constant3_t c(p);
+  std::string fileName3("fileTest_constant3");
+  point3_t p3;
+  p3 << -1, 0.5, 2.;
 
-  c.saveAsText<constant3_t>(fileName + ".txt");
-  c.saveAsXML<constant3_t>(fileName + ".xml", "constant");
-  c.saveAsBinary<constant3_t>(fileName);
+  constant3_t c3(p3);
 
-  constant3_t c_txt, c_xml, c_binary;
-  c_txt.loadFromText<constant3_t>(fileName + ".txt");
-  c_xml.loadFromXML<constant3_t>(fileName + ".xml", "constant");
-  c_binary.loadFromBinary<constant3_t>(fileName);
+  c3.saveAsText<constant3_t>(fileName3 + ".txt");
+  c3.saveAsXML<constant3_t>(fileName3 + ".xml", "constant");
+  c3.saveAsBinary<constant3_t>(fileName3);
 
-  BOOST_CHECK(c == c_txt);
-  BOOST_CHECK(c == c_xml);
-  BOOST_CHECK(c == c_binary);
+  constant3_t c3_txt, c3_xml, c3_binary;
+  c3_txt.loadFromText<constant3_t>(fileName3 + ".txt");
+  c3_xml.loadFromXML<constant3_t>(fileName3 + ".xml", "constant");
+  c3_binary.loadFromBinary<constant3_t>(fileName3);
+
+  BOOST_CHECK(c3 == c3_txt);
+  BOOST_CHECK(c3 == c3_xml);
+  BOOST_CHECK(c3 == c3_binary);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
