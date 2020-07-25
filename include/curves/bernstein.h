@@ -93,4 +93,7 @@ std::vector<Bern<Numeric> > makeBernstein(const unsigned int n) {
   return res;
 }
 }  // namespace curves
+
+DEFINE_CLASS_TEMPLATE_VERSION(typename Numeric, curves::Bern<Numeric>)
+
 #endif  //_CLASS_BERNSTEIN

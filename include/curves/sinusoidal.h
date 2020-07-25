@@ -213,4 +213,7 @@ struct sinusoidal : public curve_abc<Time, Numeric, Safe, Point> {
 };  // struct sinusoidal
 }  // namespace curves
 
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point),
+                              SINGLE_ARG(curves::sinusoidal<Time, Numeric, Safe, Point>))
+
 #endif  // _CLASS_SINUSOIDALCURVE

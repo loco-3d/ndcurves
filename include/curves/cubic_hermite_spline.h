@@ -367,4 +367,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   }
 };  // End struct Cubic hermite spline
 }  // namespace curves
+
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point),
+                              SINGLE_ARG(curves::cubic_hermite_spline<Time, Numeric, Safe, Point>))
 #endif  //_CLASS_CUBICHERMITESPLINE

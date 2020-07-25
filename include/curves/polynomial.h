@@ -440,4 +440,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 };  // class polynomial
 
 }  // namespace curves
+
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point, typename T_Point),
+                              SINGLE_ARG(curves::polynomial<Time, Numeric, Safe, Point, T_Point>))
 #endif  //_STRUCT_POLYNOMIAL

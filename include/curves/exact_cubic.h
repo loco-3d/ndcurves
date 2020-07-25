@@ -309,4 +309,8 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   }
 };
 }  // namespace curves
+
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
+                                         typename T_Point, typename SplineBase),
+                              SINGLE_ARG(curves::exact_cubic<Time, Numeric, Safe, Point, T_Point, SplineBase>))
 #endif  //_CLASS_EXACTCUBIC

@@ -14,9 +14,9 @@
 #include "MathDefs.h"
 #include "serialization/archive.hpp"
 #include "serialization/eigen-matrix.hpp"
+#include "serialization/registeration.hpp"
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
-
 #include <functional>
 
 namespace curves {
@@ -136,7 +136,8 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
   // Serialization of the class
   friend class boost::serialization::access;
   template <class Archive>
-  void serialize(Archive& /*ar*/, const unsigned int version) {
+  void serialize(Archive& ar, const unsigned int version) {
+    serialization::register_types<Archive>(ar, version);
     if (version) {
       // Do something depending on version ?
     }
@@ -144,4 +145,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
 };
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(curve_abc)
 }  // namespace curves
+
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point, typename Point_derivate),
+                              SINGLE_ARG(curves::curve_abc<Time, Numeric, Safe, Point, Point_derivate>))
 #endif  //_STRUCT_CURVE_ABC

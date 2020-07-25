@@ -94,7 +94,6 @@ struct curve_pickle_suite : pickle_suite {
     static object getstate (const Curve& curve) {
         std::ostringstream os;
         boost::archive::text_oarchive oa(os);
-        curves::serialization::register_types(oa);
         oa << curve;
         return str(os.str());
     }
@@ -105,7 +104,6 @@ struct curve_pickle_suite : pickle_suite {
         std::string st = extract<std::string> (s)();
         std::istringstream is (st);
         boost::archive::text_iarchive ia (is);
-        curves::serialization::register_types(ia);
         ia >> curve;
     }
 };

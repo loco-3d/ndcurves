@@ -183,4 +183,7 @@ BezierFixed evaluateLinear(const BezierLinear& bIn, const X x) {
 }
 
 }  // namespace curves
+
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Numeric, bool Safe),
+                              SINGLE_ARG(curves::linear_variable<Numeric, Safe>))
 #endif  //_CLASS_LINEAR_VARIABLE
