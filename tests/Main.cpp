@@ -896,7 +896,7 @@ void BezierEvalDeCasteljau(bool& error) {
   params.push_back(i);
   bezier_t cf2(params.begin(), params.end());
   for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
-    ComparePoints(cf.evalDeCasteljau(*cit), cf(*cit), errmsg, error);
+    ComparePoints(cf2.evalDeCasteljau(*cit), cf2(*cit), errmsg, error);
   }
 }
 
