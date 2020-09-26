@@ -67,6 +67,12 @@ class TestCurves(unittest.TestCase):
         for i in range(100):
             dt = float(i) / 100. * 3.
             self.assertTrue(norm(a(dt) - a1(dt)) < __EPS)
+        
+        a = bezier3(waypoints, 0., 3.)
+        a1 = a.elevate();
+        for i in range(100):
+            dt = float(i) / 100. * 3.
+            self.assertTrue(norm(a(dt) - a1(dt)) < __EPS)
                 
         # self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
