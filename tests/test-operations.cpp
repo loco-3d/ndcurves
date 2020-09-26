@@ -26,10 +26,16 @@ BOOST_AUTO_TEST_CASE(polynomialOperations, * boost::unit_test::tolerance(0.001))
     polynomial_t p1(coeffs1,0.,1.);
     polynomial_t p2(coeffs2,0.,1.);
     polynomial_t p3(coeffs2,0.,0.5);
+    polynomial_t p4(coeffs2,0.1,1.);
+    polynomial_t p5(coeffs2,0.1,.5);
     double k = 10.2;
 
     BOOST_CHECK_THROW( p1 + p3, std::exception );
     BOOST_CHECK_THROW( p1 - p3, std::exception );
+    BOOST_CHECK_THROW( p1 + p4, std::exception );
+    BOOST_CHECK_THROW( p1 - p4, std::exception );
+    BOOST_CHECK_THROW( p1 + p5, std::exception );
+    BOOST_CHECK_THROW( p1 - p5, std::exception );
 
     polynomial_t pSum  = p1 + p2;
     polynomial_t pSumR = p2 + p1;
@@ -49,6 +55,18 @@ BOOST_AUTO_TEST_CASE(polynomialOperations, * boost::unit_test::tolerance(0.001))
         BOOST_TEST((pMulR(dt) -  p1(dt)*k).norm()==0.);
         BOOST_TEST(( pdiv(dt) -  p1(dt)/k).norm()==0.);
         BOOST_TEST(( pNeg(dt) +  p1(dt)).norm() == 0);
+    }
+
+    pSum = polynomial_t(p1); pSum += p2;
+    pSub = p1; pSub -= p2;
+    pdiv = p1; pdiv /= k;
+    pMul = p1; pMul *= k;
+    for (double i = 0.; i <=100.; ++i ){
+        double dt = i / 100.;
+        BOOST_TEST(( pSum(dt) - (p1(dt)+p2(dt))).norm()==0.);
+        BOOST_TEST(( pSub(dt) - (p1(dt)-p2(dt))).norm()==0.);
+        BOOST_TEST(( pMul(dt) -  p1(dt)*k).norm()==0.);
+        BOOST_TEST(( pdiv(dt) -  p1(dt)/k).norm()==0.);
     }
 }
 

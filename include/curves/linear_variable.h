@@ -157,6 +157,11 @@ linear_variable<N, S> operator-(const linear_variable<N, S>& w1, const linear_va
 }
 
 template <typename N, bool S>
+linear_variable<N, S> operator-(const linear_variable<N, S>& w1) {
+  return linear_variable<N, S> (-w1.B(), -w1.c());
+}
+
+template <typename N, bool S>
 linear_variable<N, S> operator*(const double k, const linear_variable<N, S>& w) {
   linear_variable<N, S> res(w.B(), w.c());
   return res *= k;

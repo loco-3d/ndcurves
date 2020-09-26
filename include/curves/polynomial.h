@@ -401,6 +401,44 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   virtual std::size_t degree() const { return degree_; }
   /*Helpers*/
 
+  polynomial_t& operator+=(const polynomial_t& p1) {
+    assert_operator_compatible(p1);
+    if (p1.degree() > degree())  {
+      polynomial_t::coeff_t res = p1.coeff();
+      res.block(0,0,coefficients_.rows(),coefficients_.cols())  += coefficients_;
+      coefficients_ = res;
+      degree_ = p1.degree();
+    }
+    else{
+       coefficients_.block(0,0,p1.coeff().rows(),p1.coeff().cols()) += p1.coeff();
+    }
+    return *this;
+  }
+
+  polynomial_t& operator-=(const polynomial_t& p1) {
+      assert_operator_compatible(p1);
+      if (p1.degree() > degree())  {
+        polynomial_t::coeff_t res = -p1.coeff();
+        res.block(0,0,coefficients_.rows(),coefficients_.cols())  += coefficients_;
+        coefficients_ = res;
+        degree_ = p1.degree();
+      }
+      else{
+         coefficients_.block(0,0,p1.coeff().rows(),p1.coeff().cols()) -= p1.coeff();
+      }
+      return *this;
+    }
+
+  polynomial_t& operator/=(const double d) {
+    coefficients_ /= d;
+    return *this;
+  }
+
+  polynomial_t& operator*=(const double d) {
+    coefficients_ *= d;
+    return *this;
+  }
+
   /*Attributes*/
   std::size_t dim_;       // const
   coeff_t coefficients_;  // const
@@ -409,6 +447,13 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
                           /*Attributes*/
 
  private:
+
+  void assert_operator_compatible(const polynomial_t& other){
+      if ((fabs(min() - other.min()) > polynomial_t::MARGIN) || (fabs(max() - other.max()) > polynomial_t::MARGIN) ){
+          throw std::invalid_argument("Can't perform base operation (+ - ) on two polynomials with different time ranges");
+      }
+  }
+
   template <typename In>
   coeff_t init_coeffs(In zeroOrderCoefficient, In highestOrderCoefficient) {
     std::size_t size = std::distance(zeroOrderCoefficient, highestOrderCoefficient);
@@ -452,11 +497,8 @@ void assert_operator_compatible(const P& p1, const P& p2){
 
 template <typename T, typename N, bool S, typename P, typename TP >
 polynomial<T,N,S,P,TP> operator+(const polynomial<T,N,S,P,TP>& p1, const polynomial<T,N,S,P,TP>& p2) {
-  assert_operator_compatible<polynomial<T,N,S,P,TP> >(p1,p2);
-  typename polynomial<T,N,S,P,TP>::coeff_t res = Eigen::MatrixXd::Zero(p1.dim(),std::max(p1.degree(),p2.degree())+1);
-  res.block(0,0,p1.coefficients_.rows(),p1.coefficients_.cols())  = p1.coeff();
-  res.block(0,0,p2.coefficients_.rows(),p2.coefficients_.cols()) += p2.coeff();
-  return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+  polynomial<T,N,S,P,TP> res(p1);
+  return res+=p2;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP >
@@ -467,29 +509,27 @@ polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1) {
 
 template <typename T, typename N, bool S, typename P, typename TP >
 polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1, const polynomial<T,N,S,P,TP>& p2) {
-    assert_operator_compatible<polynomial<T,N,S,P,TP> >(p1,p2);
-    typename polynomial<T,N,S,P,TP>::coeff_t res = Eigen::MatrixXd::Zero(p1.dim(),std::max(p1.degree(),p2.degree())+1);
-    res.block(0,0,p1.coefficients_.rows(),p1.coefficients_.cols())  = p1.coeff();
-    res.block(0,0,p2.coefficients_.rows(),p2.coefficients_.cols()) -= p2.coeff();
-    return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+    polynomial<T,N,S,P,TP> res(p1);
+    return res-=p2;
 }
 
 
 template <typename T, typename N, bool S, typename P, typename TP >
 polynomial<T,N,S,P,TP> operator/(const polynomial<T,N,S,P,TP>& p1, const double k) {
-    typename polynomial<T,N,S,P,TP>::coeff_t res = p1.coeff() / k;
-    return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+    polynomial<T,N,S,P,TP> res(p1);
+    return res/=k;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP >
 polynomial<T,N,S,P,TP> operator*(const polynomial<T,N,S,P,TP>& p1,const double k)  {
-    typename polynomial<T,N,S,P,TP>::coeff_t res = p1.coeff() * k;
-    return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+    polynomial<T,N,S,P,TP> res(p1);
+    return res*=k;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP >
 polynomial<T,N,S,P,TP> operator*(const double k, const polynomial<T,N,S,P,TP>& p1)  {
-    return p1*k;
+    polynomial<T,N,S,P,TP> res(p1);
+    return res*=k;
 }
 
 
