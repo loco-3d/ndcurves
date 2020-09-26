@@ -790,6 +790,14 @@ BOOST_PYTHON_MODULE(curves) {
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def(self += polynomial_t())
+      .def(self -= polynomial_t())
+      .def(self *= double())
+      .def(self /= double())
+      .def(self +  polynomial_t())
+      .def(self -  polynomial_t())
+      .def(self * double())
+      .def(self / double())
       .def_pickle(curve_pickle_suite<polynomial_t>());
 
   /** END polynomial function**/
