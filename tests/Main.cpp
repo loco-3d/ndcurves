@@ -247,7 +247,7 @@ void BezierCurveTestCompareHornerAndBernstein(bool&)  // error
   using namespace std;
   std::vector<double> values;
   for (int i = 0; i < 100000; ++i) {
-    values.push_back(rand() / RAND_MAX);
+    values.push_back(rand() / (double)RAND_MAX);
   }
   // first compare regular evaluation (low dim pol)
   point3_t a(1, 2, 3);
@@ -897,6 +897,37 @@ void BezierEvalDeCasteljau(bool& error) {
   bezier_t cf2(params.begin(), params.end());
   for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
     ComparePoints(cf2.evalDeCasteljau(*cit), cf2(*cit), errmsg, error);
+  }
+}
+
+
+void BezierElevate(bool& error) {
+  using namespace std;
+  std::vector<double> values;
+  for (int i = 0; i < 10; ++i) {
+    values.push_back(double(rand()) / double(RAND_MAX));
+  }
+  // first compare regular evaluation (low dim pol)
+  point3_t a(1, 2, 3);
+  point3_t b(2, 3, 4);
+  point3_t c(3, 4, 5);
+  std::vector<point3_t> params;
+  params.push_back(a);
+  params.push_back(b);
+  params.push_back(c);
+  // 3d curve
+  bezier_t cf(params.begin(), params.end());
+  bezier_t cf2 = cf.elevate();
+  bezier_t cf3 = cf2.elevate();
+  if (cf2.degree() - cf.degree() != 1 && cf3.degree() - cf.degree() != 2 ){
+    error = true;
+    std::string errmsg("Error in BezierElevate; Degree mismatched for elevated curves. Expected 1 / 2, got:  ");
+    std::cout << errmsg << cf2.degree() - cf.degree() << " ; " << cf3.degree() - cf.degree() << std::endl;
+  }
+  std::string errmsg("Error in BezierElevate; Elevated curves do not have the same evaluation : ");
+  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end()-1; ++cit) {
+    ComparePoints(cf2(*cit), cf(*(cit)), errmsg, error);
+    ComparePoints(cf3(*cit), cf(*cit), errmsg, error);
   }
 }
 
@@ -2855,7 +2886,7 @@ void testOperatorEqual(bool& error) {
 int main(int /*argc*/, char** /*argv[]*/) {
   std::cout << "performing tests... \n";
   bool error = false;
-  PolynomialCubicFunctionTest(error);
+  /*PolynomialCubicFunctionTest(error);
   ExactCubicNoErrorTest(error);
   ExactCubicPointsCrossedTest(error);  // checks that given wayPoints are crossed
   ExactCubicTwoPointsTest(error);
@@ -2872,8 +2903,9 @@ int main(int /*argc*/, char** /*argv[]*/) {
   BezierCurveTestCompareHornerAndBernstein(error);
   BezierDerivativeCurveTimeReparametrizationTest(error);
   BezierEvalDeCasteljau(error);
-  BezierSplitCurve(error);
-  CubicHermitePairsPositionDerivativeTest(error);
+  BezierSplitCurve(error);*/
+  BezierElevate(error);
+  /*CubicHermitePairsPositionDerivativeTest(error);
   piecewiseCurveTest(error);
   PiecewisePolynomialCurveFromDiscretePoints(error);
   PiecewisePolynomialCurveFromFile(error);
@@ -2891,7 +2923,7 @@ int main(int /*argc*/, char** /*argv[]*/) {
   BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(error);
   BezierLinearProblemsetup_control_pointsVarCombinatorialMix(error);
   BezierLinearProblemsetupLoadProblem(error);
-  testOperatorEqual(error);
+  testOperatorEqual(error);*/
 
   if (error) {
     std::cout << "There were some errors\n";

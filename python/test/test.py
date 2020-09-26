@@ -62,6 +62,12 @@ class TestCurves(unittest.TestCase):
                 self.assertTrue((a.waypointAtIndex(0) == array([1., 2., 3.])).all())
             elif i == 1:
                 self.assertTrue((a.waypointAtIndex(1) == array([4., 5., 6.])).all())
+                
+        a1 = a.elevate();
+        for i in range(100):
+            dt = float(i) / 100. * 3.
+            self.assertTrue(norm(a(dt) - a1(dt)) < __EPS)
+                
         # self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
         # self.print_str(("test 1")

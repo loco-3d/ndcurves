@@ -215,7 +215,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     if (order == 0) {
       return *this;
     }
-    num_t new_degree = (num_t)(degree_ + 1);
+    num_t new_degree_inv = 1. / ((num_t)(degree_ + 1));
     t_point_t n_wp;
     point_t current_sum = point_t::Zero(dim_);
     // recomputing waypoints q_i from derivative waypoints p_i. q_0 is the given constant.
@@ -223,10 +223,26 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     n_wp.push_back(current_sum);
     for (typename t_point_t::const_iterator pit = control_points_.begin(); pit != control_points_.end(); ++pit) {
       current_sum += *pit;
-      n_wp.push_back(current_sum / new_degree);
+      n_wp.push_back(current_sum * new_degree_inv);
     }
     bezier_curve_t integ(n_wp.begin(), n_wp.end(), T_min_, T_max_, mult_T_ * (T_max_ - T_min_));
     return integ.compute_primitive(order - 1);
+  }
+
+  ///  \brief Computes a Bezier curve of 1 degree higher than the current curve, but strictly equivalent.
+  ///  Order elevation is required for addition / substraction and other comparison operations.
+  ///  \return An equivalent Bezier, with one more degree.
+  bezier_curve_t elevate() const {
+    num_t new_degree_inv = 1. / ((num_t)(degree_ + 1));
+    t_point_t n_wp;
+    n_wp.push_back(*control_points_.begin());
+    num_t idx_deg_inv = 0.;
+    for (typename t_point_t::const_iterator pit = control_points_.begin()+1; pit != control_points_.end(); ++pit) {
+      idx_deg_inv += new_degree_inv;
+      n_wp.push_back(idx_deg_inv * (*(pit-1)) + (1 - idx_deg_inv) * (*pit));
+    }
+    n_wp.push_back(*(control_points_.end()-1));
+    return bezier_curve_t (n_wp.begin(), n_wp.end(), T_min_, T_max_, mult_T_);
   }
 
   ///  \brief Evaluate the derivative order N of curve at time t.
