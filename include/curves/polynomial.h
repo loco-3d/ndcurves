@@ -42,6 +42,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   typedef Eigen::Ref<coeff_t> coeff_t_ref;
   typedef polynomial<Time, Numeric, Safe, Point, T_Point> polynomial_t;
   typedef typename curve_abc_t::curve_ptr_t curve_ptr_t;
+  static const double MARGIN;
 
   /* Constructors - destructors */
  public:
@@ -438,6 +439,59 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
 };  // class polynomial
+
+template <typename T, typename N, bool S, typename P, typename TP >
+const double polynomial<T,N,S,P,TP>::MARGIN(0.001);
+
+template <typename P>
+void assert_operator_compatible(const P& p1, const P& p2){
+    if ((fabs(p1.min() - p2.min()) > P::MARGIN) || (fabs(p1.max() - p2.max()) > P::MARGIN) ){
+        throw std::invalid_argument("Can't perform base operation (+ - ) on two polynomials with different time ranges");
+    }
+}
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator+(const polynomial<T,N,S,P,TP>& p1, const polynomial<T,N,S,P,TP>& p2) {
+  assert_operator_compatible<polynomial<T,N,S,P,TP> >(p1,p2);
+  typename polynomial<T,N,S,P,TP>::coeff_t res = Eigen::MatrixXd::Zero(p1.dim(),std::max(p1.degree(),p2.degree())+1);
+  res.block(0,0,p1.coefficients_.rows(),p1.coefficients_.cols())  = p1.coeff();
+  res.block(0,0,p2.coefficients_.rows(),p2.coefficients_.cols()) += p2.coeff();
+  return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+}
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1) {
+    typename polynomial<T,N,S,P,TP>::coeff_t res = -p1.coeff();
+    return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+}
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1, const polynomial<T,N,S,P,TP>& p2) {
+    assert_operator_compatible<polynomial<T,N,S,P,TP> >(p1,p2);
+    typename polynomial<T,N,S,P,TP>::coeff_t res = Eigen::MatrixXd::Zero(p1.dim(),std::max(p1.degree(),p2.degree())+1);
+    res.block(0,0,p1.coefficients_.rows(),p1.coefficients_.cols())  = p1.coeff();
+    res.block(0,0,p2.coefficients_.rows(),p2.coefficients_.cols()) -= p2.coeff();
+    return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+}
+
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator/(const polynomial<T,N,S,P,TP>& p1, const double k) {
+    typename polynomial<T,N,S,P,TP>::coeff_t res = p1.coeff() / k;
+    return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+}
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator*(const polynomial<T,N,S,P,TP>& p1,const double k)  {
+    typename polynomial<T,N,S,P,TP>::coeff_t res = p1.coeff() * k;
+    return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+}
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator*(const double k, const polynomial<T,N,S,P,TP>& p1)  {
+    return p1*k;
+}
+
 
 }  // namespace curves
 

@@ -311,7 +311,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
  public:
   /// \brief Get dimension of curve.
   /// \return dimension of curve.
-  std::size_t virtual dim() const { return dim_; };
+  std::size_t virtual dim() const { return dim_; }
   /// \brief Get the minimum time for which the curve is defined
   /// \return \f$t_{min}\f$, lower bound of time range.
   Time virtual min() const { return time_control_points_.front(); }
