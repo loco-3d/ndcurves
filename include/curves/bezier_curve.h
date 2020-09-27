@@ -10,6 +10,7 @@
 #define _CLASS_BEZIERCURVE
 
 #include "curve_abc.h"
+#include "cross_implementation.h"
 #include "bernstein.h"
 #include "curve_constraint.h"
 #include "piecewise_curve.h"
@@ -447,6 +448,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
   bezier_curve_t& operator+=(const bezier_curve_t& other) {
       assert_operator_compatible(other);
+      if(fabs(mult_T_ - other.mult_T_) > bezier_curve_t::MARGIN)
+          throw std::runtime_error("addition not implemented yet for curves of different mult");
       bezier_curve_t other_elevated = other;
       if(other.degree() > degree()){
           elevate_self(other.degree() - degree());
@@ -463,6 +466,8 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
   bezier_curve_t& operator-=(const bezier_curve_t& other)  {
       assert_operator_compatible(other);
+      if(fabs(mult_T_ - other.mult_T_) > bezier_curve_t::MARGIN)
+          throw std::runtime_error("addition not implemented yet for curves of different mult");
       bezier_curve_t other_elevated = other;
       if(other.degree() > degree()){
           elevate_self(other.degree() - degree());
@@ -489,6 +494,38 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
       (*it)*=d;
     }
     return *this;
+  }
+
+
+  ///  \brief Compute the cross product of the current bezier curve by another bezier curve.
+  /// The cross product p1Xp2 of 2 bezier curves p1 and p2 is defined such that
+  /// forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product.
+  /// This method of course only makes sense for dimension 3 curves.
+  /// It assumes that a method point_t cross(const point_t&, const point_t&) has been defined
+  ///  \param pOther other polynomial to compute the cross product with.
+  ///  \return a new polynomial defining the cross product between this and pother
+  bezier_curve_t cross(const bezier_curve_t& g) const {
+    //See Farouki and Rajan 1988 Alogirthms for polynomials in Bernstein form and
+    //http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node10.html
+    assert_operator_compatible(g);
+    if (dim()!= 3)
+        throw std::invalid_argument("Can't perform cross product polynomials with dimensions != 3 ");
+    int m =(int)(degree());
+    int n =(int)(g.degree());
+    t_point_t new_waypoints;
+    for(int i = 0; i<= m+n; ++i)
+    {
+        bezier_curve_t::point_t current_point = bezier_curve_t::point_t::Zero(3);
+        for (int j = std::max(0,i-n); j <=std::min(m,i); ++j){
+            unsigned int mj = bin(m,j);
+            unsigned int n_ij = bin(n,i-j);
+            unsigned int mn_i = bin(m+n,i);
+            num_t mul = num_t(mj*n_ij) / num_t(mn_i);
+            current_point += mul*curves::cross<bezier_curve_t::point_t>(waypointAtIndex(j), g.waypointAtIndex(i-j));
+        }
+        new_waypoints.push_back(current_point);
+    }
+    return bezier_curve_t(new_waypoints.begin(),new_waypoints.end(),min(),max(),mult_T_ * g.mult_T_);
   }
 
  private:
@@ -531,9 +568,9 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
 
-  void assert_operator_compatible(const bezier_curve_t& other){
-    if ((fabs(min() - other.min()) > bezier_curve_t::MARGIN) || (fabs(max() - other.max()) > bezier_curve_t::MARGIN) || (fabs(mult_T_ - other.mult_T_) > bezier_curve_t::MARGIN)){
-        throw std::invalid_argument("Can't perform base operation (+ - ) on two Bezier curves with different time ranges or mult");
+  void assert_operator_compatible(const bezier_curve_t& other) const{
+    if ((fabs(min() - other.min()) > bezier_curve_t::MARGIN) || (fabs(max() - other.max()) > bezier_curve_t::MARGIN)){
+        throw std::invalid_argument("Can't perform base operation (+ - ) on two Bezier curves with different time ranges");
     }
   }
 

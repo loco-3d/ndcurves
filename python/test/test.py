@@ -77,7 +77,9 @@ class TestCurves(unittest.TestCase):
         a1*=0.1
         a1/=0.1
         b = -a1
-                
+        c = a.cross(b)
+        c(0)
+        
         # self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
         # self.print_str(("test 1")
@@ -191,6 +193,8 @@ class TestCurves(unittest.TestCase):
         a1*=0.1
         a1/=0.1
         b = -a1
+        c = a.cross(b)
+        c(0)
         
         # Test waypoints
         self.assertTrue(a.nbWaypoints == 2)

@@ -449,8 +449,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     assert_operator_compatible(pOther);
     if (dim()!= 3)
         throw std::invalid_argument("Can't perform cross product polynomials with dimensions != 3 ");
-    std::size_t nDegree =degree() + pOther.degree();
-    coeff_t nCoeffs = Eigen::MatrixXd::Zero(3,nDegree+1);
+    std::size_t new_degree =degree() + pOther.degree();
+    coeff_t nCoeffs = Eigen::MatrixXd::Zero(3,new_degree+1);
     Eigen::Vector3d currentVec;
     Eigen::Vector3d currentVecCrossed;
     for(long i = 0; i< coefficients_.cols(); ++i){
@@ -461,11 +461,11 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
         }
     }
     // remove last degrees is they are equal to 0
-    long finalDegree = nDegree;
-    while(nCoeffs.col(finalDegree).norm() <= polynomial_t::MARGIN){
-        --finalDegree;
+    long final_degree = new_degree;
+    while(nCoeffs.col(final_degree).norm() <= polynomial_t::MARGIN){
+        --final_degree;
     }
-    return polynomial_t(nCoeffs.leftCols(finalDegree+1), min(), max());
+    return polynomial_t(nCoeffs.leftCols(final_degree+1), min(), max());
   }
 
   /*Attributes*/

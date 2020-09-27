@@ -20,6 +20,34 @@ using namespace curves;
 
 BOOST_AUTO_TEST_SUITE(BOOST_TEST_MODULE)
 
+
+
+BOOST_AUTO_TEST_CASE(crossPoductBezier, * boost::unit_test::tolerance(0.001)) {
+
+
+    t_pointX_t vec1;
+    t_pointX_t vec2;
+    for (int i =0; i<4; ++i)
+    {
+        vec1.push_back(Eigen::Vector3d::Random());
+        vec2.push_back(Eigen::Vector3d::Random());
+    }
+    for (int i =0; i<3; ++i)
+    {
+        vec1.push_back(Eigen::Vector3d::Random());
+    }
+    bezier_t p1(vec1.begin(),vec1.end(),0.,1.);
+    bezier_t p2(vec2.begin(),vec2.end(),0.,1.);
+
+    bezier_t pCross  (p1.cross(p2));
+    for (double i = 0.; i <=100.; ++i ){
+        double dt = i / 100.;
+        Eigen::Vector3d v1 = p1(dt);
+        Eigen::Vector3d v2 = p2(dt);
+        BOOST_TEST(( pCross(dt) - v1.cross(v2)).norm()==0.);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(bezierOperations, * boost::unit_test::tolerance(0.001)) {
     t_pointX_t vec1;
     t_pointX_t vec2;
@@ -79,6 +107,9 @@ BOOST_AUTO_TEST_CASE(bezierOperations, * boost::unit_test::tolerance(0.001)) {
     }
 }
 
+
+
+
 BOOST_AUTO_TEST_CASE(polynomialOperations, * boost::unit_test::tolerance(0.001)) {
     polynomial_t::coeff_t coeffs1 = Eigen::MatrixXd::Random(3,5);
     polynomial_t::coeff_t coeffs2 = Eigen::MatrixXd::Random(3,2);
@@ -129,8 +160,6 @@ BOOST_AUTO_TEST_CASE(polynomialOperations, * boost::unit_test::tolerance(0.001))
     }
 }
 
-
-
 BOOST_AUTO_TEST_CASE(crossPoductPolynomials, * boost::unit_test::tolerance(0.001)) {
     polynomial_t::coeff_t coeffs1 = Eigen::MatrixXd::Random(3,5);
     polynomial_t::coeff_t coeffs2 = Eigen::MatrixXd::Random(3,2);
@@ -156,7 +185,6 @@ BOOST_AUTO_TEST_CASE(crossPoductPolynomials, * boost::unit_test::tolerance(0.001
         BOOST_TEST(( pCross(dt) - v1.cross(v2)).norm()==0.);
     }
 }
-
 
 BOOST_AUTO_TEST_CASE(crossPoductPolynomialSimplification, * boost::unit_test::tolerance(0.001)) {
     polynomial_t::coeff_t coeffs1 = Eigen::MatrixXd::Random(3,5);
