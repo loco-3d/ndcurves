@@ -488,13 +488,6 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 template <typename T, typename N, bool S, typename P, typename TP >
 const double polynomial<T,N,S,P,TP>::MARGIN(0.001);
 
-template <typename P>
-void assert_operator_compatible(const P& p1, const P& p2){
-    if ((fabs(p1.min() - p2.min()) > P::MARGIN) || (fabs(p1.max() - p2.max()) > P::MARGIN) ){
-        throw std::invalid_argument("Can't perform base operation (+ - ) on two polynomials with different time ranges");
-    }
-}
-
 template <typename T, typename N, bool S, typename P, typename TP >
 polynomial<T,N,S,P,TP> operator+(const polynomial<T,N,S,P,TP>& p1, const polynomial<T,N,S,P,TP>& p2) {
   polynomial<T,N,S,P,TP> res(p1);
@@ -513,7 +506,6 @@ polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1, const polynom
     return res-=p2;
 }
 
-
 template <typename T, typename N, bool S, typename P, typename TP >
 polynomial<T,N,S,P,TP> operator/(const polynomial<T,N,S,P,TP>& p1, const double k) {
     polynomial<T,N,S,P,TP> res(p1);
@@ -531,7 +523,6 @@ polynomial<T,N,S,P,TP> operator*(const double k, const polynomial<T,N,S,P,TP>& p
     polynomial<T,N,S,P,TP> res(p1);
     return res*=k;
 }
-
 
 }  // namespace curves
 

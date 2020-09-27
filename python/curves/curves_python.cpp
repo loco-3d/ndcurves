@@ -650,6 +650,15 @@ BOOST_PYTHON_MODULE(curves) {
       //.def(SerializableVisitor<bezier_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def(self += bezier3_t())
+      .def(self -= bezier3_t())
+      .def(self *= double())
+      .def(self /= double())
+      .def(self +  bezier3_t())
+      .def(self -  bezier3_t())
+      .def(-self)
+      .def(self * double())
+      .def(self / double())
       .def_pickle(curve_pickle_suite<bezier3_t>());
   /** END bezier3 curve**/
   /** BEGIN bezier curve**/
@@ -677,6 +686,15 @@ BOOST_PYTHON_MODULE(curves) {
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def(self += bezier_t())
+      .def(self -= bezier_t())
+      .def(self *= double())
+      .def(self /= double())
+      .def(self +  bezier_t())
+      .def(self -  bezier_t())
+      .def(-self)
+      .def(self * double())
+      .def(self / double())
       //.def(SerializableVisitor<bezier_t>())
       .def_pickle(curve_pickle_suite<bezier_t>())
       ;
@@ -700,6 +718,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def(self /= double())
       .def(self +  linear_variable_t())
       .def(self -  linear_variable_t())
+      .def(-self)
       .def(self * double())
       .def(self / double())
       .def(self *  linear_variable_t())
@@ -728,6 +747,15 @@ BOOST_PYTHON_MODULE(curves) {
       .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def(self += bezier_linear_variable_t())
+      .def(self -= bezier_linear_variable_t())
+      .def(self *= double())
+      .def(self /= double())
+      .def(self +  bezier_linear_variable_t())
+      .def(self -  bezier_linear_variable_t())
+      .def(-self)
+      .def(self * double())
+      .def(self / double())
       .def_pickle(curve_pickle_suite<bezier_linear_variable_t>());
 
   class_<quadratic_variable_t>("cost", no_init)
@@ -798,6 +826,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def(self /= double())
       .def(self +  polynomial_t())
       .def(self -  polynomial_t())
+      .def(-self)
       .def(self * double())
       .def(self / double())
       .def_pickle(curve_pickle_suite<polynomial_t>());
