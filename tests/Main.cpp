@@ -917,8 +917,8 @@ void BezierElevate(bool& error) {
   params.push_back(c);
   // 3d curve
   bezier_t cf(params.begin(), params.end());
-  bezier_t cf2 = cf.elevate();
-  bezier_t cf3 = cf2.elevate();
+  bezier_t cf2 = cf.elevate(1);
+  bezier_t cf3 = cf2.elevate(1);
   if (cf2.degree() - cf.degree() != 1 && cf3.degree() - cf.degree() != 2 ){
     error = true;
     std::string errmsg("Error in BezierElevate; Degree mismatched for elevated curves. Expected 1 / 2, got:  ");

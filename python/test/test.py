@@ -63,7 +63,7 @@ class TestCurves(unittest.TestCase):
             elif i == 1:
                 self.assertTrue((a.waypointAtIndex(1) == array([4., 5., 6.])).all())
                 
-        a1 = a.elevate();
+        a1 = a.elevate(1);
         for i in range(100):
             dt = float(i) / 100. * 3.
             self.assertTrue(norm(a(dt) - a1(dt)) < __EPS)
@@ -174,10 +174,14 @@ class TestCurves(unittest.TestCase):
         # time_waypoints = array([[0., 1.]]).transpose()
         # Create bezier6 and bezier
         a = bezier3(waypoints, 0., 3.)
-        a1 = a.elevate().elevate();
+        a1 = a.elevate(1);
+        b = bezier3(waypoints, 0., 3.);
+        b.elevateSelf(2)
+        assert(b.degree == a.degree + 2)
         for i in range(100):
             dt = float(i) / 100. * 3.
             self.assertTrue(norm(a(dt) - a1(dt)) < __EPS)
+            self.assertTrue(norm(a(dt) - b(dt)) < __EPS)
         
         #arithmetic
         b  = a + a1

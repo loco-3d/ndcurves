@@ -229,20 +229,34 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return integ.compute_primitive(order - 1);
   }
 
-  ///  \brief Computes a Bezier curve of 1 degree higher than the current curve, but strictly equivalent.
+  ///  \brief Computes a Bezier curve of order degrees higher than the current curve, but strictly equivalent.
   ///  Order elevation is required for addition / substraction and other comparison operations.
+  ///  \param order : number of order the curve must be updated
   ///  \return An equivalent Bezier, with one more degree.
-  bezier_curve_t elevate() const {
-    num_t new_degree_inv = 1. / ((num_t)(degree_ + 1));
-    t_point_t n_wp;
-    n_wp.push_back(*control_points_.begin());
-    num_t idx_deg_inv = 0.;
-    for (typename t_point_t::const_iterator pit = control_points_.begin()+1; pit != control_points_.end(); ++pit) {
-      idx_deg_inv += new_degree_inv;
-      n_wp.push_back(idx_deg_inv * (*(pit-1)) + (1 - idx_deg_inv) * (*pit));
+  bezier_curve_t elevate(const std::size_t order) const {
+    t_point_t new_waypoints = control_points_, temp_waypoints;
+    for (std::size_t i = 1; i<= order; ++i)
+    {
+        num_t new_degree_inv = 1. / ((num_t)(degree_ + i));
+        temp_waypoints.push_back(*new_waypoints.begin());
+        num_t idx_deg_inv = 0.;
+        for (typename t_point_t::const_iterator pit = new_waypoints.begin()+1; pit != new_waypoints.end(); ++pit) {
+          idx_deg_inv += new_degree_inv;
+          temp_waypoints.push_back(idx_deg_inv * (*(pit-1)) + (1 - idx_deg_inv) * (*pit));
+        }
+        temp_waypoints.push_back(*(new_waypoints.end()-1));
+        new_waypoints = temp_waypoints;
+        temp_waypoints.clear();
     }
-    n_wp.push_back(*(control_points_.end()-1));
-    return bezier_curve_t (n_wp.begin(), n_wp.end(), T_min_, T_max_, mult_T_);
+    return bezier_curve_t (new_waypoints.begin(), new_waypoints.end(), T_min_, T_max_, mult_T_);
+  }
+
+  ///  \brief Elevate the Bezier curve of order degrees higher than the current curve, but strictly equivalent.
+  ///  Order elevation is required for addition / substraction and other comparison operations.
+  ///  \param order : number of order the curve must be updated
+  void elevate_self(const std::size_t order) {
+    if (order > 0)
+        (*this) = elevate(order);
   }
 
   ///  \brief Evaluate the derivative order N of curve at time t.
@@ -431,61 +445,37 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return c_split.second.split(t2).first;
   }
 
-  bezier_curve_t& operator+=(const bezier_curve_t& p1) {
-      assert_operator_compatible(p1);
-      if (p1.degree() == degree()) {
-        typename t_point_t::const_iterator otherit = p1.control_points_.begin();
-        for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it, ++otherit){
-          (*it)+=(*otherit);
-        }
+  bezier_curve_t& operator+=(const bezier_curve_t& other) {
+      assert_operator_compatible(other);
+      bezier_curve_t other_elevated = other;
+      if(other.degree() > degree()){
+          elevate_self(other.degree() - degree());
       }
-      else if (p1.degree() > degree()){
-        bezier_curve_t res = elevate();
-        while(res.degree() < p1.degree()){
-            res = res.elevate();
-        }
-        res+=p1;
-        size_ = res.size_;
-        degree_ = res.degree();
-        bernstein_ = res.bernstein_;
-        control_points_ = res.control_points_;
+      else if(other_elevated.degree() < degree()){
+          other_elevated.elevate_self(degree() - other_elevated.degree());
       }
-      else{
-          bezier_curve_t res = p1.elevate();
-          while(res.degree() < degree())
-              res = res.elevate();
-          return (*this)+=res;
+      typename t_point_t::const_iterator otherit = other_elevated.control_points_.begin();
+      for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it, ++otherit){
+        (*it)+=(*otherit);
       }
       return *this;
     }
 
-  bezier_curve_t& operator-=(const bezier_curve_t& p1) {
-    assert_operator_compatible(p1);
-    if (p1.degree() == degree()) {
-      typename t_point_t::const_iterator otherit = p1.control_points_.begin();
+  bezier_curve_t& operator-=(const bezier_curve_t& other)  {
+      assert_operator_compatible(other);
+      bezier_curve_t other_elevated = other;
+      if(other.degree() > degree()){
+          elevate_self(other.degree() - degree());
+      }
+      else if(other_elevated.degree() < degree()){
+          other_elevated.elevate_self(degree() - other_elevated.degree());
+      }
+      typename t_point_t::const_iterator otherit = other_elevated.control_points_.begin();
       for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it, ++otherit){
         (*it)-=(*otherit);
       }
+      return *this;
     }
-    else if (p1.degree() > degree()){
-      bezier_curve_t res = elevate();
-      while(res.degree() < p1.degree()){
-          res = res.elevate();
-      }
-      res-=p1;
-      size_ = res.size_;
-      degree_ = res.degree();
-      bernstein_ = res.bernstein_;
-      control_points_ = res.control_points_;
-    }
-    else{
-        bezier_curve_t res = p1.elevate();
-        while(res.degree() < degree())
-            res = res.elevate();
-        return (*this)-=res;
-    }
-    return *this;
-  }
 
   bezier_curve_t& operator/=(const double d) {
     for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it){
