@@ -439,6 +439,35 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     return *this;
   }
 
+  ///  \brief Compute the cross product of the current polynomial by another polynomial.
+  /// The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that
+  /// forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product.
+  /// This method of course only makes sense for dimension 3 polynomials.
+  ///  \param pOther other polynomial to compute the cross product with.
+  ///  \return a new polynomial defining the cross product between this and pother
+  polynomial_t cross(const polynomial_t& pOther) const {
+    assert_operator_compatible(pOther);
+    if (dim()!= 3)
+        throw std::invalid_argument("Can't perform cross product polynomials with dimensions != 3 ");
+    std::size_t nDegree =degree() + pOther.degree();
+    coeff_t nCoeffs = Eigen::MatrixXd::Zero(3,nDegree+1);
+    Eigen::Vector3d currentVec;
+    Eigen::Vector3d currentVecCrossed;
+    for(long i = 0; i< coefficients_.cols(); ++i){
+        currentVec = coefficients_.col(i);
+        for(long j = 0; j< pOther.coeff().cols(); ++j){
+            currentVecCrossed = pOther.coeff().col(j);
+            nCoeffs.col(i+j) += currentVec.cross(currentVecCrossed);
+        }
+    }
+    // remove last degrees is they are equal to 0
+    long finalDegree = nDegree;
+    while(nCoeffs.col(finalDegree).norm() <= polynomial_t::MARGIN){
+        --finalDegree;
+    }
+    return polynomial_t(nCoeffs.leftCols(finalDegree+1), min(), max());
+  }
+
   /*Attributes*/
   std::size_t dim_;       // const
   coeff_t coefficients_;  // const
@@ -448,9 +477,9 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
  private:
 
-  void assert_operator_compatible(const polynomial_t& other){
-      if ((fabs(min() - other.min()) > polynomial_t::MARGIN) || (fabs(max() - other.max()) > polynomial_t::MARGIN) ){
-          throw std::invalid_argument("Can't perform base operation (+ - ) on two polynomials with different time ranges");
+  void assert_operator_compatible(const polynomial_t& other) const{
+      if ((fabs(min() - other.min()) > polynomial_t::MARGIN) || (fabs(max() - other.max()) > polynomial_t::MARGIN) || dim() != other.dim()){
+          throw std::invalid_argument("Can't perform base operation (+ - ) on two polynomials with different time ranges or different dimensions");
       }
   }
 

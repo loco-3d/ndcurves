@@ -618,7 +618,7 @@ bezier_curve<T,N,S,P> operator+(const bezier_curve<T,N,S,P>& p1, const bezier_cu
 template <typename T, typename N, bool S, typename P >
 bezier_curve<T,N,S,P> operator-(const bezier_curve<T,N,S,P>& p1) {
     std::vector<typename bezier_curve<T,N,S,P>::point_t> ts;
-    for (int i = 0; i <= p1.degree(); ++i){
+    for (std::size_t i = 0; i <= p1.degree(); ++i){
       ts.push_back(bezier_curve<T,N,S,P>::point_t::Zero(p1.dim()));
     }
     bezier_curve<T,N,S,P> res (ts.begin(),ts.end(),p1.min(),p1.max());

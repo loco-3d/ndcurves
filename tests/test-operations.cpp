@@ -129,4 +129,50 @@ BOOST_AUTO_TEST_CASE(polynomialOperations, * boost::unit_test::tolerance(0.001))
     }
 }
 
+
+
+BOOST_AUTO_TEST_CASE(crossPoductPolynomials, * boost::unit_test::tolerance(0.001)) {
+    polynomial_t::coeff_t coeffs1 = Eigen::MatrixXd::Random(3,5);
+    polynomial_t::coeff_t coeffs2 = Eigen::MatrixXd::Random(3,2);
+    polynomial_t::coeff_t coeffsDim4 = Eigen::MatrixXd::Random(4,2);
+    polynomial_t p1(coeffs1,0.,1.);
+    polynomial_t p2(coeffs2,0.,1.);
+    polynomial_t p3(coeffs2,0.,0.5);
+    polynomial_t p4(coeffs2,0.1,1.);
+    polynomial_t p5(coeffs2,0.1,.5);
+    polynomial_t pDim4(coeffsDim4,0.,1.);
+
+    BOOST_CHECK_THROW( p1.cross(p3), std::exception );
+    BOOST_CHECK_THROW( p1.cross(p4), std::exception );
+    BOOST_CHECK_THROW( p1.cross(p5), std::exception );
+    BOOST_CHECK_THROW( p1.cross(pDim4), std::exception );
+    BOOST_CHECK_THROW( pDim4.cross(p1), std::exception );
+
+    polynomial_t pCross  = p1.cross(p2);
+    for (double i = 0.; i <=100.; ++i ){
+        double dt = i / 100.;
+        Eigen::Vector3d v1 = p1(dt);
+        Eigen::Vector3d v2 = p2(dt);
+        BOOST_TEST(( pCross(dt) - v1.cross(v2)).norm()==0.);
+    }
+}
+
+
+BOOST_AUTO_TEST_CASE(crossPoductPolynomialSimplification, * boost::unit_test::tolerance(0.001)) {
+    polynomial_t::coeff_t coeffs1 = Eigen::MatrixXd::Random(3,5);
+    polynomial_t::coeff_t coeffs2 = Eigen::MatrixXd::Random(3,3);
+    coeffs2.col(2) =coeffs1.col(4);
+    polynomial_t p1(coeffs1,0.,1.);
+    polynomial_t p2(coeffs2,0.,1.);
+
+    polynomial_t pCross  = p1.cross(p2);
+    BOOST_CHECK_EQUAL (pCross.degree(), 5);
+    for (double i = 0.; i <=100.; ++i ){
+        double dt = i / 100.;
+        Eigen::Vector3d v1 = p1(dt);
+        Eigen::Vector3d v2 = p2(dt);
+        BOOST_TEST(( pCross(dt) - v1.cross(v2)).norm()==0.);
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
