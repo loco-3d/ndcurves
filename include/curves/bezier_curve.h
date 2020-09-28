@@ -448,9 +448,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
   bezier_curve_t& operator+=(const bezier_curve_t& other) {
       assert_operator_compatible(other);
-      if(fabs(mult_T_ - other.mult_T_) > bezier_curve_t::MARGIN)
-          throw std::runtime_error("addition not implemented yet for curves of different mult");
-      bezier_curve_t other_elevated = other;
+      bezier_curve_t other_elevated = other * (other.mult_T_ / this->mult_T_); // TODO remove mult_T_ from Bezier
       if(other.degree() > degree()){
           elevate_self(other.degree() - degree());
       }
@@ -466,9 +464,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
   bezier_curve_t& operator-=(const bezier_curve_t& other)  {
       assert_operator_compatible(other);
-      if(fabs(mult_T_ - other.mult_T_) > bezier_curve_t::MARGIN)
-          throw std::runtime_error("addition not implemented yet for curves of different mult");
-      bezier_curve_t other_elevated = other;
+      bezier_curve_t other_elevated = other * (other.mult_T_ / this->mult_T_);
       if(other.degree() > degree()){
           elevate_self(other.degree() - degree());
       }
