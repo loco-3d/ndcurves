@@ -582,7 +582,6 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
   t_time_t time_curves_;  // for curves 0/1/2 : [ Tmin0, Tmax0,Tmax1,Tmax2 ]
   std::size_t size_;      // Number of segments in piecewise curve = size of curves_
   Time T_min_, T_max_;
-  static const double MARGIN;
   /* Attributes */
 
   // Serialization of the class
@@ -602,10 +601,6 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
     ar& boost::serialization::make_nvp("T_max", T_max_);
   }
 };  // End struct piecewise curve
-
-template <typename Time, typename Numeric, bool Safe, typename Point, typename Point_derivate, typename CurveType>
-const double piecewise_curve<Time, Numeric, Safe, Point, Point_derivate, CurveType>::MARGIN(0.001);
-
 }  // namespace curves
 
 DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,

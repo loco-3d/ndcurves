@@ -566,7 +566,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
 
   void assert_operator_compatible(const bezier_curve_t& other) const{
-    if ((fabs(min() - other.min()) > bezier_curve_t::MARGIN) || (fabs(max() - other.max()) > bezier_curve_t::MARGIN)){
+    if ((fabs(min() - other.min()) > MARGIN) || (fabs(max() - other.max()) > MARGIN)){
         throw std::invalid_argument("Can't perform base operation (+ - ) on two Bezier curves with different time ranges");
     }
   }
@@ -601,7 +601,6 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   /*const*/ std::size_t degree_;
   /*const*/ std::vector<Bern<Numeric> > bernstein_;
   /*const*/ t_point_t control_points_;
-  static const double MARGIN;
   /* Attributes */
 
   static bezier_curve_t zero(const std::size_t dim, const time_t T = 1.) {
@@ -629,9 +628,6 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     ar& boost::serialization::make_nvp("control_points", control_points_);
   }
 };  // End struct bezier_curve
-
-template <typename Time, typename Numeric, bool Safe, typename Point>
-const double bezier_curve<Time, Numeric, Safe, Point>::MARGIN(0.001);
 
 template <typename T, typename N, bool S, typename P >
 bezier_curve<T,N,S,P> operator+(const bezier_curve<T,N,S,P>& p1, const bezier_curve<T,N,S,P>& p2) {

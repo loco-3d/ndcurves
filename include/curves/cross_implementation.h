@@ -1,8 +1,8 @@
 /**
- * \file cubic_hermite_spline.h
+ * \file cross_implementation.h
  * \brief class allowing to create a cubic hermite spline of any dimension.
- * \author Justin Carpentier <jcarpent@laas.fr> modified by Jason Chemin <jchemin@laas.fr>
- * \date 05/2019
+ * \author Steve Tonneau
+ * \date 09/2020
  */
 
 #ifndef _CLASS_CROSSIMP

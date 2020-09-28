@@ -42,7 +42,6 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   typedef Eigen::Ref<coeff_t> coeff_t_ref;
   typedef polynomial<Time, Numeric, Safe, Point, T_Point> polynomial_t;
   typedef typename curve_abc_t::curve_ptr_t curve_ptr_t;
-  static const double MARGIN;
 
   /* Constructors - destructors */
  public:
@@ -462,7 +461,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     }
     // remove last degrees is they are equal to 0
     long final_degree = new_degree;
-    while(nCoeffs.col(final_degree).norm() <= polynomial_t::MARGIN){
+    while(nCoeffs.col(final_degree).norm() <= curves::MARGIN){
         --final_degree;
     }
     return polynomial_t(nCoeffs.leftCols(final_degree+1), min(), max());
@@ -478,7 +477,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
  private:
 
   void assert_operator_compatible(const polynomial_t& other) const{
-      if ((fabs(min() - other.min()) > polynomial_t::MARGIN) || (fabs(max() - other.max()) > polynomial_t::MARGIN) || dim() != other.dim()){
+      if ((fabs(min() - other.min()) > curves::MARGIN) || (fabs(max() - other.max()) > curves::MARGIN) || dim() != other.dim()){
           throw std::invalid_argument("Can't perform base operation (+ - ) on two polynomials with different time ranges or different dimensions");
       }
   }
@@ -513,9 +512,6 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
 };  // class polynomial
-
-template <typename T, typename N, bool S, typename P, typename TP >
-const double polynomial<T,N,S,P,TP>::MARGIN(0.001);
 
 template <typename T, typename N, bool S, typename P, typename TP >
 polynomial<T,N,S,P,TP> operator+(const polynomial<T,N,S,P,TP>& p1, const polynomial<T,N,S,P,TP>& p2) {

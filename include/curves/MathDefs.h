@@ -48,5 +48,7 @@ Matrix3 skew(const Point&  x) {
   return res;
 }
 
+static const double MARGIN(0.001);
+
 }  // namespace curves
 #endif  //_SPLINEMATH

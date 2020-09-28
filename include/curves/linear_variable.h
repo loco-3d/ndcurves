@@ -111,7 +111,7 @@ struct linear_variable : public serialization::Serializable {
         throw std::invalid_argument("Can't perform cross product on linear variables more than one unknown ");
     if (isZero() || other.isZero())
         return linear_variable_t::Zero(3);
-    if ((B().squaredNorm() -  B().diagonal().squaredNorm() > linear_variable_t::MARGIN ) || (other.B().squaredNorm() -  other.B().diagonal().squaredNorm() > linear_variable_t::MARGIN ) )
+    if ((B().squaredNorm() -  B().diagonal().squaredNorm() > MARGIN ) || (other.B().squaredNorm() -  other.B().diagonal().squaredNorm() > MARGIN ) )
         throw std::invalid_argument("Can't perform cross product on linear variables if B is not diagonal ");
     // (B1 x + c1) X (B2 x + c2) = (-c2X B1) x + (bX B2) x + b1Xb2
     typename linear_variable_t::matrix_3_t newB = skew<typename linear_variable_t::matrix_3_t, typename linear_variable_t::vector_3_t>(-other.c()) * B() +
@@ -167,7 +167,6 @@ struct linear_variable : public serialization::Serializable {
   matrix_x_t B_;
   vector_x_t c_;
   bool zero;
-  static const double MARGIN;
 };
 
 template <typename N, bool S>
@@ -217,9 +216,6 @@ template <typename N, bool S>
 std::ostream &operator<<(std::ostream &os, const linear_variable<N, S>& l) {
     return os << "linear_variable: \n \t B:\n"<< l.B() << "\t c: \n" << l.c().transpose();
 }
-
-template<typename N, bool S>
-const double linear_variable<N,S>::MARGIN(0.001);
 
 }  // namespace curves
 
