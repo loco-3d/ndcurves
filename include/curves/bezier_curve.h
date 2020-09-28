@@ -478,6 +478,25 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return bezier_curve_t(new_waypoints.begin(),new_waypoints.end(),min(),max(),mult_T_ * g.mult_T_);
   }
 
+
+  ///  \brief Compute the cross product of the current bezier b by a point point.
+  /// The cross product pXpoint of is defined such that
+  /// forall t, bXpoint(t) = b(t) X point, with X designing the cross product.
+  /// This method of course only makes sense for dimension 3 polynomials.
+  ///  \param point point to compute the cross product with.
+  ///  \return a new polynomial defining the cross product between this and point
+  bezier_curve_t cross(const bezier_curve_t::point_t& point) const {
+    //See Farouki and Rajan 1988 Alogirthms for polynomials in Bernstein form and
+    //http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node10.html
+    if (dim()!= 3)
+        throw std::invalid_argument("Can't perform cross product on Bezier curves with dimensions != 3 ");
+    t_point_t new_waypoints;
+    for(typename t_point_t::const_iterator cit = waypoints().begin(); cit != waypoints().end(); ++cit){
+      new_waypoints.push_back(curves::cross(*cit, point));
+    }
+    return bezier_curve_t(new_waypoints.begin(),new_waypoints.end(),min(),max(),mult_T_);
+  }
+
   bezier_curve_t& operator+=(const bezier_curve_t& other) {
       assert_operator_compatible(other);
       bezier_curve_t other_elevated = other * (other.mult_T_ / this->mult_T_); // TODO remove mult_T_ from Bezier

@@ -471,7 +471,31 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     }
     // remove last degrees is they are equal to 0
     long final_degree = new_degree;
-    while(nCoeffs.col(final_degree).norm() <= curves::MARGIN){
+    while(nCoeffs.col(final_degree).norm() <= curves::MARGIN && final_degree >0){
+        --final_degree;
+    }
+    return polynomial_t(nCoeffs.leftCols(final_degree+1), min(), max());
+  }
+
+  ///  \brief Compute the cross product of the current polynomial p by a point point.
+  /// The cross product pXpoint of is defined such that
+  /// forall t, pXpoint(t) = p(t) X point, with X designing the cross product.
+  /// This method of course only makes sense for dimension 3 polynomials.
+  ///  \param point point to compute the cross product with.
+  ///  \return a new polynomial defining the cross product between this and point
+  polynomial_t cross(const polynomial_t::point_t& point) const {
+    if (dim()!= 3)
+        throw std::invalid_argument("Can't perform cross product on polynomials with dimensions != 3 ");
+    coeff_t nCoeffs = coefficients_;
+    Eigen::Vector3d currentVec;
+    Eigen::Vector3d pointVec = point;
+    for(long i = 0; i< coefficients_.cols(); ++i){
+        currentVec = coefficients_.col(i);
+        nCoeffs.col(i) = currentVec.cross(pointVec);
+    }
+    // remove last degrees is they are equal to 0
+    long final_degree = degree();
+    while(nCoeffs.col(final_degree).norm() <= curves::MARGIN && final_degree >0){
         --final_degree;
     }
     return polynomial_t(nCoeffs.leftCols(final_degree+1), min(), max());

@@ -301,6 +301,7 @@ class TestCurves(unittest.TestCase):
         a.max()
         a(0.4)
         
+        #arithmetic
         waypoints2 = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.]]).transpose()
         a1 = polynomial(waypoints, -1., 3.)  # Defined on [-1.,3.]
         b  = a + a1
@@ -310,6 +311,13 @@ class TestCurves(unittest.TestCase):
         a1*=0.1
         a1/=0.1
         b = -a1
+        c = a.cross(array([1., 2., 3.]))
+        c = a.cross(a)
+        c(0)
+        b += array([1., 2., 3.])
+        b -= array([1., 2., 3.])
+        b =  a + array([1., 2., 3.])
+        b =  a - array([1., 2., 3.])
         
         # Test get coefficient at degree
         self.assertTrue((a.coeff() == waypoints).all())

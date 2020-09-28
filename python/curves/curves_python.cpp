@@ -626,6 +626,8 @@ BOOST_PYTHON_MODULE(curves) {
   /** END base abstracts class for each dimension/type : **/
 
   /** BEGIN bezier3 curve**/
+  bezier3_t (bezier3_t::*cross_bez3) (const bezier3_t&) const = &bezier3_t::cross;
+  bezier3_t (bezier3_t::*cross_pointBez3) (const bezier3_t::point_t&) const = &bezier3_t::cross;
   class_<bezier3_t, bases<curve_3_t>, boost::shared_ptr<bezier3_t> >("bezier3", init<>())
       .def("__init__", make_constructor(&wrapBezier3Constructor))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
@@ -650,8 +652,9 @@ BOOST_PYTHON_MODULE(curves) {
            "Loads *this from a binary file.")
       //.def(SerializableVisitor<bezier_t>())
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self)
-      .def("cross", &bezier3_t::cross, bp::args("other"), "Compute the cross product of the current bezier by another bezier. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 curves.")
+      .def(bp::self != bp::self)          
+      .def("cross", cross_bez3,  bp::args("other"), "Compute the cross product of the current bezier by another bezier. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 curves.")
+      .def("cross", cross_pointBez3, bp::args("point"), "Compute the cross product PXpt of the current Bezier P by a point pt, such that for all t, PXpt(t) = P(t) X pt")
       .def(self *= double())
       .def(self /= double())
       .def(self +  bezier3_t())
@@ -668,6 +671,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def_pickle(curve_pickle_suite<bezier3_t>());
   /** END bezier3 curve**/
   /** BEGIN bezier curve**/
+  bezier_t (bezier_t::*cross_bez) (const bezier_t&) const = &bezier_t::cross;
+  bezier_t (bezier_t::*cross_pointBez) (const bezier_t::point_t&) const = &bezier_t::cross;
   class_<bezier_t, bases<curve_abc_t>, boost::shared_ptr<bezier_t> >("bezier", init<>())
       .def("__init__", make_constructor(&wrapBezierConstructor))
       .def("__init__", make_constructor(&wrapBezierConstructorBounds))
@@ -693,7 +698,8 @@ BOOST_PYTHON_MODULE(curves) {
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("cross", &bezier_t::cross, bp::args("other"), "Compute the cross product of the current bezier by another bezier. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 curves.")
+      .def("cross", cross_bez,  bp::args("other"), "Compute the cross product of the current bezier by another bezier. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 curves.")
+      .def("cross", cross_pointBez, bp::args("point"), "Compute the cross product PXpt of the current Bezier P by a point pt, such that for all t, PXpt(t) = P(t) X pt")
       .def(self += bezier_t())
       .def(self -= bezier_t())
       .def(self +  bezier_t())
@@ -741,6 +747,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("norm", &linear_variable_t::norm)
       .def("cross", &linear_variable_t::cross,bp::args("other"),"Compute the cross product of the current linear_variable and the other. Only works for dimension 3");
 
+  bezier_linear_variable_t (bezier_linear_variable_t::*cross_bez_var) (const bezier_linear_variable_t&) const = &bezier_linear_variable_t::cross;
+  bezier_linear_variable_t (bezier_linear_variable_t::*cross_point_var) (const bezier_linear_variable_t::point_t&) const = &bezier_linear_variable_t::cross;
   class_<bezier_linear_variable_t, bases<curve_abc_t>, boost::shared_ptr<bezier_linear_variable_t> >(
       "bezier_linear_variable", no_init)
       .def("__init__", make_constructor(&wrapBezierLinearConstructor))
@@ -758,7 +766,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("waypointAtIndex", &bezier_linear_variable_t::waypointAtIndex)
       .def_readonly("degree", &bezier_linear_variable_t::degree_)
       .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
-      .def("cross", &bezier_linear_variable_t::cross,bp::args("other"),"Compute the cross product of the current bezier_linear_variable and the other. Only works for dimension 3")
+      .def("cross", cross_bez_var,  bp::args("other"), "Compute the cross product of the current Bezier by another Bezier. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 polynomials.")
+      .def("cross", cross_point_var, bp::args("point"), "Compute the cross product PXpt of the current Bezier P by a point pt, such that for all t, PXpt(t) = P(t) X pt")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
       .def(self += bezier_linear_variable_t())
@@ -783,6 +792,9 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END variable points bezier curve**/
   /** BEGIN polynomial curve function**/
+  polynomial_t (polynomial_t::*cross_pol) (const polynomial_t&) const = &polynomial_t::cross;
+  polynomial_t (polynomial_t::*cross_point) (const polynomial_t::point_t&) const = &polynomial_t::cross;
+
   class_<polynomial_t, bases<curve_abc_t>, boost::shared_ptr<polynomial_t> >("polynomial", init<>())
       .def("__init__",
            make_constructor(&wrapPolynomialConstructor1, default_call_policies(), args("coeffs", "min", "max")),
@@ -836,15 +848,20 @@ BOOST_PYTHON_MODULE(curves) {
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &polynomial_t::loadFromBinary<polynomial_t>, bp::args("filename"),
            "Loads *this from a binary file.")
-      .def("cross", &polynomial_t::cross,"Compute the cross product of the current polynomial by another polynomial. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 polynomials.")
+      .def("cross", cross_pol,  bp::args("other"), "Compute the cross product of the current polynomial by another polynomial. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 polynomials.")
+      .def("cross", cross_point, bp::args("point"), "Compute the cross product PXpt of the current polynomial P by a point pt, such that for all t, PXpt(t) = P(t) X pt")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
       .def(self += polynomial_t())
       .def(self -= polynomial_t())
-      .def(self *= double())
-      .def(self /= double())
       .def(self +  polynomial_t())
       .def(self -  polynomial_t())
+      .def(self += polynomial_t::point_t())
+      .def(self -= polynomial_t::point_t())
+      .def(self +  polynomial_t::point_t())
+      .def(self -  polynomial_t::point_t())
+      .def(self *= double())
+      .def(self /= double())
       .def(-self)
       .def(self * double())
       .def(self / double())

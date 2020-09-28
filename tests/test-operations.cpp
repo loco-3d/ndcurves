@@ -125,19 +125,21 @@ BOOST_AUTO_TEST_CASE(bezierPointOperations, * boost::unit_test::tolerance(0.001)
     }
 
     bezier_t p1(vec1.begin(),vec1.end(),0.,1.);
-    Eigen::Vector3d point; point << 1., 1. , 1.;
-    //bezier_t::point_t point = bezier_t::point_t::Random(3);
+    Eigen::Vector3d point = bezier_t::point_t::Random(3);
 
     bezier_t pSum  = p1 + point;
     bezier_t pSumR = point + p1;
     bezier_t pSub  = p1 - point;
     bezier_t pSubR = point - p1;
+    bezier_t pcross = p1.cross(point);
     for (double i = 0.; i <=100.; ++i ){
         double dt = i / 100.;
         BOOST_TEST(( pSum(dt) - (p1(dt)+point)).norm()==0.);
         BOOST_TEST((pSumR(dt) - (p1(dt)+point)).norm()==0.);
         BOOST_TEST(( pSub(dt) - (p1(dt)-point)).norm()==0.);
         BOOST_TEST((pSubR(dt) - (point-p1(dt))).norm()==0.);
+        Eigen::Vector3d p1dt = p1(dt);
+        BOOST_TEST((pcross(dt) - (p1dt.cross(point))).norm()==0.);
     }
 }
 
@@ -195,19 +197,22 @@ BOOST_AUTO_TEST_CASE(crossProductBezierLinearVariable, * boost::unit_test::toler
 
 BOOST_AUTO_TEST_CASE(polynomialPointOperations, * boost::unit_test::tolerance(0.001)) {
     polynomial_t::coeff_t coeffs1 = Eigen::MatrixXd::Random(3,5);
-    polynomial_t::point_t point = polynomial_t::point_t::Random(3);
+    Eigen::Vector3d point = Eigen::Vector3d::Random(3);
     polynomial_t p1(coeffs1,0.,1.);
 
     polynomial_t pSum  = p1 + point;
     polynomial_t pSumR = point + p1;
     polynomial_t pSub  = p1 - point;
     polynomial_t pSubR = point - p1;
+    polynomial_t pcross = p1.cross(point);
     for (double i = 0.; i <=100.; ++i ){
         double dt = i / 100.;
         BOOST_TEST(( pSum(dt) - (p1(dt)+point)).norm()==0.);
         BOOST_TEST((pSumR(dt) - (p1(dt)+point)).norm()==0.);
         BOOST_TEST(( pSub(dt) - (p1(dt)-point)).norm()==0.);
         BOOST_TEST((pSubR(dt) - (point-p1(dt))).norm()==0.);
+        Eigen::Vector3d p1dt = p1(dt);
+        BOOST_TEST((pcross(dt) - (p1dt.cross(point))).norm()==0.);
     }
 }
 
@@ -271,6 +276,9 @@ BOOST_AUTO_TEST_CASE(crossPoductPolynomials, * boost::unit_test::tolerance(0.001
     polynomial_t p4(coeffs2,0.1,1.);
     polynomial_t p5(coeffs2,0.1,.5);
     polynomial_t pDim4(coeffsDim4,0.,1.);
+
+    //testing reduction
+    BOOST_CHECK_EQUAL (p1.cross(p1).degree(), 0);
 
     BOOST_CHECK_THROW( p1.cross(p3), std::exception );
     BOOST_CHECK_THROW( p1.cross(p4), std::exception );
