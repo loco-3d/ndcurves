@@ -116,6 +116,31 @@ BOOST_AUTO_TEST_CASE(bezierOperations, * boost::unit_test::tolerance(0.001)) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(bezierPointOperations, * boost::unit_test::tolerance(0.001)) {
+
+    t_pointX_t vec1;
+    for (int i =0; i<6; ++i)
+    {
+        vec1.push_back(Eigen::Vector3d::Random());
+    }
+
+    bezier_t p1(vec1.begin(),vec1.end(),0.,1.);
+    Eigen::Vector3d point; point << 1., 1. , 1.;
+    //bezier_t::point_t point = bezier_t::point_t::Random(3);
+
+    bezier_t pSum  = p1 + point;
+    bezier_t pSumR = point + p1;
+    bezier_t pSub  = p1 - point;
+    bezier_t pSubR = point - p1;
+    for (double i = 0.; i <=100.; ++i ){
+        double dt = i / 100.;
+        BOOST_TEST(( pSum(dt) - (p1(dt)+point)).norm()==0.);
+        BOOST_TEST((pSumR(dt) - (p1(dt)+point)).norm()==0.);
+        BOOST_TEST(( pSub(dt) - (p1(dt)-point)).norm()==0.);
+        BOOST_TEST((pSubR(dt) - (point-p1(dt))).norm()==0.);
+    }
+}
+
 
 BOOST_AUTO_TEST_CASE(crossPoductLinearVariable, * boost::unit_test::tolerance(0.001)) {
     linear_variable_t l1(Eigen::Matrix3d::Identity() * 5., Eigen::Vector3d::Random());
@@ -167,6 +192,24 @@ BOOST_AUTO_TEST_CASE(crossProductBezierLinearVariable, * boost::unit_test::toler
     }
 }
 
+
+BOOST_AUTO_TEST_CASE(polynomialPointOperations, * boost::unit_test::tolerance(0.001)) {
+    polynomial_t::coeff_t coeffs1 = Eigen::MatrixXd::Random(3,5);
+    polynomial_t::point_t point = polynomial_t::point_t::Random(3);
+    polynomial_t p1(coeffs1,0.,1.);
+
+    polynomial_t pSum  = p1 + point;
+    polynomial_t pSumR = point + p1;
+    polynomial_t pSub  = p1 - point;
+    polynomial_t pSubR = point - p1;
+    for (double i = 0.; i <=100.; ++i ){
+        double dt = i / 100.;
+        BOOST_TEST(( pSum(dt) - (p1(dt)+point)).norm()==0.);
+        BOOST_TEST((pSumR(dt) - (p1(dt)+point)).norm()==0.);
+        BOOST_TEST(( pSub(dt) - (p1(dt)-point)).norm()==0.);
+        BOOST_TEST((pSubR(dt) - (point-p1(dt))).norm()==0.);
+    }
+}
 
 BOOST_AUTO_TEST_CASE(polynomialOperations, * boost::unit_test::tolerance(0.001)) {
     polynomial_t::coeff_t coeffs1 = Eigen::MatrixXd::Random(3,5);

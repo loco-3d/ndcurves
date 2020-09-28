@@ -446,6 +446,38 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return c_split.second.split(t2).first;
   }
 
+  ///  \brief Compute the cross product of the current bezier curve by another bezier curve.
+  /// The cross product p1Xp2 of 2 bezier curves p1 and p2 is defined such that
+  /// forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product.
+  /// This method of course only makes sense for dimension 3 curves.
+  /// It assumes that a method point_t cross(const point_t&, const point_t&) has been defined
+  ///  \param pOther other polynomial to compute the cross product with.
+  ///  \return a new polynomial defining the cross product between this and pother
+  bezier_curve_t cross(const bezier_curve_t& g) const {
+    //See Farouki and Rajan 1988 Alogirthms for polynomials in Bernstein form and
+    //http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node10.html
+    assert_operator_compatible(g);
+    if (dim()!= 3)
+        throw std::invalid_argument("Can't perform cross product on Bezier curves with dimensions != 3 ");
+    int m =(int)(degree());
+    int n =(int)(g.degree());
+    unsigned int mj, n_ij, mn_i;
+    t_point_t new_waypoints;
+    for(int i = 0; i<= m+n; ++i)
+    {
+        bezier_curve_t::point_t current_point = bezier_curve_t::point_t::Zero(dim());
+        for (int j = std::max(0,i-n); j <=std::min(m,i); ++j){
+            mj = bin(m,j);
+            n_ij = bin(n,i-j);
+            mn_i = bin(m+n,i);
+            num_t mul = num_t(mj*n_ij) / num_t(mn_i);
+            current_point += mul*curves::cross(waypointAtIndex(j), g.waypointAtIndex(i-j));
+        }
+        new_waypoints.push_back(current_point);
+    }
+    return bezier_curve_t(new_waypoints.begin(),new_waypoints.end(),min(),max(),mult_T_ * g.mult_T_);
+  }
+
   bezier_curve_t& operator+=(const bezier_curve_t& other) {
       assert_operator_compatible(other);
       bezier_curve_t other_elevated = other * (other.mult_T_ / this->mult_T_); // TODO remove mult_T_ from Bezier
@@ -478,6 +510,20 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
       return *this;
     }
 
+  bezier_curve_t& operator+=(const bezier_curve_t::point_t& point) {
+    for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it){
+      (*it)+=point;
+    }
+    return *this;
+  }
+
+  bezier_curve_t& operator-=(const bezier_curve_t::point_t& point) {
+    for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it){
+      (*it)-=point;
+    }
+    return *this;
+  }
+
   bezier_curve_t& operator/=(const double d) {
     for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it){
       (*it)/=d;
@@ -492,38 +538,6 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return *this;
   }
 
-
-  ///  \brief Compute the cross product of the current bezier curve by another bezier curve.
-  /// The cross product p1Xp2 of 2 bezier curves p1 and p2 is defined such that
-  /// forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product.
-  /// This method of course only makes sense for dimension 3 curves.
-  /// It assumes that a method point_t cross(const point_t&, const point_t&) has been defined
-  ///  \param pOther other polynomial to compute the cross product with.
-  ///  \return a new polynomial defining the cross product between this and pother
-  bezier_curve_t cross(const bezier_curve_t& g) const {
-    //See Farouki and Rajan 1988 Alogirthms for polynomials in Bernstein form and
-    //http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node10.html
-    assert_operator_compatible(g);
-    if (dim()!= 3)
-        throw std::invalid_argument("Can't perform cross product on Bezier curves with dimensions != 3 ");
-    int m =(int)(degree());
-    int n =(int)(g.degree());
-    unsigned int mj, n_ij, mn_i;
-    t_point_t new_waypoints;
-    for(int i = 0; i<= m+n; ++i)
-    {
-        bezier_curve_t::point_t current_point = bezier_curve_t::point_t::Zero(dim());
-        for (int j = std::max(0,i-n); j <=std::min(m,i); ++j){
-            mj = bin(m,j);
-            n_ij = bin(n,i-j);
-            mn_i = bin(m+n,i);
-            num_t mul = num_t(mj*n_ij) / num_t(mn_i);
-            current_point += mul*curves::cross(waypointAtIndex(j), g.waypointAtIndex(i-j));
-        }
-        new_waypoints.push_back(current_point);
-    }
-    return bezier_curve_t(new_waypoints.begin(),new_waypoints.end(),min(),max(),mult_T_ * g.mult_T_);
-  }
 
  private:
   /// \brief Ensure constraints of bezier curve.
@@ -650,6 +664,31 @@ template <typename T, typename N, bool S, typename P >
 bezier_curve<T,N,S,P> operator-(const bezier_curve<T,N,S,P>& p1, const bezier_curve<T,N,S,P>& p2) {
     bezier_curve<T,N,S,P> res(p1);
     return res-=p2;
+}
+
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator-(const bezier_curve<T,N,S,P>& p1, const typename bezier_curve<T,N,S,P>::point_t& point) {
+  bezier_curve<T,N,S,P> res(p1);
+  return res-=point;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator-(const typename bezier_curve<T,N,S,P>::point_t& point, const bezier_curve<T,N,S,P>& p1) {
+  bezier_curve<T,N,S,P> res(-p1);
+  return res+=point;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator+(const bezier_curve<T,N,S,P>& p1, const typename bezier_curve<T,N,S,P>::point_t& point) {
+  bezier_curve<T,N,S,P> res(p1);
+  return res+=point;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator+(const typename bezier_curve<T,N,S,P>::point_t& point, const bezier_curve<T,N,S,P>& p1) {
+  bezier_curve<T,N,S,P> res(p1);
+  return res+=point;
 }
 
 template <typename T, typename N, bool S, typename P >

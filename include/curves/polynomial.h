@@ -428,6 +428,16 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
       return *this;
     }
 
+  polynomial_t& operator+=(const polynomial_t::point_t& point) {
+    coefficients_.col(0) += point;
+    return *this;
+  }
+
+  polynomial_t& operator-=(const polynomial_t::point_t& point) {
+    coefficients_.col(0) -= point;
+    return *this;
+    }
+
   polynomial_t& operator/=(const double d) {
     coefficients_ /= d;
     return *this;
@@ -518,6 +528,31 @@ polynomial<T,N,S,P,TP> operator+(const polynomial<T,N,S,P,TP>& p1, const polynom
   polynomial<T,N,S,P,TP> res(p1);
   return res+=p2;
 }
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator+(const polynomial<T,N,S,P,TP>& p1, const typename polynomial<T,N,S,P,TP>::point_t& point) {
+  polynomial<T,N,S,P,TP> res(p1);
+  return res+=point;
+}
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator+(const typename polynomial<T,N,S,P,TP>::point_t& point, const polynomial<T,N,S,P,TP>& p1) {
+  polynomial<T,N,S,P,TP> res(p1);
+  return res+=point;
+}
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1, const typename polynomial<T,N,S,P,TP>::point_t& point) {
+  polynomial<T,N,S,P,TP> res(p1);
+  return res-=point;
+}
+
+template <typename T, typename N, bool S, typename P, typename TP >
+polynomial<T,N,S,P,TP> operator-(const typename polynomial<T,N,S,P,TP>::point_t& point, const polynomial<T,N,S,P,TP>& p1) {
+  polynomial<T,N,S,P,TP> res(-p1);
+  return res+=point;
+}
+
 
 template <typename T, typename N, bool S, typename P, typename TP >
 polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1) {
