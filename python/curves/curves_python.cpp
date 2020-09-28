@@ -730,7 +730,8 @@ BOOST_PYTHON_MODULE(curves) {
       .def("c", &linear_variable_t::c, return_value_policy<copy_const_reference>())
       .def("size", &linear_variable_t::size)
       .def("isZero", &linear_variable_t::isZero)
-      .def("norm", &linear_variable_t::norm);
+      .def("norm", &linear_variable_t::norm)
+      .def("cross", &linear_variable_t::cross,bp::args("other"),"Compute the cross product of the current linear_variable and the other. Only works for dimension 3");
 
   class_<bezier_linear_variable_t, bases<curve_abc_t>, boost::shared_ptr<bezier_linear_variable_t> >(
       "bezier_linear_variable", no_init)
@@ -749,6 +750,7 @@ BOOST_PYTHON_MODULE(curves) {
       .def("waypointAtIndex", &bezier_linear_variable_t::waypointAtIndex)
       .def_readonly("degree", &bezier_linear_variable_t::degree_)
       .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
+      .def("cross", &bezier_linear_variable_t::cross,bp::args("other"),"Compute the cross product of the current bezier_linear_variable and the other. Only works for dimension 3")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
       .def(self += bezier_linear_variable_t())

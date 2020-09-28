@@ -87,6 +87,8 @@ typedef boost::shared_ptr<curve_SE3_t> curve_SE3_ptr_t;
 typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
 typedef exact_cubic<double, double, true, pointX_t, t_pointX_t, polynomial_t> exact_cubic_t;
 typedef bezier_curve<double, double, true, pointX_t> bezier_t;
+typedef linear_variable<double, true> linear_variable_t;
+typedef bezier_curve<double, double, true, linear_variable_t> bezier_linear_variable_t;
 typedef constant_curve<double, double, true, pointX_t, pointX_t> constant_t;
 typedef cubic_hermite_spline<double, double, true, pointX_t> cubic_hermite_spline_t;
 typedef piecewise_curve<double, double, true, pointX_t, pointX_t, curve_abc_t> piecewise_t;

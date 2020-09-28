@@ -35,5 +35,18 @@ void PseudoInverse(_Matrix_Type_& pinvmat) {
   }
   pinvmat = (svd.matrixV() * m_sigma_inv * svd.matrixU().transpose());
 }
+
+template<typename Matrix3, typename Point >
+Matrix3 skew(const Point&  x) {
+  Matrix3 res = Matrix3::Zero(3,3);
+  res(0, 1) = -x(2);
+  res(0, 2) = x(1);
+  res(1, 0) = x(2);
+  res(1, 2) = -x(0);
+  res(2, 0) = -x(1);
+  res(2, 1) = x(0);
+  return res;
+}
+
 }  // namespace curves
 #endif  //_SPLINEMATH

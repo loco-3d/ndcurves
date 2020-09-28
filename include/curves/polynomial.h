@@ -448,7 +448,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   polynomial_t cross(const polynomial_t& pOther) const {
     assert_operator_compatible(pOther);
     if (dim()!= 3)
-        throw std::invalid_argument("Can't perform cross product polynomials with dimensions != 3 ");
+        throw std::invalid_argument("Can't perform cross product on polynomials with dimensions != 3 ");
     std::size_t new_degree =degree() + pOther.degree();
     coeff_t nCoeffs = Eigen::MatrixXd::Zero(3,new_degree+1);
     Eigen::Vector3d currentVec;

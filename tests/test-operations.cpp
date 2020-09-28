@@ -108,6 +108,55 @@ BOOST_AUTO_TEST_CASE(bezierOperations, * boost::unit_test::tolerance(0.001)) {
 }
 
 
+BOOST_AUTO_TEST_CASE(crossPoductLinearVariable, * boost::unit_test::tolerance(0.001)) {
+    linear_variable_t l1(Eigen::Matrix3d::Identity() * 5., Eigen::Vector3d::Random());
+    linear_variable_t l2(Eigen::Matrix3d::Identity() * 1., Eigen::Vector3d::Random());
+    linear_variable_t lE(Eigen::Matrix3d::Random(), Eigen::Vector3d::Random());
+    BOOST_CHECK_THROW( l1.cross(lE), std::exception );
+    BOOST_CHECK_THROW( lE.cross(l1), std::exception );
+    linear_variable_t lcross = l1.cross(l2);
+    for (int i =0; i< 10; ++i){
+        Eigen::Vector3d x = Eigen::Vector3d::Random();
+        Eigen::Vector3d v1 = l1(x);
+        Eigen::Vector3d v2 = l2(x);
+        BOOST_TEST(( lcross(x) - v1.cross(v2)).norm()==0.);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(crossProductBezierLinearVariable, * boost::unit_test::tolerance(0.001)) {
+    bezier_linear_variable_t::t_point_t vec1;
+    bezier_linear_variable_t::t_point_t vec2;
+    bezier_linear_variable_t::t_point_t zeroVec;
+    for (int i =0; i<3; ++i)
+    {
+        vec1.push_back(linear_variable_t(Eigen::Matrix3d::Identity() * i, Eigen::Vector3d::Random()));
+        vec2.push_back(linear_variable_t(Eigen::Matrix3d::Identity() * i, Eigen::Vector3d::Random()));
+        zeroVec.push_back(linear_variable_t());
+    }
+    for (int i =0; i<2; ++i)
+    {
+        vec1.push_back(linear_variable_t(Eigen::Matrix3d::Identity() * i, Eigen::Vector3d::Random()));
+    }
+    bezier_linear_variable_t p1(vec1.begin(),vec1.end(),0.,1.);
+    bezier_linear_variable_t p2(vec2.begin(),vec2.end(),0.,1.);
+    bezier_linear_variable_t pZero(zeroVec.begin(),zeroVec.end(),0.,1.);
+    bezier_linear_variable_t pCross  (p1.cross(p2));
+    bezier_linear_variable_t pCrossZero  (p1.cross(pZero));
+    for (double i = 0.; i <=1.; ++i ){
+        Eigen::Vector3d x = Eigen::Vector3d::Random();
+        bezier_t fcross = evaluateLinear<bezier_t, bezier_linear_variable_t>(pCross, x);
+        bezier_t fCrossZero = evaluateLinear<bezier_t, bezier_linear_variable_t>(pCrossZero, x);
+        bezier_t f1 = evaluateLinear<bezier_t, bezier_linear_variable_t>(p1, x);
+        bezier_t f2 = evaluateLinear<bezier_t, bezier_linear_variable_t>(p2, x);
+        for (double i = 0.; i <=10.; ++i ){
+            double dt = i / 10.;
+            Eigen::Vector3d v1 = f1(dt);
+            Eigen::Vector3d v2 = f2(dt);
+            BOOST_TEST(( fcross(dt) - v1.cross(v2)).norm()==0.);
+            BOOST_TEST(( fCrossZero(dt)).norm()==0.);
+        }
+    }
+}
 
 
 BOOST_AUTO_TEST_CASE(polynomialOperations, * boost::unit_test::tolerance(0.001)) {

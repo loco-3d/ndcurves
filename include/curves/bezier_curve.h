@@ -509,19 +509,20 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     //http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node10.html
     assert_operator_compatible(g);
     if (dim()!= 3)
-        throw std::invalid_argument("Can't perform cross product polynomials with dimensions != 3 ");
+        throw std::invalid_argument("Can't perform cross product on Bezier curves with dimensions != 3 ");
     int m =(int)(degree());
     int n =(int)(g.degree());
+    unsigned int mj, n_ij, mn_i;
     t_point_t new_waypoints;
     for(int i = 0; i<= m+n; ++i)
     {
-        bezier_curve_t::point_t current_point = bezier_curve_t::point_t::Zero(3);
+        bezier_curve_t::point_t current_point = bezier_curve_t::point_t::Zero(dim());
         for (int j = std::max(0,i-n); j <=std::min(m,i); ++j){
-            unsigned int mj = bin(m,j);
-            unsigned int n_ij = bin(n,i-j);
-            unsigned int mn_i = bin(m+n,i);
+            mj = bin(m,j);
+            n_ij = bin(n,i-j);
+            mn_i = bin(m+n,i);
             num_t mul = num_t(mj*n_ij) / num_t(mn_i);
-            current_point += mul*curves::cross<bezier_curve_t::point_t>(waypointAtIndex(j), g.waypointAtIndex(i-j));
+            current_point += mul*curves::cross(waypointAtIndex(j), g.waypointAtIndex(i-j));
         }
         new_waypoints.push_back(current_point);
     }
