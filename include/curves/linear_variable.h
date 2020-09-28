@@ -128,6 +128,15 @@ struct linear_variable : public serialization::Serializable {
     return linear_variable_t(matrix_x_t::Zero(dim, dim), vector_x_t::Zero(dim));
   }
 
+  /// \brief Get a linear variable equal to the variable
+  /// \param dim : Dimension of linear variable.
+  /// \return Linear variable equal to the variable.
+  ///
+  static linear_variable_t X(size_t dim = 0) {
+    return linear_variable_t(matrix_x_t::Identity(dim, dim), vector_x_t::Zero(dim));
+  }
+
+
   /// \brief Get dimension of linear variable.
   /// \return Dimension of linear variable.
   ///
