@@ -79,6 +79,10 @@ class TestCurves(unittest.TestCase):
         b = -a1
         c = a.cross(b)
         c(0)
+        b += array([1., 2., 3.])
+        b -= array([1., 2., 3.])
+        b =  a + array([1., 2., 3.])
+        b =  a - array([1., 2., 3.])
         
         # self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
@@ -195,6 +199,10 @@ class TestCurves(unittest.TestCase):
         b = -a1
         c = a.cross(b)
         c(0)
+        b += array([1., 2., 3.])
+        b -= array([1., 2., 3.])
+        b =  a + array([1., 2., 3.])
+        b =  a - array([1., 2., 3.])
         
         # Test waypoints
         self.assertTrue(a.nbWaypoints == 2)
