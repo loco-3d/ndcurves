@@ -998,7 +998,8 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END cubic_hermite_spline **/
   /** BEGIN curve constraints**/
-  class_<curve_constraints_t>("curve_constraints", init<int>())
+  class_<curve_constraints_t>("curve_constraints", init<>())
+      .def(bp::init<int>(bp::arg("dimension"), "Init with a given dimension."))
       .add_property("init_vel", &get_init_vel, &set_init_vel)
       .add_property("init_acc", &get_init_acc, &set_init_acc)
       .add_property("init_jerk", &get_init_jerk, &set_init_jerk)
