@@ -12,13 +12,14 @@
 #define _CLASS_CURVE_CONSTRAINT
 
 #include "MathDefs.h"
-
+#include "serialization/archive.hpp"
+#include "serialization/eigen-matrix.hpp"
 #include <functional>
 #include <vector>
 
 namespace curves {
 template <typename Point>
-struct curve_constraints {
+struct curve_constraints : serialization::Serializable {
   typedef Point point_t;
   curve_constraints(const size_t dim = 3)
       : init_vel(point_t::Zero(dim)),
@@ -46,6 +47,22 @@ struct curve_constraints {
   point_t end_acc;
   point_t end_jerk;
   size_t dim_;
+
+   // Serialization of the class
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    if (version) {
+      // Do something depending on version ?
+    }
+    ar& boost::serialization::make_nvp("init_vel", init_vel);
+    ar& boost::serialization::make_nvp("init_acc", init_acc);
+    ar& boost::serialization::make_nvp("init_jerk", init_jerk);
+    ar& boost::serialization::make_nvp("end_vel", end_vel);
+    ar& boost::serialization::make_nvp("end_acc", end_acc);
+    ar& boost::serialization::make_nvp("end_jerk", end_jerk);
+    ar& boost::serialization::make_nvp("dim", dim_);
+  }
 };
 }  // namespace curves
 #endif  //_CLASS_CUBICZEROVELACC
