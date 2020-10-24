@@ -7,6 +7,7 @@ SET(${PROJECT_NAME}_TESTS
   test-sinusoidal
   test-sinusoidal-serialization
   test-minjerk
+  test-curve-constraints
   )
 
 FOREACH(TEST ${${PROJECT_NAME}_TESTS})
