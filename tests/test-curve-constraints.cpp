@@ -57,12 +57,18 @@ BOOST_AUTO_TEST_CASE(operator_equal) {
   BOOST_CHECK(constraints != constraints2);
 
   bezier_t::curve_constraints_t constraints3(2);
-  constraints.init_vel = point3_t(-1, -1);
-  constraints.init_acc = point3_t(-2, -2);
-  constraints.init_jerk = point3_t(1, 2);
-  constraints.end_vel = point3_t(-10, -10);
-  constraints.end_acc = point3_t(-20, -20);
-  constraints.end_jerk = point3_t(-1, -2);
+  constraints.init_vel = pointX_t(2);
+  constraints.init_vel << -1, -1;
+  constraints.init_acc = pointX_t(2);
+  constraints.init_acc <<-2, -2;
+  constraints.init_jerk = pointX_t(2);
+  constraints.init_jerk <<1, 2;
+  constraints.end_vel = pointX_t(2);
+  constraints.end_vel <<-10, -10;
+  constraints.end_acc = pointX_t(2);
+  constraints.end_acc <<-20, -20;
+  constraints.end_jerk = pointX_t(2);
+  constraints.end_jerk <<-1, -2;
   BOOST_CHECK(constraints != constraints3);
 }
 
