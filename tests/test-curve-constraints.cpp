@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE test_minjerk
+#define BOOST_TEST_MODULE test_curve_constraints
 
 #include "curves/fwd.h"
 #include "curves/bezier_curve.h"
