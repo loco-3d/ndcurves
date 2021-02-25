@@ -25,7 +25,7 @@ void compDouble(const double a, const double b)
 {
 #if BOOST_VERSION <= 105800
     BOOST_CHECK(std::abs(a-b) <= 0.001);
-#elif
+#else
     BOOST_TEST(a == b, boost::test_tools::tolerance(0.001));
 #endif
 }
