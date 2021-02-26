@@ -1,11 +1,11 @@
 #define BOOST_TEST_MODULE test_sinusoidal
 
-#include "curves/fwd.h"
-#include "curves/sinusoidal.h"
-#include "curves/serialization/curves.hpp"
+#include "NDcurves/fwd.h"
+#include "NDcurves/sinusoidal.h"
+#include "NDcurves/serialization/curves.hpp"
 #include <boost/test/included/unit_test.hpp>
 
-using namespace curves;
+using namespace NDcurves;
 
 BOOST_AUTO_TEST_SUITE(BOOST_TEST_MODULE)
 

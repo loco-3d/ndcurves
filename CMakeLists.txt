@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 
 # Project properties
 SET(PROJECT_ORG loco-3d)
-SET(PROJECT_NAME curves)
+SET(PROJECT_NAME NDcurves)
 SET(PROJECT_DESCRIPTION "creatie and manipulate spline and bezier curves.")
 SET(PROJECT_URL "https://github.com/${PROJECT_ORG}/${PROJECT_NAME}")
 

@@ -1,10 +1,10 @@
 #define BOOST_TEST_MODULE test_minjerk
 
-#include "curves/fwd.h"
-#include "curves/polynomial.h"
+#include "NDcurves/fwd.h"
+#include "NDcurves/polynomial.h"
 #include <boost/test/included/unit_test.hpp>
 
-using namespace curves;
+using namespace NDcurves;
 
 BOOST_AUTO_TEST_SUITE(BOOST_TEST_MODULE)
 

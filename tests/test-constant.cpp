@@ -1,11 +1,11 @@
 #define BOOST_TEST_MODULE test_constant
 
-#include "curves/fwd.h"
-#include "curves/constant_curve.h"
-#include "curves/serialization/curves.hpp"
+#include "NDcurves/fwd.h"
+#include "NDcurves/constant_curve.h"
+#include "NDcurves/serialization/curves.hpp"
 #include <boost/test/included/unit_test.hpp>
 
-using namespace curves;
+using namespace NDcurves;
 
 BOOST_AUTO_TEST_SUITE(BOOST_TEST_MODULE)
 

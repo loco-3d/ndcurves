@@ -2,8 +2,8 @@
 # Authors: Pierre Fernbach <pfernbac@laas.fr>
 
 import unittest
-import curves
-from curves import polynomial
+import NDcurves as curves
+from NDcurves import polynomial
 import numpy as np
 from numpy import array, isclose, array_equal
 

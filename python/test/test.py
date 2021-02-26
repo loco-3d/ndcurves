@@ -7,7 +7,7 @@ import numpy as np
 from numpy import array, array_equal, isclose, random, zeros
 from numpy.linalg import norm
 import pickle
-from curves import (CURVES_WITH_PINOCCHIO_SUPPORT, Quaternion, SE3Curve, SO3Linear, bezier, bezier3, convert_to_bezier,
+from NDcurves import (CURVES_WITH_PINOCCHIO_SUPPORT, Quaternion, SE3Curve, SO3Linear, bezier, bezier3, convert_to_bezier,
                     convert_to_hermite, convert_to_polynomial, cubic_hermite_spline, curve_constraints, exact_cubic,
                     piecewise, piecewise_SE3, polynomial)
 

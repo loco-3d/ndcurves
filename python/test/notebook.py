@@ -4,7 +4,7 @@ import eigenpy
 from numpy import array, dot, identity, zeros
 
 # importing the bezier curve class
-from curves import bezier
+from NDcurves import bezier
 
 eigenpy.switchToNumpyArray()
 
