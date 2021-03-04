@@ -1078,13 +1078,30 @@ BOOST_PYTHON_MODULE(curves) {
 
   /** END cubic_hermite_spline **/
   /** BEGIN curve constraints**/
-  class_<curve_constraints_t>("curve_constraints", init<int>())
+  class_<curve_constraints_t>("curve_constraints", init<>())
+      .def(bp::init<int>(bp::arg("dimension"), "Init with a given dimension."))
       .add_property("init_vel", &get_init_vel, &set_init_vel)
       .add_property("init_acc", &get_init_acc, &set_init_acc)
       .add_property("init_jerk", &get_init_jerk, &set_init_jerk)
       .add_property("end_vel", &get_end_vel, &set_end_vel)
       .add_property("end_acc", &get_end_acc, &set_end_acc)
-      .add_property("end_jerk", &get_end_jerk, &set_end_jerk);
+      .add_property("end_jerk", &get_end_jerk, &set_end_jerk)
+      .def("__eq__", &curve_constraints_t::operator==)
+      .def("__ne__", &curve_constraints_t::operator!=)
+      .def("saveAsText", &curve_constraints_t::saveAsText<curve_constraints_t>, bp::args("filename"),
+           "Saves *this inside a text file.")
+      .def("loadFromText", &curve_constraints_t::loadFromText<curve_constraints_t>, bp::args("filename"),
+           "Loads *this from a text file.")
+      .def("saveAsXML", &curve_constraints_t::saveAsXML<curve_constraints_t>, bp::args("filename", "tag_name"),
+           "Saves *this inside a XML file.")
+      .def("loadFromXML", &curve_constraints_t::loadFromXML<curve_constraints_t>,
+           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
+      .def("saveAsBinary", &curve_constraints_t::saveAsBinary<curve_constraints_t>, bp::args("filename"),
+           "Saves *this inside a binary file.")
+      .def("loadFromBinary", &curve_constraints_t::loadFromBinary<curve_constraints_t>, bp::args("filename"),
+           "Loads *this from a binary file.")
+      .def_pickle(curve_pickle_suite<curve_constraints_t>());
+;
   /** END curve constraints**/
   /** BEGIN bernstein polynomial**/
   class_<bernstein_t>("bernstein", init<const unsigned int, const unsigned int>())
