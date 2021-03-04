@@ -2,8 +2,8 @@
 # Authors: Pierre Fernbach <pfernbac@laas.fr>
 
 import unittest
-import NDcurves as curves
-from NDcurves import sinusoidal
+import nd_curves as curves
+from nd_curves import sinusoidal
 import numpy as np
 from numpy import array, isclose, array_equal
 

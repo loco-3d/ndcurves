@@ -9,15 +9,15 @@ class TestRegistration(unittest.TestCase):
     """
     def test_pinocchio_then_curves(self):
         import pinocchio
-        import NDcurves
+        import nd_curves
         self.assertTrue(hasattr(pinocchio, 'Quaternion'))
-        self.assertTrue(hasattr(NDcurves, 'Quaternion'))
+        self.assertTrue(hasattr(nd_curves, 'Quaternion'))
 
     def test_curves_then_pinocchio(self):
-        import NDcurves
+        import nd_curves
         import pinocchio
         self.assertTrue(hasattr(pinocchio, 'Quaternion'))
-        self.assertTrue(hasattr(NDcurves, 'Quaternion'))
+        self.assertTrue(hasattr(nd_curves, 'Quaternion'))
 
 
 if __name__ == '__main__':

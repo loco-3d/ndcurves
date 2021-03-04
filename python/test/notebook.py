@@ -4,7 +4,7 @@ import eigenpy
 from numpy import array, dot, identity, zeros
 
 # importing the bezier curve class
-from NDcurves import bezier
+from nd_curves import bezier
 
 eigenpy.switchToNumpyArray()
 
@@ -30,7 +30,7 @@ class TestNotebook(unittest.TestCase):
         fNumSamples = float(numSamples)
         ptsTime = [(ref(float(t) / fNumSamples), float(t) / fNumSamples) for t in range(numSamples + 1)]
 
-        from curves.optimization import (problem_definition, setup_control_points)
+        from nd_curves.optimization import (problem_definition, setup_control_points)
 
         # dimension of our problem (here 3 as our curve is 3D)
         dim = 3

@@ -4,7 +4,7 @@ import eigenpy
 from numpy import array, matrix, zeros
 from numpy.linalg import norm
 
-from NDcurves.optimization import (constraint_flag, generate_integral_problem, integral_cost_flag, problem_definition,
+from nd_curves.optimization import (constraint_flag, generate_integral_problem, integral_cost_flag, problem_definition,
                                  setup_control_points)
 
 eigenpy.switchToNumpyArray()
