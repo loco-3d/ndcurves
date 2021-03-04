@@ -3,7 +3,7 @@
 
 import unittest
 import curves
-from curves import curve_constraints
+from nd_curves import curve_constraints
 import numpy as np
 import pickle
 from numpy import array, isclose, array_equal
