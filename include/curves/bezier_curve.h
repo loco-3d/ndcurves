@@ -10,6 +10,7 @@
 #define _CLASS_BEZIERCURVE
 
 #include "curve_abc.h"
+#include "cross_implementation.h"
 #include "bernstein.h"
 #include "curve_constraint.h"
 #include "piecewise_curve.h"
@@ -215,7 +216,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     if (order == 0) {
       return *this;
     }
-    num_t new_degree = (num_t)(degree_ + 1);
+    num_t new_degree_inv = 1. / ((num_t)(degree_ + 1));
     t_point_t n_wp;
     point_t current_sum = point_t::Zero(dim_);
     // recomputing waypoints q_i from derivative waypoints p_i. q_0 is the given constant.
@@ -223,10 +224,40 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     n_wp.push_back(current_sum);
     for (typename t_point_t::const_iterator pit = control_points_.begin(); pit != control_points_.end(); ++pit) {
       current_sum += *pit;
-      n_wp.push_back(current_sum / new_degree);
+      n_wp.push_back(current_sum * new_degree_inv);
     }
     bezier_curve_t integ(n_wp.begin(), n_wp.end(), T_min_, T_max_, mult_T_ * (T_max_ - T_min_));
     return integ.compute_primitive(order - 1);
+  }
+
+  ///  \brief Computes a Bezier curve of order degrees higher than the current curve, but strictly equivalent.
+  ///  Order elevation is required for addition / substraction and other comparison operations.
+  ///  \param order : number of order the curve must be updated
+  ///  \return An equivalent Bezier, with one more degree.
+  bezier_curve_t elevate(const std::size_t order) const {
+    t_point_t new_waypoints = control_points_, temp_waypoints;
+    for (std::size_t i = 1; i<= order; ++i)
+    {
+        num_t new_degree_inv = 1. / ((num_t)(degree_ + i));
+        temp_waypoints.push_back(*new_waypoints.begin());
+        num_t idx_deg_inv = 0.;
+        for (typename t_point_t::const_iterator pit = new_waypoints.begin()+1; pit != new_waypoints.end(); ++pit) {
+          idx_deg_inv += new_degree_inv;
+          temp_waypoints.push_back(idx_deg_inv * (*(pit-1)) + (1 - idx_deg_inv) * (*pit));
+        }
+        temp_waypoints.push_back(*(new_waypoints.end()-1));
+        new_waypoints = temp_waypoints;
+        temp_waypoints.clear();
+    }
+    return bezier_curve_t (new_waypoints.begin(), new_waypoints.end(), T_min_, T_max_, mult_T_);
+  }
+
+  ///  \brief Elevate the Bezier curve of order degrees higher than the current curve, but strictly equivalent.
+  ///  Order elevation is required for addition / substraction and other comparison operations.
+  ///  \param order : number of order the curve must be updated
+  void elevate_self(const std::size_t order) {
+    if (order > 0)
+        (*this) = elevate(order);
   }
 
   ///  \brief Evaluate the derivative order N of curve at time t.
@@ -415,6 +446,118 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     return c_split.second.split(t2).first;
   }
 
+  ///  \brief Compute the cross product of the current bezier curve by another bezier curve.
+  /// The cross product p1Xp2 of 2 bezier curves p1 and p2 is defined such that
+  /// forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product.
+  /// This method of course only makes sense for dimension 3 curves.
+  /// It assumes that a method point_t cross(const point_t&, const point_t&) has been defined
+  ///  \param pOther other polynomial to compute the cross product with.
+  ///  \return a new polynomial defining the cross product between this and pother
+  bezier_curve_t cross(const bezier_curve_t& g) const {
+    //See Farouki and Rajan 1988 Alogirthms for polynomials in Bernstein form and
+    //http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node10.html
+    assert_operator_compatible(g);
+    if (dim()!= 3)
+        throw std::invalid_argument("Can't perform cross product on Bezier curves with dimensions != 3 ");
+    int m =(int)(degree());
+    int n =(int)(g.degree());
+    unsigned int mj, n_ij, mn_i;
+    t_point_t new_waypoints;
+    for(int i = 0; i<= m+n; ++i)
+    {
+        bezier_curve_t::point_t current_point = bezier_curve_t::point_t::Zero(dim());
+        for (int j = std::max(0,i-n); j <=std::min(m,i); ++j){
+            mj = bin(m,j);
+            n_ij = bin(n,i-j);
+            mn_i = bin(m+n,i);
+            num_t mul = num_t(mj*n_ij) / num_t(mn_i);
+            current_point += mul*curves::cross(waypointAtIndex(j), g.waypointAtIndex(i-j));
+        }
+        new_waypoints.push_back(current_point);
+    }
+    return bezier_curve_t(new_waypoints.begin(),new_waypoints.end(),min(),max(),mult_T_ * g.mult_T_);
+  }
+
+
+  ///  \brief Compute the cross product of the current bezier b by a point point.
+  /// The cross product pXpoint of is defined such that
+  /// forall t, bXpoint(t) = b(t) X point, with X designing the cross product.
+  /// This method of course only makes sense for dimension 3 polynomials.
+  ///  \param point point to compute the cross product with.
+  ///  \return a new polynomial defining the cross product between this and point
+  bezier_curve_t cross(const bezier_curve_t::point_t& point) const {
+    //See Farouki and Rajan 1988 Alogirthms for polynomials in Bernstein form and
+    //http://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node10.html
+    if (dim()!= 3)
+        throw std::invalid_argument("Can't perform cross product on Bezier curves with dimensions != 3 ");
+    t_point_t new_waypoints;
+    for(typename t_point_t::const_iterator cit = waypoints().begin(); cit != waypoints().end(); ++cit){
+      new_waypoints.push_back(curves::cross(*cit, point));
+    }
+    return bezier_curve_t(new_waypoints.begin(),new_waypoints.end(),min(),max(),mult_T_);
+  }
+
+  bezier_curve_t& operator+=(const bezier_curve_t& other) {
+      assert_operator_compatible(other);
+      bezier_curve_t other_elevated = other * (other.mult_T_ / this->mult_T_); // TODO remove mult_T_ from Bezier
+      if(other.degree() > degree()){
+          elevate_self(other.degree() - degree());
+      }
+      else if(other_elevated.degree() < degree()){
+          other_elevated.elevate_self(degree() - other_elevated.degree());
+      }
+      typename t_point_t::const_iterator otherit = other_elevated.control_points_.begin();
+      for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it, ++otherit){
+        (*it)+=(*otherit);
+      }
+      return *this;
+    }
+
+  bezier_curve_t& operator-=(const bezier_curve_t& other)  {
+      assert_operator_compatible(other);
+      bezier_curve_t other_elevated = other * (other.mult_T_ / this->mult_T_);
+      if(other.degree() > degree()){
+          elevate_self(other.degree() - degree());
+      }
+      else if(other_elevated.degree() < degree()){
+          other_elevated.elevate_self(degree() - other_elevated.degree());
+      }
+      typename t_point_t::const_iterator otherit = other_elevated.control_points_.begin();
+      for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it, ++otherit){
+        (*it)-=(*otherit);
+      }
+      return *this;
+    }
+
+  bezier_curve_t& operator+=(const bezier_curve_t::point_t& point) {
+    for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it){
+      (*it)+=point;
+    }
+    return *this;
+  }
+
+  bezier_curve_t& operator-=(const bezier_curve_t::point_t& point) {
+    for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it){
+      (*it)-=point;
+    }
+    return *this;
+  }
+
+  bezier_curve_t& operator/=(const double d) {
+    for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it){
+      (*it)/=d;
+    }
+    return *this;
+  }
+
+  bezier_curve_t& operator*=(const double d) {
+    for (typename t_point_t::iterator it = control_points_.begin(); it!=control_points_.end(); ++it){
+      (*it)*=d;
+    }
+    return *this;
+  }
+
+
  private:
   /// \brief Ensure constraints of bezier curve.
   /// Add 4 points (2 after the first one, 2 before the last one) to biezer curve
@@ -453,6 +596,14 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
           "Error in bezier curve : Dimension of points is zero / did you use empty constructor ?");
     }
   }
+
+
+  void assert_operator_compatible(const bezier_curve_t& other) const{
+    if ((fabs(min() - other.min()) > MARGIN) || (fabs(max() - other.max()) > MARGIN)){
+        throw std::invalid_argument("Can't perform base operation (+ - ) on two Bezier curves with different time ranges");
+    }
+  }
+
   /*Operations*/
 
  public:
@@ -483,7 +634,6 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   /*const*/ std::size_t degree_;
   /*const*/ std::vector<Bern<Numeric> > bernstein_;
   /*const*/ t_point_t control_points_;
-  static const double MARGIN;
   /* Attributes */
 
   static bezier_curve_t zero(const std::size_t dim, const time_t T = 1.) {
@@ -512,8 +662,71 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   }
 };  // End struct bezier_curve
 
-template <typename Time, typename Numeric, bool Safe, typename Point>
-const double bezier_curve<Time, Numeric, Safe, Point>::MARGIN(0.001);
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator+(const bezier_curve<T,N,S,P>& p1, const bezier_curve<T,N,S,P>& p2) {
+  bezier_curve<T,N,S,P> res(p1);
+  return res+=p2;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator-(const bezier_curve<T,N,S,P>& p1) {
+    std::vector<typename bezier_curve<T,N,S,P>::point_t> ts;
+    for (std::size_t i = 0; i <= p1.degree(); ++i){
+      ts.push_back(bezier_curve<T,N,S,P>::point_t::Zero(p1.dim()));
+    }
+    bezier_curve<T,N,S,P> res (ts.begin(),ts.end(),p1.min(),p1.max());
+    res-=p1;
+    return res;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator-(const bezier_curve<T,N,S,P>& p1, const bezier_curve<T,N,S,P>& p2) {
+    bezier_curve<T,N,S,P> res(p1);
+    return res-=p2;
+}
+
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator-(const bezier_curve<T,N,S,P>& p1, const typename bezier_curve<T,N,S,P>::point_t& point) {
+  bezier_curve<T,N,S,P> res(p1);
+  return res-=point;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator-(const typename bezier_curve<T,N,S,P>::point_t& point, const bezier_curve<T,N,S,P>& p1) {
+  bezier_curve<T,N,S,P> res(-p1);
+  return res+=point;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator+(const bezier_curve<T,N,S,P>& p1, const typename bezier_curve<T,N,S,P>::point_t& point) {
+  bezier_curve<T,N,S,P> res(p1);
+  return res+=point;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator+(const typename bezier_curve<T,N,S,P>::point_t& point, const bezier_curve<T,N,S,P>& p1) {
+  bezier_curve<T,N,S,P> res(p1);
+  return res+=point;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator/(const bezier_curve<T,N,S,P>& p1, const double k) {
+    bezier_curve<T,N,S,P> res(p1);
+    return res/=k;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator*(const bezier_curve<T,N,S,P>& p1,const double k)  {
+    bezier_curve<T,N,S,P> res(p1);
+    return res*=k;
+}
+
+template <typename T, typename N, bool S, typename P >
+bezier_curve<T,N,S,P> operator*(const double k, const bezier_curve<T,N,S,P>& p1)  {
+    bezier_curve<T,N,S,P> res(p1);
+    return res*=k;
+}
 
 }  // namespace curves
 

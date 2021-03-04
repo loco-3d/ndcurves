@@ -62,6 +62,28 @@ class TestCurves(unittest.TestCase):
                 self.assertTrue((a.waypointAtIndex(0) == array([1., 2., 3.])).all())
             elif i == 1:
                 self.assertTrue((a.waypointAtIndex(1) == array([4., 5., 6.])).all())
+                
+        a1 = a.elevate(1);
+        for i in range(100):
+            dt = float(i) / 100. * 3.
+            self.assertTrue(norm(a(dt) - a1(dt)) < __EPS)
+            
+            
+        #arithmetic
+        b  = a + a1
+        b += a1
+        b =  a - a1
+        b -= a
+        a1*=0.1
+        a1/=0.1
+        b = -a1
+        c = a.cross(b)
+        c(0)
+        b += array([1., 2., 3.])
+        b -= array([1., 2., 3.])
+        b =  a + array([1., 2., 3.])
+        b =  a - array([1., 2., 3.])
+        
         # self.assertTrue((a.waypoints == waypoints).all())
         # Test : Degree, min, max, derivate
         # self.print_str(("test 1")
@@ -158,6 +180,30 @@ class TestCurves(unittest.TestCase):
         # time_waypoints = array([[0., 1.]]).transpose()
         # Create bezier6 and bezier
         a = bezier3(waypoints, 0., 3.)
+        a1 = a.elevate(1);
+        b = bezier3(waypoints, 0., 3.);
+        b.elevateSelf(2)
+        assert(b.degree == a.degree + 2)
+        for i in range(100):
+            dt = float(i) / 100. * 3.
+            self.assertTrue(norm(a(dt) - a1(dt)) < __EPS)
+            self.assertTrue(norm(a(dt) - b(dt)) < __EPS)
+        
+        #arithmetic
+        b  = a + a1
+        b += a1
+        b =  a - a1
+        b -= a
+        a1*=0.1
+        a1/=0.1
+        b = -a1
+        c = a.cross(b)
+        c(0)
+        b += array([1., 2., 3.])
+        b -= array([1., 2., 3.])
+        b =  a + array([1., 2., 3.])
+        b =  a - array([1., 2., 3.])
+        
         # Test waypoints
         self.assertTrue(a.nbWaypoints == 2)
         for i in range(0, a.nbWaypoints):
@@ -254,6 +300,25 @@ class TestCurves(unittest.TestCase):
         a.min()
         a.max()
         a(0.4)
+        
+        #arithmetic
+        waypoints2 = array([[1., 2., 3.], [4., 5., 6.], [4., 5., 6.]]).transpose()
+        a1 = polynomial(waypoints, -1., 3.)  # Defined on [-1.,3.]
+        b  = a + a1
+        b += a1
+        b =  a - a1
+        b -= a
+        a1*=0.1
+        a1/=0.1
+        b = -a1
+        c = a.cross(array([1., 2., 3.]))
+        c = a.cross(a)
+        c(0)
+        b += array([1., 2., 3.])
+        b -= array([1., 2., 3.])
+        b =  a + array([1., 2., 3.])
+        b =  a - array([1., 2., 3.])
+        
         # Test get coefficient at degree
         self.assertTrue((a.coeff() == waypoints).all())
         self.assertTrue((a.coeffAtDegree(0) == array([1., 2., 3.])).all())

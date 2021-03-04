@@ -130,7 +130,7 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
   }
   const std::size_t first_variable_idx = i;
   // variables
-  for (; i + 4 < numControlPoints; ++i) variables_.push_back(var_t::Zero(pDef.dim_));
+  for (; i + 4 < numControlPoints; ++i) variables_.push_back(var_t::X(pDef.dim_));
   // end constraints
   if (flag & END_POS) {
     if (flag & END_VEL) {
@@ -147,7 +147,7 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
           ++i;
         } else
           while (i < numControlPoints - 3) {
-            variables_.push_back(var_t::Zero(pDef.dim_));
+            variables_.push_back(var_t::X(pDef.dim_));
             ++i;
           }
         variables_.push_back(var_t(acc));
@@ -155,7 +155,7 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
         ++i;
       } else
         while (i < numControlPoints - 2) {
-          variables_.push_back(var_t::Zero(pDef.dim_));
+          variables_.push_back(var_t::X(pDef.dim_));
           ++i;
         }
       variables_.push_back(var_t(vel));
@@ -163,7 +163,7 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
       ++i;
     } else {
       while (i < numControlPoints - 1) {
-        variables_.push_back(var_t::Zero(pDef.dim_));
+        variables_.push_back(var_t::X(pDef.dim_));
         ++i;
       }
     }
@@ -172,7 +172,7 @@ problem_data<Point, Numeric, Safe> setup_control_points(const problem_definition
     ++i;
   }
   // add remaining variables (only if no end_pos constraints)
-  for (; i < numControlPoints; ++i) variables_.push_back(var_t::Zero(pDef.dim_));
+  for (; i < numControlPoints; ++i) variables_.push_back(var_t::X(pDef.dim_));
 
   if (numControlPoints <= numConstants) {
     throw std::runtime_error("numControlPoints < numConstants");

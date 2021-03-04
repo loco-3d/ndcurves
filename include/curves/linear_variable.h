@@ -26,11 +26,14 @@ template <typename Numeric = double, bool Safe = true>
 struct linear_variable : public serialization::Serializable {
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> matrix_x_t;
+  typedef Eigen::Matrix<Numeric, 3,1> vector_3_t;
+  typedef Eigen::Matrix<Numeric, 3,3> matrix_3_t;
   typedef linear_variable<Numeric> linear_variable_t;
 
   linear_variable() : B_(matrix_x_t::Identity(0, 0)), c_(vector_x_t::Zero(0)), zero(true) {}              // variable
   linear_variable(const vector_x_t& c) : B_(matrix_x_t::Zero(c.size(), c.size())), c_(c), zero(false) {}  // constant
   linear_variable(const matrix_x_t& B, const vector_x_t& c) : B_(B), c_(c), zero(false) {}                // mixed
+  linear_variable(const linear_variable_t& other) : B_(other.B()), c_(other.c()), zero(other.isZero()) {} // copy constructor
 
   ///  \brief Linear evaluation for vector x.
   ///  \param val : vector to evaluate the linear variable.
@@ -95,13 +98,44 @@ struct linear_variable : public serialization::Serializable {
     return *this;
   }
 
+  ///  \brief Compute the cross product of the current linear_variable and the other.
+  /// This method of course only makes sense for dimension 3 curves and dimension 3 unknown,
+  /// since otherwise the result is non-linear.
+  /// It assumes that a method point_t cross(const point_t&, const point_t&) has been defined
+  ///  \param pOther other polynomial to compute the cross product with.
+  ///  \return a new polynomial defining the cross product between this and other
+  linear_variable_t cross(const linear_variable_t& other) const {
+    if (B().rows() !=3)
+        throw std::invalid_argument("Can't perform cross product on linear variables with dimensions != 3 ");
+    if (B().cols() !=3)
+        throw std::invalid_argument("Can't perform cross product on linear variables more than one unknown ");
+    if (isZero() || other.isZero())
+        return linear_variable_t::Zero(3);
+    if ((B().squaredNorm() -  B().diagonal().squaredNorm() > MARGIN ) || (other.B().squaredNorm() -  other.B().diagonal().squaredNorm() > MARGIN ) )
+        throw std::invalid_argument("Can't perform cross product on linear variables if B is not diagonal ");
+    // (B1 x + c1) X (B2 x + c2) = (-c2X B1) x + (bX B2) x + b1Xb2
+    typename linear_variable_t::matrix_3_t newB = skew<typename linear_variable_t::matrix_3_t, typename linear_variable_t::vector_3_t>(-other.c()) * B() +
+            skew<typename linear_variable_t::matrix_3_t, typename linear_variable_t::vector_3_t>(c()) * other.B();
+    typename linear_variable_t::vector_3_t newC = curves::cross(c(),other.c());
+    return linear_variable_t(newB,newC);
+  }
+
   /// \brief Get a linear variable equal to zero.
   /// \param dim : Dimension of linear variable.
   /// \return Linear variable equal to zero.
   ///
   static linear_variable_t Zero(size_t dim = 0) {
+    return linear_variable_t(matrix_x_t::Zero(dim, dim), vector_x_t::Zero(dim));
+  }
+
+  /// \brief Get a linear variable equal to the variable
+  /// \param dim : Dimension of linear variable.
+  /// \return Linear variable equal to the variable.
+  ///
+  static linear_variable_t X(size_t dim = 0) {
     return linear_variable_t(matrix_x_t::Identity(dim, dim), vector_x_t::Zero(dim));
   }
+
 
   /// \brief Get dimension of linear variable.
   /// \return Dimension of linear variable.
@@ -157,6 +191,11 @@ linear_variable<N, S> operator-(const linear_variable<N, S>& w1, const linear_va
 }
 
 template <typename N, bool S>
+linear_variable<N, S> operator-(const linear_variable<N, S>& w1) {
+  return linear_variable<N, S> (-w1.B(), -w1.c());
+}
+
+template <typename N, bool S>
 linear_variable<N, S> operator*(const double k, const linear_variable<N, S>& w) {
   linear_variable<N, S> res(w.B(), w.c());
   return res *= k;
@@ -180,6 +219,11 @@ BezierFixed evaluateLinear(const BezierLinear& bIn, const X x) {
   for (typename BezierLinear::cit_point_t cit = bIn.waypoints().begin(); cit != bIn.waypoints().end(); ++cit)
     fixed_wps.push_back(cit->operator()(x));
   return BezierFixed(fixed_wps.begin(), fixed_wps.end(), bIn.T_min_, bIn.T_max_);
+}
+
+template <typename N, bool S>
+std::ostream &operator<<(std::ostream &os, const linear_variable<N, S>& l) {
+    return os << "linear_variable: \n \t B:\n"<< l.B() << "\t c: \n" << l.c().transpose();
 }
 
 }  // namespace curves
