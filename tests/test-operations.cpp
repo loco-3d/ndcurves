@@ -1,22 +1,22 @@
 #define BOOST_TEST_MODULE test_operations
 
-#include "nd_curves/fwd.h"
-#include "nd_curves/exact_cubic.h"
-#include "nd_curves/bezier_curve.h"
-#include "nd_curves/polynomial.h"
-#include "nd_curves/helpers/effector_spline.h"
-#include "nd_curves/helpers/effector_spline_rotation.h"
-#include "nd_curves/curve_conversion.h"
-#include "nd_curves/cubic_hermite_spline.h"
-#include "nd_curves/piecewise_curve.h"
-#include "nd_curves/optimization/definitions.h"
+#include "ndcurves/fwd.h"
+#include "ndcurves/exact_cubic.h"
+#include "ndcurves/bezier_curve.h"
+#include "ndcurves/polynomial.h"
+#include "ndcurves/helpers/effector_spline.h"
+#include "ndcurves/helpers/effector_spline_rotation.h"
+#include "ndcurves/curve_conversion.h"
+#include "ndcurves/cubic_hermite_spline.h"
+#include "ndcurves/piecewise_curve.h"
+#include "ndcurves/optimization/definitions.h"
 #include "load_problem.h"
-#include "nd_curves/so3_linear.h"
-#include "nd_curves/se3_curve.h"
-#include "nd_curves/serialization/curves.hpp"
+#include "ndcurves/so3_linear.h"
+#include "ndcurves/se3_curve.h"
+#include "ndcurves/serialization/curves.hpp"
 #include <boost/test/included/unit_test.hpp>
 
-using namespace nd_curves;
+using namespace ndcurves;
 
 BOOST_AUTO_TEST_SUITE(BOOST_TEST_MODULE)
 

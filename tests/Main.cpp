@@ -1,17 +1,17 @@
-#include "nd_curves/fwd.h"
-#include "nd_curves/exact_cubic.h"
-#include "nd_curves/bezier_curve.h"
-#include "nd_curves/polynomial.h"
-#include "nd_curves/helpers/effector_spline.h"
-#include "nd_curves/helpers/effector_spline_rotation.h"
-#include "nd_curves/curve_conversion.h"
-#include "nd_curves/cubic_hermite_spline.h"
-#include "nd_curves/piecewise_curve.h"
-#include "nd_curves/optimization/definitions.h"
+#include "ndcurves/fwd.h"
+#include "ndcurves/exact_cubic.h"
+#include "ndcurves/bezier_curve.h"
+#include "ndcurves/polynomial.h"
+#include "ndcurves/helpers/effector_spline.h"
+#include "ndcurves/helpers/effector_spline_rotation.h"
+#include "ndcurves/curve_conversion.h"
+#include "ndcurves/cubic_hermite_spline.h"
+#include "ndcurves/piecewise_curve.h"
+#include "ndcurves/optimization/definitions.h"
 #include "load_problem.h"
-#include "nd_curves/so3_linear.h"
-#include "nd_curves/se3_curve.h"
-#include "nd_curves/serialization/curves.hpp"
+#include "ndcurves/so3_linear.h"
+#include "ndcurves/se3_curve.h"
+#include "ndcurves/serialization/curves.hpp"
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -20,7 +20,7 @@
 
 using namespace std;
 
-namespace nd_curves {
+namespace ndcurves {
 typedef exact_cubic<double, double, true, Eigen::Matrix<double, 1, 1> > exact_cubic_one;
 typedef exact_cubic_t::spline_constraints spline_constraints_t;
 
@@ -41,9 +41,9 @@ bool QuasiEqual(const point3_t a, const point3_t b) {
   }
   return equal;
 }
-}  // End namespace nd_curves
+}  // End namespace ndcurves
 
-using namespace nd_curves;
+using namespace ndcurves;
 
 ostream& operator<<(ostream& os, const point3_t& pt) {
   os << "(" << pt.x() << ", " << pt.y() << ", " << pt.z() << ")";
@@ -526,7 +526,7 @@ void cubicConversionTest(bool& error) {
 /*Exact Cubic Function tests*/
 void ExactCubicNoErrorTest(bool& error) {
   // Create an exact cubic spline with 7 waypoints => 6 polynomials defined in [0.0,3.0]
-  nd_curves::T_Waypoint waypoints;
+  ndcurves::T_Waypoint waypoints;
   for (double i = 0.0; i <= 3.0; i = i + 0.5) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
@@ -572,7 +572,7 @@ void ExactCubicNoErrorTest(bool& error) {
 /*Exact Cubic Function tests*/
 void ExactCubicTwoPointsTest(bool& error) {
   // Create an exact cubic spline with 2 waypoints => 1 polynomial defined in [0.0,1.0]
-  nd_curves::T_Waypoint waypoints;
+  ndcurves::T_Waypoint waypoints;
   for (double i = 0.0; i < 2.0; ++i) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
@@ -596,7 +596,7 @@ void ExactCubicTwoPointsTest(bool& error) {
 }
 
 void ExactCubicOneDimTest(bool& error) {
-  nd_curves::T_WaypointOne waypoints;
+  ndcurves::T_WaypointOne waypoints;
   point_one zero;
   zero(0, 0) = 9;
   point_one one;
@@ -615,7 +615,7 @@ void ExactCubicOneDimTest(bool& error) {
   ComparePoints(one, res1, errmsg, error);
 }
 
-void CheckWayPointConstraint(const std::string& errmsg, const double step, const nd_curves::T_Waypoint&,
+void CheckWayPointConstraint(const std::string& errmsg, const double step, const ndcurves::T_Waypoint&,
                              const exact_cubic_t* curve, bool& error,
                              double prec = Eigen::NumTraits<double>::dummy_precision()) {
   point3_t res1;
@@ -626,7 +626,7 @@ void CheckWayPointConstraint(const std::string& errmsg, const double step, const
 }
 
 void ExactCubicPointsCrossedTest(bool& error) {
-  nd_curves::T_Waypoint waypoints;
+  ndcurves::T_Waypoint waypoints;
   for (double i = 0; i <= 1; i = i + 0.2) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
@@ -636,7 +636,7 @@ void ExactCubicPointsCrossedTest(bool& error) {
 }
 
 void ExactCubicVelocityConstraintsTest(bool& error) {
-  nd_curves::T_Waypoint waypoints;
+  ndcurves::T_Waypoint waypoints;
   for (double i = 0; i <= 1; i = i + 0.2) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
@@ -693,7 +693,7 @@ void CheckPointOnline(const std::string& errmsg, const point3_t& A, const point3
 
 void EffectorTrajectoryTest(bool& error) {
   // create arbitrary trajectory
-  nd_curves::T_Waypoint waypoints;
+  ndcurves::T_Waypoint waypoints;
   for (double i = 0; i <= 10; i = i + 2) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
@@ -741,7 +741,7 @@ double GetXRotFromQuat(helpers::quat_ref_const_t q) {
 
 void EffectorSplineRotationNoRotationTest(bool& error) {
   // create arbitrary trajectory
-  nd_curves::T_Waypoint waypoints;
+  ndcurves::T_Waypoint waypoints;
   for (double i = 0; i <= 10; i = i + 2) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
@@ -766,7 +766,7 @@ void EffectorSplineRotationNoRotationTest(bool& error) {
 
 void EffectorSplineRotationRotationTest(bool& error) {
   // create arbitrary trajectory
-  nd_curves::T_Waypoint waypoints;
+  ndcurves::T_Waypoint waypoints;
   for (double i = 0; i <= 10; i = i + 2) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
@@ -792,7 +792,7 @@ void EffectorSplineRotationRotationTest(bool& error) {
 
 void EffectorSplineRotationWayPointRotationTest(bool& error) {
   // create arbitrary trajectory
-  nd_curves::T_Waypoint waypoints;
+  ndcurves::T_Waypoint waypoints;
   for (double i = 0; i <= 10; i = i + 2) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
@@ -1363,7 +1363,7 @@ void curveAbcDimDynamicTest(bool& error) {
     error = false;
   }
   // EXACT CUBIC : NOT SUPPORTED, problem to fix later
-  nd_curves::T_Waypoint waypoints;
+  ndcurves::T_Waypoint waypoints;
   for (double i = 0; i <= 1; i = i + 0.2) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
@@ -1652,7 +1652,7 @@ void serializationCurvesTest(bool& error) {
     pchc_test.loadFromText<piecewise_t>(fileName);
     CompareCurves<piecewise_t, piecewise_t>(ppc, pchc_test, errMsg4, error);
     // Test serialization on exact cubic
-    nd_curves::T_Waypoint waypoints;
+    ndcurves::T_Waypoint waypoints;
     for (double i = 0; i <= 1; i = i + 0.2) {
       waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
     }
@@ -2174,7 +2174,7 @@ void Se3serializationTest(bool& error) {
  * @param error
  */
 
-using namespace nd_curves::optimization;
+using namespace ndcurves::optimization;
 
 var_pair_t setup_control_points(const std::size_t degree, const constraint_flag flag,
                                 const point3_t& initPos = point3_t(), const point3_t& endPos = point3_t(),

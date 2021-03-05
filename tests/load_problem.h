@@ -2,20 +2,20 @@
 #ifndef _CLASS_LOAD_TEST_PROBLEMS
 #define _CLASS_LOAD_TEST_PROBLEMS
 
-#include "nd_curves/exact_cubic.h"
-#include "nd_curves/bezier_curve.h"
-#include "nd_curves/helpers/effector_spline.h"
-#include "nd_curves/helpers/effector_spline_rotation.h"
-#include "nd_curves/optimization/quadratic_problem.h"
-#include "nd_curves/optimization/integral_cost.h"
-#include "nd_curves/optimization/details.h"
+#include "ndcurves/exact_cubic.h"
+#include "ndcurves/bezier_curve.h"
+#include "ndcurves/helpers/effector_spline.h"
+#include "ndcurves/helpers/effector_spline_rotation.h"
+#include "ndcurves/optimization/quadratic_problem.h"
+#include "ndcurves/optimization/integral_cost.h"
+#include "ndcurves/optimization/details.h"
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <stdlib.h>
 
-namespace nd_curves {
+namespace ndcurves {
 
 typedef Eigen::Vector3d point_t;
 typedef std::vector<point_t, Eigen::aligned_allocator<point_t> > t_point_t;
@@ -98,6 +98,6 @@ problem_definition_t loadproblem(const std::string& filename) {
 }
 
 }  // namespace optimization
-}  // namespace nd_curves
+}  // namespace ndcurves
 
 #endif  //_CLASS_LOAD_TEST_PROBLEMS
