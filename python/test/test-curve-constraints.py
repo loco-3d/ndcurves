@@ -2,7 +2,6 @@
 # Authors: Pierre Fernbach <pfernbac@laas.fr>
 
 import unittest
-import curves
 from ndcurves import curve_constraints
 import numpy as np
 import pickle

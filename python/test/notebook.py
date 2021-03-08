@@ -80,7 +80,7 @@ class TestNotebook(unittest.TestCase):
         res = quadprog_solve_qp(A, b)
         fitBezier = evalAndPlot(variableBezier, res)
 
-        from curves.optimization import constraint_flag
+        from ndcurves.optimization import constraint_flag
 
         pD.flag = constraint_flag.INIT_POS | constraint_flag.END_POS
         # set initial position
