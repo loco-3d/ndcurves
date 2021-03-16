@@ -4,7 +4,7 @@ import eigenpy
 from numpy import array, dot, identity, zeros
 
 # importing the bezier curve class
-from curves import bezier
+from ndcurves import bezier
 
 eigenpy.switchToNumpyArray()
 
@@ -30,7 +30,7 @@ class TestNotebook(unittest.TestCase):
         fNumSamples = float(numSamples)
         ptsTime = [(ref(float(t) / fNumSamples), float(t) / fNumSamples) for t in range(numSamples + 1)]
 
-        from curves.optimization import (problem_definition, setup_control_points)
+        from ndcurves.optimization import (problem_definition, setup_control_points)
 
         # dimension of our problem (here 3 as our curve is 3D)
         dim = 3
@@ -80,7 +80,7 @@ class TestNotebook(unittest.TestCase):
         res = quadprog_solve_qp(A, b)
         fitBezier = evalAndPlot(variableBezier, res)
 
-        from curves.optimization import constraint_flag
+        from ndcurves.optimization import constraint_flag
 
         pD.flag = constraint_flag.INIT_POS | constraint_flag.END_POS
         # set initial position

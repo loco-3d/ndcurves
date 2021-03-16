@@ -2,8 +2,7 @@
 # Authors: Pierre Fernbach <pfernbac@laas.fr>
 
 import unittest
-import curves
-from curves import curve_constraints
+from ndcurves import curve_constraints
 import numpy as np
 import pickle
 from numpy import array, isclose, array_equal
