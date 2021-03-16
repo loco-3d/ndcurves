@@ -51,33 +51,34 @@ ENDIF(BUILD_PYTHON_INTERFACE)
 # Main Library
 SET(${PROJECT_NAME}_HEADERS
   include/${PROJECT_NAME}/bernstein.h
-  include/${PROJECT_NAME}/curve_conversion.h
-  include/${PROJECT_NAME}/curve_abc.h
-  include/${PROJECT_NAME}/exact_cubic.h
-  include/${PROJECT_NAME}/MathDefs.h
-  include/${PROJECT_NAME}/polynomial.h
   include/${PROJECT_NAME}/bezier_curve.h
-  include/${PROJECT_NAME}/curve_constraint.h
-  include/${PROJECT_NAME}/linear_variable.h
-  include/${PROJECT_NAME}/quadratic_variable.h
-  include/${PROJECT_NAME}/cubic_hermite_spline.h
-  include/${PROJECT_NAME}/piecewise_curve.h
-  include/${PROJECT_NAME}/so3_linear.h
-  include/${PROJECT_NAME}/se3_curve.h
-  include/${PROJECT_NAME}/sinusoidal.h
-  include/${PROJECT_NAME}/fwd.h
   include/${PROJECT_NAME}/constant_curve.h
+  include/${PROJECT_NAME}/cross_implementation.h
+  include/${PROJECT_NAME}/cubic_hermite_spline.h
+  include/${PROJECT_NAME}/curve_abc.h
+  include/${PROJECT_NAME}/curve_constraint.h
+  include/${PROJECT_NAME}/curve_conversion.h
+  include/${PROJECT_NAME}/exact_cubic.h
+  include/${PROJECT_NAME}/fwd.h
   include/${PROJECT_NAME}/helpers/effector_spline.h
   include/${PROJECT_NAME}/helpers/effector_spline_rotation.h
+  include/${PROJECT_NAME}/linear_variable.h
+  include/${PROJECT_NAME}/MathDefs.h
   include/${PROJECT_NAME}/optimization/definitions.h
   include/${PROJECT_NAME}/optimization/details.h
-  include/${PROJECT_NAME}/optimization/quadratic_problem.h
   include/${PROJECT_NAME}/optimization/integral_cost.h
+  include/${PROJECT_NAME}/optimization/quadratic_problem.h
+  include/${PROJECT_NAME}/piecewise_curve.h
+  include/${PROJECT_NAME}/polynomial.h
   include/${PROJECT_NAME}/python/python_definitions.h
+  include/${PROJECT_NAME}/quadratic_variable.h
+  include/${PROJECT_NAME}/se3_curve.h
   include/${PROJECT_NAME}/serialization/archive.hpp
-  include/${PROJECT_NAME}/serialization/registeration.hpp
-  include/${PROJECT_NAME}/serialization/eigen-matrix.hpp
   include/${PROJECT_NAME}/serialization/curves.hpp
+  include/${PROJECT_NAME}/serialization/eigen-matrix.hpp
+  include/${PROJECT_NAME}/serialization/registeration.hpp
+  include/${PROJECT_NAME}/sinusoidal.h
+  include/${PROJECT_NAME}/so3_linear.h
   )
 
 ADD_LIBRARY(${PROJECT_NAME} INTERFACE)
