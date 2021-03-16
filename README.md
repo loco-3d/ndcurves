@@ -1,8 +1,10 @@
-ND-Curves
+NDCurves
 ===================
 
-[![Pipeline status](https://gepgitlab.laas.fr/loco-3d/curves/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/loco-3d/curves/commits/master)
-[![Coverage report](https://gepgitlab.laas.fr/loco-3d/curves/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/loco-3d/curves/master/coverage/)
+[![Pipeline
+status](https://gepgitlab.laas.fr/loco-3d/ndcurves/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/loco-3d/ndcurves/commits/master)
+[![Coverage
+report](https://gepgitlab.laas.fr/loco-3d/ndcurves/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/loco-3d/ndcurves/master/coverage/)
 
 
 A template-based Library for creating curves of arbitrary order and dimension, eventually subject to derivative constraints. The main use of the library is the creation of end-effector trajectories for legged robots.
@@ -38,13 +40,13 @@ This package is available as binary in [robotpkg](http://robotpkg.openrobots.org
 To handle this with cmake, use the recursive option to clone the repository.
 For instance, using http:
 ```
-git clone --recursive https://github.com/loco-3d/curves $CURVES_DIR
+git clone --recursive https://github.com/loco-3d/ndcurves $NDCURVES_DIR
 ```
-Where $CURVES_DIR is to be replaced to your selected source folder.
+Where $NDCURVES_DIR is to be replaced to your selected source folder.
 The library is header only, so the build only serves to build the tests and python bindings:
 
 ```sh
-cd $CURVES_DIR && mkdir build && cd build
+cd $NDCURVES_DIR && mkdir build && cd build
 cmake .. && make && make test
 ```
 
@@ -60,10 +62,10 @@ cmake -DBUILD_PYTHON_INTERFACE=ON ..
 
 Then rebuild the library:
 ```
-cd ${CURVES_DIR}/build
+cd ${NDCURVES_DIR}/build
 make && make test
 ```
-To see example of use, you can refer to the [test file](https://github.com/loco-3d/curves/blob/master/python/test/test.py)
+To see example of use, you can refer to the [test file](https://github.com/loco-3d/ndcurves/blob/master/python/test/test.py)
 which is rather self explanatory:
 
 In spite of an exhaustive documentation, please refer to the C++ documentation, which mostly applies to python.
@@ -71,5 +73,5 @@ In spite of an exhaustive documentation, please refer to the C++ documentation, 
 Documentation and tutorial
 -------------
 
-For a python tutorial, you can refer to the [jupyter notebook](https://github.com/loco-3d/curves/blob/master/python/test/sandbox/test.ipynb).
-The [test file](https://github.com/loco-3d/curves/blob/master/python/test/test.py) is more exhaustive and rather self explanatory.
+For a python tutorial, you can refer to the [jupyter notebook](https://github.com/loco-3d/ndcurves/blob/master/python/test/sandbox/test.ipynb).
+The [test file](https://github.com/loco-3d/ndcurves/blob/master/python/test/test.py) is more exhaustive and rather self explanatory.
