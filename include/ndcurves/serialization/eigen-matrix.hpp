@@ -28,6 +28,17 @@
 #ifndef EIGEN_BOOST_SERIALIZATION
 #define EIGEN_BOOST_SERIALIZATION
 
+#ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+#include <pinocchio/config.hpp>
+#if PINOCCHIO_VERSION_AT_LEAST(2, 6, 0)
+#define CURVES_WITH_PINOCCHIO_260
+#endif
+#endif
+
+#ifdef CURVES_WITH_PINOCCHIO_260
+#include <pinocchio/serialization/eigen.hpp>
+#else
+
 #include <Eigen/Dense>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/vector.hpp>
@@ -63,5 +74,9 @@ void serialize(Archive& ar, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxR
 }
 }  // namespace serialization
 }  // namespace boost
+
+#endif
+
+#undef CURVES_WITH_PINOCCHIO_260
 
 #endif  // ifndef __multicontact_api_serialization_eigen_matrix_hpp__
