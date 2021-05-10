@@ -223,7 +223,7 @@ class effector_spline_rotation {
     // NOTHING
   }
 
-  ~effector_spline_rotation() { delete spline_; }
+  virtual ~effector_spline_rotation() { delete spline_; }
   /* Constructors - destructors */
 
   /*Helpers*/

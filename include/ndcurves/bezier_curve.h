@@ -127,9 +127,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
         control_points_(other.control_points_) {}
 
   ///\brief Destructor
-  ~bezier_curve() {
-    // NOTHING
-  }
+  virtual ~bezier_curve() {}
 
   /*Operations*/
   ///  \brief Evaluation of the bezier curve at time t.

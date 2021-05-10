@@ -46,7 +46,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   SE3Curve() : curve_abc_t(), dim_(3), translation_curve_(), rotation_curve_(), T_min_(0), T_max_(0) {}
 
   /// \brief Destructor
-  ~SE3Curve() {
+  virtual ~SE3Curve() {
     // should we delete translation_curve and rotation_curve here ?
     // better switch to shared ptr
   }
