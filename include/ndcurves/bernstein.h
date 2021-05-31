@@ -38,7 +38,7 @@ struct Bern {
   Bern() {}
   Bern(const unsigned int m, const unsigned int i) : m_minus_i(m - i), i_(i), bin_m_i_(bin(m, i)) {}
 
-  ~Bern() {}
+  virtual ~Bern() {}
 
   /// \brief Evaluation of Bernstein polynomial at value u.
   /// \param u : value between 0 and 1.

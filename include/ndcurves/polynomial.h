@@ -211,9 +211,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
   /// \brief Destructor
-  ~polynomial() {
-    // NOTHING
-  }
+  virtual ~polynomial() {}
 
   polynomial(const polynomial& other)
       : dim_(other.dim_),

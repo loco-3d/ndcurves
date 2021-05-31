@@ -84,9 +84,7 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
   }
 
   /// \brief Destructor
-  ~SO3Linear() {
-    // NOTHING
-  }
+  virtual ~SO3Linear() {}
 
   SO3Linear(const SO3Linear& other)
       : dim_(other.dim_),

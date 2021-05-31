@@ -58,7 +58,7 @@ struct curve_constraints : serialization::Serializable {
   virtual bool operator!=(const curve_constraints& other) const { return !(*this == other); }
 
 
-  ~curve_constraints() {}
+  virtual ~curve_constraints() {}
   point_t init_vel;
   point_t init_acc;
   point_t init_jerk;

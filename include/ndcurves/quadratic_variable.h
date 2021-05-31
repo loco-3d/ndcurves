@@ -43,7 +43,7 @@ struct quadratic_variable {
   quadratic_variable(const point_t& b, const Numeric c = 0)
       : c_(c), b_(b), A_(matrix_x_t::Zero((int)(b.rows()), (int)(b.rows()))), zero(false) {}
 
-  static quadratic_variable_t Zero(size_t dim = 0) { return quadratic_variable_t(); }
+  static quadratic_variable_t Zero(size_t /*dim*/ = 0) { return quadratic_variable_t(); }
 
   // linear evaluation
   Numeric operator()(const Eigen::Ref<const point_t>& val) const {
