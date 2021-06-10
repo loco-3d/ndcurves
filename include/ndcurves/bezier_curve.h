@@ -208,17 +208,16 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   ///  Computes the primitive at order N of bezier curve of parametric equation \f$x(t)\f$. <br>
   ///  At order \f$N=1\f$, the primitve \f$X(t)\f$ of \f$x(t)\f$ is such as \f$\frac{dX(t)}{dt} = x(t)\f$.
   ///  \param order : order of the primitive.
+  ///  \param init  : constant valuefor the first point of the primitive (can tipycally be zero)
   ///  \return primitive at order N of x(t).
-  bezier_curve_t compute_primitive(const std::size_t order) const {
+  bezier_curve_t compute_primitive(const std::size_t order, const point_t& init) const {
     check_conditions();
     if (order == 0) {
       return *this;
     }
     num_t new_degree_inv = 1. / ((num_t)(degree_ + 1));
     t_point_t n_wp;
-    point_t current_sum = point_t::Zero(dim_);
-    // recomputing waypoints q_i from derivative waypoints p_i. q_0 is the given constant.
-    // then q_i = (sum( j = 0 -> j = i-1) p_j) /n+1
+    point_t current_sum (init);
     n_wp.push_back(current_sum);
     for (typename t_point_t::const_iterator pit = control_points_.begin(); pit != control_points_.end(); ++pit) {
       current_sum += *pit;
@@ -226,6 +225,14 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
     }
     bezier_curve_t integ(n_wp.begin(), n_wp.end(), T_min_, T_max_, mult_T_ * (T_max_ - T_min_));
     return integ.compute_primitive(order - 1);
+  }
+
+  bezier_curve_t compute_primitive(const std::size_t order) const {
+      return compute_primitive(order, point_t::Zero(dim_));
+  }
+
+  bezier_curve_t* compute_primitive_ptr(const std::size_t order, const point_t& init) const {
+    return new bezier_curve_t(compute_primitive(order, init));
   }
 
   ///  \brief Computes a Bezier curve of order degrees higher than the current curve, but strictly equivalent.

@@ -35,6 +35,8 @@ struct linear_variable : public serialization::Serializable {
   linear_variable(const matrix_x_t& B, const vector_x_t& c) : B_(B), c_(c), zero(false) {}                // mixed
   linear_variable(const linear_variable_t& other) : B_(other.B()), c_(other.c()), zero(other.isZero()) {} // copy constructor
 
+  ~linear_variable() {}
+
   ///  \brief Linear evaluation for vector x.
   ///  \param val : vector to evaluate the linear variable.
   ///  \return Evaluation of linear variable for vector x.
@@ -51,14 +53,29 @@ struct linear_variable : public serialization::Serializable {
   /// \return Linear variable after operation.
   ///
   linear_variable_t& operator+=(const linear_variable_t& w1) {
-    if (w1.isZero()) return *this;
+    if (w1.isZero())
+      return *this;
     if (isZero()) {
       this->B_ = w1.B_;
+      this->c_ = w1.c_;
       zero = w1.isZero();
     } else {
-      this->B_ += w1.B_;
+        if (Safe && B().rows() != w1.B().rows())
+          throw std::length_error("Cannot add linear variables, variables do not have the same dimension");
+        else if (B().cols() > w1.B().cols()){ //new variables added left for primitive
+          B_.block(0,B().cols() - w1.B().cols(),B().rows(),w1.B().cols()) +=  w1.B();
+          c_.tail(w1.c().rows()) += w1.c();
+        }
+        else if (B().cols() < w1.B().cols()){ //new variables added left for primitive
+          linear_variable_t opp = w1 + (*this);
+          this->B_ = opp.B_;
+          this->c_ = opp.c_;
+        }
+        else{
+          this->B_ += w1.B_;
+          this->c_ += w1.c_;
+        }
     }
-    this->c_ += w1.c_;
     return *this;
   }
 
@@ -67,14 +84,29 @@ struct linear_variable : public serialization::Serializable {
   /// \return Linear variable after operation.
   ///
   linear_variable_t& operator-=(const linear_variable_t& w1) {
-    if (w1.isZero()) return *this;
+    if (w1.isZero())
+      return *this;
     if (isZero()) {
       this->B_ = -w1.B_;
+      this->c_ = -w1.c_;
       zero = w1.isZero();
     } else {
-      this->B_ -= w1.B_;
+        if (Safe && B().rows() != w1.B().rows())
+          throw std::length_error("Cannot add linear variables, variables do not have the same dimension");
+        else if (B().cols() > w1.B().cols()){ //new variables added left for primitive
+          B_.block(0,B().cols() - w1.B().cols(),B().rows(),w1.B().cols()) -=  w1.B();
+          c_.tail(w1.c().rows()) -= w1.c();
+        }
+        else if (B().cols() < w1.B().cols()){ //new variables added left for primitive
+          linear_variable_t opp = -w1 + (*this);
+          this->B_ = opp.B_;
+          this->c_ = opp.c_;
+        }
+        else{
+          this->B_ -= w1.B_;
+          this->c_ -= w1.c_;
+        }
     }
-    this->c_ -= w1.c_;
     return *this;
   }
 
@@ -140,7 +172,7 @@ struct linear_variable : public serialization::Serializable {
   /// \brief Get dimension of linear variable.
   /// \return Dimension of linear variable.
   ///
-  std::size_t size() const { return zero ? 0 : std::max(B_.cols(), c_.size()); }
+  std::size_t size() const { return zero ? 0 : std::max(B_.rows(), c_.size()); }
 
   /// \brief Get norm of linear variable (Norm of B plus norm of C).
   /// \return Norm of linear variable.

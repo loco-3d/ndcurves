@@ -184,6 +184,7 @@ BOOST_AUTO_TEST_CASE(crossProductBezierLinearVariable) {
     bezier_linear_variable_t pZero(zeroVec.begin(),zeroVec.end(),0.,1.);
     bezier_linear_variable_t pCross  (p1.cross(p2));
     bezier_linear_variable_t pCrossZero  (p1.cross(pZero));
+    bezier_linear_variable_t primitive = pCross.compute_primitive(1, *vec1.begin());
     for (double i = 0.; i <=1.; ++i ){
         Eigen::Vector3d x = Eigen::Vector3d::Random();
         bezier_t fcross = evaluateLinear<bezier_t, bezier_linear_variable_t>(pCross, x);

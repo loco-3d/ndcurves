@@ -360,6 +360,31 @@ void set_end_acc(curve_constraints_t& c, const pointX_t& val) { c.end_acc = val;
 
 void set_end_jerk(curve_constraints_t& c, const pointX_t& val) { c.end_jerk = val; }
 
+
+
+bezier_t* bezier_t_compute_primitive_init(const bezier_t* b, const std::size_t order, const bezier_t::point_t& init){
+    return new bezier_t(b->compute_primitive(order, init));
+}
+bezier_t* bezier_t_compute_primitive_zero(const bezier_t* b, const std::size_t order){
+    return new bezier_t(b->compute_primitive(order));
+}
+
+
+bezier3_t* bezier3_t_compute_primitive_init(const bezier3_t* b, const std::size_t order, const bezier3_t::point_t& init){
+    return new bezier3_t(b->compute_primitive(order, init));
+}
+bezier3_t* bezier3_t_compute_primitive_zero(const bezier3_t* b, const std::size_t order){
+    return new bezier3_t(b->compute_primitive(order));
+}
+
+bezier_linear_variable_t* bezier_linear_variable_t_compute_primitive_init(const bezier_linear_variable_t* b, const std::size_t order, const bezier_linear_variable_t::point_t* init){
+    return new bezier_linear_variable_t(b->compute_primitive(order, *init));
+}
+bezier_linear_variable_t* bezier_linear_variable_t_compute_primitive_zero(const bezier_linear_variable_t* b, const std::size_t order){
+    return new bezier_linear_variable_t(b->compute_primitive(order));
+}
+
+
 bezier_t* bezier_linear_variable_t_evaluate(const bezier_linear_variable_t* b, const pointX_t& x) {
   return new bezier_t(evaluateLinear<bezier_t, bezier_linear_variable_t>(*b, x));
 }
@@ -633,7 +658,12 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
       .def("__init__", make_constructor(&wrapBezier3ConstructorConstraints))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBoundsConstraints))
-      .def("compute_primitive", &bezier3_t::compute_primitive)
+      .def("compute_primitive", &bezier3_t_compute_primitive_init,
+           return_value_policy<manage_new_object>())
+      .def("compute_primitive", &bezier3_t_compute_primitive_zero,
+           return_value_policy<manage_new_object>())
+      .def("compute_derivate", &bezier3_t::compute_derivate_ptr,
+           return_value_policy<manage_new_object>())
       .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
       .def("waypoints",&wrapBezier3Waypoints)
       .def("elevate",&bezier3_t::elevate, bp::args("order"), "Computes a Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
@@ -678,7 +708,11 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("__init__", make_constructor(&wrapBezierConstructorBounds))
       .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
       .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
-      .def("compute_primitive", &bezier_t::compute_primitive)
+      .def("compute_primitive", &bezier_t_compute_primitive_init,
+           return_value_policy<manage_new_object>())
+      .def("compute_primitive", &bezier_t_compute_primitive_zero,
+           return_value_policy<manage_new_object>())
+      .def("compute_derivate", &bezier_t::compute_derivate)
       .def("waypointAtIndex", &bezier_t::waypointAtIndex)
       .def("waypoints",&wrapBezierWaypoints)
       .def("elevate",&bezier_t::elevate, bp::args("order"), "Computes a Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
@@ -760,7 +794,10 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("derivate", &bezier_linear_variable_t::derivate)
       .def("compute_derivate", &bezier_linear_variable_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>())
-      .def("compute_primitive", &bezier_linear_variable_t::compute_primitive)
+      .def("compute_primitive", &bezier_linear_variable_t_compute_primitive_init,
+           return_value_policy<manage_new_object>())
+      .def("compute_primitive", &bezier_linear_variable_t_compute_primitive_zero,
+           return_value_policy<manage_new_object>())
       .def("split", split_py)
       .def("waypoints", &wayPointsToLists, return_value_policy<manage_new_object>())
       .def("waypointAtIndex", &bezier_linear_variable_t::waypointAtIndex)
