@@ -400,31 +400,29 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
   polynomial_t& operator+=(const polynomial_t& p1) {
     assert_operator_compatible(p1);
-    if (p1.degree() > degree())  {
+    if (p1.degree() > degree()) {
       polynomial_t::coeff_t res = p1.coeff();
-      res.block(0,0,coefficients_.rows(),coefficients_.cols())  += coefficients_;
+      res.block(0, 0, coefficients_.rows(), coefficients_.cols()) += coefficients_;
       coefficients_ = res;
       degree_ = p1.degree();
-    }
-    else{
-       coefficients_.block(0,0,p1.coeff().rows(),p1.coeff().cols()) += p1.coeff();
+    } else {
+      coefficients_.block(0, 0, p1.coeff().rows(), p1.coeff().cols()) += p1.coeff();
     }
     return *this;
   }
 
   polynomial_t& operator-=(const polynomial_t& p1) {
-      assert_operator_compatible(p1);
-      if (p1.degree() > degree())  {
-        polynomial_t::coeff_t res = -p1.coeff();
-        res.block(0,0,coefficients_.rows(),coefficients_.cols())  += coefficients_;
-        coefficients_ = res;
-        degree_ = p1.degree();
-      }
-      else{
-         coefficients_.block(0,0,p1.coeff().rows(),p1.coeff().cols()) -= p1.coeff();
-      }
-      return *this;
+    assert_operator_compatible(p1);
+    if (p1.degree() > degree()) {
+      polynomial_t::coeff_t res = -p1.coeff();
+      res.block(0, 0, coefficients_.rows(), coefficients_.cols()) += coefficients_;
+      coefficients_ = res;
+      degree_ = p1.degree();
+    } else {
+      coefficients_.block(0, 0, p1.coeff().rows(), p1.coeff().cols()) -= p1.coeff();
     }
+    return *this;
+  }
 
   polynomial_t& operator+=(const polynomial_t::point_t& point) {
     coefficients_.col(0) += point;
@@ -434,7 +432,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   polynomial_t& operator-=(const polynomial_t::point_t& point) {
     coefficients_.col(0) -= point;
     return *this;
-    }
+  }
 
   polynomial_t& operator/=(const double d) {
     coefficients_ /= d;
@@ -454,25 +452,24 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \return a new polynomial defining the cross product between this and pother
   polynomial_t cross(const polynomial_t& pOther) const {
     assert_operator_compatible(pOther);
-    if (dim()!= 3)
-        throw std::invalid_argument("Can't perform cross product on polynomials with dimensions != 3 ");
-    std::size_t new_degree =degree() + pOther.degree();
-    coeff_t nCoeffs = Eigen::MatrixXd::Zero(3,new_degree+1);
+    if (dim() != 3) throw std::invalid_argument("Can't perform cross product on polynomials with dimensions != 3 ");
+    std::size_t new_degree = degree() + pOther.degree();
+    coeff_t nCoeffs = Eigen::MatrixXd::Zero(3, new_degree + 1);
     Eigen::Vector3d currentVec;
     Eigen::Vector3d currentVecCrossed;
-    for(long i = 0; i< coefficients_.cols(); ++i){
-        currentVec = coefficients_.col(i);
-        for(long j = 0; j< pOther.coeff().cols(); ++j){
-            currentVecCrossed = pOther.coeff().col(j);
-            nCoeffs.col(i+j) += currentVec.cross(currentVecCrossed);
-        }
+    for (long i = 0; i < coefficients_.cols(); ++i) {
+      currentVec = coefficients_.col(i);
+      for (long j = 0; j < pOther.coeff().cols(); ++j) {
+        currentVecCrossed = pOther.coeff().col(j);
+        nCoeffs.col(i + j) += currentVec.cross(currentVecCrossed);
+      }
     }
     // remove last degrees is they are equal to 0
     long final_degree = new_degree;
-    while(nCoeffs.col(final_degree).norm() <= ndcurves::MARGIN && final_degree >0){
-        --final_degree;
+    while (nCoeffs.col(final_degree).norm() <= ndcurves::MARGIN && final_degree > 0) {
+      --final_degree;
     }
-    return polynomial_t(nCoeffs.leftCols(final_degree+1), min(), max());
+    return polynomial_t(nCoeffs.leftCols(final_degree + 1), min(), max());
   }
 
   ///  \brief Compute the cross product of the current polynomial p by a point point.
@@ -482,21 +479,20 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   ///  \param point point to compute the cross product with.
   ///  \return a new polynomial defining the cross product between this and point
   polynomial_t cross(const polynomial_t::point_t& point) const {
-    if (dim()!= 3)
-        throw std::invalid_argument("Can't perform cross product on polynomials with dimensions != 3 ");
+    if (dim() != 3) throw std::invalid_argument("Can't perform cross product on polynomials with dimensions != 3 ");
     coeff_t nCoeffs = coefficients_;
     Eigen::Vector3d currentVec;
     Eigen::Vector3d pointVec = point;
-    for(long i = 0; i< coefficients_.cols(); ++i){
-        currentVec = coefficients_.col(i);
-        nCoeffs.col(i) = currentVec.cross(pointVec);
+    for (long i = 0; i < coefficients_.cols(); ++i) {
+      currentVec = coefficients_.col(i);
+      nCoeffs.col(i) = currentVec.cross(pointVec);
     }
     // remove last degrees is they are equal to 0
     long final_degree = degree();
-    while(nCoeffs.col(final_degree).norm() <= ndcurves::MARGIN && final_degree >0){
-        --final_degree;
+    while (nCoeffs.col(final_degree).norm() <= ndcurves::MARGIN && final_degree > 0) {
+      --final_degree;
     }
-    return polynomial_t(nCoeffs.leftCols(final_degree+1), min(), max());
+    return polynomial_t(nCoeffs.leftCols(final_degree + 1), min(), max());
   }
 
   /*Attributes*/
@@ -507,11 +503,12 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
                           /*Attributes*/
 
  private:
-
-  void assert_operator_compatible(const polynomial_t& other) const{
-      if ((fabs(min() - other.min()) > ndcurves::MARGIN) || (fabs(max() - other.max()) > ndcurves::MARGIN) || dim() != other.dim()){
-          throw std::invalid_argument("Can't perform base operation (+ - ) on two polynomials with different time ranges or different dimensions");
-      }
+  void assert_operator_compatible(const polynomial_t& other) const {
+    if ((fabs(min() - other.min()) > ndcurves::MARGIN) || (fabs(max() - other.max()) > ndcurves::MARGIN) ||
+        dim() != other.dim()) {
+      throw std::invalid_argument(
+          "Can't perform base operation (+ - ) on two polynomials with different time ranges or different dimensions");
+    }
   }
 
   template <typename In>
@@ -545,65 +542,68 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
 };  // class polynomial
 
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator+(const polynomial<T,N,S,P,TP>& p1, const polynomial<T,N,S,P,TP>& p2) {
-  polynomial<T,N,S,P,TP> res(p1);
-  return res+=p2;
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator+(const polynomial<T, N, S, P, TP>& p1, const polynomial<T, N, S, P, TP>& p2) {
+  polynomial<T, N, S, P, TP> res(p1);
+  return res += p2;
 }
 
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator+(const polynomial<T,N,S,P,TP>& p1, const typename polynomial<T,N,S,P,TP>::point_t& point) {
-  polynomial<T,N,S,P,TP> res(p1);
-  return res+=point;
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator+(const polynomial<T, N, S, P, TP>& p1,
+                                     const typename polynomial<T, N, S, P, TP>::point_t& point) {
+  polynomial<T, N, S, P, TP> res(p1);
+  return res += point;
 }
 
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator+(const typename polynomial<T,N,S,P,TP>::point_t& point, const polynomial<T,N,S,P,TP>& p1) {
-  polynomial<T,N,S,P,TP> res(p1);
-  return res+=point;
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator+(const typename polynomial<T, N, S, P, TP>::point_t& point,
+                                     const polynomial<T, N, S, P, TP>& p1) {
+  polynomial<T, N, S, P, TP> res(p1);
+  return res += point;
 }
 
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1, const typename polynomial<T,N,S,P,TP>::point_t& point) {
-  polynomial<T,N,S,P,TP> res(p1);
-  return res-=point;
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator-(const polynomial<T, N, S, P, TP>& p1,
+                                     const typename polynomial<T, N, S, P, TP>::point_t& point) {
+  polynomial<T, N, S, P, TP> res(p1);
+  return res -= point;
 }
 
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator-(const typename polynomial<T,N,S,P,TP>::point_t& point, const polynomial<T,N,S,P,TP>& p1) {
-  polynomial<T,N,S,P,TP> res(-p1);
-  return res+=point;
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator-(const typename polynomial<T, N, S, P, TP>::point_t& point,
+                                     const polynomial<T, N, S, P, TP>& p1) {
+  polynomial<T, N, S, P, TP> res(-p1);
+  return res += point;
 }
 
-
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1) {
-    typename polynomial<T,N,S,P,TP>::coeff_t res = -p1.coeff();
-    return polynomial<T,N,S,P,TP>(res,p1.min(),p1.max());
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator-(const polynomial<T, N, S, P, TP>& p1) {
+  typename polynomial<T, N, S, P, TP>::coeff_t res = -p1.coeff();
+  return polynomial<T, N, S, P, TP>(res, p1.min(), p1.max());
 }
 
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator-(const polynomial<T,N,S,P,TP>& p1, const polynomial<T,N,S,P,TP>& p2) {
-    polynomial<T,N,S,P,TP> res(p1);
-    return res-=p2;
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator-(const polynomial<T, N, S, P, TP>& p1, const polynomial<T, N, S, P, TP>& p2) {
+  polynomial<T, N, S, P, TP> res(p1);
+  return res -= p2;
 }
 
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator/(const polynomial<T,N,S,P,TP>& p1, const double k) {
-    polynomial<T,N,S,P,TP> res(p1);
-    return res/=k;
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator/(const polynomial<T, N, S, P, TP>& p1, const double k) {
+  polynomial<T, N, S, P, TP> res(p1);
+  return res /= k;
 }
 
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator*(const polynomial<T,N,S,P,TP>& p1,const double k)  {
-    polynomial<T,N,S,P,TP> res(p1);
-    return res*=k;
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator*(const polynomial<T, N, S, P, TP>& p1, const double k) {
+  polynomial<T, N, S, P, TP> res(p1);
+  return res *= k;
 }
 
-template <typename T, typename N, bool S, typename P, typename TP >
-polynomial<T,N,S,P,TP> operator*(const double k, const polynomial<T,N,S,P,TP>& p1)  {
-    polynomial<T,N,S,P,TP> res(p1);
-    return res*=k;
+template <typename T, typename N, bool S, typename P, typename TP>
+polynomial<T, N, S, P, TP> operator*(const double k, const polynomial<T, N, S, P, TP>& p1) {
+  polynomial<T, N, S, P, TP> res(p1);
+  return res *= k;
 }
 
 }  // namespace ndcurves

@@ -51,9 +51,9 @@ template <typename T_point, typename PointList>
 PointList vectorToEigenArray(const T_point& vect) {
   const size_t nCols = vect.size();
   const size_t nRows = vect[0].rows();
-  PointList res(nRows,nCols);
+  PointList res(nRows, nCols);
   for (size_t i = 0; i < vect.size(); ++i) {
-    res.block(0,i,nRows,1) = vect[i];
+    res.block(0, i, nRows, 1) = vect[i];
   }
   return res;
 }

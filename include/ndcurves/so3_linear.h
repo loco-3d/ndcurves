@@ -18,7 +18,7 @@ namespace ndcurves {
 ///
 ///
 template <typename Time = double, typename Numeric = Time, bool Safe = false>
-struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
+struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
   typedef Numeric Scalar;
   typedef matrix3_t point_t;
   typedef point3_t point_derivate_t;
@@ -27,7 +27,6 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
   typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;
   typedef constant_curve<Time, Numeric, Safe, point_derivate_t> curve_derivate_t;
   typedef SO3Linear<Time, Numeric, Safe> SO3Linear_t;
-
 
  public:
   /* Constructors - destructors */
@@ -94,10 +93,11 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
         T_min_(other.T_min_),
         T_max_(other.T_max_) {}
 
-  point3_t computeAngularVelocity(const matrix3_t& init_rot, const matrix3_t& end_rot, const double t_min, const double t_max){
-    if(t_min == t_max){
+  point3_t computeAngularVelocity(const matrix3_t& init_rot, const matrix3_t& end_rot, const double t_min,
+                                  const double t_max) {
+    if (t_min == t_max) {
       return point3_t::Zero();
-    }else{
+    } else {
       return log3(init_rot.transpose() * end_rot) / (t_max - t_min);
     }
   }
@@ -169,7 +169,9 @@ struct SO3Linear : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t > {
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
   ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  curve_derivate_t* compute_derivate_ptr(const std::size_t order) const { return new curve_derivate_t(compute_derivate(order)); }
+  curve_derivate_t* compute_derivate_ptr(const std::size_t order) const {
+    return new curve_derivate_t(compute_derivate(order));
+  }
 
   /*Helpers*/
   /// \brief Get dimension of curve.

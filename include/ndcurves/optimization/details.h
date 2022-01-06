@@ -282,7 +282,8 @@ quadratic_variable<Numeric> bezier_product(In PointsBegin1, In PointsEnd1, In Po
   unsigned int nPoints1 = (unsigned int)(std::distance(PointsBegin1, PointsEnd1)),
                nPoints2 = (unsigned int)(std::distance(PointsBegin2, PointsEnd2));
   if (nPoints1 <= 0 || nPoints2 <= 0) {
-    throw std::runtime_error("This should never happen because an unsigned int cannot go negative without underflowing.");
+    throw std::runtime_error(
+        "This should never happen because an unsigned int cannot go negative without underflowing.");
   }
   unsigned int deg1 = nPoints1 - 1, deg2 = nPoints2 - 1;
   unsigned int newDeg = (deg1 + deg2);

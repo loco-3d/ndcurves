@@ -26,14 +26,15 @@ template <typename Numeric = double, bool Safe = true>
 struct linear_variable : public serialization::Serializable {
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, 1> vector_x_t;
   typedef Eigen::Matrix<Numeric, Eigen::Dynamic, Eigen::Dynamic> matrix_x_t;
-  typedef Eigen::Matrix<Numeric, 3,1> vector_3_t;
-  typedef Eigen::Matrix<Numeric, 3,3> matrix_3_t;
+  typedef Eigen::Matrix<Numeric, 3, 1> vector_3_t;
+  typedef Eigen::Matrix<Numeric, 3, 3> matrix_3_t;
   typedef linear_variable<Numeric> linear_variable_t;
 
   linear_variable() : B_(matrix_x_t::Identity(0, 0)), c_(vector_x_t::Zero(0)), zero(true) {}              // variable
   linear_variable(const vector_x_t& c) : B_(matrix_x_t::Zero(c.size(), c.size())), c_(c), zero(false) {}  // constant
   linear_variable(const matrix_x_t& B, const vector_x_t& c) : B_(B), c_(c), zero(false) {}                // mixed
-  linear_variable(const linear_variable_t& other) : B_(other.B()), c_(other.c()), zero(other.isZero()) {} // copy constructor
+  linear_variable(const linear_variable_t& other)
+      : B_(other.B()), c_(other.c()), zero(other.isZero()) {}  // copy constructor
 
   ~linear_variable() {}
 
@@ -53,28 +54,25 @@ struct linear_variable : public serialization::Serializable {
   /// \return Linear variable after operation.
   ///
   linear_variable_t& operator+=(const linear_variable_t& w1) {
-    if (w1.isZero())
-      return *this;
+    if (w1.isZero()) return *this;
     if (isZero()) {
       this->B_ = w1.B_;
       this->c_ = w1.c_;
       zero = w1.isZero();
     } else {
-        if (Safe && B().rows() != w1.B().rows())
-          throw std::length_error("Cannot add linear variables, variables do not have the same dimension");
-        else if (B().cols() > w1.B().cols()){ //new variables added left for primitive
-          B_.block(0,B().cols() - w1.B().cols(),B().rows(),w1.B().cols()) +=  w1.B();
-          c_.tail(w1.c().rows()) += w1.c();
-        }
-        else if (B().cols() < w1.B().cols()){ //new variables added left for primitive
-          linear_variable_t opp = w1 + (*this);
-          this->B_ = opp.B_;
-          this->c_ = opp.c_;
-        }
-        else{
-          this->B_ += w1.B_;
-          this->c_ += w1.c_;
-        }
+      if (Safe && B().rows() != w1.B().rows())
+        throw std::length_error("Cannot add linear variables, variables do not have the same dimension");
+      else if (B().cols() > w1.B().cols()) {  // new variables added left for primitive
+        B_.block(0, B().cols() - w1.B().cols(), B().rows(), w1.B().cols()) += w1.B();
+        c_.tail(w1.c().rows()) += w1.c();
+      } else if (B().cols() < w1.B().cols()) {  // new variables added left for primitive
+        linear_variable_t opp = w1 + (*this);
+        this->B_ = opp.B_;
+        this->c_ = opp.c_;
+      } else {
+        this->B_ += w1.B_;
+        this->c_ += w1.c_;
+      }
     }
     return *this;
   }
@@ -84,28 +82,25 @@ struct linear_variable : public serialization::Serializable {
   /// \return Linear variable after operation.
   ///
   linear_variable_t& operator-=(const linear_variable_t& w1) {
-    if (w1.isZero())
-      return *this;
+    if (w1.isZero()) return *this;
     if (isZero()) {
       this->B_ = -w1.B_;
       this->c_ = -w1.c_;
       zero = w1.isZero();
     } else {
-        if (Safe && B().rows() != w1.B().rows())
-          throw std::length_error("Cannot add linear variables, variables do not have the same dimension");
-        else if (B().cols() > w1.B().cols()){ //new variables added left for primitive
-          B_.block(0,B().cols() - w1.B().cols(),B().rows(),w1.B().cols()) -=  w1.B();
-          c_.tail(w1.c().rows()) -= w1.c();
-        }
-        else if (B().cols() < w1.B().cols()){ //new variables added left for primitive
-          linear_variable_t opp = -w1 + (*this);
-          this->B_ = opp.B_;
-          this->c_ = opp.c_;
-        }
-        else{
-          this->B_ -= w1.B_;
-          this->c_ -= w1.c_;
-        }
+      if (Safe && B().rows() != w1.B().rows())
+        throw std::length_error("Cannot add linear variables, variables do not have the same dimension");
+      else if (B().cols() > w1.B().cols()) {  // new variables added left for primitive
+        B_.block(0, B().cols() - w1.B().cols(), B().rows(), w1.B().cols()) -= w1.B();
+        c_.tail(w1.c().rows()) -= w1.c();
+      } else if (B().cols() < w1.B().cols()) {  // new variables added left for primitive
+        linear_variable_t opp = -w1 + (*this);
+        this->B_ = opp.B_;
+        this->c_ = opp.c_;
+      } else {
+        this->B_ -= w1.B_;
+        this->c_ -= w1.c_;
+      }
     }
     return *this;
   }
@@ -137,19 +132,20 @@ struct linear_variable : public serialization::Serializable {
   ///  \param pOther other polynomial to compute the cross product with.
   ///  \return a new polynomial defining the cross product between this and other
   linear_variable_t cross(const linear_variable_t& other) const {
-    if (B().rows() !=3)
-        throw std::invalid_argument("Can't perform cross product on linear variables with dimensions != 3 ");
-    if (B().cols() !=3)
-        throw std::invalid_argument("Can't perform cross product on linear variables more than one unknown ");
-    if (isZero() || other.isZero())
-        return linear_variable_t::Zero(3);
-    if ((B().squaredNorm() -  B().diagonal().squaredNorm() > MARGIN ) || (other.B().squaredNorm() -  other.B().diagonal().squaredNorm() > MARGIN ) )
-        throw std::invalid_argument("Can't perform cross product on linear variables if B is not diagonal ");
+    if (B().rows() != 3)
+      throw std::invalid_argument("Can't perform cross product on linear variables with dimensions != 3 ");
+    if (B().cols() != 3)
+      throw std::invalid_argument("Can't perform cross product on linear variables more than one unknown ");
+    if (isZero() || other.isZero()) return linear_variable_t::Zero(3);
+    if ((B().squaredNorm() - B().diagonal().squaredNorm() > MARGIN) ||
+        (other.B().squaredNorm() - other.B().diagonal().squaredNorm() > MARGIN))
+      throw std::invalid_argument("Can't perform cross product on linear variables if B is not diagonal ");
     // (B1 x + c1) X (B2 x + c2) = (-c2X B1) x + (bX B2) x + b1Xb2
-    typename linear_variable_t::matrix_3_t newB = skew<typename linear_variable_t::matrix_3_t, typename linear_variable_t::vector_3_t>(-other.c()) * B() +
-            skew<typename linear_variable_t::matrix_3_t, typename linear_variable_t::vector_3_t>(c()) * other.B();
-    typename linear_variable_t::vector_3_t newC = ndcurves::cross(c(),other.c());
-    return linear_variable_t(newB,newC);
+    typename linear_variable_t::matrix_3_t newB =
+        skew<typename linear_variable_t::matrix_3_t, typename linear_variable_t::vector_3_t>(-other.c()) * B() +
+        skew<typename linear_variable_t::matrix_3_t, typename linear_variable_t::vector_3_t>(c()) * other.B();
+    typename linear_variable_t::vector_3_t newC = ndcurves::cross(c(), other.c());
+    return linear_variable_t(newB, newC);
   }
 
   /// \brief Get a linear variable equal to zero.
@@ -167,7 +163,6 @@ struct linear_variable : public serialization::Serializable {
   static linear_variable_t X(size_t dim = 0) {
     return linear_variable_t(matrix_x_t::Identity(dim, dim), vector_x_t::Zero(dim));
   }
-
 
   /// \brief Get dimension of linear variable.
   /// \return Dimension of linear variable.
@@ -224,7 +219,7 @@ linear_variable<N, S> operator-(const linear_variable<N, S>& w1, const linear_va
 
 template <typename N, bool S>
 linear_variable<N, S> operator-(const linear_variable<N, S>& w1) {
-  return linear_variable<N, S> (-w1.B(), -w1.c());
+  return linear_variable<N, S>(-w1.B(), -w1.c());
 }
 
 template <typename N, bool S>
@@ -254,8 +249,8 @@ BezierFixed evaluateLinear(const BezierLinear& bIn, const X x) {
 }
 
 template <typename N, bool S>
-std::ostream &operator<<(std::ostream &os, const linear_variable<N, S>& l) {
-    return os << "linear_variable: \n \t B:\n"<< l.B() << "\t c: \n" << l.c().transpose();
+std::ostream& operator<<(std::ostream& os, const linear_variable<N, S>& l) {
+  return os << "linear_variable: \n \t B:\n" << l.B() << "\t c: \n" << l.c().transpose();
 }
 
 }  // namespace ndcurves

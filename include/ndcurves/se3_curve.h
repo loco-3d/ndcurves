@@ -29,7 +29,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   typedef Time time_t;
   typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;  // parent class
   typedef polynomial<Time, Numeric, Safe, point_derivate_t> curve_derivate_t;
-  typedef curve_abc<Time, Numeric, Safe, pointX_t> curve_X_t;                     // generic class of curve
+  typedef curve_abc<Time, Numeric, Safe, pointX_t> curve_X_t;  // generic class of curve
   typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t>
       curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
   typedef boost::shared_ptr<curve_X_t> curve_ptr_t;
@@ -198,7 +198,9 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
   ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
-  curve_derivate_t* compute_derivate_ptr(const std::size_t order) const { return new curve_derivate_t(compute_derivate(order)); }
+  curve_derivate_t* compute_derivate_ptr(const std::size_t order) const {
+    return new curve_derivate_t(compute_derivate(order));
+  }
 
   /*Helpers*/
   /// \brief Get dimension of curve.
@@ -214,9 +216,9 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   /// \return \f$degree\f$, the degree of the curve.
   virtual std::size_t degree() const { return translation_curve_->degree(); }
   /// \brief const accessor to the translation curve
-  const curve_ptr_t translation_curve() const {return translation_curve_;}
+  const curve_ptr_t translation_curve() const { return translation_curve_; }
   /// \brief const accessor to the rotation curve
-  const curve_rotation_ptr_t rotation_curve() const {return rotation_curve_;}
+  const curve_rotation_ptr_t rotation_curve() const { return rotation_curve_; }
   /*Helpers*/
 
   /*Attributes*/

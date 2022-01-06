@@ -21,7 +21,8 @@
 #include <vector>
 #include <utility>
 namespace ndcurves {
-///  \brief An inverse kinematics architecture enforcing an arbitrary number of strict priority levels (Reference : Boulic et Al. 2003)
+///  \brief An inverse kinematics architecture enforcing an arbitrary number of strict priority levels (Reference :
+///  Boulic et Al. 2003)
 template <typename _Matrix_Type_>
 void PseudoInverse(_Matrix_Type_& pinvmat) {
   Eigen::JacobiSVD<_Matrix_Type_> svd(pinvmat, Eigen::ComputeFullU | Eigen::ComputeFullV);
@@ -36,9 +37,9 @@ void PseudoInverse(_Matrix_Type_& pinvmat) {
   pinvmat = (svd.matrixV() * m_sigma_inv * svd.matrixU().transpose());
 }
 
-template<typename Matrix3, typename Point >
-Matrix3 skew(const Point&  x) {
-  Matrix3 res = Matrix3::Zero(3,3);
+template <typename Matrix3, typename Point>
+Matrix3 skew(const Point& x) {
+  Matrix3 res = Matrix3::Zero(3, 3);
   res(0, 1) = -x(2);
   res(0, 2) = x(1);
   res(1, 0) = x(2);

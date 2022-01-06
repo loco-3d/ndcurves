@@ -22,66 +22,86 @@ using namespace boost::python;
 
 /* base wrap of curve_abc and others parent abstract class: must implement all pure virtual methods */
 struct curve_abc_callback : curve_abc_t {
-  curve_abc_callback(PyObject *p) : self(p) {}
+  curve_abc_callback(PyObject* p) : self(p) {}
   virtual point_t operator()(const real t) const { return call_method<point_t>(self, "operator()", t); }
-  virtual point_t derivate(const real t, const std::size_t n) const  { return call_method<point_t>(self, "derivate", t, n); }
-  virtual curve_t* compute_derivate_ptr(const std::size_t n) const  { return call_method<curve_t*>(self, "compute_derivate", n); }
-  virtual std::size_t dim() const  { return call_method<std::size_t>(self, "dim"); }
-  virtual real min() const  { return call_method<real>(self,"min"); }
-  virtual real max() const  { return call_method<real>(self,"max"); }
-  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
-  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
-  {return call_method<bool>(self,"isApprox", other, prec); }
-  PyObject *self;
+  virtual point_t derivate(const real t, const std::size_t n) const {
+    return call_method<point_t>(self, "derivate", t, n);
+  }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const {
+    return call_method<curve_t*>(self, "compute_derivate", n);
+  }
+  virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
+  virtual real min() const { return call_method<real>(self, "min"); }
+  virtual real max() const { return call_method<real>(self, "max"); }
+  virtual std::size_t degree() const { return call_method<std::size_t>(self, "degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const {
+    return call_method<bool>(self, "isApprox", other, prec);
+  }
+  PyObject* self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_abc_t_isEquivalent_overloads, curve_abc_t::isEquivalent, 1, 3)
 
 struct curve_3_callback : curve_3_t {
-  curve_3_callback(PyObject *p) : self(p) {}
+  curve_3_callback(PyObject* p) : self(p) {}
   virtual point3_t operator()(const real t) const { return call_method<point3_t>(self, "operator()", t); }
-  virtual point3_t derivate(const real t, const std::size_t n) const { return call_method<point3_t>(self, "derivate", t, n); }
-  virtual curve_t* compute_derivate_ptr(const std::size_t n) const { return call_method<curve_t*>(self, "compute_derivate", n); }
+  virtual point3_t derivate(const real t, const std::size_t n) const {
+    return call_method<point3_t>(self, "derivate", t, n);
+  }
+  virtual curve_t* compute_derivate_ptr(const std::size_t n) const {
+    return call_method<curve_t*>(self, "compute_derivate", n);
+  }
   virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
-  virtual real min() const { return call_method<real>(self,"min"); }
-  virtual real max() const { return call_method<real>(self,"max"); }
-  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
-  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
-  {return call_method<bool>(self,"isApprox", other, prec); }
-  PyObject *self;
+  virtual real min() const { return call_method<real>(self, "min"); }
+  virtual real max() const { return call_method<real>(self, "max"); }
+  virtual std::size_t degree() const { return call_method<std::size_t>(self, "degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const {
+    return call_method<bool>(self, "isApprox", other, prec);
+  }
+  PyObject* self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_3_t_isEquivalent_overloads, curve_3_t::isEquivalent, 1, 3)
 
 struct curve_rotation_callback : curve_rotation_t {
-  curve_rotation_callback(PyObject *p) : self(p) {}
-  virtual curve_rotation_t::point_t operator()(const real t) const { return call_method<curve_rotation_t::point_t>(self, "operator()", t); }
-  virtual curve_rotation_t::point_derivate_t derivate(const real t, const std::size_t n) const
-{ return call_method<curve_rotation_t::point_derivate_t>(self, "derivate", t, n); }
+  curve_rotation_callback(PyObject* p) : self(p) {}
+  virtual curve_rotation_t::point_t operator()(const real t) const {
+    return call_method<curve_rotation_t::point_t>(self, "operator()", t);
+  }
+  virtual curve_rotation_t::point_derivate_t derivate(const real t, const std::size_t n) const {
+    return call_method<curve_rotation_t::point_derivate_t>(self, "derivate", t, n);
+  }
   virtual curve_rotation_t::curve_derivate_t* compute_derivate_ptr(const std::size_t n) const {
-                                     return call_method<curve_rotation_t::curve_derivate_t*>(self, "compute_derivate", n); }
+    return call_method<curve_rotation_t::curve_derivate_t*>(self, "compute_derivate", n);
+  }
   virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
-  virtual real min() const { return call_method<real>(self,"min"); }
-  virtual real max() const { return call_method<real>(self,"max"); }
-  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
-  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
-  {return call_method<bool>(self,"isApprox", other, prec); }
-  PyObject *self;
+  virtual real min() const { return call_method<real>(self, "min"); }
+  virtual real max() const { return call_method<real>(self, "max"); }
+  virtual std::size_t degree() const { return call_method<std::size_t>(self, "degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const {
+    return call_method<bool>(self, "isApprox", other, prec);
+  }
+  PyObject* self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_rotation_t_isEquivalent_overloads, curve_rotation_t::isEquivalent, 1, 3)
 
 struct curve_SE3_callback : curve_SE3_t {
-  curve_SE3_callback(PyObject *p) : self(p) {}
-  virtual curve_SE3_t::point_t operator()(const real t) const { return call_method<curve_SE3_t::point_t>(self, "operator()", t); }
-  virtual curve_SE3_t::point_derivate_t derivate(const real t, const std::size_t n) const
-  { return call_method<curve_SE3_t::point_derivate_t>(self, "derivate", t, n); }
+  curve_SE3_callback(PyObject* p) : self(p) {}
+  virtual curve_SE3_t::point_t operator()(const real t) const {
+    return call_method<curve_SE3_t::point_t>(self, "operator()", t);
+  }
+  virtual curve_SE3_t::point_derivate_t derivate(const real t, const std::size_t n) const {
+    return call_method<curve_SE3_t::point_derivate_t>(self, "derivate", t, n);
+  }
   virtual curve_SE3_t::curve_derivate_t* compute_derivate_ptr(const std::size_t n) const {
-                                return call_method<curve_SE3_t::curve_derivate_t*>(self, "compute_derivate", n); }
+    return call_method<curve_SE3_t::curve_derivate_t*>(self, "compute_derivate", n);
+  }
   virtual std::size_t dim() const { return call_method<std::size_t>(self, "dim"); }
-  virtual real min() const { return call_method<real>(self,"min"); }
-  virtual real max() const { return call_method<real>(self,"max"); }
-  virtual std::size_t degree() const  { return call_method<std::size_t>(self,"degree"); }
-  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const
-  {return call_method<bool>(self,"isApprox", other, prec); }
-  PyObject *self;
+  virtual real min() const { return call_method<real>(self, "min"); }
+  virtual real max() const { return call_method<real>(self, "max"); }
+  virtual std::size_t degree() const { return call_method<std::size_t>(self, "degree"); }
+  virtual bool isApprox(const curve_t* other, const real prec = Eigen::NumTraits<real>::dummy_precision()) const {
+    return call_method<bool>(self, "isApprox", other, prec);
+  }
+  PyObject* self;
 };
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_SE3_t_isEquivalent_overloads, curve_SE3_t::isEquivalent, 1, 3)
 
@@ -90,22 +110,20 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(curve_SE3_t_isEquivalent_overloads, curve
 /* Structure used to define pickle serialization of python curves */
 template <typename Curve>
 struct curve_pickle_suite : pickle_suite {
+  static object getstate(const Curve& curve) {
+    std::ostringstream os;
+    boost::archive::text_oarchive oa(os);
+    oa << curve;
+    return str(os.str());
+  }
 
-    static object getstate (const Curve& curve) {
-        std::ostringstream os;
-        boost::archive::text_oarchive oa(os);
-        oa << curve;
-        return str(os.str());
-    }
-
-    static void
-    setstate(Curve& curve, object entries) {
-        str s = extract<str> (entries)();
-        std::string st = extract<std::string> (s)();
-        std::istringstream is (st);
-        boost::archive::text_iarchive ia (is);
-        ia >> curve;
-    }
+  static void setstate(Curve& curve, object entries) {
+    str s = extract<str>(entries)();
+    std::string st = extract<std::string>(s)();
+    std::istringstream is(st);
+    boost::archive::text_iarchive ia(is);
+    ia >> curve;
+  }
 };
 
 /* Template constructor bezier */
@@ -150,8 +168,8 @@ bezier3_t* wrapBezier3ConstructorBoundsConstraints(const pointX_list_t& array, c
       array, convertToConstraints3(constraints), T_min, T_max);
 }
 
-pointX_list_t wrapBezier3Waypoints(bezier3_t& self){
-  return vectorToEigenArray<bezier3_t::t_point_t,pointX_list_t>(self.waypoints());
+pointX_list_t wrapBezier3Waypoints(bezier3_t& self) {
+  return vectorToEigenArray<bezier3_t::t_point_t, pointX_list_t>(self.waypoints());
 }
 /*END 3D constructors bezier */
 
@@ -171,8 +189,8 @@ bezier_t* wrapBezierConstructorBoundsConstraints(const pointX_list_t& array, con
   return wrapBezierConstructorConstraintsTemplate<bezier_t, pointX_list_t, t_pointX_t, curve_constraints_t>(
       array, constraints, T_min, T_max);
 }
-pointX_list_t wrapBezierWaypoints(bezier_t& self){
-  return vectorToEigenArray<bezier_t::t_point_t,pointX_list_t>(self.waypoints());
+pointX_list_t wrapBezierWaypoints(bezier_t& self) {
+  return vectorToEigenArray<bezier_t::t_point_t, pointX_list_t>(self.waypoints());
 }
 /*END constructors bezier */
 
@@ -222,8 +240,7 @@ polynomial_t* wrapPolynomialConstructorFromBoundaryConditionsDegree5(const point
 static polynomial_t minimumJerk(const pointX_t& init, const pointX_t& end) {
   return polynomial_t::MinimumJerk(init, end);
 }
-static polynomial_t minimumJerkWithTiming(const pointX_t& init, const pointX_t& end,
-                                          const real min, const real max) {
+static polynomial_t minimumJerkWithTiming(const pointX_t& init, const pointX_t& end, const real min, const real max) {
   return polynomial_t::MinimumJerk(init, end, min, max);
 }
 /* End wrap polynomial */
@@ -270,10 +287,9 @@ static piecewise_t discretPointToPolynomialC2(const pointX_list_t& points, const
   return piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(
       points_list, points_derivative_list, points_second_derivative_list, time_points_list);
 }
-static piecewise_t load_piecewise_from_text_file(const std::string& filename, const real dt, const std::size_t dim){
+static piecewise_t load_piecewise_from_text_file(const std::string& filename, const real dt, const std::size_t dim) {
   return piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename, dt, dim);
 }
-
 
 void addFinalPointC0(piecewise_t& self, const pointX_t& end, const real time) {
   if (self.num_curves() == 0)
@@ -360,30 +376,29 @@ void set_end_acc(curve_constraints_t& c, const pointX_t& val) { c.end_acc = val;
 
 void set_end_jerk(curve_constraints_t& c, const pointX_t& val) { c.end_jerk = val; }
 
-
-
-bezier_t* bezier_t_compute_primitive_init(const bezier_t* b, const std::size_t order, const bezier_t::point_t& init){
-    return new bezier_t(b->compute_primitive(order, init));
+bezier_t* bezier_t_compute_primitive_init(const bezier_t* b, const std::size_t order, const bezier_t::point_t& init) {
+  return new bezier_t(b->compute_primitive(order, init));
 }
-bezier_t* bezier_t_compute_primitive_zero(const bezier_t* b, const std::size_t order){
-    return new bezier_t(b->compute_primitive(order));
+bezier_t* bezier_t_compute_primitive_zero(const bezier_t* b, const std::size_t order) {
+  return new bezier_t(b->compute_primitive(order));
 }
 
-
-bezier3_t* bezier3_t_compute_primitive_init(const bezier3_t* b, const std::size_t order, const bezier3_t::point_t& init){
-    return new bezier3_t(b->compute_primitive(order, init));
+bezier3_t* bezier3_t_compute_primitive_init(const bezier3_t* b, const std::size_t order,
+                                            const bezier3_t::point_t& init) {
+  return new bezier3_t(b->compute_primitive(order, init));
 }
-bezier3_t* bezier3_t_compute_primitive_zero(const bezier3_t* b, const std::size_t order){
-    return new bezier3_t(b->compute_primitive(order));
-}
-
-bezier_linear_variable_t* bezier_linear_variable_t_compute_primitive_init(const bezier_linear_variable_t* b, const std::size_t order, const bezier_linear_variable_t::point_t* init){
-    return new bezier_linear_variable_t(b->compute_primitive(order, *init));
-}
-bezier_linear_variable_t* bezier_linear_variable_t_compute_primitive_zero(const bezier_linear_variable_t* b, const std::size_t order){
-    return new bezier_linear_variable_t(b->compute_primitive(order));
+bezier3_t* bezier3_t_compute_primitive_zero(const bezier3_t* b, const std::size_t order) {
+  return new bezier3_t(b->compute_primitive(order));
 }
 
+bezier_linear_variable_t* bezier_linear_variable_t_compute_primitive_init(
+    const bezier_linear_variable_t* b, const std::size_t order, const bezier_linear_variable_t::point_t* init) {
+  return new bezier_linear_variable_t(b->compute_primitive(order, *init));
+}
+bezier_linear_variable_t* bezier_linear_variable_t_compute_primitive_zero(const bezier_linear_variable_t* b,
+                                                                          const std::size_t order) {
+  return new bezier_linear_variable_t(b->compute_primitive(order));
+}
 
 bezier_t* bezier_linear_variable_t_evaluate(const bezier_linear_variable_t* b, const pointX_t& x) {
   return new bezier_t(evaluateLinear<bezier_t, bezier_linear_variable_t>(*b, x));
@@ -445,7 +460,6 @@ SE3Curve_t* wrapSE3CurveFromTwoCurves(const curve_ptr_t& translation_curve,
   return new SE3Curve_t(translation_curve, rotation_curve);
 }
 
-
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
 typedef pinocchio::SE3Tpl<real, 0> SE3_t;
 typedef pinocchio::MotionTpl<real, 0> Motion_t;
@@ -501,34 +515,28 @@ void addFinalTransform(piecewise_SE3_t& self, const matrix4_t& end, const real t
 constant_t* wrapConstantConstructorTime(const pointX_t& value, const real min, const real max) {
   return new constant_t(value, min, max);
 }
-constant_t* wrapConstantConstructor(const pointX_t& value) {
-    return new constant_t(value);
-}
+constant_t* wrapConstantConstructor(const pointX_t& value) { return new constant_t(value); }
 /* End wrap constant */
 /* Wrap constant 3*/
 constant3_t* wrapConstant3ConstructorTime(const pointX_t& value, const real min, const real max) {
   return new constant3_t(value, min, max);
 }
-constant3_t* wrapConstant3Constructor(const pointX_t& value) {
-    return new constant3_t(value);
-}
+constant3_t* wrapConstant3Constructor(const pointX_t& value) { return new constant3_t(value); }
 /* End wrap constant 3*/
 /* Wrap sinusoidal */
-sinusoidal_t* wrapSinusoidalConstructorTime(const pointX_t& p0, const pointX_t& amplitude,
-                                            const real T, const real phi, const real min, const real max) {
+sinusoidal_t* wrapSinusoidalConstructorTime(const pointX_t& p0, const pointX_t& amplitude, const real T,
+                                            const real phi, const real min, const real max) {
   return new sinusoidal_t(p0, amplitude, T, phi, min, max);
 }
-sinusoidal_t* wrapSinusoidalConstructor(const pointX_t& p0, const pointX_t& amplitude,
-                                        const real T, const real phi) {
+sinusoidal_t* wrapSinusoidalConstructor(const pointX_t& p0, const pointX_t& amplitude, const real T, const real phi) {
   return new sinusoidal_t(p0, amplitude, T, phi);
 }
-sinusoidal_t* wrapSinusoidalConstructorStationaryTime(const real time_traj,
-                                                      const pointX_t& p_init, const pointX_t& p_final,
-                                                      const real min, const real max) {
+sinusoidal_t* wrapSinusoidalConstructorStationaryTime(const real time_traj, const pointX_t& p_init,
+                                                      const pointX_t& p_final, const real min, const real max) {
   return new sinusoidal_t(time_traj, p_init, p_final, min, max);
 }
-sinusoidal_t* wrapSinusoidalConstructorStationary(const real time_traj,
-                                                  const pointX_t& p_init, const pointX_t& p_final) {
+sinusoidal_t* wrapSinusoidalConstructorStationary(const real time_traj, const pointX_t& p_init,
+                                                  const pointX_t& p_final) {
   return new sinusoidal_t(time_traj, p_init, p_final);
 }
 /* End wrap sinusoidal */
@@ -551,17 +559,15 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END eigenpy init**/
   /** Expose base abstracts class for each dimension/type : **/
   class_<curve_abc_t, boost::noncopyable, boost::shared_ptr<curve_abc_callback> >("curve")
-      .def("__call__", &curve_abc_t::operator(), "Evaluate the curve at the given time.",
-           args("self", "t"))
+      .def("__call__", &curve_abc_t::operator(), "Evaluate the curve at the given time.", args("self", "t"))
       .def("derivate", &curve_abc_t::derivate, "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("isEquivalent", &curve_abc_t::isEquivalent,
            curve_abc_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", &curve_abc_t::compute_derivate_ptr,
-           return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
-           args("self", "N"))
+      .def("compute_derivate", &curve_abc_t::compute_derivate_ptr, return_value_policy<manage_new_object>(),
+           "Return the derivative of *this at the order N.", args("self", "N"))
       .def("min", &curve_abc_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_abc_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_abc_t::dim, "Get the dimension of the curve.")
@@ -581,35 +587,32 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<curve_abc_t>());
 
   class_<curve_3_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_3_callback> >("curve3")
-      .def("__call__", &curve_3_t::operator(), "Evaluate the curve at the given time.",
-           args("self", "t"))
+      .def("__call__", &curve_3_t::operator(), "Evaluate the curve at the given time.", args("self", "t"))
       .def("derivate", &curve_3_t::derivate, "Evaluate the derivative of order N of curve at time t.",
            args("self", "t", "N"))
       .def("isEquivalent", &curve_3_t::isEquivalent,
            curve_3_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", &curve_3_t::compute_derivate_ptr,
-           return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
-           args("self", "N"))
+      .def("compute_derivate", &curve_3_t::compute_derivate_ptr, return_value_policy<manage_new_object>(),
+           "Return the derivative of *this at the order N.", args("self", "N"))
       .def("min", &curve_3_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_3_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_3_t::dim, "Get the dimension of the curve.")
       .def("degree", &curve_3_t::degree, "Get the degree of the representation of the curve (if applicable).")
       .def_pickle(curve_pickle_suite<curve_3_t>());
 
-  class_<curve_rotation_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_rotation_callback> >("curve_rotation")
-      .def("__call__", &curve_rotation_t::operator(), "Evaluate the curve at the given time.",
-           args("self", "t"))
-      .def("derivate", &curve_rotation_t::derivate,
-           "Evaluate the derivative of order N of curve at time t.", args("self", "t", "N"))
+  class_<curve_rotation_t, boost::noncopyable, bases<curve_abc_t>, boost::shared_ptr<curve_rotation_callback> >(
+      "curve_rotation")
+      .def("__call__", &curve_rotation_t::operator(), "Evaluate the curve at the given time.", args("self", "t"))
+      .def("derivate", &curve_rotation_t::derivate, "Evaluate the derivative of order N of curve at time t.",
+           args("self", "t", "N"))
       .def("isEquivalent", &curve_rotation_t::isEquivalent,
            curve_rotation_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", &curve_rotation_t::compute_derivate_ptr,
-           return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
-           args("self", "N"))
+      .def("compute_derivate", &curve_rotation_t::compute_derivate_ptr, return_value_policy<manage_new_object>(),
+           "Return the derivative of *this at the order N.", args("self", "N"))
       .def("min", &curve_rotation_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_rotation_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_rotation_t::dim, "Get the dimension of the curve.")
@@ -625,9 +628,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            curve_SE3_t_isEquivalent_overloads(
                (bp::arg("other"), bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(), bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal by values, given a precision treshold."))
-      .def("compute_derivate", &curve_SE3_t::compute_derivate_ptr,
-           return_value_policy<manage_new_object>(), "Return the derivative of *this at the order N.",
-           args("self", "N"))
+      .def("compute_derivate", &curve_SE3_t::compute_derivate_ptr, return_value_policy<manage_new_object>(),
+           "Return the derivative of *this at the order N.", args("self", "N"))
       .def("min", &curve_SE3_t::min, "Get the LOWER bound on interval definition of the curve.")
       .def("max", &curve_SE3_t::max, "Get the HIGHER bound on interval definition of the curve.")
       .def("dim", &curve_SE3_t::dim, "Get the dimension of the curve.")
@@ -651,23 +653,22 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END base abstracts class for each dimension/type : **/
 
   /** BEGIN bezier3 curve**/
-  bezier3_t (bezier3_t::*cross_bez3) (const bezier3_t&) const = &bezier3_t::cross;
-  bezier3_t (bezier3_t::*cross_pointBez3) (const bezier3_t::point_t&) const = &bezier3_t::cross;
+  bezier3_t (bezier3_t::*cross_bez3)(const bezier3_t&) const = &bezier3_t::cross;
+  bezier3_t (bezier3_t::*cross_pointBez3)(const bezier3_t::point_t&) const = &bezier3_t::cross;
   class_<bezier3_t, bases<curve_3_t>, boost::shared_ptr<bezier3_t> >("bezier3", init<>())
       .def("__init__", make_constructor(&wrapBezier3Constructor))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
       .def("__init__", make_constructor(&wrapBezier3ConstructorConstraints))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBoundsConstraints))
-      .def("compute_primitive", &bezier3_t_compute_primitive_init,
-           return_value_policy<manage_new_object>())
-      .def("compute_primitive", &bezier3_t_compute_primitive_zero,
-           return_value_policy<manage_new_object>())
-      .def("compute_derivate", &bezier3_t::compute_derivate_ptr,
-           return_value_policy<manage_new_object>())
+      .def("compute_primitive", &bezier3_t_compute_primitive_init, return_value_policy<manage_new_object>())
+      .def("compute_primitive", &bezier3_t_compute_primitive_zero, return_value_policy<manage_new_object>())
+      .def("compute_derivate", &bezier3_t::compute_derivate_ptr, return_value_policy<manage_new_object>())
       .def("waypointAtIndex", &bezier3_t::waypointAtIndex)
-      .def("waypoints",&wrapBezier3Waypoints)
-      .def("elevate",&bezier3_t::elevate, bp::args("order"), "Computes a Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
-      .def("elevateSelf",&bezier3_t::elevate_self, bp::args("order"), "Elevate the Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
+      .def("waypoints", &wrapBezier3Waypoints)
+      .def("elevate", &bezier3_t::elevate, bp::args("order"),
+           "Computes a Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
+      .def("elevateSelf", &bezier3_t::elevate_self, bp::args("order"),
+           "Elevate the Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
       .def_readonly("degree", &bezier3_t::degree_)
       .def_readonly("nbWaypoints", &bezier3_t::size_)
       .def("saveAsText", &bezier3_t::saveAsText<bezier3_t>, bp::args("filename"), "Saves *this inside a text file.")
@@ -682,17 +683,22 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "Loads *this from a binary file.")
       //.def(SerializableVisitor<bezier_t>())
       .def(bp::self == bp::self)
-      .def(bp::self != bp::self)          
-      .def("cross", cross_bez3,  bp::args("other"), "Compute the cross product of the current bezier by another bezier. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 curves.")
-      .def("cross", cross_pointBez3, bp::args("point"), "Compute the cross product PXpt of the current Bezier P by a point pt, such that for all t, PXpt(t) = P(t) X pt")
+      .def(bp::self != bp::self)
+      .def("cross", cross_bez3, bp::args("other"),
+           "Compute the cross product of the current bezier by another bezier. The cross product p1Xp2 of 2 "
+           "polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross "
+           "product. This method of course only makes sense for dimension 3 curves.")
+      .def("cross", cross_pointBez3, bp::args("point"),
+           "Compute the cross product PXpt of the current Bezier P by a point pt, such that for all t, PXpt(t) = P(t) "
+           "X pt")
       .def(self *= double())
       .def(self /= double())
-      .def(self +  bezier3_t())
-      .def(self -  bezier3_t())
+      .def(self + bezier3_t())
+      .def(self - bezier3_t())
       .def(self += bezier3_t())
       .def(self -= bezier3_t())
-      .def(self +  bezier3_t::point_t())
-      .def(self -  bezier3_t::point_t())
+      .def(self + bezier3_t::point_t())
+      .def(self - bezier3_t::point_t())
       .def(self += bezier3_t::point_t())
       .def(self -= bezier3_t::point_t())
       .def(-self)
@@ -701,22 +707,22 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<bezier3_t>());
   /** END bezier3 curve**/
   /** BEGIN bezier curve**/
-  bezier_t (bezier_t::*cross_bez) (const bezier_t&) const = &bezier_t::cross;
-  bezier_t (bezier_t::*cross_pointBez) (const bezier_t::point_t&) const = &bezier_t::cross;
+  bezier_t (bezier_t::*cross_bez)(const bezier_t&) const = &bezier_t::cross;
+  bezier_t (bezier_t::*cross_pointBez)(const bezier_t::point_t&) const = &bezier_t::cross;
   class_<bezier_t, bases<curve_abc_t>, boost::shared_ptr<bezier_t> >("bezier", init<>())
       .def("__init__", make_constructor(&wrapBezierConstructor))
       .def("__init__", make_constructor(&wrapBezierConstructorBounds))
       .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
       .def("__init__", make_constructor(&wrapBezierConstructorBoundsConstraints))
-      .def("compute_primitive", &bezier_t_compute_primitive_init,
-           return_value_policy<manage_new_object>())
-      .def("compute_primitive", &bezier_t_compute_primitive_zero,
-           return_value_policy<manage_new_object>())
+      .def("compute_primitive", &bezier_t_compute_primitive_init, return_value_policy<manage_new_object>())
+      .def("compute_primitive", &bezier_t_compute_primitive_zero, return_value_policy<manage_new_object>())
       .def("compute_derivate", &bezier_t::compute_derivate)
       .def("waypointAtIndex", &bezier_t::waypointAtIndex)
-      .def("waypoints",&wrapBezierWaypoints)
-      .def("elevate",&bezier_t::elevate, bp::args("order"), "Computes a Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
-      .def("elevateSelf",&bezier_t::elevate_self, bp::args("order"), "Elevate the Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
+      .def("waypoints", &wrapBezierWaypoints)
+      .def("elevate", &bezier_t::elevate, bp::args("order"),
+           "Computes a Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
+      .def("elevateSelf", &bezier_t::elevate_self, bp::args("order"),
+           "Elevate the Bezier curve of order degrees higher than the current curve, but strictly equivalent.")
       .def_readonly("degree", &bezier_t::degree_)
       .def_readonly("nbWaypoints", &bezier_t::size_)
       .def("split", splitspe)
@@ -732,24 +738,28 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("cross", cross_bez,  bp::args("other"), "Compute the cross product of the current bezier by another bezier. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 curves.")
-      .def("cross", cross_pointBez, bp::args("point"), "Compute the cross product PXpt of the current Bezier P by a point pt, such that for all t, PXpt(t) = P(t) X pt")
+      .def("cross", cross_bez, bp::args("other"),
+           "Compute the cross product of the current bezier by another bezier. The cross product p1Xp2 of 2 "
+           "polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross "
+           "product. This method of course only makes sense for dimension 3 curves.")
+      .def("cross", cross_pointBez, bp::args("point"),
+           "Compute the cross product PXpt of the current Bezier P by a point pt, such that for all t, PXpt(t) = P(t) "
+           "X pt")
       .def(self += bezier_t())
       .def(self -= bezier_t())
-      .def(self +  bezier_t())
-      .def(self -  bezier_t())
+      .def(self + bezier_t())
+      .def(self - bezier_t())
       .def(self += bezier_t::point_t())
       .def(self -= bezier_t::point_t())
-      .def(self +  bezier_t::point_t())
-      .def(self -  bezier_t::point_t())
+      .def(self + bezier_t::point_t())
+      .def(self - bezier_t::point_t())
       .def(self *= double())
       .def(self /= double())
       .def(-self)
       .def(self * double())
       .def(self / double())
       //.def(SerializableVisitor<bezier_t>())
-      .def_pickle(curve_pickle_suite<bezier_t>())
-      ;
+      .def_pickle(curve_pickle_suite<bezier_t>());
   /** END bezier curve**/
   /** BEGIN variable points bezier curve**/
   class_<matrix_pair>("matrix_pair", no_init).def_readonly("A", &matrix_pair::A).def_readonly("b", &matrix_pair::b);
@@ -768,21 +778,24 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(self -= linear_variable_t())
       .def(self *= double())
       .def(self /= double())
-      .def(self +  linear_variable_t())
-      .def(self -  linear_variable_t())
+      .def(self + linear_variable_t())
+      .def(self - linear_variable_t())
       .def(-self)
       .def(self * double())
       .def(self / double())
-      .def(self *  linear_variable_t())
+      .def(self * linear_variable_t())
       .def("B", &linear_variable_t::B, return_value_policy<copy_const_reference>())
       .def("c", &linear_variable_t::c, return_value_policy<copy_const_reference>())
       .def("size", &linear_variable_t::size)
       .def("isZero", &linear_variable_t::isZero)
       .def("norm", &linear_variable_t::norm)
-      .def("cross", &linear_variable_t::cross,bp::args("other"),"Compute the cross product of the current linear_variable and the other. Only works for dimension 3");
+      .def("cross", &linear_variable_t::cross, bp::args("other"),
+           "Compute the cross product of the current linear_variable and the other. Only works for dimension 3");
 
-  bezier_linear_variable_t (bezier_linear_variable_t::*cross_bez_var) (const bezier_linear_variable_t&) const = &bezier_linear_variable_t::cross;
-  bezier_linear_variable_t (bezier_linear_variable_t::*cross_point_var) (const bezier_linear_variable_t::point_t&) const = &bezier_linear_variable_t::cross;
+  bezier_linear_variable_t (bezier_linear_variable_t::*cross_bez_var)(const bezier_linear_variable_t&) const =
+      &bezier_linear_variable_t::cross;
+  bezier_linear_variable_t (bezier_linear_variable_t::*cross_point_var)(const bezier_linear_variable_t::point_t&)
+      const = &bezier_linear_variable_t::cross;
   class_<bezier_linear_variable_t, bases<curve_abc_t>, boost::shared_ptr<bezier_linear_variable_t> >(
       "bezier_linear_variable", no_init)
       .def("__init__", make_constructor(&wrapBezierLinearConstructor))
@@ -803,18 +816,23 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("waypointAtIndex", &bezier_linear_variable_t::waypointAtIndex)
       .def_readonly("degree", &bezier_linear_variable_t::degree_)
       .def_readonly("nbWaypoints", &bezier_linear_variable_t::size_)
-      .def("cross", cross_bez_var,  bp::args("other"), "Compute the cross product of the current Bezier by another Bezier. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 polynomials.")
-      .def("cross", cross_point_var, bp::args("point"), "Compute the cross product PXpt of the current Bezier P by a point pt, such that for all t, PXpt(t) = P(t) X pt")
+      .def("cross", cross_bez_var, bp::args("other"),
+           "Compute the cross product of the current Bezier by another Bezier. The cross product p1Xp2 of 2 "
+           "polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross "
+           "product. This method of course only makes sense for dimension 3 polynomials.")
+      .def("cross", cross_point_var, bp::args("point"),
+           "Compute the cross product PXpt of the current Bezier P by a point pt, such that for all t, PXpt(t) = P(t) "
+           "X pt")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
       .def(self += bezier_linear_variable_t())
       .def(self -= bezier_linear_variable_t())
-      .def(self +  bezier_linear_variable_t())
-      .def(self -  bezier_linear_variable_t())
+      .def(self + bezier_linear_variable_t())
+      .def(self - bezier_linear_variable_t())
       .def(self += linear_variable_t())
       .def(self -= linear_variable_t())
-      .def(self +  linear_variable_t())
-      .def(self -  linear_variable_t())
+      .def(self + linear_variable_t())
+      .def(self - linear_variable_t())
       .def(self *= double())
       .def(self /= double())
       .def(-self)
@@ -829,8 +847,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END variable points bezier curve**/
   /** BEGIN polynomial curve function**/
-  polynomial_t (polynomial_t::*cross_pol) (const polynomial_t&) const = &polynomial_t::cross;
-  polynomial_t (polynomial_t::*cross_point) (const polynomial_t::point_t&) const = &polynomial_t::cross;
+  polynomial_t (polynomial_t::*cross_pol)(const polynomial_t&) const = &polynomial_t::cross;
+  polynomial_t (polynomial_t::*cross_point)(const polynomial_t::point_t&) const = &polynomial_t::cross;
 
   class_<polynomial_t, bases<curve_abc_t>, boost::shared_ptr<polynomial_t> >("polynomial", init<>())
       .def("__init__",
@@ -885,18 +903,23 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &polynomial_t::loadFromBinary<polynomial_t>, bp::args("filename"),
            "Loads *this from a binary file.")
-      .def("cross", cross_pol,  bp::args("other"), "Compute the cross product of the current polynomial by another polynomial. The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product. This method of course only makes sense for dimension 3 polynomials.")
-      .def("cross", cross_point, bp::args("point"), "Compute the cross product PXpt of the current polynomial P by a point pt, such that for all t, PXpt(t) = P(t) X pt")
+      .def("cross", cross_pol, bp::args("other"),
+           "Compute the cross product of the current polynomial by another polynomial. The cross product p1Xp2 of 2 "
+           "polynomials p1 and p2 is defined such that forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross "
+           "product. This method of course only makes sense for dimension 3 polynomials.")
+      .def("cross", cross_point, bp::args("point"),
+           "Compute the cross product PXpt of the current polynomial P by a point pt, such that for all t, PXpt(t) = "
+           "P(t) X pt")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
       .def(self += polynomial_t())
       .def(self -= polynomial_t())
-      .def(self +  polynomial_t())
-      .def(self -  polynomial_t())
+      .def(self + polynomial_t())
+      .def(self - polynomial_t())
       .def(self += polynomial_t::point_t())
       .def(self -= polynomial_t::point_t())
-      .def(self +  polynomial_t::point_t())
-      .def(self -  polynomial_t::point_t())
+      .def(self + polynomial_t::point_t())
+      .def(self - polynomial_t::point_t())
       .def(self *= double())
       .def(self /= double())
       .def(-self)
@@ -906,7 +929,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END polynomial function**/
   /** BEGIN piecewise curve function **/
-  class_<piecewise_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_t>  >("piecewise", init<>())
+  class_<piecewise_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_t> >("piecewise", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseCurveConstructor, default_call_policies(), arg("curve")),
            "Create a peicewise curve containing the given curve.")
       .def("FromPointsList", &discretPointToPolynomialC0,
@@ -972,7 +995,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(bp::self != bp::self)
       .def_pickle(curve_pickle_suite<piecewise_t>());
 
-  class_<piecewise_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_bezier_t>  >("piecewise_bezier", init<>())
+  class_<piecewise_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_bezier_t> >("piecewise_bezier", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseBezierConstructor, default_call_policies(), arg("curve")),
            "Create a peicewise Bezier curve containing the given curve.")
       .def("__init__", make_constructor(&wrapPiecewiseBezierEmptyConstructor),
@@ -1001,7 +1024,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(bp::self != bp::self)
       .def_pickle(curve_pickle_suite<piecewise_bezier_t>());
 
-  class_<piecewise_linear_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_linear_bezier_t>  >("piecewise_bezier_linear", init<>())
+  class_<piecewise_linear_bezier_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_linear_bezier_t> >(
+      "piecewise_bezier_linear", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseBezierLinearConstructor, default_call_policies(), arg("curve")),
            "Create a peicewise Bezier curve containing the given curve.")
       .def("__init__", make_constructor(&wrapPiecewiseBezierLinearEmptyConstructor),
@@ -1030,7 +1054,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(bp::self != bp::self)
       .def_pickle(curve_pickle_suite<piecewise_linear_bezier_t>());
 
-  class_<piecewise_SE3_t, bases<curve_SE3_t>, boost::shared_ptr<piecewise_SE3_t>  >("piecewise_SE3", init<>())
+  class_<piecewise_SE3_t, bases<curve_SE3_t>, boost::shared_ptr<piecewise_SE3_t> >("piecewise_SE3", init<>())
       .def("__init__", make_constructor(&wrapPiecewiseSE3Constructor, default_call_policies(), arg("curve")),
            "Create a piecewise-se3 curve containing the given se3 curve.")
       .def("__init__", make_constructor(&wrapPiecewiseSE3EmptyConstructor), "Create an empty piecewise-se3 curve.")
@@ -1072,7 +1096,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END piecewise curve function **/
   /** BEGIN exact_cubic curve**/
-  class_<exact_cubic_t, bases<curve_abc_t>, boost::shared_ptr<exact_cubic_t>  >("exact_cubic", init<>())
+  class_<exact_cubic_t, bases<curve_abc_t>, boost::shared_ptr<exact_cubic_t> >("exact_cubic", init<>())
       .def("__init__", make_constructor(&wrapExactCubicConstructor))
       .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
       .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
@@ -1095,7 +1119,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END exact_cubic curve**/
   /** BEGIN cubic_hermite_spline **/
-  class_<cubic_hermite_spline_t, bases<curve_abc_t>, boost::shared_ptr<cubic_hermite_spline_t>  >("cubic_hermite_spline", init<>())
+  class_<cubic_hermite_spline_t, bases<curve_abc_t>, boost::shared_ptr<cubic_hermite_spline_t> >(
+      "cubic_hermite_spline", init<>())
       .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor))
       .def("saveAsText", &cubic_hermite_spline_t::saveAsText<cubic_hermite_spline_t>, bp::args("filename"),
            "Saves *this inside a text file.")
@@ -1131,14 +1156,14 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "Loads *this from a text file.")
       .def("saveAsXML", &curve_constraints_t::saveAsXML<curve_constraints_t>, bp::args("filename", "tag_name"),
            "Saves *this inside a XML file.")
-      .def("loadFromXML", &curve_constraints_t::loadFromXML<curve_constraints_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
+      .def("loadFromXML", &curve_constraints_t::loadFromXML<curve_constraints_t>, bp::args("filename", "tag_name"),
+           "Loads *this from a XML file.")
       .def("saveAsBinary", &curve_constraints_t::saveAsBinary<curve_constraints_t>, bp::args("filename"),
            "Saves *this inside a binary file.")
       .def("loadFromBinary", &curve_constraints_t::loadFromBinary<curve_constraints_t>, bp::args("filename"),
            "Loads *this from a binary file.")
       .def_pickle(curve_pickle_suite<curve_constraints_t>());
-;
+  ;
   /** END curve constraints**/
   /** BEGIN bernstein polynomial**/
   class_<bernstein_t>("bernstein", init<const unsigned int, const unsigned int>())
@@ -1148,7 +1173,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END bernstein polynomial**/
 
   /** BEGIN SO3 Linear**/
-  class_<SO3Linear_t, bases<curve_rotation_t>, boost::shared_ptr<SO3Linear_t>  >("SO3Linear", init<>())
+  class_<SO3Linear_t, bases<curve_rotation_t>, boost::shared_ptr<SO3Linear_t> >("SO3Linear", init<>())
       .def("__init__",
            make_constructor(&wrapSO3LinearConstructorFromMatrix, default_call_policies(),
                             args("init_rotation", "end_rotation", "min", "max")),
@@ -1180,7 +1205,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END  SO3 Linear**/
   /** BEGIN SE3 Curve**/
-  class_<SE3Curve_t, bases<curve_SE3_t>, boost::shared_ptr<SE3Curve_t>  >("SE3Curve", init<>())
+  class_<SE3Curve_t, bases<curve_SE3_t>, boost::shared_ptr<SE3Curve_t> >("SE3Curve", init<>())
       .def("__init__",
            make_constructor(&wrapSE3CurveFromTransform, default_call_policies(),
                             args("init_transform", "end_transform", "min", "max")),
@@ -1216,10 +1241,9 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "translation curve."
            "The orientation along the SE3Curve will be a slerp between the two given rotations."
            "The orientations should be represented as 3x3 rotation matrix")
-      .def("translation_curve",&SE3Curve_t::translation_curve,
-      "Return a curve corresponding to the translation part of self.")
-       .def("rotation_curve",&SE3Curve_t::rotation_curve,
-      "Return a curve corresponding to the rotation part of self.")
+      .def("translation_curve", &SE3Curve_t::translation_curve,
+           "Return a curve corresponding to the translation part of self.")
+      .def("rotation_curve", &SE3Curve_t::rotation_curve, "Return a curve corresponding to the rotation part of self.")
       .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>, bp::args("filename"), "Saves *this inside a text file.")
       .def("loadFromText", &SE3Curve_t::loadFromText<SE3Curve_t>, bp::args("filename"),
            "Loads *this from a text file.")
@@ -1253,8 +1277,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("__init__", make_constructor(&wrapConstantConstructor, default_call_policies(), arg("value")),
            "Create a constant curve defined for t in [0,inf]."
            " This curve always evaluate to the given value and derivate to zero value.")
-      .def("saveAsText", &constant_t::saveAsText<constant_t>, bp::args("filename"),
-           "Saves *this inside a text file.")
+      .def("saveAsText", &constant_t::saveAsText<constant_t>, bp::args("filename"), "Saves *this inside a text file.")
       .def("loadFromText", &constant_t::loadFromText<constant_t>, bp::args("filename"),
            "Loads *this from a text file.")
       .def("saveAsXML", &constant_t::saveAsXML<constant_t>, bp::args("filename", "tag_name"),
@@ -1296,20 +1319,24 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END constant 3 function**/
   /** BEGIN sinusoidal curve function**/
   class_<sinusoidal_t, bases<curve_abc_t>, boost::shared_ptr<sinusoidal_t> >("sinusoidal", init<>())
-      .def("__init__", make_constructor(&wrapSinusoidalConstructor, default_call_policies(),
-           args("Offset", "Amplitude", "Period", "Phase")),
+      .def("__init__",
+           make_constructor(&wrapSinusoidalConstructor, default_call_policies(),
+                            args("Offset", "Amplitude", "Period", "Phase")),
            "Create a sinusoidal curve defined for t in [0, inf]."
            " c(t) = offset + amplitude * sin(2pi/T * t + phi)")
-      .def("__init__", make_constructor(&wrapSinusoidalConstructorTime, default_call_policies(),
-           args("Offset", "Amplitude", "Period", "Phase", "min", "max")),
+      .def("__init__",
+           make_constructor(&wrapSinusoidalConstructorTime, default_call_policies(),
+                            args("Offset", "Amplitude", "Period", "Phase", "min", "max")),
            "Create a sinusoidal curve defined for t in [min, max]."
            " c(t) = offset + amplitude * sin(2pi/T * t + phi)")
-      .def("__init__", make_constructor(&wrapSinusoidalConstructorStationary, default_call_policies(),
-           args("duration", "p_init", "p_final")),
+      .def("__init__",
+           make_constructor(&wrapSinusoidalConstructorStationary, default_call_policies(),
+                            args("duration", "p_init", "p_final")),
            "Create a sinusoidal curve defined for t in [0, inf]."
            "That connect the two stationnary points p_init and p_final in duration (an half period)")
-      .def("__init__", make_constructor(&wrapSinusoidalConstructorStationaryTime, default_call_policies(),
-           args("duration", "p_init", "p_final", "min", "max")),
+      .def("__init__",
+           make_constructor(&wrapSinusoidalConstructorStationaryTime, default_call_policies(),
+                            args("duration", "p_init", "p_final", "min", "max")),
            "Create a sinusoidal curve defined for t in [min, max]."
            "That connect the two stationnary points p_init and p_final in duration (an half period)")
       .def("saveAsText", &sinusoidal_t::saveAsText<sinusoidal_t>, bp::args("filename"),

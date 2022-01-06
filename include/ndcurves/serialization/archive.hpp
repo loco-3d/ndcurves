@@ -20,18 +20,18 @@
  * */
 const unsigned int CURVES_API_VERSION = 1;
 
-#define SINGLE_ARG(...) __VA_ARGS__ // Macro used to be able to put comma in the following macro arguments
+#define SINGLE_ARG(...) __VA_ARGS__  // Macro used to be able to put comma in the following macro arguments
 // Macro used to define the serialization version of a templated class
-#define DEFINE_CLASS_TEMPLATE_VERSION(Template, Type)  \
-  namespace boost {                                    \
-  namespace serialization {                            \
-  template <Template>                                  \
-  struct version<Type> {                               \
+#define DEFINE_CLASS_TEMPLATE_VERSION(Template, Type)         \
+  namespace boost {                                           \
+  namespace serialization {                                   \
+  template <Template>                                         \
+  struct version<Type> {                                      \
     static constexpr unsigned int value = CURVES_API_VERSION; \
-  };                                                   \
-  template <Template>                                  \
-  constexpr unsigned int version<Type>::value;         \
-  }                                                    \
+  };                                                          \
+  template <Template>                                         \
+  constexpr unsigned int version<Type>::value;                \
+  }                                                           \
   }
 
 namespace ndcurves {

@@ -41,8 +41,8 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
   typedef typename std::vector<curve_ptr_t> t_curve_ptr_t;
   typedef typename std::vector<Time> t_time_t;
   typedef piecewise_curve<Time, Numeric, Safe, Point, Point_derivate, CurveType> piecewise_curve_t;
-  typedef piecewise_curve<Time, Numeric, Safe, Point_derivate, Point_derivate,
-    typename CurveType::curve_derivate_t> piecewise_curve_derivate_t;
+  typedef piecewise_curve<Time, Numeric, Safe, Point_derivate, Point_derivate, typename CurveType::curve_derivate_t>
+      piecewise_curve_derivate_t;
   typedef boost::shared_ptr<typename piecewise_curve_derivate_t::curve_t> curve_derivate_ptr_t;
 
  public:
@@ -412,57 +412,53 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
    * @return a piecewise curves containing polynomial connectiong all the points in the file
    */
   template <typename Polynomial>
-  static piecewise_curve_t load_piecewise_from_text_file(const std::string& filename, const time_t dt, const size_t dim){
-    if(dim <= 0)
-      throw std::invalid_argument("The dimension should be strictly positive.");
-    if(dt <= 0.)
-      throw std::invalid_argument("The time step should be strictly positive.");
+  static piecewise_curve_t load_piecewise_from_text_file(const std::string& filename, const time_t dt,
+                                                         const size_t dim) {
+    if (dim <= 0) throw std::invalid_argument("The dimension should be strictly positive.");
+    if (dt <= 0.) throw std::invalid_argument("The time step should be strictly positive.");
 
     piecewise_curve_t piecewise_res;
     std::ifstream file;
     file.open(filename.c_str());
-    point_t last_pos = point_t::Zero(dim),
-        last_vel = point_t::Zero(dim),
-        last_acc = point_t::Zero(dim),
-        new_pos = point_t::Zero(dim),
-        new_vel = point_t::Zero(dim),
-        new_acc = point_t::Zero(dim);
+    point_t last_pos = point_t::Zero(dim), last_vel = point_t::Zero(dim), last_acc = point_t::Zero(dim),
+            new_pos = point_t::Zero(dim), new_vel = point_t::Zero(dim), new_acc = point_t::Zero(dim);
     bool use_vel, use_acc;
     std::string line;
     // read first line to found out if we use velocity / acceleration :
     std::getline(file, line);
     std::istringstream iss_length(line);
-    const size_t length = std::distance(std::istream_iterator<std::string>(iss_length), std::istream_iterator<std::string>());
-    if(length == dim){
+    const size_t length =
+        std::distance(std::istream_iterator<std::string>(iss_length), std::istream_iterator<std::string>());
+    if (length == dim) {
       use_vel = false;
       use_acc = false;
-    }else if(length == dim * 2){
+    } else if (length == dim * 2) {
       use_vel = true;
       use_acc = false;
-    }else if(length == dim * 3){
+    } else if (length == dim * 3) {
       use_vel = true;
       use_acc = true;
-    }else{
+    } else {
       std::stringstream error;
-      error<<"The first line of the file shold contains either " << dim << ", " << dim * 2 << " or " << dim * 3 <<
-             "values, got : " << length;
+      error << "The first line of the file shold contains either " << dim << ", " << dim * 2 << " or " << dim * 3
+            << "values, got : " << length;
       throw std::invalid_argument(error.str());
     }
     // initialize the first points of the trajectory:
     num_t val;
     std::istringstream iss(line);
-    for(size_t i = 0 ; i < dim ; ++i){
+    for (size_t i = 0; i < dim; ++i) {
       iss >> val;
       last_pos[i] = val;
     }
-    if(use_vel){
-      for(size_t i = 0 ; i < dim ; ++i){
+    if (use_vel) {
+      for (size_t i = 0; i < dim; ++i) {
         iss >> val;
         last_vel[i] = val;
       }
     }
-    if(use_acc){
-      for(size_t i = 0 ; i < dim ; ++i){
+    if (use_acc) {
+      for (size_t i = 0; i < dim; ++i) {
         iss >> val;
         last_acc[i] = val;
       }
@@ -471,50 +467,48 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
     size_t current_length;
     size_t line_id = 0;
     // parse all lines of the file:
-    while (std::getline(file, line))
-    {
-        ++line_id;
-        std::istringstream iss_length(line);
-        current_length = std::distance(std::istream_iterator<std::string>(iss_length), std::istream_iterator<std::string>());
-        if(current_length != length){
-          std::stringstream error;
-          error<<"Cannot parse line " << line_id << " got " << current_length << " values instead of " << length;
-          throw std::invalid_argument(error.str());
-        }
-        std::istringstream iss(line);
-        // parse the points values from the file:
-        for(size_t i = 0 ; i < dim ; ++i){
+    while (std::getline(file, line)) {
+      ++line_id;
+      std::istringstream iss_length(line);
+      current_length =
+          std::distance(std::istream_iterator<std::string>(iss_length), std::istream_iterator<std::string>());
+      if (current_length != length) {
+        std::stringstream error;
+        error << "Cannot parse line " << line_id << " got " << current_length << " values instead of " << length;
+        throw std::invalid_argument(error.str());
+      }
+      std::istringstream iss(line);
+      // parse the points values from the file:
+      for (size_t i = 0; i < dim; ++i) {
+        iss >> val;
+        new_pos[i] = val;
+      }
+      if (use_vel) {
+        for (size_t i = 0; i < dim; ++i) {
           iss >> val;
-          new_pos[i] = val;
+          new_vel[i] = val;
         }
-        if(use_vel){
-          for(size_t i = 0 ; i < dim ; ++i){
-            iss >> val;
-            new_vel[i] = val;
-          }
+      }
+      if (use_acc) {
+        for (size_t i = 0; i < dim; ++i) {
+          iss >> val;
+          new_acc[i] = val;
         }
-        if(use_acc){
-          for(size_t i = 0 ; i < dim ; ++i){
-            iss >> val;
-            new_acc[i] = val;
-          }
-        }
-        // append a new curves connectiong this points
-        if(use_acc){
-          piecewise_res.add_curve(Polynomial(last_pos, last_vel, last_acc,
-                                             new_pos, new_vel, new_acc,
-                                             dt * static_cast<time_t>(line_id - 1), dt * static_cast<time_t>(line_id)));
-        }else if(use_vel){
-          piecewise_res.add_curve(Polynomial(last_pos, last_vel,
-                                             new_pos, new_vel,
-                                             dt * static_cast<time_t>(line_id - 1), dt * static_cast<time_t>(line_id)));
-        }else{
-          piecewise_res.add_curve(Polynomial(last_pos, new_pos,
-                                             dt * static_cast<time_t>(line_id - 1), dt * static_cast<time_t>(line_id)));
-        }
-        last_pos = new_pos;
-        last_vel = new_vel;
-        last_acc = new_acc;
+      }
+      // append a new curves connectiong this points
+      if (use_acc) {
+        piecewise_res.add_curve(Polynomial(last_pos, last_vel, last_acc, new_pos, new_vel, new_acc,
+                                           dt * static_cast<time_t>(line_id - 1), dt * static_cast<time_t>(line_id)));
+      } else if (use_vel) {
+        piecewise_res.add_curve(Polynomial(last_pos, last_vel, new_pos, new_vel, dt * static_cast<time_t>(line_id - 1),
+                                           dt * static_cast<time_t>(line_id)));
+      } else {
+        piecewise_res.add_curve(
+            Polynomial(last_pos, new_pos, dt * static_cast<time_t>(line_id - 1), dt * static_cast<time_t>(line_id)));
+      }
+      last_pos = new_pos;
+      last_vel = new_vel;
+      last_acc = new_acc;
     }
 
     file.close();
@@ -603,8 +597,9 @@ struct piecewise_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deri
 };  // End struct piecewise curve
 }  // namespace ndcurves
 
-DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
-                                         typename Point_derivate, typename CurveType),
-                              SINGLE_ARG(ndcurves::piecewise_curve<Time, Numeric, Safe, Point, Point_derivate, CurveType>))
+DEFINE_CLASS_TEMPLATE_VERSION(
+    SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point, typename Point_derivate,
+               typename CurveType),
+    SINGLE_ARG(ndcurves::piecewise_curve<Time, Numeric, Safe, Point, Point_derivate, CurveType>))
 
 #endif  // _CLASS_PIECEWISE_CURVE

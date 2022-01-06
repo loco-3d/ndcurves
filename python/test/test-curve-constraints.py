@@ -8,7 +8,6 @@ from numpy import array
 
 
 class CurveConstraintsTest(unittest.TestCase):
-
     def test_operator_equal(self):
         c = curve_constraints(3)
         c.init_vel = array([[0., 1., 1.]]).transpose()
