@@ -2,13 +2,13 @@
 # Authors: Pierre Fernbach <pfernbac@laas.fr>
 
 import unittest
-import ndcurves as curves
 from ndcurves import polynomial
 import numpy as np
-from numpy import array, isclose, array_equal
+from numpy import array, isclose
 
 
 class MinJerkCurveTest(unittest.TestCase):
+
     def test_constructors(self):
         # constructor from two points
         init = array([1, 23., 5., 9, -5])

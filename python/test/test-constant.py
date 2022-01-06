@@ -2,13 +2,13 @@
 # Authors: Pierre Fernbach <pfernbac@laas.fr>
 
 import unittest
-import ndcurves as curves
 from ndcurves import constant, constant3
 import numpy as np
-from numpy import array, isclose, array_equal
+from numpy import array, array_equal
 
 
 class ConstantCurveTest(unittest.TestCase):
+
     def test_constructor(self):
         # default constructor
         c = constant()
@@ -114,6 +114,7 @@ class ConstantCurveTest(unittest.TestCase):
 
 
 class Constant3CurveTest(unittest.TestCase):
+
     def test_constructor(self):
         # default constructor
         c = constant()
