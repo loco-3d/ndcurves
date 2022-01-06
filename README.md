@@ -1,10 +1,9 @@
 NDCurves
 ===================
 
-[![Pipeline
-status](https://gepgitlab.laas.fr/loco-3d/ndcurves/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/loco-3d/ndcurves/commits/master)
-[![Coverage
-report](https://gepgitlab.laas.fr/loco-3d/ndcurves/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/loco-3d/ndcurves/master/coverage/)
+[![Pipeline status](https://gepgitlab.laas.fr/loco-3d/ndcurves/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/loco-3d/ndcurves/commits/master)
+[![Coverage report](https://gepgitlab.laas.fr/loco-3d/ndcurves/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/loco-3d/ndcurves/master/coverage/)
+[![PyPI version](https://badge.fury.io/py/ndcurves.svg)](https://pypi.org/project/ndcurves)
 
 
 A template-based Library for creating curves of arbitrary order and dimension, eventually subject to derivative constraints. The main use of the library is the creation of end-effector trajectories for legged robots.
