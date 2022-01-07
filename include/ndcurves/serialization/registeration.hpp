@@ -30,7 +30,7 @@ namespace ndcurves {
 namespace serialization {
 
 template <class Archive>
-void register_types(Archive& ar,  const unsigned int version) {
+void register_types(Archive& ar, const unsigned int version) {
   // register derived class
   ar.template register_type<polynomial_t>();
   ar.template register_type<exact_cubic_t>();
@@ -45,7 +45,7 @@ void register_types(Archive& ar,  const unsigned int version) {
   ar.template register_type<SO3Linear_t>();
   ar.template register_type<SE3Curve_t>();
   ar.template register_type<piecewise_SE3_t>();
-  if(version >= 1){
+  if (version >= 1) {
     ar.template register_type<constant3_t>();
     ar.template register_type<sinusoidal_t>();
     ar.template register_type<constant_t>();

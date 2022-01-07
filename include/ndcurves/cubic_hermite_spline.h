@@ -68,7 +68,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
     // Push all pairs in controlPoints
     In it(PairsBegin);
     for (; it != PairsEnd; ++it) {
-      if(Safe && (static_cast<size_t>(it->first.size()) != dim_ || static_cast<size_t>(it->second.size()) != dim_))
+      if (Safe && (static_cast<size_t>(it->first.size()) != dim_ || static_cast<size_t>(it->second.size()) != dim_))
         throw std::invalid_argument("All the control points and their derivatives must have the same dimension.");
       control_points_.push_back(*it);
     }
@@ -163,7 +163,7 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
 
   piecewise_bezier_t compute_derivate(const std::size_t order) const {
     piecewise_bezier_t res;
-    for(size_t i = 0 ; i < size_ - 1 ; ++i){
+    for (size_t i = 0; i < size_ - 1; ++i) {
       const bezier_t curve = buildCurrentBezier(time_control_points_[i]);
       res.add_curve(curve.compute_derivate(order));
     }
@@ -245,12 +245,12 @@ struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
   /**
-   * @brief buildCurrentBezier set up the current_bezier_ attribut to represent the curve of the interval that contain t.
-   * This bezier is defined by the following control points: p0, p0 + m0/3, p1 - m1/3, p1
+   * @brief buildCurrentBezier set up the current_bezier_ attribut to represent the curve of the interval that contain
+   * t. This bezier is defined by the following control points: p0, p0 + m0/3, p1 - m1/3, p1
    * @param t the time for which the bezier is build
    * @return the bezier curve
    */
-  bezier_t buildCurrentBezier(const time_t t) const{
+  bezier_t buildCurrentBezier(const time_t t) const {
     size_t id_interval = findInterval(t);
     const pair_point_tangent_t pair0 = control_points_.at(id_interval);
     const pair_point_tangent_t pair1 = control_points_.at(id_interval + 1);

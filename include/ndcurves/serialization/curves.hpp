@@ -24,5 +24,4 @@
 #include "ndcurves/exact_cubic.h"
 #include "ndcurves/cubic_hermite_spline.h"
 
-
 #endif  // ifndef CURVES_SERIALIZAION

@@ -117,27 +117,25 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   }
 
  private:
-
-  static polynomial_t create_cubic(point_ref_t a,point_ref_t b, point_ref_t c, point_ref_t d,
-                                   const time_t t_min,  const time_t t_max){
-      typename polynomial_t::t_point_t coeffs;
-      coeffs.push_back(a);
-      coeffs.push_back(b);
-      coeffs.push_back(c);
-      coeffs.push_back(d);
-      return polynomial_t(coeffs.begin(), coeffs.end(), t_min, t_max);
+  static polynomial_t create_cubic(point_ref_t a, point_ref_t b, point_ref_t c, point_ref_t d, const time_t t_min,
+                                   const time_t t_max) {
+    typename polynomial_t::t_point_t coeffs;
+    coeffs.push_back(a);
+    coeffs.push_back(b);
+    coeffs.push_back(c);
+    coeffs.push_back(d);
+    return polynomial_t(coeffs.begin(), coeffs.end(), t_min, t_max);
   }
-  static polynomial_t create_quintic(point_ref_t a,point_ref_t b, point_ref_t c, point_ref_t d,
-                                     point_ref_t e, point_ref_t f,
-                                     const time_t t_min,  const time_t t_max){
-      typename polynomial_t::t_point_t coeffs;
-      coeffs.push_back(a);
-      coeffs.push_back(b);
-      coeffs.push_back(c);
-      coeffs.push_back(d);
-      coeffs.push_back(e);
-      coeffs.push_back(f);
-      return polynomial_t(coeffs.begin(), coeffs.end(), t_min, t_max);
+  static polynomial_t create_quintic(point_ref_t a, point_ref_t b, point_ref_t c, point_ref_t d, point_ref_t e,
+                                     point_ref_t f, const time_t t_min, const time_t t_max) {
+    typename polynomial_t::t_point_t coeffs;
+    coeffs.push_back(a);
+    coeffs.push_back(b);
+    coeffs.push_back(c);
+    coeffs.push_back(d);
+    coeffs.push_back(e);
+    coeffs.push_back(f);
+    return polynomial_t(coeffs.begin(), coeffs.end(), t_min, t_max);
   }
 
   /// \brief Compute polynom of exact cubic spline from waypoints.
@@ -210,8 +208,7 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
     it = wayPointsBegin, next = wayPointsBegin;
     ++next;
     for (int i = 0; next != wayPointsEnd; ++i, ++it, ++next) {
-      subSplines.push_back(create_cubic(a.row(i), b.row(i), c.row(i), d.row(i),
-                                                                             (*it).first, (*next).first));
+      subSplines.push_back(create_cubic(a.row(i), b.row(i), c.row(i), d.row(i), (*it).first, (*next).first));
     }
     return subSplines;
   }
@@ -298,7 +295,7 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
 };
 }  // namespace ndcurves
 
-DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
-                                         typename T_Point, typename SplineBase),
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point, typename T_Point,
+                                         typename SplineBase),
                               SINGLE_ARG(ndcurves::exact_cubic<Time, Numeric, Safe, Point, T_Point, SplineBase>))
 #endif  //_CLASS_EXACTCUBIC

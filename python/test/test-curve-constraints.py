@@ -3,9 +3,8 @@
 
 import unittest
 from ndcurves import curve_constraints
-import numpy as np
 import pickle
-from numpy import array, isclose, array_equal
+from numpy import array
 
 
 class CurveConstraintsTest(unittest.TestCase):
@@ -28,7 +27,7 @@ class CurveConstraintsTest(unittest.TestCase):
         self.assertTrue(c == c2)
         c2.init_vel = array([[1., 1., 1.]]).transpose()
         self.assertTrue(c != c2)
-    
+
     def test_serialization(self):
         c = curve_constraints(3)
         c.init_vel = array([[0., 1., 1.]]).transpose()
@@ -53,7 +52,7 @@ class CurveConstraintsTest(unittest.TestCase):
         c_bin = curve_constraints()
         c_bin.loadFromBinary("curve_constraints")
         self.assertEqual(c, c_bin)
-        
+
         c_pickled = pickle.dumps(c)
         c_from_pickle = pickle.loads(c_pickled)
         self.assertEqual(c_from_pickle, c)

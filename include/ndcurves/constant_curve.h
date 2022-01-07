@@ -171,7 +171,8 @@ struct constant_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deriv
 };  // struct constant_curve
 }  // namespace ndcurves
 
-DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point, typename Point_derivate),
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
+                                         typename Point_derivate),
                               SINGLE_ARG(ndcurves::constant_curve<Time, Numeric, Safe, Point, Point_derivate>))
 
 #endif  // _CLASS_CONSTANTCURVE

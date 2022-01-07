@@ -43,20 +43,15 @@ struct curve_constraints : serialization::Serializable {
   /// \param other : the other curve_constraints to check.
   /// \return true if the two curve_constraints are equals.
   virtual bool operator==(const curve_constraints& other) const {
-    return  dim_ == other.dim_ &&
-        init_vel == other.init_vel &&
-        init_acc == other.init_acc &&
-        init_jerk == other.init_jerk &&
-        end_vel == other.end_vel &&
-        end_acc == other.end_acc &&
-        end_jerk == other.end_jerk;
+    return dim_ == other.dim_ && init_vel == other.init_vel && init_acc == other.init_acc &&
+           init_jerk == other.init_jerk && end_vel == other.end_vel && end_acc == other.end_acc &&
+           end_jerk == other.end_jerk;
   }
 
   /// \brief Check if actual curve_constraint and other are different.
   /// \param other : the other curve_constraint to check.
   /// \return true if the two curve_constraint are different.
   virtual bool operator!=(const curve_constraints& other) const { return !(*this == other); }
-
 
   virtual ~curve_constraints() {}
   point_t init_vel;
@@ -67,7 +62,7 @@ struct curve_constraints : serialization::Serializable {
   point_t end_jerk;
   size_t dim_;
 
-   // Serialization of the class
+  // Serialization of the class
   friend class boost::serialization::access;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {

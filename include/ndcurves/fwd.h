@@ -21,7 +21,7 @@ struct curve_abc;
 template <typename Time, typename Numeric, bool Safe, typename Point>
 struct bezier_curve;
 
-template <typename Time, typename Numeric, bool Safe, typename Point,typename Point_derivate>
+template <typename Time, typename Numeric, bool Safe, typename Point, typename Point_derivate>
 struct constant_curve;
 
 template <typename Time, typename Numeric, bool Safe, typename Point>

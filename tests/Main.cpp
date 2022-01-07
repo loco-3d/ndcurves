@@ -505,19 +505,21 @@ void cubicConversionTest(bool& error) {
   vec.push_back(d);
   vec.push_back(e);
   polynomial_t pol_4(vec.begin(), vec.end(), 0, 1);
-  if(pol_4.degree() != 4){
-    std::cout<<"In test CubicConversionTest - Error in the creatin of the polynomial"<<std::endl;
+  if (pol_4.degree() != 4) {
+    std::cout << "In test CubicConversionTest - Error in the creatin of the polynomial" << std::endl;
     error = true;
   }
   try {
     cubic_hermite_spline_t chs3 = hermite_from_curve<cubic_hermite_spline_t>(pol_4);
-    std::cout<<"In test CubicConversionTest - Cannot convert to hermite from degree > 3, should raise an error"<<std::endl;
+    std::cout << "In test CubicConversionTest - Cannot convert to hermite from degree > 3, should raise an error"
+              << std::endl;
     error = true;
   } catch (std::invalid_argument e) {
   }
   try {
     bezier_t b3 = bezier_from_curve<bezier_t>(pol_4);
-    std::cout<<"In test CubicConversionTest - Cannot convert to bezier from degree > 3, should raise an error"<<std::endl;
+    std::cout << "In test CubicConversionTest - Cannot convert to bezier from degree > 3, should raise an error"
+              << std::endl;
     error = true;
   } catch (std::invalid_argument e) {
   }
@@ -900,7 +902,6 @@ void BezierEvalDeCasteljau(bool& error) {
   }
 }
 
-
 void BezierElevate(bool& error) {
   using namespace std;
   std::vector<double> values;
@@ -919,13 +920,13 @@ void BezierElevate(bool& error) {
   bezier_t cf(params.begin(), params.end());
   bezier_t cf2 = cf.elevate(1);
   bezier_t cf3 = cf2.elevate(1);
-  if (cf2.degree() - cf.degree() != 1 && cf3.degree() - cf.degree() != 2 ){
+  if (cf2.degree() - cf.degree() != 1 && cf3.degree() - cf.degree() != 2) {
     error = true;
     std::string errmsg("Error in BezierElevate; Degree mismatched for elevated curves. Expected 1 / 2, got:  ");
     std::cout << errmsg << cf2.degree() - cf.degree() << " ; " << cf3.degree() - cf.degree() << std::endl;
   }
   std::string errmsg("Error in BezierElevate; Elevated curves do not have the same evaluation : ");
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end()-1; ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end() - 1; ++cit) {
     ComparePoints(cf2(*cit), cf(*(cit)), errmsg, error);
     ComparePoints(cf3(*cit), cf(*cit), errmsg, error);
   }
@@ -1105,14 +1106,14 @@ void CubicHermitePairsPositionDerivativeTest(bool& error) {
     ComparePoints(t2, res1, errmsg3, error);
 
     pointX_t p_derivate, p_compute_derivate;
-    for(size_t order = 1 ; order < 5 ; ++order){
+    for (size_t order = 1; order < 5; ++order) {
       std::stringstream ss;
-      ss <<"in Cubic Hermite 2 points, "
-           "compute_derivate do not lead to the same results as derivate for order = ";
+      ss << "in Cubic Hermite 2 points, "
+            "compute_derivate do not lead to the same results as derivate for order = ";
       ss << order << std::endl;
       curve_ptr_t derivate_ptr(cubic_hermite_spline_2Pairs.compute_derivate_ptr(order));
       double t = 0.;
-      while(t <= 1.){
+      while (t <= 1.) {
         p_derivate = cubic_hermite_spline_2Pairs.derivate(t, order);
         p_compute_derivate = derivate_ptr->operator()(t);
         ComparePoints(p_derivate, p_compute_derivate, ss.str(), error);
@@ -1479,112 +1480,112 @@ void PiecewisePolynomialCurveFromDiscretePoints(bool& error) {
   }
 }
 
-void PiecewisePolynomialCurveFromFile(bool& error){
+void PiecewisePolynomialCurveFromFile(bool& error) {
   std::string filename_pos(TEST_DATA_PATH "discrete_points_pos.txt");
   std::string filename_vel(TEST_DATA_PATH "discrete_points_vel.txt");
   std::string filename_acc(TEST_DATA_PATH "discrete_points_acc.txt");
   std::string filename_error(TEST_DATA_PATH "discrete_points_error.txt");
 
   piecewise_t c_pos = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_pos, 0.01, 3);
-  if(c_pos.min() != 0.){
+  if (c_pos.min() != 0.) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
     error = true;
   }
-  if(c_pos.max() != 0.03){
+  if (c_pos.max() != 0.03) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 0.03" << std::endl;
     error = true;
   }
   pointX_t p0(3), p2(3);
-  p0<<-0.003860389372941039, 0.0012353625242474164, 0.009005041639999767;
-  p2<<-0.0028803627898293283, 0.0011918668401150736, 0.009005041639999767;
-  if(! c_pos(0.).isApprox(p0)){
+  p0 << -0.003860389372941039, 0.0012353625242474164, 0.009005041639999767;
+  p2 << -0.0028803627898293283, 0.0011918668401150736, 0.009005041639999767;
+  if (!c_pos(0.).isApprox(p0)) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
     error = true;
   }
-  if(! c_pos(0.02).isApprox(p2)){
-   std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
-   error = true;
+  if (!c_pos(0.02).isApprox(p2)) {
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    error = true;
   }
 
   piecewise_t c_vel = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_vel, 0.05, 3);
-  if(c_pos.min() != 0.){
-   std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
-   error = true;
+  if (c_pos.min() != 0.) {
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
+    error = true;
   }
-  if(! QuasiEqual(c_vel.max(), 0.15)){
-   std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 0.15" << std::endl;
-   error = true;
+  if (!QuasiEqual(c_vel.max(), 0.15)) {
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 0.15" << std::endl;
+    error = true;
   }
   pointX_t p3(3);
-  p3<<0.2968141884672718, 0.0012916907964522569, 0.00951023474821927;
-  if(! c_vel(0.).isApprox(p0)){
+  p3 << 0.2968141884672718, 0.0012916907964522569, 0.00951023474821927;
+  if (!c_vel(0.).isApprox(p0)) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
     error = true;
   }
-  if(! c_vel(0.15).isApprox(p3)){
+  if (!c_vel(0.15).isApprox(p3)) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
     error = true;
   }
-  if(! c_vel.derivate(0., 1).isZero()){
+  if (!c_vel.derivate(0., 1).isZero()) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, c_vel derivative at 0. should be null" << std::endl;
     error = true;
   }
-  if(! c_vel.derivate(0.1, 1).isZero()){
+  if (!c_vel.derivate(0.1, 1).isZero()) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, c_vel derivative at 0.1 should be null" << std::endl;
     error = true;
   }
 
   piecewise_t c_acc = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_acc, 0.001, 3);
-  if(c_acc.min() != 0.){
-  std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
-  error = true;
+  if (c_acc.min() != 0.) {
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
+    error = true;
   }
-  if(! QuasiEqual(c_acc.max(), 7.85)){
-  std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 7.85" << std::endl;
-  error = true;
+  if (!QuasiEqual(c_acc.max(), 7.85)) {
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 7.85" << std::endl;
+    error = true;
   }
-  if(! c_acc(0.).isApprox(p0)){
+  if (!c_acc(0.).isApprox(p0)) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
     error = true;
   }
   pointX_t p5200(3);
-  p5200<<0.30273356072723845, -0.07619420199174821, 0.010015348526727433;
-  if(! c_acc(5.2).isApprox(p5200)){
+  p5200 << 0.30273356072723845, -0.07619420199174821, 0.010015348526727433;
+  if (!c_acc(5.2).isApprox(p5200)) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
     error = true;
   }
-  if(! c_acc.derivate(0., 1).isZero()){
+  if (!c_acc.derivate(0., 1).isZero()) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc derivative at 0 should be null" << std::endl;
     error = true;
   }
-  if(! c_acc.derivate(0.5, 1).isZero()){
+  if (!c_acc.derivate(0.5, 1).isZero()) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc derivative should at 0.5 be null" << std::endl;
     error = true;
   }
-  if(! c_acc.derivate(0., 2).isZero()){
+  if (!c_acc.derivate(0., 2).isZero()) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc second derivative at 0 should be null" << std::endl;
     error = true;
   }
-  if(! c_acc.derivate(5., 2).isZero()){
+  if (!c_acc.derivate(5., 2).isZero()) {
     std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc second derivative at 5 should be null" << std::endl;
     error = true;
   }
 
   try {
     piecewise_t c_error = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_acc, 0.01, 4);
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, dimension do not match, an error should be raised" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, dimension do not match, an error should be raised"
+              << std::endl;
     error = true;
   } catch (std::invalid_argument e) {
   }
   try {
     piecewise_t c_error = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_error, 0.01, 3);
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, discrete_points_error should not be parsed correctly" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, discrete_points_error should not be parsed correctly"
+              << std::endl;
     error = true;
   } catch (std::invalid_argument e) {
   }
-
 }
-
 
 void serializationCurvesTest(bool& error) {
   try {
@@ -1867,16 +1868,15 @@ void so3LinearTest(bool& error) {
 
   constant3_t so3Derivate1 = so3Traj.compute_derivate(1);
   if (so3Derivate1(1.) != so3Traj.derivate(1., 1)) {
-      error = true;
-      std::cout << "compute_derivate curve do not equal derivate call" << std::endl;
+    error = true;
+    std::cout << "compute_derivate curve do not equal derivate call" << std::endl;
   }
 
   constant3_t so3Derivate2 = so3Traj.compute_derivate(2);
   if (so3Derivate2(1.) != point3_t::Zero(3)) {
-      error = true;
-      std::cout << "compute_derivate curve do not equal derivate call" << std::endl;
+    error = true;
+    std::cout << "compute_derivate curve do not equal derivate call" << std::endl;
   }
-
 
   // check if errors are correctly raised :
   try {
@@ -2064,25 +2064,24 @@ void se3CurveTest(bool& error) {
     error = true;
     std::cout << "SE3 curve : translation curve not equal to se3.translation" << std::endl;
   }
-  if (translation->operator()((max+min)/2.) != cBezier((max+min)/2.).translation()) {
+  if (translation->operator()((max + min) / 2.) != cBezier((max + min) / 2.).translation()) {
     error = true;
     std::cout << "SE3 curve : translation curve not equal to se3.translation" << std::endl;
   }
   // check accessor to rotation curves :
   curve_rotation_ptr_t rotation = cBezier.rotation_curve();
-  if (! rotation->operator()(min).isApprox(cBezier(min).rotation())) {
+  if (!rotation->operator()(min).isApprox(cBezier(min).rotation())) {
     error = true;
     std::cout << "SE3 curve : rotation curve not equal to se3.rotation" << std::endl;
   }
-  if (! rotation->operator()(max).isApprox(cBezier(max).rotation())) {
+  if (!rotation->operator()(max).isApprox(cBezier(max).rotation())) {
     error = true;
     std::cout << "SE3 curve : rotation curve not equal to se3.rotation" << std::endl;
   }
-  if (! rotation->operator()((max+min)/2.).isApprox(cBezier((max+min)/2.).rotation())) {
+  if (!rotation->operator()((max + min) / 2.).isApprox(cBezier((max + min) / 2.).rotation())) {
     error = true;
     std::cout << "SE3 curve : rotation curve not equal to se3.rotation" << std::endl;
   }
-
 
   // check if errors are correctly raised
   try {

@@ -146,6 +146,7 @@ struct curve_abc : std::unary_function<Time, Point>, public serialization::Seria
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(curve_abc)
 }  // namespace ndcurves
 
-DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point, typename Point_derivate),
+DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
+                                         typename Point_derivate),
                               SINGLE_ARG(ndcurves::curve_abc<Time, Numeric, Safe, Point, Point_derivate>))
 #endif  //_STRUCT_CURVE_ABC
