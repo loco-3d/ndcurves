@@ -31,6 +31,7 @@ def createWaypointList(waypoints):
 
 class varBezier:
     """waypoints is a list that contains either 3d arrays (constants), or a string "variable" """
+
     def __init__(self, waypoints=None, time=1.):
         if waypoints is None:
             mat, vec = createWaypointList(waypoints)

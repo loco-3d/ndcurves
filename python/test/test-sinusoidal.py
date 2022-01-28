@@ -8,6 +8,7 @@ from numpy import array, isclose
 
 
 class SinusoidalCurveTest(unittest.TestCase):
+
     def test_constructor(self):
         # default constructor
         c = sinusoidal()

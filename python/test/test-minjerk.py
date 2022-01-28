@@ -8,6 +8,7 @@ from numpy import array, isclose
 
 
 class MinJerkCurveTest(unittest.TestCase):
+
     def test_constructors(self):
         # constructor from two points
         init = array([1, 23., 5., 9, -5])
