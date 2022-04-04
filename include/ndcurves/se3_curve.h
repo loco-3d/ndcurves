@@ -1,25 +1,28 @@
 #ifndef _STRUCT_SE3_CURVE_H
 #define _STRUCT_SE3_CURVE_H
 
+#include <Eigen/Dense>
+#include <boost/math/constants/constants.hpp>
+
 #include "MathDefs.h"
 #include "curve_abc.h"
-#include "so3_linear.h"
 #include "polynomial.h"
-#include <boost/math/constants/constants.hpp>
-#include <Eigen/Dense>
+#include "so3_linear.h"
 
 namespace ndcurves {
 
 /// \class SE3Curve.
-/// \brief Composition of a curve of any type of dimension 3 and a curve representing an rotation
-/// (in current implementation, only SO3Linear can be used for the rotation part)
-/// The output is a vector of size 7 (pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w)
-/// The output of the derivative of any order is a vector of size 6
+/// \brief Composition of a curve of any type of dimension 3 and a curve
+/// representing an rotation (in current implementation, only SO3Linear can be
+/// used for the rotation part) The output is a vector of size 7
+/// (pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w) The output of the derivative
+/// of any order is a vector of size 6
 /// (linear_x,linear_y,linear_z,angular_x,angular_y,angular_z)
 ///
 ///
 template <typename Time = double, typename Numeric = Time, bool Safe = false>
-struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric, 3, Eigen::Affine>,
+struct SE3Curve : public curve_abc<Time, Numeric, Safe,
+                                   Eigen::Transform<Numeric, 3, Eigen::Affine>,
                                    Eigen::Matrix<Numeric, 6, 1> > {
   typedef Numeric Scalar;
   typedef Eigen::Transform<Numeric, 3, Eigen::Affine> transform_t;
@@ -27,11 +30,14 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   typedef Eigen::Matrix<Scalar, 6, 1> point_derivate_t;
   typedef Eigen::Quaternion<Scalar> Quaternion;
   typedef Time time_t;
-  typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t> curve_abc_t;  // parent class
+  typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t>
+      curve_abc_t;  // parent class
   typedef polynomial<Time, Numeric, Safe, point_derivate_t> curve_derivate_t;
-  typedef curve_abc<Time, Numeric, Safe, pointX_t> curve_X_t;  // generic class of curve
+  typedef curve_abc<Time, Numeric, Safe, pointX_t>
+      curve_X_t;  // generic class of curve
   typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t>
-      curve_rotation_t;  // templated class used for the rotation (return dimension are fixed)
+      curve_rotation_t;  // templated class used for the rotation (return
+                         // dimension are fixed)
   typedef boost::shared_ptr<curve_X_t> curve_ptr_t;
   typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
 
@@ -41,9 +47,16 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
 
  public:
   /* Constructors - destructors */
-  /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
+  /// \brief Empty constructor. Curve obtained this way can not perform other
+  /// class functions.
   ///
-  SE3Curve() : curve_abc_t(), dim_(3), translation_curve_(), rotation_curve_(), T_min_(0), T_max_(0) {}
+  SE3Curve()
+      : curve_abc_t(),
+        dim_(3),
+        translation_curve_(),
+        rotation_curve_(),
+        T_min_(0),
+        T_max_(0) {}
 
   /// \brief Destructor
   virtual ~SE3Curve() {
@@ -52,22 +65,26 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   }
 
   /* Constructor without curve object for the translation : */
-  /// \brief Constructor from init/end transform use polynomial of degree 1 for position and SO3Linear for rotation
-  SE3Curve(const transform_t& init_transform, const transform_t& end_transform, const time_t& t_min,
-           const time_t& t_max)
+  /// \brief Constructor from init/end transform use polynomial of degree 1 for
+  /// position and SO3Linear for rotation
+  SE3Curve(const transform_t& init_transform, const transform_t& end_transform,
+           const time_t& t_min, const time_t& t_max)
       : curve_abc_t(),
         dim_(6),
-        translation_curve_(new polynomial_t(pointX_t(init_transform.translation()),
-                                            pointX_t(end_transform.translation()), t_min, t_max)),
-        rotation_curve_(new SO3Linear_t(init_transform.rotation(), end_transform.rotation(), t_min, t_max)),
+        translation_curve_(new polynomial_t(
+            pointX_t(init_transform.translation()),
+            pointX_t(end_transform.translation()), t_min, t_max)),
+        rotation_curve_(new SO3Linear_t(
+            init_transform.rotation(), end_transform.rotation(), t_min, t_max)),
         T_min_(t_min),
         T_max_(t_max) {
     safe_check();
   }
 
-  /// \brief Constructor from init/end pose, with quaternion. use polynomial of degree 1 for position and SO3Linear for
-  /// rotation
-  SE3Curve(const pointX_t& init_pos, const pointX_t& end_pos, const Quaternion& init_rot, const Quaternion& end_rot,
+  /// \brief Constructor from init/end pose, with quaternion. use polynomial of
+  /// degree 1 for position and SO3Linear for rotation
+  SE3Curve(const pointX_t& init_pos, const pointX_t& end_pos,
+           const Quaternion& init_rot, const Quaternion& end_rot,
            const time_t& t_min, const time_t& t_max)
       : curve_abc_t(),
         dim_(6),
@@ -78,9 +95,10 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
     safe_check();
   }
 
-  /// \brief Constructor from init/end pose, with rotation matrix. use polynomial of degree 1 for position and
-  /// SO3Linear for rotation
-  SE3Curve(const pointX_t& init_pos, const pointX_t& end_pos, const matrix3_t& init_rot, const matrix3_t& end_rot,
+  /// \brief Constructor from init/end pose, with rotation matrix. use
+  /// polynomial of degree 1 for position and SO3Linear for rotation
+  SE3Curve(const pointX_t& init_pos, const pointX_t& end_pos,
+           const matrix3_t& init_rot, const matrix3_t& end_rot,
            const time_t& t_min, const time_t& t_max)
       : curve_abc_t(),
         dim_(6),
@@ -92,24 +110,32 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
   }
 
   /* Constructor with curve object for the translation : */
-  /// \brief Constructor from curve for the translation and init/end rotation, with quaternion.
-  /// Use SO3Linear for rotation with the same time bounds as the
-  SE3Curve(curve_ptr_t translation_curve, const Quaternion& init_rot, const Quaternion& end_rot)
+  /// \brief Constructor from curve for the translation and init/end rotation,
+  /// with quaternion. Use SO3Linear for rotation with the same time bounds as
+  /// the
+  SE3Curve(curve_ptr_t translation_curve, const Quaternion& init_rot,
+           const Quaternion& end_rot)
       : curve_abc_t(),
         dim_(6),
         translation_curve_(translation_curve),
-        rotation_curve_(new SO3Linear_t(init_rot, end_rot, translation_curve->min(), translation_curve->max())),
+        rotation_curve_(new SO3Linear_t(init_rot, end_rot,
+                                        translation_curve->min(),
+                                        translation_curve->max())),
         T_min_(translation_curve->min()),
         T_max_(translation_curve->max()) {
     safe_check();
   }
-  /// \brief Constructor from curve for the translation and init/end rotation, with rotation matrix.
-  /// Use SO3Linear for rotation with the same time bounds as the
-  SE3Curve(curve_ptr_t translation_curve, const matrix3_t& init_rot, const matrix3_t& end_rot)
+  /// \brief Constructor from curve for the translation and init/end rotation,
+  /// with rotation matrix. Use SO3Linear for rotation with the same time bounds
+  /// as the
+  SE3Curve(curve_ptr_t translation_curve, const matrix3_t& init_rot,
+           const matrix3_t& end_rot)
       : curve_abc_t(),
         dim_(6),
         translation_curve_(translation_curve),
-        rotation_curve_(new SO3Linear_t(init_rot, end_rot, translation_curve->min(), translation_curve->max())),
+        rotation_curve_(new SO3Linear_t(init_rot, end_rot,
+                                        translation_curve->min(),
+                                        translation_curve->max())),
         T_min_(translation_curve->min()),
         T_max_(translation_curve->max()) {
     safe_check();
@@ -125,23 +151,28 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
         T_min_(translation_curve->min()),
         T_max_(translation_curve->max()) {
     if (translation_curve->dim() != 3) {
-      throw std::invalid_argument("The translation curve should be of dimension 3.");
+      throw std::invalid_argument(
+          "The translation curve should be of dimension 3.");
     }
     if (rotation_curve->min() != T_min_) {
-      throw std::invalid_argument("Min bounds of translation and rotation curve are not the same.");
+      throw std::invalid_argument(
+          "Min bounds of translation and rotation curve are not the same.");
     }
     if (rotation_curve->max() != T_max_) {
-      throw std::invalid_argument("Max bounds of translation and rotation curve are not the same.");
+      throw std::invalid_argument(
+          "Max bounds of translation and rotation curve are not the same.");
     }
     safe_check();
   }
 
   ///  \brief Evaluation of the SE3Curve at time t
   ///  \param t : time when to evaluate the spline.
-  ///  \return \f$x(t)\f$ point corresponding on spline at time t. (pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w)
+  ///  \return \f$x(t)\f$ point corresponding on spline at time t.
+  ///  (pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w)
   virtual point_t operator()(const time_t t) const {
     if (translation_curve_->dim() != 3) {
-      throw std::invalid_argument("Translation curve should always be of dimension 3");
+      throw std::invalid_argument(
+          "Translation curve should always be of dimension 3");
     }
     point_t res = point_t::Identity();
     res.translate(point3_t((*translation_curve_)(t)));
@@ -151,21 +182,28 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
 
   /**
    * @brief isApprox check if other and *this are approximately equals.
-   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see
-   * isEquivalent
+   * Only two curves of the same class can be approximately equals, for
+   * comparison between different type of curves see isEquivalent
    * @param other the other curve to check
-   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @param prec the precision treshold, default
+   * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  bool isApprox(const SE3Curve_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
-    return ndcurves::isApprox<Numeric>(T_min_, other.min()) && ndcurves::isApprox<Numeric>(T_max_, other.max()) &&
+  bool isApprox(
+      const SE3Curve_t& other,
+      const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    return ndcurves::isApprox<Numeric>(T_min_, other.min()) &&
+           ndcurves::isApprox<Numeric>(T_max_, other.max()) &&
            (translation_curve_ == other.translation_curve_ ||
-            translation_curve_->isApprox(other.translation_curve_.get(), prec)) &&
-           (rotation_curve_ == other.rotation_curve_ || rotation_curve_->isApprox(other.rotation_curve_.get(), prec));
+            translation_curve_->isApprox(other.translation_curve_.get(),
+                                         prec)) &&
+           (rotation_curve_ == other.rotation_curve_ ||
+            rotation_curve_->isApprox(other.rotation_curve_.get(), prec));
   }
 
-  virtual bool isApprox(const curve_abc_t* other,
-                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+  virtual bool isApprox(
+      const curve_abc_t* other,
+      const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
     const SE3Curve_t* other_cast = dynamic_cast<const SE3Curve_t*>(other);
     if (other_cast)
       return isApprox(*other_cast, prec);
@@ -173,17 +211,24 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
       return false;
   }
 
-  virtual bool operator==(const SE3Curve_t& other) const { return isApprox(other); }
+  virtual bool operator==(const SE3Curve_t& other) const {
+    return isApprox(other);
+  }
 
-  virtual bool operator!=(const SE3Curve_t& other) const { return !(*this == other); }
+  virtual bool operator!=(const SE3Curve_t& other) const {
+    return !(*this == other);
+  }
 
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.
-  ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
-  virtual point_derivate_t derivate(const time_t t, const std::size_t order) const {
+  ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative
+  ///  spline at time t.
+  virtual point_derivate_t derivate(const time_t t,
+                                    const std::size_t order) const {
     if (translation_curve_->dim() != 3) {
-      throw std::invalid_argument("Translation curve should always be of dimension 3");
+      throw std::invalid_argument(
+          "Translation curve should always be of dimension 3");
     }
     point_derivate_t res = point_derivate_t::Zero();
     res.segment(0, 3) = point3_t(translation_curve_->derivate(t, order));
@@ -197,7 +242,8 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
 
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
-  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the
+  ///  curve.
   curve_derivate_t* compute_derivate_ptr(const std::size_t order) const {
     return new curve_derivate_t(compute_derivate(order));
   }
@@ -251,7 +297,8 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
         throw std::invalid_argument("Tmin should be inferior to Tmax");
       }
       if (translation_curve_->dim() != 3) {
-        throw std::invalid_argument("Translation curve should always be of dimension 3");
+        throw std::invalid_argument(
+            "Translation curve should always be of dimension 3");
       }
     }
   }
@@ -260,7 +307,8 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe, Eigen::Transform<Numeric
 
 }  // namespace ndcurves
 
-DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe),
-                              SINGLE_ARG(ndcurves::SE3Curve<Time, Numeric, Safe>))
+DEFINE_CLASS_TEMPLATE_VERSION(
+    SINGLE_ARG(typename Time, typename Numeric, bool Safe),
+    SINGLE_ARG(ndcurves::SE3Curve<Time, Numeric, Safe>))
 
 #endif  // SE3_CURVE_H

@@ -1,10 +1,10 @@
-#include "ndcurves/fwd.h"
-#include "ndcurves/bezier_curve.h"
-#include "ndcurves/polynomial.h"
-#include "ndcurves/linear_variable.h"
-#include "ndcurves/quadratic_variable.h"
-
 #include <vector>
+
+#include "ndcurves/bezier_curve.h"
+#include "ndcurves/fwd.h"
+#include "ndcurves/linear_variable.h"
+#include "ndcurves/polynomial.h"
+#include "ndcurves/quadratic_variable.h"
 
 #ifndef _DEFINITION_PYTHON_BINDINGS
 #define _DEFINITION_PYTHON_BINDINGS
@@ -15,10 +15,13 @@ typedef double real;
 typedef std::vector<real> t_time_t;
 typedef Eigen::VectorXd time_waypoints_t;
 
-typedef Eigen::Matrix<double, Eigen::Dynamic, 1, 0, Eigen::Dynamic, 1> ret_pointX_t;
+typedef Eigen::Matrix<double, Eigen::Dynamic, 1, 0, Eigen::Dynamic, 1>
+    ret_pointX_t;
 typedef std::pair<pointX_t, pointX_t> pair_pointX_tangent_t;
 typedef Eigen::MatrixXd pointX_list_t;
-typedef std::vector<pair_pointX_tangent_t, Eigen::aligned_allocator<pair_pointX_tangent_t> > t_pair_pointX_tangent_t;
+typedef std::vector<pair_pointX_tangent_t,
+                    Eigen::aligned_allocator<pair_pointX_tangent_t> >
+    t_pair_pointX_tangent_t;
 typedef ndcurves::curve_constraints<pointX_t> curve_constraints_t;
 typedef ndcurves::curve_constraints<point3_t> curve_constraints3_t;
 typedef std::pair<real, pointX_t> waypoint_t;

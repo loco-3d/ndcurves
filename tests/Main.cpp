@@ -1,27 +1,29 @@
-#include "ndcurves/fwd.h"
-#include "ndcurves/exact_cubic.h"
-#include "ndcurves/bezier_curve.h"
-#include "ndcurves/polynomial.h"
-#include "ndcurves/helpers/effector_spline.h"
-#include "ndcurves/helpers/effector_spline_rotation.h"
-#include "ndcurves/curve_conversion.h"
-#include "ndcurves/cubic_hermite_spline.h"
-#include "ndcurves/piecewise_curve.h"
-#include "ndcurves/optimization/definitions.h"
-#include "load_problem.h"
-#include "ndcurves/so3_linear.h"
-#include "ndcurves/se3_curve.h"
-#include "ndcurves/serialization/curves.hpp"
-#include <string>
-#include <iostream>
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <cmath>
 #include <ctime>
-#include <boost/smart_ptr/shared_ptr.hpp>
+#include <iostream>
+#include <string>
+
+#include "load_problem.h"
+#include "ndcurves/bezier_curve.h"
+#include "ndcurves/cubic_hermite_spline.h"
+#include "ndcurves/curve_conversion.h"
+#include "ndcurves/exact_cubic.h"
+#include "ndcurves/fwd.h"
+#include "ndcurves/helpers/effector_spline.h"
+#include "ndcurves/helpers/effector_spline_rotation.h"
+#include "ndcurves/optimization/definitions.h"
+#include "ndcurves/piecewise_curve.h"
+#include "ndcurves/polynomial.h"
+#include "ndcurves/se3_curve.h"
+#include "ndcurves/serialization/curves.hpp"
+#include "ndcurves/so3_linear.h"
 
 using namespace std;
 
 namespace ndcurves {
-typedef exact_cubic<double, double, true, Eigen::Matrix<double, 1, 1> > exact_cubic_one;
+typedef exact_cubic<double, double, true, Eigen::Matrix<double, 1, 1> >
+    exact_cubic_one;
 typedef exact_cubic_t::spline_constraints spline_constraints_t;
 
 typedef std::pair<double, pointX_t> Waypoint;
@@ -30,10 +32,14 @@ typedef Eigen::Matrix<double, 1, 1> point_one;
 typedef std::pair<double, point_one> WaypointOne;
 typedef std::vector<WaypointOne> T_WaypointOne;
 typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
-typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<pair_point_tangent_t> > t_pair_point_tangent_t;
+typedef std::vector<pair_point_tangent_t,
+                    Eigen::aligned_allocator<pair_point_tangent_t> >
+    t_pair_point_tangent_t;
 
 const double margin = 1e-3;
-bool QuasiEqual(const double a, const double b) { return std::fabs(a - b) < margin; }
+bool QuasiEqual(const double a, const double b) {
+  return std::fabs(a - b) < margin;
+}
 bool QuasiEqual(const point3_t a, const point3_t b) {
   bool equal = true;
   for (size_t i = 0; i < 3; ++i) {
@@ -50,44 +56,57 @@ ostream& operator<<(ostream& os, const point3_t& pt) {
   return os;
 }
 
-void ComparePoints(const transform_t& pt1, const transform_t& pt2, const std::string& errmsg, bool& error,
-                   double prec = Eigen::NumTraits<double>::dummy_precision(), bool notequal = false) {
+void ComparePoints(const transform_t& pt1, const transform_t& pt2,
+                   const std::string& errmsg, bool& error,
+                   double prec = Eigen::NumTraits<double>::dummy_precision(),
+                   bool notequal = false) {
   if (!pt1.isApprox(pt2, prec) && !notequal) {
     error = true;
-    std::cout << errmsg << " translation :" << pt1.translation() << " ; " << pt2.translation() << std::endl
-              << "rotation : " << pt1.rotation() << " ; " << pt2.rotation() << std::endl;
+    std::cout << errmsg << " translation :" << pt1.translation() << " ; "
+              << pt2.translation() << std::endl
+              << "rotation : " << pt1.rotation() << " ; " << pt2.rotation()
+              << std::endl;
   }
 }
 
-void ComparePoints(const Eigen::MatrixXd& pt1, const Eigen::MatrixXd& pt2, const std::string& errmsg, bool& error,
-                   double prec = Eigen::NumTraits<double>::dummy_precision(), bool notequal = false) {
-  if (!pt1.isApprox(pt2, prec) && !(pt1.isZero(prec) && pt2.isZero(prec)) && !notequal) {
+void ComparePoints(const Eigen::MatrixXd& pt1, const Eigen::MatrixXd& pt2,
+                   const std::string& errmsg, bool& error,
+                   double prec = Eigen::NumTraits<double>::dummy_precision(),
+                   bool notequal = false) {
+  if (!pt1.isApprox(pt2, prec) && !(pt1.isZero(prec) && pt2.isZero(prec)) &&
+      !notequal) {
     error = true;
     std::cout << errmsg << pt1 << " ; " << pt2 << std::endl;
   }
 }
 
 template <typename curve1, typename curve2>
-void CompareCurves(const curve1& c1, const curve2& c2, const std::string& errMsg, bool& error,
+void CompareCurves(const curve1& c1, const curve2& c2,
+                   const std::string& errMsg, bool& error,
                    double prec = Eigen::NumTraits<double>::dummy_precision()) {
   double T_min = c1.min();
   double T_max = c1.max();
   if (!QuasiEqual(T_min, c2.min()) || !QuasiEqual(T_max, c2.max())) {
-    std::cout << errMsg << "CompareCurves, ERROR, time min and max of curves do not match [" << T_min << "," << T_max
-              << "] "
-              << " and [" << c2.min() << "," << c2.max() << "] " << std::endl;
+    std::cout
+        << errMsg
+        << "CompareCurves, ERROR, time min and max of curves do not match ["
+        << T_min << "," << T_max << "] "
+        << " and [" << c2.min() << "," << c2.max() << "] " << std::endl;
     error = true;
   } else {
     // derivative in T_min and T_max
-    ComparePoints(c1.derivate(T_min, 1), c2.derivate(T_min, 1), errMsg + " Derivates at tMin do not match.", error,
-                  prec, false);
-    ComparePoints(c1.derivate(T_max, 1), c2.derivate(T_max, 1), errMsg + " Derivates at tMax do not match.", error,
-                  prec, false);
+    ComparePoints(c1.derivate(T_min, 1), c2.derivate(T_min, 1),
+                  errMsg + " Derivates at tMin do not match.", error, prec,
+                  false);
+    ComparePoints(c1.derivate(T_max, 1), c2.derivate(T_max, 1),
+                  errMsg + " Derivates at tMax do not match.", error, prec,
+                  false);
     // Test values on curves
     for (double i = T_min; i <= T_max; i += 0.01) {
       ComparePoints(c1(i), c2(i),
-                    errMsg + " Curves evaluation do not match at t = " + boost::lexical_cast<std::string>(i), error,
-                    prec, false);
+                    errMsg + " Curves evaluation do not match at t = " +
+                        boost::lexical_cast<std::string>(i),
+                    error, prec, false);
     }
   }
 }
@@ -130,7 +149,8 @@ void PolynomialCubicFunctionTest(bool& error) {
     error = false;
   }
   if (error) {
-    std::cout << "Evaluation of cubic cf2 error, 0.4 should be an out of range value\n";
+    std::cout << "Evaluation of cubic cf2 error, 0.4 should be an out of range "
+                 "value\n";
   }
   error = true;
   try {
@@ -139,29 +159,40 @@ void PolynomialCubicFunctionTest(bool& error) {
     error = false;
   }
   if (error) {
-    std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range value\n";
+    std::cout << "Evaluation of cubic cf2 error, 1.1 should be an out of range "
+                 "value\n";
   }
   if (!QuasiEqual(cf.max(), 1.0)) {
     error = true;
-    std::cout << "Evaluation of cubic cf error, MaxBound should be equal to 1\n";
+    std::cout
+        << "Evaluation of cubic cf error, MaxBound should be equal to 1\n";
   }
   if (!QuasiEqual(cf.min(), 0.0)) {
     error = true;
-    std::cout << "Evaluation of cubic cf error, MinBound should be equal to 1\n";
+    std::cout
+        << "Evaluation of cubic cf error, MinBound should be equal to 1\n";
   }
   // Test derivate and compute_derivative
   // Order 1
   curve_abc_t* cf_derivated = cf.compute_derivate_ptr(1);
-  ComparePoints(cf.derivate(0, 1), (*cf_derivated)(0), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(0.3, 1), (*cf_derivated)(0.3), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(0.5, 1), (*cf_derivated)(0.5), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(1, 1), (*cf_derivated)(1), errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0, 1), (*cf_derivated)(0),
+                errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.3, 1), (*cf_derivated)(0.3),
+                errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.5, 1), (*cf_derivated)(0.5),
+                errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(1, 1), (*cf_derivated)(1),
+                errMsg + " - derivate order 1 : ", error);
   // Order 2
   polynomial_t cf_derivated_2 = cf.compute_derivate(2);
-  ComparePoints(cf.derivate(0, 2), (cf_derivated_2)(0), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(0.3, 2), (cf_derivated_2)(0.3), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(0.5, 2), (cf_derivated_2)(0.5), errMsg + " - derivate order 1 : ", error);
-  ComparePoints(cf.derivate(1, 2), (cf_derivated_2)(1), errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0, 2), (cf_derivated_2)(0),
+                errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.3, 2), (cf_derivated_2)(0.3),
+                errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(0.5, 2), (cf_derivated_2)(0.5),
+                errMsg + " - derivate order 1 : ", error);
+  ComparePoints(cf.derivate(1, 2), (cf_derivated_2)(1),
+                errMsg + " - derivate order 1 : ", error);
 }
 
 /*bezier_curve Function tests*/
@@ -202,14 +233,18 @@ void BezierCurveTest(bool& error) {
   bezier_t cf4(params.begin(), params.end(), 1., 2.);
   // testing bernstein polynomials
   bezier_t cf5(params.begin(), params.end(), 1., 2.);
-  std::string errMsg2("In test BezierCurveTest ; Bernstein polynomials do not evaluate as analytical evaluation");
+  std::string errMsg2(
+      "In test BezierCurveTest ; Bernstein polynomials do not evaluate as "
+      "analytical evaluation");
   bezier_t cf5_derivated = cf5.compute_derivate(1);
 
   for (double d = 1.; d < 2.; d += 0.1) {
     ComparePoints(cf5.evalBernstein(d), cf5(d), errMsg2, error);
     ComparePoints(cf5.evalHorner(d), cf5(d), errMsg2, error);
-    ComparePoints(cf5_derivated.evalBernstein(d), cf5_derivated(d), errMsg2, error);
-    ComparePoints(cf5_derivated.evalHorner(d), cf5_derivated(d), errMsg2, error);
+    ComparePoints(cf5_derivated.evalBernstein(d), cf5_derivated(d), errMsg2,
+                  error);
+    ComparePoints(cf5_derivated.evalHorner(d), cf5_derivated(d), errMsg2,
+                  error);
     ComparePoints(cf5.derivate(d, 1), cf5_derivated(d), errMsg2, error);
   }
   bool error_in(true);
@@ -219,7 +254,8 @@ void BezierCurveTest(bool& error) {
     error_in = false;
   }
   if (error_in) {
-    std::cout << "Evaluation of bezier cf error, -0.4 should be an out of range value\n";
+    std::cout << "Evaluation of bezier cf error, -0.4 should be an out of "
+                 "range value\n";
     error = true;
   }
   error_in = true;
@@ -229,16 +265,19 @@ void BezierCurveTest(bool& error) {
     error_in = false;
   }
   if (error_in) {
-    std::cout << "Evaluation of bezier cf error, 1.1 should be an out of range value\n";
+    std::cout << "Evaluation of bezier cf error, 1.1 should be an out of range "
+                 "value\n";
     error = true;
   }
   if (!QuasiEqual(cf.max(), 1.0)) {
     error = true;
-    std::cout << "Evaluation of bezier cf error, MaxBound should be equal to 1\n";
+    std::cout
+        << "Evaluation of bezier cf error, MaxBound should be equal to 1\n";
   }
   if (!QuasiEqual(cf.min(), 0.0)) {
     error = true;
-    std::cout << "Evaluation of bezier cf error, MinBound should be equal to 1\n";
+    std::cout
+        << "Evaluation of bezier cf error, MinBound should be equal to 1\n";
   }
 }
 
@@ -268,30 +307,38 @@ void BezierCurveTestCompareHornerAndBernstein(bool&)  // error
   // Check all evaluation of bezier curve
   clock_t s0, e0, s1, e1, s2, e2, s3, e3;
   s0 = clock();
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     cf(*cit);
   }
   e0 = clock();
   s1 = clock();
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     cf.evalBernstein(*cit);
   }
   e1 = clock();
 
   s2 = clock();
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     cf.evalHorner(*cit);
   }
   e2 = clock();
   s3 = clock();
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     cf.evalDeCasteljau(*cit);
   }
   e3 = clock();
-  std::cout << "time for analytical eval  " << double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
-  std::cout << "time for bernstein eval   " << double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
-  std::cout << "time for horner eval      " << double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
-  std::cout << "time for deCasteljau eval " << double(e3 - s3) / CLOCKS_PER_SEC << std::endl;
+  std::cout << "time for analytical eval  " << double(e0 - s0) / CLOCKS_PER_SEC
+            << std::endl;
+  std::cout << "time for bernstein eval   " << double(e1 - s1) / CLOCKS_PER_SEC
+            << std::endl;
+  std::cout << "time for horner eval      " << double(e2 - s2) / CLOCKS_PER_SEC
+            << std::endl;
+  std::cout << "time for deCasteljau eval " << double(e3 - s3) / CLOCKS_PER_SEC
+            << std::endl;
   std::cout << "now with high order polynomial " << std::endl;
   params.push_back(d);
   params.push_back(e);
@@ -301,33 +348,43 @@ void BezierCurveTestCompareHornerAndBernstein(bool&)  // error
   params.push_back(i);
   bezier_t cf2(params.begin(), params.end());
   s1 = clock();
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     cf2.evalBernstein(*cit);
   }
   e1 = clock();
   s2 = clock();
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     cf2.evalHorner(*cit);
   }
   e2 = clock();
   s0 = clock();
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     cf2(*cit);
   }
   e0 = clock();
   s3 = clock();
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     cf2.evalDeCasteljau(*cit);
   }
   e3 = clock();
-  std::cout << "time for analytical eval  " << double(e0 - s0) / CLOCKS_PER_SEC << std::endl;
-  std::cout << "time for bernstein eval   " << double(e1 - s1) / CLOCKS_PER_SEC << std::endl;
-  std::cout << "time for horner eval      " << double(e2 - s2) / CLOCKS_PER_SEC << std::endl;
-  std::cout << "time for deCasteljau eval " << double(e3 - s3) / CLOCKS_PER_SEC << std::endl;
+  std::cout << "time for analytical eval  " << double(e0 - s0) / CLOCKS_PER_SEC
+            << std::endl;
+  std::cout << "time for bernstein eval   " << double(e1 - s1) / CLOCKS_PER_SEC
+            << std::endl;
+  std::cout << "time for horner eval      " << double(e2 - s2) / CLOCKS_PER_SEC
+            << std::endl;
+  std::cout << "time for deCasteljau eval " << double(e3 - s3) / CLOCKS_PER_SEC
+            << std::endl;
 }
 
 void BezierDerivativeCurveTest(bool& error) {
-  std::string errMsg("In test BezierDerivativeCurveTest ;, Error While checking value of point on curve : ");
+  std::string errMsg(
+      "In test BezierDerivativeCurveTest ;, Error While checking value of "
+      "point on curve : ");
   point3_t a(1, 2, 3);
   point3_t b(2, 3, 4);
   point3_t c(3, 4, 5);
@@ -342,7 +399,8 @@ void BezierDerivativeCurveTest(bool& error) {
 
 void BezierDerivativeCurveTimeReparametrizationTest(bool& error) {
   std::string errMsg(
-      "In test BezierDerivativeCurveTimeReparametrizationTest, Error While checking value of point on curve : ");
+      "In test BezierDerivativeCurveTimeReparametrizationTest, Error While "
+      "checking value of point on curve : ");
   point3_t a(1, 2, 3);
   point3_t b(2, 3, 4);
   point3_t c(3, 4, 5);
@@ -362,12 +420,16 @@ void BezierDerivativeCurveTimeReparametrizationTest(bool& error) {
   bezier_t cf(params.begin(), params.end());
   bezier_t cfT(params.begin(), params.end(), Tmin, Tmax);
   ComparePoints(cf(0.5), cfT(1), errMsg, error);
-  ComparePoints(cf.derivate(0.5, 1), cfT.derivate(1, 1) * (diffT), errMsg, error);
-  ComparePoints(cf.derivate(0.5, 2), cfT.derivate(1, 2) * diffT * diffT, errMsg, error);
+  ComparePoints(cf.derivate(0.5, 1), cfT.derivate(1, 1) * (diffT), errMsg,
+                error);
+  ComparePoints(cf.derivate(0.5, 2), cfT.derivate(1, 2) * diffT * diffT, errMsg,
+                error);
 }
 
 void BezierDerivativeCurveConstraintTest(bool& error) {
-  std::string errMsg0("In test BezierDerivativeCurveConstraintTest, Error While checking value of point on curve : ");
+  std::string errMsg0(
+      "In test BezierDerivativeCurveConstraintTest, Error While checking value "
+      "of point on curve : ");
   point3_t a(1, 2, 3);
   point3_t b(2, 3, 4);
   point3_t c(3, 4, 5);
@@ -391,12 +453,15 @@ void BezierDerivativeCurveConstraintTest(bool& error) {
   ComparePoints(constraints.end_vel, cf.derivate(T_max, 1), errMsg0, error);
   ComparePoints(constraints.end_acc, cf.derivate(T_max, 2), errMsg0, error);
   std::string errMsg1(
-      "In test BezierDerivativeCurveConstraintTest, Error While checking checking degree of bezier curve :");
+      "In test BezierDerivativeCurveConstraintTest, Error While checking "
+      "checking degree of bezier curve :");
   std::string errMsg2(
-      "In test BezierDerivativeCurveConstraintTest, Error While checking checking size of bezier curve :");
+      "In test BezierDerivativeCurveConstraintTest, Error While checking "
+      "checking size of bezier curve :");
   if (cf.degree_ != params.size() + 3) {
     error = true;
-    std::cout << errMsg1 << cf.degree_ << " ; " << params.size() + 3 << std::endl;
+    std::cout << errMsg1 << cf.degree_ << " ; " << params.size() + 3
+              << std::endl;
   }
   if (cf.size_ != params.size() + 4) {
     error = true;
@@ -406,7 +471,9 @@ void BezierDerivativeCurveConstraintTest(bool& error) {
 
 void toPolynomialConversionTest(bool& error) {
   // bezier to polynomial
-  std::string errMsg("In test BezierToPolynomialConversionTest, Error While checking value of point on curve : ");
+  std::string errMsg(
+      "In test BezierToPolynomialConversionTest, Error While checking value of "
+      "point on curve : ");
   point3_t a(1, 2, 3);
   point3_t b(2, 3, 4);
   point3_t c(3, 4, 5);
@@ -435,11 +502,14 @@ void toPolynomialConversionTest(bool& error) {
 
 void cubicConversionTest(bool& error) {
   std::string errMsg0(
-      "In test CubicConversionTest - convert hermite to, Error While checking value of point on curve : ");
+      "In test CubicConversionTest - convert hermite to, Error While checking "
+      "value of point on curve : ");
   std::string errMsg1(
-      "In test CubicConversionTest - convert bezier to, Error While checking value of point on curve : ");
+      "In test CubicConversionTest - convert bezier to, Error While checking "
+      "value of point on curve : ");
   std::string errMsg2(
-      "In test CubicConversionTest - convert polynomial to, Error While checking value of point on curve : ");
+      "In test CubicConversionTest - convert polynomial to, Error While "
+      "checking value of point on curve : ");
   // Create cubic hermite spline : Test hermite to bezier/polynomial
   point3_t p0(1, 2, 3);
   point3_t m0(2, 3, 4);
@@ -455,7 +525,8 @@ void cubicConversionTest(bool& error) {
   polynomial_t::num_t T_max = 3.0;
   time_control_points.push_back(T_min);
   time_control_points.push_back(T_max);
-  cubic_hermite_spline_t chs0(control_points.begin(), control_points.end(), time_control_points);
+  cubic_hermite_spline_t chs0(control_points.begin(), control_points.end(),
+                              time_control_points);
   // hermite to bezier
   // std::cout<<"======================= \n";
   // std::cout<<"hermite to bezier \n";
@@ -465,12 +536,15 @@ void cubicConversionTest(bool& error) {
   // std::cout<<"======================= \n";
   // std::cout<<"hermite to polynomial \n";
   polynomial_t pol0 = polynomial_from_curve<polynomial_t>(chs0);
-  CompareCurves<cubic_hermite_spline_t, polynomial_t>(chs0, pol0, errMsg0, error);
+  CompareCurves<cubic_hermite_spline_t, polynomial_t>(chs0, pol0, errMsg0,
+                                                      error);
   // pol to hermite
   // std::cout<<"======================= \n";
   // std::cout<<"polynomial to hermite \n";
-  cubic_hermite_spline_t chs1 = hermite_from_curve<cubic_hermite_spline_t>(pol0);
-  CompareCurves<polynomial_t, cubic_hermite_spline_t>(pol0, chs1, errMsg2, error);
+  cubic_hermite_spline_t chs1 =
+      hermite_from_curve<cubic_hermite_spline_t>(pol0);
+  CompareCurves<polynomial_t, cubic_hermite_spline_t>(pol0, chs1, errMsg2,
+                                                      error);
   // pol to bezier
   // std::cout<<"======================= \n";
   // std::cout<<"polynomial to bezier \n";
@@ -506,19 +580,24 @@ void cubicConversionTest(bool& error) {
   vec.push_back(e);
   polynomial_t pol_4(vec.begin(), vec.end(), 0, 1);
   if (pol_4.degree() != 4) {
-    std::cout << "In test CubicConversionTest - Error in the creatin of the polynomial" << std::endl;
+    std::cout << "In test CubicConversionTest - Error in the creatin of the "
+                 "polynomial"
+              << std::endl;
     error = true;
   }
   try {
-    cubic_hermite_spline_t chs3 = hermite_from_curve<cubic_hermite_spline_t>(pol_4);
-    std::cout << "In test CubicConversionTest - Cannot convert to hermite from degree > 3, should raise an error"
+    cubic_hermite_spline_t chs3 =
+        hermite_from_curve<cubic_hermite_spline_t>(pol_4);
+    std::cout << "In test CubicConversionTest - Cannot convert to hermite from "
+                 "degree > 3, should raise an error"
               << std::endl;
     error = true;
   } catch (std::invalid_argument e) {
   }
   try {
     bezier_t b3 = bezier_from_curve<bezier_t>(pol_4);
-    std::cout << "In test CubicConversionTest - Cannot convert to bezier from degree > 3, should raise an error"
+    std::cout << "In test CubicConversionTest - Cannot convert to bezier from "
+                 "degree > 3, should raise an error"
               << std::endl;
     error = true;
   } catch (std::invalid_argument e) {
@@ -527,7 +606,8 @@ void cubicConversionTest(bool& error) {
 
 /*Exact Cubic Function tests*/
 void ExactCubicNoErrorTest(bool& error) {
-  // Create an exact cubic spline with 7 waypoints => 6 polynomials defined in [0.0,3.0]
+  // Create an exact cubic spline with 7 waypoints => 6 polynomials defined in
+  // [0.0,3.0]
   ndcurves::T_Waypoint waypoints;
   for (double i = 0.0; i <= 3.0; i = i + 0.5) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
@@ -537,8 +617,9 @@ void ExactCubicNoErrorTest(bool& error) {
   std::size_t numberSegments = exactCubic.getNumberSplines();
   if (numberSegments != 6) {
     error = true;
-    std::cout << "In ExactCubicNoErrorTest, Error While checking number of splines" << numberSegments << " ; " << 6
-              << std::endl;
+    std::cout
+        << "In ExactCubicNoErrorTest, Error While checking number of splines"
+        << numberSegments << " ; " << 6 << std::endl;
   }
   // Test getSplineAt function
   for (std::size_t i = 0; i < numberSegments; i++) {
@@ -550,7 +631,8 @@ void ExactCubicNoErrorTest(bool& error) {
     exactCubic(3.0);
   } catch (...) {
     error = true;
-    std::cout << "Evaluation of ExactCubicNoErrorTest error when testing value on bounds\n";
+    std::cout << "Evaluation of ExactCubicNoErrorTest error when testing value "
+                 "on bounds\n";
   }
   error = true;
   try {
@@ -559,21 +641,27 @@ void ExactCubicNoErrorTest(bool& error) {
     error = false;
   }
   if (error) {
-    std::cout << "Evaluation of exactCubic cf error, 3.2 should be an out of range value\n";
+    std::cout << "Evaluation of exactCubic cf error, 3.2 should be an out of "
+                 "range value\n";
   }
   if (!QuasiEqual(exactCubic.max(), 3.0)) {
     error = true;
-    std::cout << "Evaluation of exactCubic error, MaxBound should be equal to 3 but is : " << exactCubic.max() << "\n";
+    std::cout << "Evaluation of exactCubic error, MaxBound should be equal to "
+                 "3 but is : "
+              << exactCubic.max() << "\n";
   }
   if (!QuasiEqual(exactCubic.min(), 0.0)) {
     error = true;
-    std::cout << "Evaluation of exactCubic error, MinBound should be equal to 0 but is : " << exactCubic.min() << "\n";
+    std::cout << "Evaluation of exactCubic error, MinBound should be equal to "
+                 "0 but is : "
+              << exactCubic.min() << "\n";
   }
 }
 
 /*Exact Cubic Function tests*/
 void ExactCubicTwoPointsTest(bool& error) {
-  // Create an exact cubic spline with 2 waypoints => 1 polynomial defined in [0.0,1.0]
+  // Create an exact cubic spline with 2 waypoints => 1 polynomial defined in
+  // [0.0,1.0]
   ndcurves::T_Waypoint waypoints;
   for (double i = 0.0; i < 2.0; ++i) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
@@ -581,7 +669,8 @@ void ExactCubicTwoPointsTest(bool& error) {
   exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
   point3_t res1 = exactCubic(0);
   std::string errmsg0(
-      "in ExactCubicTwoPointsTest, Error While checking that given wayPoints  are crossed (expected / obtained)");
+      "in ExactCubicTwoPointsTest, Error While checking that given wayPoints  "
+      "are crossed (expected / obtained)");
   ComparePoints(point3_t(0, 0, 0), res1, errmsg0, error);
   res1 = exactCubic(1);
   ComparePoints(point3_t(1, 1, 1), res1, errmsg0, error);
@@ -589,12 +678,15 @@ void ExactCubicTwoPointsTest(bool& error) {
   std::size_t numberSegments = exactCubic.getNumberSplines();
   if (numberSegments != 1) {
     error = true;
-    std::cout << "In ExactCubicTwoPointsTest, Error While checking number of splines" << numberSegments << " ; " << 1
-              << std::endl;
+    std::cout
+        << "In ExactCubicTwoPointsTest, Error While checking number of splines"
+        << numberSegments << " ; " << 1 << std::endl;
   }
   // Test getSplineAt
-  std::string errmsg1("in ExactCubicTwoPointsTest, Error While checking value on curve");
-  ComparePoints(exactCubic(0.5), (exactCubic.getSplineAt(0))(0.5), errmsg1, error);
+  std::string errmsg1(
+      "in ExactCubicTwoPointsTest, Error While checking value on curve");
+  ComparePoints(exactCubic(0.5), (exactCubic.getSplineAt(0))(0.5), errmsg1,
+                error);
 }
 
 void ExactCubicOneDimTest(bool& error) {
@@ -611,15 +703,17 @@ void ExactCubicOneDimTest(bool& error) {
   exact_cubic_one exactCubic(waypoints.begin(), waypoints.end());
   point_one res1 = exactCubic(0);
   std::string errmsg(
-      "in ExactCubicOneDim Error While checking that given wayPoints  are crossed (expected / obtained)");
+      "in ExactCubicOneDim Error While checking that given wayPoints  are "
+      "crossed (expected / obtained)");
   ComparePoints(zero, res1, errmsg, error);
   res1 = exactCubic(1);
   ComparePoints(one, res1, errmsg, error);
 }
 
-void CheckWayPointConstraint(const std::string& errmsg, const double step, const ndcurves::T_Waypoint&,
-                             const exact_cubic_t* curve, bool& error,
-                             double prec = Eigen::NumTraits<double>::dummy_precision()) {
+void CheckWayPointConstraint(
+    const std::string& errmsg, const double step, const ndcurves::T_Waypoint&,
+    const exact_cubic_t* curve, bool& error,
+    double prec = Eigen::NumTraits<double>::dummy_precision()) {
   point3_t res1;
   for (double i = 0; i <= 1; i = i + step) {
     res1 = (*curve)(i);
@@ -633,7 +727,9 @@ void ExactCubicPointsCrossedTest(bool& error) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
   exact_cubic_t exactCubic(waypoints.begin(), waypoints.end());
-  std::string errmsg("Error While checking that given wayPoints are crossed (expected / obtained)");
+  std::string errmsg(
+      "Error While checking that given wayPoints are crossed (expected / "
+      "obtained)");
   CheckWayPointConstraint(errmsg, 0.2, waypoints, &exactCubic, error);
 }
 
@@ -643,7 +739,8 @@ void ExactCubicVelocityConstraintsTest(bool& error) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
   std::string errmsg(
-      "Error in ExactCubicVelocityConstraintsTest (1); while checking that given wayPoints are crossed (expected / "
+      "Error in ExactCubicVelocityConstraintsTest (1); while checking that "
+      "given wayPoints are crossed (expected / "
       "obtained)");
   spline_constraints_t constraints(3);
   constraints.end_vel = point3_t(0, 0, 0);
@@ -654,32 +751,44 @@ void ExactCubicVelocityConstraintsTest(bool& error) {
   // now check that init and end velocity are 0
   CheckWayPointConstraint(errmsg, 0.2, waypoints, &exactCubic, error);
   std::string errmsg3(
-      "Error in ExactCubicVelocityConstraintsTest (2); while checking derivative (expected / obtained)");
+      "Error in ExactCubicVelocityConstraintsTest (2); while checking "
+      "derivative (expected / obtained)");
   // now check derivatives
-  ComparePoints(constraints.init_vel, exactCubic.derivate(0, 1), errmsg3, error, 1e-10);
-  ComparePoints(constraints.end_vel, exactCubic.derivate(1, 1), errmsg3, error, 1e-10);
-  ComparePoints(constraints.init_acc, exactCubic.derivate(0, 2), errmsg3, error, 1e-10);
-  ComparePoints(constraints.end_acc, exactCubic.derivate(1, 2), errmsg3, error, 1e-10);
+  ComparePoints(constraints.init_vel, exactCubic.derivate(0, 1), errmsg3, error,
+                1e-10);
+  ComparePoints(constraints.end_vel, exactCubic.derivate(1, 1), errmsg3, error,
+                1e-10);
+  ComparePoints(constraints.init_acc, exactCubic.derivate(0, 2), errmsg3, error,
+                1e-10);
+  ComparePoints(constraints.end_acc, exactCubic.derivate(1, 2), errmsg3, error,
+                1e-10);
   constraints.end_vel = point3_t(1, 2, 3);
   constraints.init_vel = point3_t(-1, -2, -3);
   constraints.end_acc = point3_t(4, 5, 6);
   constraints.init_acc = point3_t(-4, -4, -6);
   std::string errmsg2(
-      "Error in ExactCubicVelocityConstraintsTest (3); while checking that given wayPoints are crossed (expected / "
+      "Error in ExactCubicVelocityConstraintsTest (3); while checking that "
+      "given wayPoints are crossed (expected / "
       "obtained)");
   exact_cubic_t exactCubic2(waypoints.begin(), waypoints.end(), constraints);
   CheckWayPointConstraint(errmsg2, 0.2, waypoints, &exactCubic2, error, 1e-10);
   std::string errmsg4(
-      "Error in ExactCubicVelocityConstraintsTest (4); while checking derivative (expected / obtained)");
+      "Error in ExactCubicVelocityConstraintsTest (4); while checking "
+      "derivative (expected / obtained)");
   // now check derivatives
-  ComparePoints(constraints.init_vel, exactCubic2.derivate(0, 1), errmsg4, error, 1e-10);
-  ComparePoints(constraints.end_vel, exactCubic2.derivate(1, 1), errmsg4, error, 1e-10);
-  ComparePoints(constraints.init_acc, exactCubic2.derivate(0, 2), errmsg4, error, 1e-10);
-  ComparePoints(constraints.end_acc, exactCubic2.derivate(1, 2), errmsg4, error, 1e-10);
+  ComparePoints(constraints.init_vel, exactCubic2.derivate(0, 1), errmsg4,
+                error, 1e-10);
+  ComparePoints(constraints.end_vel, exactCubic2.derivate(1, 1), errmsg4, error,
+                1e-10);
+  ComparePoints(constraints.init_acc, exactCubic2.derivate(0, 2), errmsg4,
+                error, 1e-10);
+  ComparePoints(constraints.end_acc, exactCubic2.derivate(1, 2), errmsg4, error,
+                1e-10);
 }
 
 template <typename CurveType>
-void CheckPointOnline(const std::string& errmsg, const point3_t& A, const point3_t& B, const double target,
+void CheckPointOnline(const std::string& errmsg, const point3_t& A,
+                      const point3_t& B, const double target,
                       const CurveType* curve, bool& error) {
   point3_t res1 = curve->operator()(target);
   point3_t ar = (res1 - A);
@@ -688,8 +797,8 @@ void CheckPointOnline(const std::string& errmsg, const point3_t& A, const point3
   rb.normalize();
   if (ar.dot(rb) < 0.99999) {
     error = true;
-    std::cout << errmsg << " ; " << A.transpose() << "\n ; " << B.transpose() << "\n ; " << target << " ; "
-              << res1.transpose() << std::endl;
+    std::cout << errmsg << " ; " << A.transpose() << "\n ; " << B.transpose()
+              << "\n ; " << target << " ; " << res1.transpose() << std::endl;
   }
 }
 
@@ -700,13 +809,18 @@ void EffectorTrajectoryTest(bool& error) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
   helpers::exact_cubic_t* eff_traj = helpers::effector_spline(
-      waypoints.begin(), waypoints.end(), Eigen::Vector3d::UnitZ(), Eigen::Vector3d(0, 0, 2), 1, 0.02, 1, 0.5);
+      waypoints.begin(), waypoints.end(), Eigen::Vector3d::UnitZ(),
+      Eigen::Vector3d(0, 0, 2), 1, 0.02, 1, 0.5);
   point3_t zero(0, 0, 0);
   point3_t off1(0, 0, 1);
   point3_t off2(10, 10, 10.02);
   point3_t end(10, 10, 10);
-  std::string errmsg("Error in EffectorTrajectoryTest; while checking waypoints (expected / obtained)");
-  std::string errmsg2("Error in EffectorTrajectoryTest; while checking derivative (expected / obtained)");
+  std::string errmsg(
+      "Error in EffectorTrajectoryTest; while checking waypoints (expected / "
+      "obtained)");
+  std::string errmsg2(
+      "Error in EffectorTrajectoryTest; while checking derivative (expected / "
+      "obtained)");
   // first check start / goal positions
   ComparePoints(zero, (*eff_traj)(0), errmsg, error);
   ComparePoints(off1, (*eff_traj)(1), errmsg, error);
@@ -719,13 +833,16 @@ void EffectorTrajectoryTest(bool& error) {
   ComparePoints(zero, (*eff_traj).derivate(10, 2), errmsg2, error);
   // check that end and init splines are line
   std::string errmsg3(
-      "Error in EffectorTrajectoryTest; while checking that init/end splines are line (point A/ point B, time value / "
+      "Error in EffectorTrajectoryTest; while checking that init/end splines "
+      "are line (point A/ point B, time value / "
       "point obtained) \n");
   for (double i = 0.1; i < 1; i += 0.1) {
-    CheckPointOnline<helpers::exact_cubic_t>(errmsg3, (*eff_traj)(0), (*eff_traj)(1), i, eff_traj, error);
+    CheckPointOnline<helpers::exact_cubic_t>(
+        errmsg3, (*eff_traj)(0), (*eff_traj)(1), i, eff_traj, error);
   }
   for (double i = 9.981; i < 10; i += 0.002) {
-    CheckPointOnline<helpers::exact_cubic_t>(errmsg3, (*eff_traj)(9.5), (*eff_traj)(10), i, eff_traj, error);
+    CheckPointOnline<helpers::exact_cubic_t>(
+        errmsg3, (*eff_traj)(9.5), (*eff_traj)(10), i, eff_traj, error);
   }
   delete eff_traj;
 }
@@ -747,7 +864,8 @@ void EffectorSplineRotationNoRotationTest(bool& error) {
   for (double i = 0; i <= 10; i = i + 2) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
-  helpers::effector_spline_rotation eff_traj(waypoints.begin(), waypoints.end());
+  helpers::effector_spline_rotation eff_traj(waypoints.begin(),
+                                             waypoints.end());
   helpers::config_t q_init;
   q_init << 0., 0., 0., 0., 0., 0., 1.;
   helpers::config_t q_end;
@@ -758,7 +876,9 @@ void EffectorSplineRotationNoRotationTest(bool& error) {
   q_land << 10, 10, 10.02, 0, 0., 0., 1.;
   helpers::config_t q_mod;
   q_mod << 6., 6., 6., 0., 0., 0., 1.;
-  std::string errmsg("Error in EffectorSplineRotationNoRotationTest; while checking waypoints (expected / obtained)");
+  std::string errmsg(
+      "Error in EffectorSplineRotationNoRotationTest; while checking waypoints "
+      "(expected / obtained)");
   ComparePoints(q_init, eff_traj(0), errmsg, error);
   ComparePoints(q_to, eff_traj(0.02), errmsg, error);
   ComparePoints(q_land, eff_traj(9.98), errmsg, error);
@@ -773,7 +893,8 @@ void EffectorSplineRotationRotationTest(bool& error) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
   helpers::quat_t init_quat = GetXRotQuat(M_PI);
-  helpers::effector_spline_rotation eff_traj(waypoints.begin(), waypoints.end(), init_quat);
+  helpers::effector_spline_rotation eff_traj(waypoints.begin(), waypoints.end(),
+                                             init_quat);
   helpers::config_t q_init = helpers::config_t::Zero();
   q_init.tail<4>() = init_quat;
   helpers::config_t q_end;
@@ -784,7 +905,9 @@ void EffectorSplineRotationRotationTest(bool& error) {
   q_land(2) += 0.02;
   helpers::quat_t q_mod = GetXRotQuat(M_PI_2);
   ;
-  std::string errmsg("Error in EffectorSplineRotationRotationTest; while checking waypoints (expected / obtained)");
+  std::string errmsg(
+      "Error in EffectorSplineRotationRotationTest; while checking waypoints "
+      "(expected / obtained)");
   ComparePoints(q_init, eff_traj(0), errmsg, error);
   ComparePoints(q_to, eff_traj(0.02), errmsg, error);
   ComparePoints(q_land, eff_traj(9.98), errmsg, error);
@@ -806,7 +929,8 @@ void EffectorSplineRotationWayPointRotationTest(bool& error) {
   quat_waypoints_.push_back(std::make_pair(0.4, q_pi_0));
   quat_waypoints_.push_back(std::make_pair(6, q_pi_2));
   quat_waypoints_.push_back(std::make_pair(8, q_pi));
-  helpers::effector_spline_rotation eff_traj(waypoints.begin(), waypoints.end(), quat_waypoints_.begin(),
+  helpers::effector_spline_rotation eff_traj(waypoints.begin(), waypoints.end(),
+                                             quat_waypoints_.begin(),
                                              quat_waypoints_.end());
   helpers::config_t q_init = helpers::config_t::Zero();
   q_init.tail<4>() = init_quat;
@@ -821,7 +945,8 @@ void EffectorSplineRotationWayPointRotationTest(bool& error) {
   helpers::config_t q_land = q_end;
   q_land(2) += 0.02;
   std::string errmsg(
-      "Error in EffectorSplineRotationWayPointRotationTest; while checking waypoints (expected / obtained)");
+      "Error in EffectorSplineRotationWayPointRotationTest; while checking "
+      "waypoints (expected / obtained)");
   ComparePoints(q_init, eff_traj(0), errmsg, error);
   ComparePoints(q_to, eff_traj(0.02), errmsg, error);
   ComparePoints(q_land, eff_traj(9.98), errmsg, error);
@@ -833,24 +958,29 @@ void TestReparametrization(bool& error) {
   helpers::rotation_spline s;
   const helpers::exact_cubic_constraint_one_dim& sp = s.time_reparam_;
   if (!QuasiEqual(sp.min(), 0.0)) {
-    std::cout << "in TestReparametrization; min value is not 0, got " << sp.min() << std::endl;
+    std::cout << "in TestReparametrization; min value is not 0, got "
+              << sp.min() << std::endl;
     error = true;
   }
   if (!QuasiEqual(sp.max(), 1.0)) {
-    std::cout << "in TestReparametrization; max value is not 1, got " << sp.max() << std::endl;
+    std::cout << "in TestReparametrization; max value is not 1, got "
+              << sp.max() << std::endl;
     error = true;
   }
   if (!QuasiEqual(sp(1)[0], 1.0)) {
-    std::cout << "in TestReparametrization; end value is not 1, got " << sp(1)[0] << std::endl;
+    std::cout << "in TestReparametrization; end value is not 1, got "
+              << sp(1)[0] << std::endl;
     error = true;
   }
   if (!QuasiEqual(sp(0)[0], 0.0)) {
-    std::cout << "in TestReparametrization; init value is not 0, got " << sp(0)[0] << std::endl;
+    std::cout << "in TestReparametrization; init value is not 0, got "
+              << sp(0)[0] << std::endl;
     error = true;
   }
   for (double i = 0; i < 1; i += 0.002) {
     if (sp(i)[0] > sp(i + 0.002)[0]) {
-      std::cout << "in TestReparametrization; reparametrization not monotonous " << sp.max() << std::endl;
+      std::cout << "in TestReparametrization; reparametrization not monotonous "
+                << sp.max() << std::endl;
       error = true;
     }
   }
@@ -886,8 +1016,11 @@ void BezierEvalDeCasteljau(bool& error) {
   params.push_back(c);
   // 3d curve
   bezier_t cf(params.begin(), params.end());
-  std::string errmsg("Error in BezierEvalDeCasteljau; while comparing actual bezier evaluation and de Casteljau : ");
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  std::string errmsg(
+      "Error in BezierEvalDeCasteljau; while comparing actual bezier "
+      "evaluation and de Casteljau : ");
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     ComparePoints(cf.evalDeCasteljau(*cit), cf(*cit), errmsg, error);
   }
   params.push_back(d);
@@ -897,7 +1030,8 @@ void BezierEvalDeCasteljau(bool& error) {
   params.push_back(h);
   params.push_back(i);
   bezier_t cf2(params.begin(), params.end());
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end(); ++cit) {
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end(); ++cit) {
     ComparePoints(cf2.evalDeCasteljau(*cit), cf2(*cit), errmsg, error);
   }
 }
@@ -922,11 +1056,17 @@ void BezierElevate(bool& error) {
   bezier_t cf3 = cf2.elevate(1);
   if (cf2.degree() - cf.degree() != 1 && cf3.degree() - cf.degree() != 2) {
     error = true;
-    std::string errmsg("Error in BezierElevate; Degree mismatched for elevated curves. Expected 1 / 2, got:  ");
-    std::cout << errmsg << cf2.degree() - cf.degree() << " ; " << cf3.degree() - cf.degree() << std::endl;
+    std::string errmsg(
+        "Error in BezierElevate; Degree mismatched for elevated curves. "
+        "Expected 1 / 2, got:  ");
+    std::cout << errmsg << cf2.degree() - cf.degree() << " ; "
+              << cf3.degree() - cf.degree() << std::endl;
   }
-  std::string errmsg("Error in BezierElevate; Elevated curves do not have the same evaluation : ");
-  for (std::vector<double>::const_iterator cit = values.begin(); cit != values.end() - 1; ++cit) {
+  std::string errmsg(
+      "Error in BezierElevate; Elevated curves do not have the same evaluation "
+      ": ");
+  for (std::vector<double>::const_iterator cit = values.begin();
+       cit != values.end() - 1; ++cit) {
     ComparePoints(cf2(*cit), cf(*(cit)), errmsg, error);
     ComparePoints(cf3(*cit), cf(*cit), errmsg, error);
   }
@@ -943,14 +1083,25 @@ void BezierSplitCurve(bool& error) {
   double t_max = 10;
   double aux0, aux1;
   std::string errMsg0(
-      "BezierSplitCurve, ERROR initial point of the splitted curve doesn't correspond to the original");
+      "BezierSplitCurve, ERROR initial point of the splitted curve doesn't "
+      "correspond to the original");
   std::string errMsg1(
-      "BezierSplitCurve, ERROR splitting point of the splitted curve doesn't correspond to the original");
-  std::string errMsg2("BezierSplitCurve, ERROR final point of the splitted curve doesn't correspond to the original");
-  std::string errMsg3("BezierSplitCurve, ERROR while checking value on curve and curves splitted");
-  std::string errMsg4("BezierSplitCurve, ERROR Degree of the splitted curve are not the same as the original curve");
-  std::string errMsg5("BezierSplitCurve, ERROR duration of the splitted curve doesn't correspond to the original");
-  std::string errMsg6("BezierSplitCurve, ERROR while checking value on curve extracted");
+      "BezierSplitCurve, ERROR splitting point of the splitted curve doesn't "
+      "correspond to the original");
+  std::string errMsg2(
+      "BezierSplitCurve, ERROR final point of the splitted curve doesn't "
+      "correspond to the original");
+  std::string errMsg3(
+      "BezierSplitCurve, ERROR while checking value on curve and curves "
+      "splitted");
+  std::string errMsg4(
+      "BezierSplitCurve, ERROR Degree of the splitted curve are not the same "
+      "as the original curve");
+  std::string errMsg5(
+      "BezierSplitCurve, ERROR duration of the splitted curve doesn't "
+      "correspond to the original");
+  std::string errMsg6(
+      "BezierSplitCurve, ERROR while checking value on curve extracted");
   for (size_t i = 0; i < 1; ++i) {
     // build a random curve and split it at random time :
     // std::cout<<"build a random curve"<<std::endl;
@@ -965,12 +1116,14 @@ void BezierSplitCurve(bool& error) {
     bezier_t c(wps.begin(), wps.end(), t0, t1);
     std::pair<bezier_t, bezier_t> cs = c.split(ts);
     // test on splitted curves :
-    if (!((c.degree_ == cs.first.degree_) && (c.degree_ == cs.second.degree_))) {
+    if (!((c.degree_ == cs.first.degree_) &&
+          (c.degree_ == cs.second.degree_))) {
       error = true;
       std::cout << errMsg4 << std::endl;
     }
     aux0 = c.max() - c.min();
-    aux1 = (cs.first.max() - cs.first.min() + cs.second.max() - cs.second.min());
+    aux1 =
+        (cs.first.max() - cs.first.min() + cs.second.max() - cs.second.min());
     if (!QuasiEqual(aux0, aux1)) {
       error = true;
       std::cout << errMsg5 << std::endl;
@@ -993,20 +1146,27 @@ void BezierSplitCurve(bool& error) {
       ti += 0.01;
     }
     // Test extract function
-    bezier_t bezier_extracted0 = c.extract(t0 + 0.01, t1 - 0.01);  // T_min < t0 < t1 < T_max
-    for (double t = bezier_extracted0.min(); t < bezier_extracted0.max(); t += 0.01) {
+    bezier_t bezier_extracted0 =
+        c.extract(t0 + 0.01, t1 - 0.01);  // T_min < t0 < t1 < T_max
+    for (double t = bezier_extracted0.min(); t < bezier_extracted0.max();
+         t += 0.01) {
       ComparePoints(bezier_extracted0(t), c(t), errMsg6, error);
     }
-    bezier_t bezier_extracted1 = c.extract(t0, t1 - 0.01);  // T_min = t0 < t1 < T_max
-    for (double t = bezier_extracted1.min(); t < bezier_extracted1.max(); t += 0.01) {
+    bezier_t bezier_extracted1 =
+        c.extract(t0, t1 - 0.01);  // T_min = t0 < t1 < T_max
+    for (double t = bezier_extracted1.min(); t < bezier_extracted1.max();
+         t += 0.01) {
       ComparePoints(bezier_extracted1(t), c(t), errMsg6, error);
     }
-    bezier_t bezier_extracted2 = c.extract(t0 + 0.01, t1);  // T_min < t0 < t1 = T_max
-    for (double t = bezier_extracted2.min(); t < bezier_extracted2.max(); t += 0.01) {
+    bezier_t bezier_extracted2 =
+        c.extract(t0 + 0.01, t1);  // T_min < t0 < t1 = T_max
+    for (double t = bezier_extracted2.min(); t < bezier_extracted2.max();
+         t += 0.01) {
       ComparePoints(bezier_extracted2(t), c(t), errMsg6, error);
     }
     bezier_t bezier_extracted3 = c.extract(t0, t1);  // T_min = t0 < t1 = T_max
-    for (double t = bezier_extracted3.min(); t < bezier_extracted3.max(); t += 0.01) {
+    for (double t = bezier_extracted3.min(); t < bezier_extracted3.max();
+         t += 0.01) {
       ComparePoints(bezier_extracted3(t), c(t), errMsg6, error);
     }
   }
@@ -1016,10 +1176,15 @@ void BezierSplitCurve(bool& error) {
 void CubicHermitePairsPositionDerivativeTest(bool& error) {
   try {
     std::string errmsg1(
-        "in Cubic Hermite 2 pairs (pos,vel), Error While checking that given wayPoints are crossed (expected / "
+        "in Cubic Hermite 2 pairs (pos,vel), Error While checking that given "
+        "wayPoints are crossed (expected / "
         "obtained) : ");
-    std::string errmsg2("in Cubic Hermite 2 points, Error While checking value of point on curve : ");
-    std::string errmsg3("in Cubic Hermite 2 points, Error While checking value of tangent on curve : ");
+    std::string errmsg2(
+        "in Cubic Hermite 2 points, Error While checking value of point on "
+        "curve : ");
+    std::string errmsg3(
+        "in Cubic Hermite 2 points, Error While checking value of tangent on "
+        "curve : ");
     std::vector<pair_point_tangent_t> control_points;
     point3_t res1;
     point3_t p0(0., 0., 0.);
@@ -1036,12 +1201,13 @@ void CubicHermitePairsPositionDerivativeTest(bool& error) {
     time_control_points.push_back(0.);  // Time at P0
     time_control_points.push_back(1.);  // Time at P1
     // Create cubic hermite spline
-    cubic_hermite_spline_t cubic_hermite_spline_1Pair(control_points.begin(), control_points.end(),
-                                                      time_control_points);
+    cubic_hermite_spline_t cubic_hermite_spline_1Pair(
+        control_points.begin(), control_points.end(), time_control_points);
     // Dimension
     if (cubic_hermite_spline_1Pair.dim() != 3) {
       error = true;
-      std::cout << "Cubic hermite spline test, Error : Dimension of curve is wrong\n";
+      std::cout
+          << "Cubic hermite spline test, Error : Dimension of curve is wrong\n";
     }
     // Check
     res1 = cubic_hermite_spline_1Pair(0.);  // t=0
@@ -1059,8 +1225,8 @@ void CubicHermitePairsPositionDerivativeTest(bool& error) {
     time_control_points.push_back(0.);  // Time at P0
     time_control_points.push_back(2.);  // Time at P1
     time_control_points.push_back(5.);  // Time at P2
-    cubic_hermite_spline_t cubic_hermite_spline_2Pairs(control_points.begin(), control_points.end(),
-                                                       time_control_points);
+    cubic_hermite_spline_t cubic_hermite_spline_2Pairs(
+        control_points.begin(), control_points.end(), time_control_points);
     // Check
     res1 = cubic_hermite_spline_2Pairs(0.);  // t=0
     ComparePoints(p0, res1, errmsg1, error);
@@ -1076,7 +1242,8 @@ void CubicHermitePairsPositionDerivativeTest(bool& error) {
     res1 = cubic_hermite_spline_2Pairs.derivate(5., 1);
     ComparePoints(t2, res1, errmsg3, error);
     // Test time control points by default [0,1] => with N control points :
-    // Time at P0= 0. | Time at P1= 1.0/(N-1) | Time at P2= 2.0/(N-1) | ... | Time at P_(N-1)= (N-1)/(N-1)= 1.0
+    // Time at P0= 0. | Time at P1= 1.0/(N-1) | Time at P2= 2.0/(N-1) | ... |
+    // Time at P_(N-1)= (N-1)/(N-1)= 1.0
     time_control_points_test.clear();
     time_control_points_test.push_back(0.);   // Time at P0
     time_control_points_test.push_back(0.5);  // Time at P1
@@ -1109,9 +1276,11 @@ void CubicHermitePairsPositionDerivativeTest(bool& error) {
     for (size_t order = 1; order < 5; ++order) {
       std::stringstream ss;
       ss << "in Cubic Hermite 2 points, "
-            "compute_derivate do not lead to the same results as derivate for order = ";
+            "compute_derivate do not lead to the same results as derivate for "
+            "order = ";
       ss << order << std::endl;
-      curve_ptr_t derivate_ptr(cubic_hermite_spline_2Pairs.compute_derivate_ptr(order));
+      curve_ptr_t derivate_ptr(
+          cubic_hermite_spline_2Pairs.compute_derivate_ptr(order));
       double t = 0.;
       while (t <= 1.) {
         p_derivate = cubic_hermite_spline_2Pairs.derivate(t, order);
@@ -1122,14 +1291,17 @@ void CubicHermitePairsPositionDerivativeTest(bool& error) {
     }
   } catch (...) {
     error = true;
-    std::cout << "Error in CubicHermitePairsPositionDerivativeTest" << std::endl;
+    std::cout << "Error in CubicHermitePairsPositionDerivativeTest"
+              << std::endl;
   }
 }
 
 void piecewiseCurveTest(bool& error) {
   try {
     // TEST WITH POLYNOMIALS
-    std::string errmsg1("in piecewise polynomial curve test, Error While checking value of point on curve : ");
+    std::string errmsg1(
+        "in piecewise polynomial curve test, Error While checking value of "
+        "point on curve : ");
     point3_t a(1, 1, 1);  // in [0,1[
     point3_t b(2, 1, 1);  // in [1,2[
     point3_t c(3, 1, 1);  // in [2,3]
@@ -1139,9 +1311,12 @@ void piecewiseCurveTest(bool& error) {
     vec2.push_back(b);  // x=2, y=1, z=1
     vec3.push_back(c);  // x=3, y=1, z=1
     // Create three polynomials of constant value in the interval of definition
-    boost::shared_ptr<polynomial_t> pol1_ptr(new polynomial_t(vec1.begin(), vec1.end(), 0, 1));
-    boost::shared_ptr<polynomial_t> pol2_ptr(new polynomial_t(vec2.begin(), vec2.end(), 1, 2));
-    boost::shared_ptr<polynomial_t> pol3_ptr(new polynomial_t(vec3.begin(), vec3.end(), 2, 3));
+    boost::shared_ptr<polynomial_t> pol1_ptr(
+        new polynomial_t(vec1.begin(), vec1.end(), 0, 1));
+    boost::shared_ptr<polynomial_t> pol2_ptr(
+        new polynomial_t(vec2.begin(), vec2.end(), 1, 2));
+    boost::shared_ptr<polynomial_t> pol3_ptr(
+        new polynomial_t(vec3.begin(), vec3.end(), 2, 3));
     // 1 polynomial in curve
     piecewise_t pc(pol1_ptr);
     res = pc(0.5);
@@ -1180,8 +1355,10 @@ void piecewiseCurveTest(bool& error) {
     params1.push_back(c0);
     params1.push_back(b0);
     params1.push_back(a0);
-    boost::shared_ptr<bezier_t> bc0_ptr(new bezier_t(params0.begin(), params0.end(), 0., 1.));
-    boost::shared_ptr<bezier_t> bc1_ptr(new bezier_t(params1.begin(), params1.end(), 1., 2.));
+    boost::shared_ptr<bezier_t> bc0_ptr(
+        new bezier_t(params0.begin(), params0.end(), 0., 1.));
+    boost::shared_ptr<bezier_t> bc1_ptr(
+        new bezier_t(params1.begin(), params1.end(), 1., 2.));
     piecewise_t pc_C0(bc0_ptr);
     pc_C0.add_curve_ptr(bc1_ptr);
     // Check value in t=0.5 and t=1.5
@@ -1200,19 +1377,25 @@ void piecewiseCurveTest(bool& error) {
     point3_t t2(0.1, 0.2, 0.3);
     std::vector<pair_point_tangent_t> control_points_0;
     control_points_0.push_back(pair_point_tangent_t(p0, t0));
-    control_points_0.push_back(pair_point_tangent_t(p1, t1));  // control_points_0 = 1st piece of curve
+    control_points_0.push_back(
+        pair_point_tangent_t(p1, t1));  // control_points_0 = 1st piece of curve
     std::vector<pair_point_tangent_t> control_points_1;
     control_points_1.push_back(pair_point_tangent_t(p1, t1));
-    control_points_1.push_back(pair_point_tangent_t(p2, t2));  // control_points_1 = 2nd piece of curve
+    control_points_1.push_back(
+        pair_point_tangent_t(p2, t2));  // control_points_1 = 2nd piece of curve
     std::vector<double> time_control_points0, time_control_points1;
     time_control_points0.push_back(0.);
     time_control_points0.push_back(1.);  // hermite 0 between [0,1]
     time_control_points1.push_back(1.);
     time_control_points1.push_back(3.);  // hermite 1 between [1,3]
     boost::shared_ptr<cubic_hermite_spline_t> chs0_ptr(
-        new cubic_hermite_spline_t(control_points_0.begin(), control_points_0.end(), time_control_points0));
+        new cubic_hermite_spline_t(control_points_0.begin(),
+                                   control_points_0.end(),
+                                   time_control_points0));
     boost::shared_ptr<cubic_hermite_spline_t> chs1_ptr(
-        new cubic_hermite_spline_t(control_points_1.begin(), control_points_1.end(), time_control_points1));
+        new cubic_hermite_spline_t(control_points_1.begin(),
+                                   control_points_1.end(),
+                                   time_control_points1));
     piecewise_t pc_C1(chs0_ptr);
     pc_C1.add_curve_ptr(chs1_ptr);
     // Create piecewise curve C2
@@ -1225,14 +1408,22 @@ void piecewiseCurveTest(bool& error) {
     // in [1,2]
     vecb.push_back(b1);
     vecb.push_back(b1);  // x=(t-1)+1, y=(t-1)+1, z=(t-1)+1
-    boost::shared_ptr<polynomial_t> pola_ptr(new polynomial_t(veca.begin(), veca.end(), 0, 1));
-    boost::shared_ptr<polynomial_t> polb_ptr(new polynomial_t(vecb.begin(), vecb.end(), 1, 2));
+    boost::shared_ptr<polynomial_t> pola_ptr(
+        new polynomial_t(veca.begin(), veca.end(), 0, 1));
+    boost::shared_ptr<polynomial_t> polb_ptr(
+        new polynomial_t(vecb.begin(), vecb.end(), 1, 2));
     piecewise_t pc_C2(pola_ptr);
     pc_C2.add_curve_ptr(polb_ptr);
     // check C0 continuity
-    std::string errmsg2("in piecewise polynomial curve test, Error while checking continuity C0 on ");
-    std::string errmsg3("in piecewise polynomial curve test, Error while checking continuity C1 on ");
-    std::string errmsg4("in piecewise polynomial curve test, Error while checking continuity C2 on ");
+    std::string errmsg2(
+        "in piecewise polynomial curve test, Error while checking continuity "
+        "C0 on ");
+    std::string errmsg3(
+        "in piecewise polynomial curve test, Error while checking continuity "
+        "C1 on ");
+    std::string errmsg4(
+        "in piecewise polynomial curve test, Error while checking continuity "
+        "C2 on ");
     // not C0
     bool isC0 = pc.is_continuous(0);
     if (isC0) {
@@ -1270,22 +1461,34 @@ void piecewiseCurveTest(bool& error) {
       error = true;
     }
     // CONVERT PIECEWISE POLYNOMIAL CURVES TO BEZIER AND HERMITE
-    std::string errmsg5("in piecewise polynomial curve test, Error while checking piecewise curve conversion");
+    std::string errmsg5(
+        "in piecewise polynomial curve test, Error while checking piecewise "
+        "curve conversion");
     piecewise_t pc_bezier = pc.convert_piecewise_curve_to_bezier<bezier_t>();
     CompareCurves<piecewise_t, piecewise_t>(pc, pc_bezier, errmsg5, error);
-    piecewise_t pc_hermite = pc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    piecewise_t pc_hermite =
+        pc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
     CompareCurves<piecewise_t, piecewise_t>(pc, pc_hermite, errmsg5, error);
-    piecewise_t pc_polynomial_same = pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
-    CompareCurves<piecewise_t, piecewise_t>(pc, pc_polynomial_same, errmsg5, error);
+    piecewise_t pc_polynomial_same =
+        pc.convert_piecewise_curve_to_polynomial<polynomial_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc, pc_polynomial_same, errmsg5,
+                                            error);
     // CONVERT PIECEWISE BEZIER TO POLYNOMIAL AND HERMITE
 
-    std::string errmsg6("in piecewise bezier curve test, Error while checking piecewise curve conversion");
-    piecewise_t pc_bezier1 = pc_C0.convert_piecewise_curve_to_bezier<bezier_t>();
+    std::string errmsg6(
+        "in piecewise bezier curve test, Error while checking piecewise curve "
+        "conversion");
+    piecewise_t pc_bezier1 =
+        pc_C0.convert_piecewise_curve_to_bezier<bezier_t>();
     CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_bezier1, errmsg6, error);
-    piecewise_t pc_hermite1 = pc_C0.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    piecewise_t pc_hermite1 =
+        pc_C0
+            .convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
     CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_hermite1, errmsg6, error);
-    piecewise_t pc_polynomial1 = pc_C0.convert_piecewise_curve_to_polynomial<polynomial_t>();
-    CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_polynomial1, errmsg6, error);
+    piecewise_t pc_polynomial1 =
+        pc_C0.convert_piecewise_curve_to_polynomial<polynomial_t>();
+    CompareCurves<piecewise_t, piecewise_t>(pc_C0, pc_polynomial1, errmsg6,
+                                            error);
 
     // compare compute_derivate and derivate results :
 
@@ -1293,29 +1496,39 @@ void piecewiseCurveTest(bool& error) {
     curve_abc_t* pc_C2_derivate2 = pc_C2.compute_derivate_ptr(2);
     if (pc_C2.min() != pc_C2_derivate->min()) {
       error = true;
-      std::cout << "min bounds for curve and it's derivate are not equals." << std::endl;
+      std::cout << "min bounds for curve and it's derivate are not equals."
+                << std::endl;
     }
     if (pc_C2.min() != pc_C2_derivate2->min()) {
       error = true;
-      std::cout << "min bounds for curve and it's second derivate are not equals." << std::endl;
+      std::cout
+          << "min bounds for curve and it's second derivate are not equals."
+          << std::endl;
     }
     if (pc_C2.max() != pc_C2_derivate->max()) {
       error = true;
-      std::cout << "max bounds for curve and it's derivate are not equals." << std::endl;
+      std::cout << "max bounds for curve and it's derivate are not equals."
+                << std::endl;
     }
     if (pc_C2.max() != pc_C2_derivate2->max()) {
       error = true;
-      std::cout << "max bounds for curve and it's second derivate are not equals." << std::endl;
+      std::cout
+          << "max bounds for curve and it's second derivate are not equals."
+          << std::endl;
     }
     double t = 0.;
     while (t < pc_C2.max()) {
       if (!QuasiEqual(pc_C2.derivate(t, 1), (*pc_C2_derivate)(t))) {
         error = true;
-        std::cout << "value not equal between derivate and compute_derivate (order 1) at t = " << t << std::endl;
+        std::cout << "value not equal between derivate and compute_derivate "
+                     "(order 1) at t = "
+                  << t << std::endl;
       }
       if (!QuasiEqual(pc_C2.derivate(t, 2), (*pc_C2_derivate2)(t))) {
         error = true;
-        std::cout << "value not equal between derivate and compute_derivate (order 2) at t = " << t << std::endl;
+        std::cout << "value not equal between derivate and compute_derivate "
+                     "(order 2) at t = "
+                  << t << std::endl;
       }
       t += 0.01;
     }
@@ -1332,7 +1545,8 @@ void curveAbcDimDynamicTest(bool& error) {
   typedef exact_cubic<double, double, true> exact_cubic_test_t;
   typedef exact_cubic_test_t::spline_constraints spline_constraints_test_t;
   typedef bezier_curve<double, double, true> bezier_test_t;
-  typedef cubic_hermite_spline<double, double, true> cubic_hermite_spline_test_t;
+  typedef cubic_hermite_spline<double, double, true>
+      cubic_hermite_spline_test_t;
   curve_abc_test_t* pt_curve_abc;
   // POLYNOMIAL
   point3_t a(1, 1, 1);
@@ -1356,7 +1570,8 @@ void curveAbcDimDynamicTest(bool& error) {
     error = false;
   }
   // CUBIC HERMITE
-  cubic_hermite_spline_test_t chs = hermite_from_curve<cubic_hermite_spline_test_t>(pol);
+  cubic_hermite_spline_test_t chs =
+      hermite_from_curve<cubic_hermite_spline_test_t>(pol);
   try {
     chs(0);
     chs(1);
@@ -1369,7 +1584,8 @@ void curveAbcDimDynamicTest(bool& error) {
     waypoints.push_back(std::make_pair(i, point3_t(i, i, i)));
   }
   std::string errmsg(
-      "Error in ExactCubicVelocityConstraintsTest (1); while checking that given wayPoints are crossed (expected / "
+      "Error in ExactCubicVelocityConstraintsTest (1); while checking that "
+      "given wayPoints are crossed (expected / "
       "obtained)");
   spline_constraints_test_t constraints(3);
   constraints.end_vel = point3_t(0, 0, 0);
@@ -1403,7 +1619,9 @@ void curveAbcDimDynamicTest(bool& error) {
 }
 
 void PiecewisePolynomialCurveFromDiscretePoints(bool& error) {
-  std::string errMsg("PiecewisePolynomialCurveFromDiscretePoints, Error, value on curve is wrong : ");
+  std::string errMsg(
+      "PiecewisePolynomialCurveFromDiscretePoints, Error, value on curve is "
+      "wrong : ");
   point3_t p0(0., 0., 0.);
   point3_t p1(1., 2., 3.);
   point3_t p2(4., 4., 4.);
@@ -1442,41 +1660,56 @@ void PiecewisePolynomialCurveFromDiscretePoints(bool& error) {
   time_points.push_back(t3);
 
   // Piecewise polynomial curve C0 => Linear interpolation between points
-  piecewise_t ppc_C0 = piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(points, time_points);
+  piecewise_t ppc_C0 =
+      piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(
+          points, time_points);
   if (!ppc_C0.is_continuous(0)) {
-    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C0" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise "
+                 "curve is not C0"
+              << std::endl;
     error = true;
   }
   for (std::size_t i = 0; i < points.size(); i++) {
     ComparePoints(points[i], ppc_C0(time_points[i]), errMsg, error);
   }
-  point3_t pos_between_po_and_p1((p1[0] + p0[0]) / 2.0, (p1[1] + p0[1]) / 2.0, (p1[2] + p0[2]) / 2.0);
+  point3_t pos_between_po_and_p1((p1[0] + p0[0]) / 2.0, (p1[1] + p0[1]) / 2.0,
+                                 (p1[2] + p0[2]) / 2.0);
   double time_between_po_and_p1 = (t0 + t1) / 2.0;
-  ComparePoints(pos_between_po_and_p1, ppc_C0(time_between_po_and_p1), errMsg, error);
+  ComparePoints(pos_between_po_and_p1, ppc_C0(time_between_po_and_p1), errMsg,
+                error);
 
   // Piecewise polynomial curve C1
   piecewise_t ppc_C1 =
-      piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(points, points_derivative, time_points);
+      piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(
+          points, points_derivative, time_points);
   if (!ppc_C1.is_continuous(1)) {
-    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise "
+                 "curve is not C1"
+              << std::endl;
     error = true;
   }
   for (std::size_t i = 0; i < points.size(); i++) {
     ComparePoints(points[i], ppc_C1(time_points[i]), errMsg, error);
-    ComparePoints(points_derivative[i], ppc_C1.derivate(time_points[i], 1), errMsg, error);
+    ComparePoints(points_derivative[i], ppc_C1.derivate(time_points[i], 1),
+                  errMsg, error);
   }
 
   // Piecewise polynomial curve C2
-  piecewise_t ppc_C2 = piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(
-      points, points_derivative, points_second_derivative, time_points);
+  piecewise_t ppc_C2 =
+      piecewise_t::convert_discrete_points_to_polynomial<polynomial_t>(
+          points, points_derivative, points_second_derivative, time_points);
   if (!ppc_C2.is_continuous(2)) {
-    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise curve is not C1" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromDiscretePoints, Error, piecewise "
+                 "curve is not C1"
+              << std::endl;
     error = true;
   }
   for (std::size_t i = 0; i < points.size(); i++) {
     ComparePoints(points[i], ppc_C2(time_points[i]), errMsg, error);
-    ComparePoints(points_derivative[i], ppc_C2.derivate(time_points[i], 1), errMsg, error);
-    ComparePoints(points_second_derivative[i], ppc_C2.derivate(time_points[i], 2), errMsg, error);
+    ComparePoints(points_derivative[i], ppc_C2.derivate(time_points[i], 1),
+                  errMsg, error);
+    ComparePoints(points_second_derivative[i],
+                  ppc_C2.derivate(time_points[i], 2), errMsg, error);
   }
 }
 
@@ -1486,101 +1719,134 @@ void PiecewisePolynomialCurveFromFile(bool& error) {
   std::string filename_acc(TEST_DATA_PATH "discrete_points_acc.txt");
   std::string filename_error(TEST_DATA_PATH "discrete_points_error.txt");
 
-  piecewise_t c_pos = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_pos, 0.01, 3);
+  piecewise_t c_pos = piecewise_t::load_piecewise_from_text_file<polynomial_t>(
+      filename_pos, 0.01, 3);
   if (c_pos.min() != 0.) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0"
+              << std::endl;
     error = true;
   }
   if (c_pos.max() != 0.03) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 0.03" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 0.03"
+              << std::endl;
     error = true;
   }
   pointX_t p0(3), p2(3);
   p0 << -0.003860389372941039, 0.0012353625242474164, 0.009005041639999767;
   p2 << -0.0028803627898293283, 0.0011918668401150736, 0.009005041639999767;
   if (!c_pos(0.).isApprox(p0)) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match"
+              << std::endl;
     error = true;
   }
   if (!c_pos(0.02).isApprox(p2)) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match"
+              << std::endl;
     error = true;
   }
 
-  piecewise_t c_vel = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_vel, 0.05, 3);
+  piecewise_t c_vel = piecewise_t::load_piecewise_from_text_file<polynomial_t>(
+      filename_vel, 0.05, 3);
   if (c_pos.min() != 0.) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0"
+              << std::endl;
     error = true;
   }
   if (!QuasiEqual(c_vel.max(), 0.15)) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 0.15" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 0.15"
+              << std::endl;
     error = true;
   }
   pointX_t p3(3);
   p3 << 0.2968141884672718, 0.0012916907964522569, 0.00951023474821927;
   if (!c_vel(0.).isApprox(p0)) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match"
+              << std::endl;
     error = true;
   }
   if (!c_vel(0.15).isApprox(p3)) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match"
+              << std::endl;
     error = true;
   }
   if (!c_vel.derivate(0., 1).isZero()) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_vel derivative at 0. should be null" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_vel derivative at "
+                 "0. should be null"
+              << std::endl;
     error = true;
   }
   if (!c_vel.derivate(0.1, 1).isZero()) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_vel derivative at 0.1 should be null" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_vel derivative at "
+                 "0.1 should be null"
+              << std::endl;
     error = true;
   }
 
-  piecewise_t c_acc = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_acc, 0.001, 3);
+  piecewise_t c_acc = piecewise_t::load_piecewise_from_text_file<polynomial_t>(
+      filename_acc, 0.001, 3);
   if (c_acc.min() != 0.) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_min should be 0"
+              << std::endl;
     error = true;
   }
   if (!QuasiEqual(c_acc.max(), 7.85)) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 7.85" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, t_max should be 7.85"
+              << std::endl;
     error = true;
   }
   if (!c_acc(0.).isApprox(p0)) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match"
+              << std::endl;
     error = true;
   }
   pointX_t p5200(3);
   p5200 << 0.30273356072723845, -0.07619420199174821, 0.010015348526727433;
   if (!c_acc(5.2).isApprox(p5200)) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, points do not match"
+              << std::endl;
     error = true;
   }
   if (!c_acc.derivate(0., 1).isZero()) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc derivative at 0 should be null" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc derivative at "
+                 "0 should be null"
+              << std::endl;
     error = true;
   }
   if (!c_acc.derivate(0.5, 1).isZero()) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc derivative should at 0.5 be null" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc derivative "
+                 "should at 0.5 be null"
+              << std::endl;
     error = true;
   }
   if (!c_acc.derivate(0., 2).isZero()) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc second derivative at 0 should be null" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc second "
+                 "derivative at 0 should be null"
+              << std::endl;
     error = true;
   }
   if (!c_acc.derivate(5., 2).isZero()) {
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc second derivative at 5 should be null" << std::endl;
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, c_acc second "
+                 "derivative at 5 should be null"
+              << std::endl;
     error = true;
   }
 
   try {
-    piecewise_t c_error = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_acc, 0.01, 4);
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, dimension do not match, an error should be raised"
+    piecewise_t c_error =
+        piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_acc,
+                                                                 0.01, 4);
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, dimension do not "
+                 "match, an error should be raised"
               << std::endl;
     error = true;
   } catch (std::invalid_argument e) {
   }
   try {
-    piecewise_t c_error = piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_error, 0.01, 3);
-    std::cout << "PiecewisePolynomialCurveFromFile, Error, discrete_points_error should not be parsed correctly"
+    piecewise_t c_error =
+        piecewise_t::load_piecewise_from_text_file<polynomial_t>(filename_error,
+                                                                 0.01, 3);
+    std::cout << "PiecewisePolynomialCurveFromFile, Error, "
+                 "discrete_points_error should not be parsed correctly"
               << std::endl;
     error = true;
   } catch (std::invalid_argument e) {
@@ -1589,12 +1855,20 @@ void PiecewisePolynomialCurveFromFile(bool& error) {
 
 void serializationCurvesTest(bool& error) {
   try {
-    std::string errMsg1("in serializationCurveTest, Error While serializing Polynomial : ");
-    std::string errMsg2("in serializationCurveTest, Error While serializing Bezier : ");
-    std::string errMsg3("in serializationCurveTest, Error While serializing Cubic Hermite : ");
-    std::string errMsg4("in serializationCurveTest, Error While serializing Piecewise curves : ");
-    std::string errMsg5("in serializationCurveTest, Error While serializing Exact cubic : ");
-    std::string errMsg6("in serializationCurveTest, Error While serializing using abstract pointers : ");
+    std::string errMsg1(
+        "in serializationCurveTest, Error While serializing Polynomial : ");
+    std::string errMsg2(
+        "in serializationCurveTest, Error While serializing Bezier : ");
+    std::string errMsg3(
+        "in serializationCurveTest, Error While serializing Cubic Hermite : ");
+    std::string errMsg4(
+        "in serializationCurveTest, Error While serializing Piecewise curves "
+        ": ");
+    std::string errMsg5(
+        "in serializationCurveTest, Error While serializing Exact cubic : ");
+    std::string errMsg6(
+        "in serializationCurveTest, Error While serializing using abstract "
+        "pointers : ");
     point3_t a(1, 1, 1);  // in [0,1[
     point3_t b(2, 1, 1);  // in [1,2[
     point3_t c(3, 1, 1);  // in [2,3]
@@ -1625,11 +1899,13 @@ void serializationCurvesTest(bool& error) {
     bc_test.loadFromText<bezier_t>(fileName);
     CompareCurves<polynomial_t, bezier_t>(pol1, bc_test, errMsg2, error);
     // Test serialization on Cubic Hermite
-    cubic_hermite_spline_t chs = hermite_from_curve<cubic_hermite_spline_t>(pol1);
+    cubic_hermite_spline_t chs =
+        hermite_from_curve<cubic_hermite_spline_t>(pol1);
     chs.saveAsText<cubic_hermite_spline_t>(fileName);
     cubic_hermite_spline_t chs_test;
     chs_test.loadFromText<cubic_hermite_spline_t>(fileName);
-    CompareCurves<polynomial_t, cubic_hermite_spline_t>(pol1, chs_test, errMsg3, error);
+    CompareCurves<polynomial_t, cubic_hermite_spline_t>(pol1, chs_test, errMsg3,
+                                                        error);
     // Piecewise curves
     // Test serialization on Piecewise Polynomial curve
     ppc.saveAsText<piecewise_t>(fileName);
@@ -1638,7 +1914,8 @@ void serializationCurvesTest(bool& error) {
     CompareCurves<piecewise_t, piecewise_t>(ppc, ppc_test, errMsg4, error);
     ppc.saveAsBinary<piecewise_t>(fileName);
     ppc_test_binary.loadFromBinary<piecewise_t>(fileName);
-    CompareCurves<piecewise_t, piecewise_t>(ppc, ppc_test_binary, errMsg4, error);
+    CompareCurves<piecewise_t, piecewise_t>(ppc, ppc_test_binary, errMsg4,
+                                            error);
 
     // Test serialization on Piecewise Bezier curve
     piecewise_t pbc = ppc.convert_piecewise_curve_to_bezier<bezier_t>();
@@ -1647,7 +1924,8 @@ void serializationCurvesTest(bool& error) {
     pbc_test.loadFromText<piecewise_t>(fileName);
     CompareCurves<piecewise_t, piecewise_t>(ppc, pbc_test, errMsg4, error);
     // Test serialization on Piecewise Cubic Hermite curve
-    piecewise_t pchc = ppc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
+    piecewise_t pchc =
+        ppc.convert_piecewise_curve_to_cubic_hermite<cubic_hermite_spline_t>();
     pchc.saveAsText<piecewise_t>(fileName);
     piecewise_t pchc_test;
     pchc_test.loadFromText<piecewise_t>(fileName);
@@ -1676,7 +1954,8 @@ void serializationCurvesTest(bool& error) {
     pt_1 = &pol_test;
     (*pt_0).saveAsText<polynomial_t>(fileName);
     (*pt_1).loadFromText<polynomial_t>(fileName);
-    CompareCurves<polynomial_t, polynomial_t>(pol1, (*dynamic_cast<polynomial_t*>(pt_1)), errMsg6, error);
+    CompareCurves<polynomial_t, polynomial_t>(
+        pol1, (*dynamic_cast<polynomial_t*>(pt_1)), errMsg6, error);
     // Piecewise Polynomial
     pt_0 = NULL;
     pt_1 = NULL;
@@ -1685,7 +1964,8 @@ void serializationCurvesTest(bool& error) {
     pt_1 = &ppc_test;
     (*pt_0).saveAsText<piecewise_t>(fileName);
     (*pt_1).loadFromText<piecewise_t>(fileName);
-    CompareCurves<piecewise_t, piecewise_t>(ppc, (*dynamic_cast<piecewise_t*>(pt_1)), errMsg6, error);
+    CompareCurves<piecewise_t, piecewise_t>(
+        ppc, (*dynamic_cast<piecewise_t*>(pt_1)), errMsg6, error);
   } catch (...) {
     error = true;
     std::cout << "Error in serializationCurvesTest" << std::endl;
@@ -1706,116 +1986,162 @@ void polynomialFromBoundaryConditions(bool& error) {
   polynomial_t polC0 = polynomial_t(p0, p1, min, max);
   if (polC0.min() != min) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C0: min interval not respected." << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C0: min interval not respected."
+        << std::endl;
   }
   if (polC0.max() != max) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C0: max interval not respected." << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C0: max interval not respected."
+        << std::endl;
   }
   if (polC0(min) != p0) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C0: initial value not respected" << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C0: initial value not respected"
+        << std::endl;
   }
   if (polC0(max) != p1) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C0: final value not respected" << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C0: final value not respected"
+        << std::endl;
   }
   if (polC0.degree_ != 1) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C0: curve is not degree 1 " << std::endl;
+    std::cout << "polynomialFromBoundaryConditions C0: curve is not degree 1 "
+              << std::endl;
   }
   if (polC0((max + min) / 2.) != (p0 * 0.5 + p1 * 0.5)) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C0: middle point doesn't have the right value' " << std::endl;
+    std::cout << "polynomialFromBoundaryConditions C0: middle point doesn't "
+                 "have the right value' "
+              << std::endl;
   }
   // C1 : order 3
   polynomial_t polC1 = polynomial_t(p0, dp0, p1, dp1, min, max);
   if (polC1.min() != min) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C1: min interval not respected." << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C1: min interval not respected."
+        << std::endl;
   }
   if (polC1.max() != max) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C1: max interval not respected." << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C1: max interval not respected."
+        << std::endl;
   }
   if (polC1(min) != p0) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C1: initial value not respected" << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C1: initial value not respected"
+        << std::endl;
   }
   if (!QuasiEqual(polC1(max), p1)) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C1: final value not respected" << std::endl;
-    std::cout << "p1 = " << p1.transpose() << " curve end = " << polC1(max).transpose() << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C1: final value not respected"
+        << std::endl;
+    std::cout << "p1 = " << p1.transpose()
+              << " curve end = " << polC1(max).transpose() << std::endl;
   }
   if (polC1.derivate(min, 1) != dp0) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C1: initial derivative value not respected" << std::endl;
+    std::cout << "polynomialFromBoundaryConditions C1: initial derivative "
+                 "value not respected"
+              << std::endl;
   }
   if (!QuasiEqual(polC1.derivate(max, 1), dp1)) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C1: final derivative value not respected" << std::endl;
-    std::cout << "dp1 = " << dp1.transpose() << " curve end derivative = " << polC1.derivate(max, 1).transpose()
+    std::cout << "polynomialFromBoundaryConditions C1: final derivative value "
+                 "not respected"
               << std::endl;
+    std::cout << "dp1 = " << dp1.transpose() << " curve end derivative = "
+              << polC1.derivate(max, 1).transpose() << std::endl;
   }
   if (polC1.degree_ != 3) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C1: curve is not degree 3 " << std::endl;
+    std::cout << "polynomialFromBoundaryConditions C1: curve is not degree 3 "
+              << std::endl;
   }
   // C2 : order 5
   polynomial_t polC2 = polynomial_t(p0, dp0, ddp0, p1, dp1, ddp1, min, max);
   if (polC2.min() != min) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C2: min interval not respected." << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C2: min interval not respected."
+        << std::endl;
   }
   if (polC2.max() != max) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C2: max interval not respected." << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C2: max interval not respected."
+        << std::endl;
   }
   if (polC2(min) != p0) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C2: initial value not respected" << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C2: initial value not respected"
+        << std::endl;
   }
   if (!QuasiEqual(polC2(max), p1)) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C2: final value not respected" << std::endl;
+    std::cout
+        << "polynomialFromBoundaryConditions C2: final value not respected"
+        << std::endl;
   }
   if (polC2.derivate(min, 1) != dp0) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C2: initial derivative value not respected" << std::endl;
+    std::cout << "polynomialFromBoundaryConditions C2: initial derivative "
+                 "value not respected"
+              << std::endl;
   }
   if (!QuasiEqual(polC2.derivate(max, 1), dp1)) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C2: final derivative value not respected" << std::endl;
+    std::cout << "polynomialFromBoundaryConditions C2: final derivative value "
+                 "not respected"
+              << std::endl;
   }
   if (polC2.derivate(min, 2) != ddp0) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C2: initial second derivative value not respected" << std::endl;
+    std::cout << "polynomialFromBoundaryConditions C2: initial second "
+                 "derivative value not respected"
+              << std::endl;
   }
   if (!QuasiEqual(polC2.derivate(max, 2), ddp1)) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C2: final second derivative value not respected" << std::endl;
+    std::cout << "polynomialFromBoundaryConditions C2: final second derivative "
+                 "value not respected"
+              << std::endl;
   }
   if (polC2.degree_ != 5) {
     error = true;
-    std::cout << "polynomialFromBoundaryConditions C2: curve is not degree 5 " << std::endl;
+    std::cout << "polynomialFromBoundaryConditions C2: curve is not degree 5 "
+              << std::endl;
   }
   // check if the exeptions are correctly raised :
   try {
     polynomial_t polC0Err = polynomial_t(p0, p1, max, min);
     error = true;
-    std::cout << "Created a polynomial with tMin > tMax without error. " << std::endl;
+    std::cout << "Created a polynomial with tMin > tMax without error. "
+              << std::endl;
   } catch (invalid_argument e) {
   }
   try {
     polynomial_t polC1Err = polynomial_t(p0, dp0, p1, dp1, max, min);
     error = true;
-    std::cout << "Created a polynomial with tMin > tMax without error. " << std::endl;
+    std::cout << "Created a polynomial with tMin > tMax without error. "
+              << std::endl;
   } catch (invalid_argument e) {
   }
   try {
-    polynomial_t polC2Err = polynomial_t(p0, dp0, ddp0, p1, dp1, ddp1, max, min);
+    polynomial_t polC2Err =
+        polynomial_t(p0, dp0, ddp0, p1, dp1, ddp1, max, min);
     error = true;
-    std::cout << "Created a polynomial with tMin > tMax without error. " << std::endl;
+    std::cout << "Created a polynomial with tMin > tMax without error. "
+              << std::endl;
   } catch (invalid_argument e) {
   }
 }
@@ -1863,49 +2189,62 @@ void so3LinearTest(bool& error) {
   point3_t angular_vel = so3Traj.derivate(tMin, 1);
   if (angular_vel[1] != 0. || angular_vel[2] != 0) {
     error = true;
-    std::cout << "Angular velocity around y and z axis should be null" << std::endl;
+    std::cout << "Angular velocity around y and z axis should be null"
+              << std::endl;
   }
 
   constant3_t so3Derivate1 = so3Traj.compute_derivate(1);
   if (so3Derivate1(1.) != so3Traj.derivate(1., 1)) {
     error = true;
-    std::cout << "compute_derivate curve do not equal derivate call" << std::endl;
+    std::cout << "compute_derivate curve do not equal derivate call"
+              << std::endl;
   }
 
   constant3_t so3Derivate2 = so3Traj.compute_derivate(2);
   if (so3Derivate2(1.) != point3_t::Zero(3)) {
     error = true;
-    std::cout << "compute_derivate curve do not equal derivate call" << std::endl;
+    std::cout << "compute_derivate curve do not equal derivate call"
+              << std::endl;
   }
 
   // check if errors are correctly raised :
   try {
     so3Traj(-0.1);
     error = true;
-    std::cout << "SO3Linear: calling () with t < tmin should raise an invalid_argument error" << std::endl;
+    std::cout << "SO3Linear: calling () with t < tmin should raise an "
+                 "invalid_argument error"
+              << std::endl;
   } catch (std::invalid_argument e) {
   }
   try {
     so3Traj(1.7);
     error = true;
-    std::cout << "SO3Linear: calling () with t > tmin should raise an invalid_argument error" << std::endl;
+    std::cout << "SO3Linear: calling () with t > tmin should raise an "
+                 "invalid_argument error"
+              << std::endl;
   } catch (std::invalid_argument e) {
   }
   try {
     so3Traj.derivate(0, 0);
     error = true;
-    std::cout << "SO3Linear: calling derivate with order = 0 should raise an invalid_argument error" << std::endl;
+    std::cout << "SO3Linear: calling derivate with order = 0 should raise an "
+                 "invalid_argument error"
+              << std::endl;
   } catch (std::invalid_argument e) {
   }
 
-  SO3Linear_t so3TrajMatrix(q0.toRotationMatrix(), q1.toRotationMatrix(), tMin, tMax);
-  std::string errmsg("SO3Linear built from quaternion or from matrix are not identical.");
+  SO3Linear_t so3TrajMatrix(q0.toRotationMatrix(), q1.toRotationMatrix(), tMin,
+                            tMax);
+  std::string errmsg(
+      "SO3Linear built from quaternion or from matrix are not identical.");
   CompareCurves(so3Traj, so3TrajMatrix, errmsg, error, 1e-3);
 }
 
 void SO3serializationTest(bool& error) {
   std::string fileName("fileTest");
-  std::string errmsg("SO3serializationTest : curve serialized is not equivalent to the original curve.");
+  std::string errmsg(
+      "SO3serializationTest : curve serialized is not equivalent to the "
+      "original curve.");
   quaternion_t q0(0.544, -0.002, -0.796, 0.265);
   quaternion_t q1(0.7071, 0.7071, 0, 0);
   q1.normalize();
@@ -1915,17 +2254,20 @@ void SO3serializationTest(bool& error) {
   so3Traj.saveAsText<SO3Linear_t>(fileName + ".txt");
   SO3Linear_t so3_from_txt;
   so3_from_txt.loadFromText<SO3Linear_t>(fileName + ".txt");
-  CompareCurves<SO3Linear_t, SO3Linear_t>(so3Traj, so3_from_txt, errmsg + " For text serialization", error);
+  CompareCurves<SO3Linear_t, SO3Linear_t>(
+      so3Traj, so3_from_txt, errmsg + " For text serialization", error);
 
   so3Traj.saveAsXML<SO3Linear_t>(fileName + ".xml", "so3Curve");
   SO3Linear_t so3_from_xml;
   so3_from_xml.loadFromXML<SO3Linear_t>(fileName + ".xml", "so3Curve");
-  CompareCurves<SO3Linear_t, SO3Linear_t>(so3Traj, so3_from_xml, errmsg + " For XML serialization", error);
+  CompareCurves<SO3Linear_t, SO3Linear_t>(
+      so3Traj, so3_from_xml, errmsg + " For XML serialization", error);
 
   so3Traj.saveAsBinary<SO3Linear_t>(fileName);
   SO3Linear_t so3_from_binary;
   so3_from_binary.loadFromBinary<SO3Linear_t>(fileName);
-  CompareCurves<SO3Linear_t, SO3Linear_t>(so3Traj, so3_from_binary, errmsg + " For binary serialization", error);
+  CompareCurves<SO3Linear_t, SO3Linear_t>(
+      so3Traj, so3_from_binary, errmsg + " For binary serialization", error);
 }
 
 void se3CurveTest(bool& error) {
@@ -1936,8 +2278,8 @@ void se3CurveTest(bool& error) {
 
   double min = 0.5, max = 2.;
 
-  // constructor from init/end position/rotation : automatically create a linear interpolation for position and slerp
-  // for rotation
+  // constructor from init/end position/rotation : automatically create a linear
+  // interpolation for position and slerp for rotation
   SE3Curve_t cLinear(p0, p1, q0, q1, min, max);
   transform_t transformInit = cLinear(min);
   transform_t transformEnd = cLinear(max);
@@ -1981,24 +2323,31 @@ void se3CurveTest(bool& error) {
     params.push_back(b);
     params.push_back(c);
     params.push_back(d);
-    boost::shared_ptr<bezier_t> translation_bezier(new bezier_t(params.begin(), params.end(), min, max));
-    cBezier = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q1.toRotationMatrix());
+    boost::shared_ptr<bezier_t> translation_bezier(
+        new bezier_t(params.begin(), params.end(), min, max));
+    cBezier = SE3Curve_t(translation_bezier, q0.toRotationMatrix(),
+                         q1.toRotationMatrix());
     p0 = (*translation_bezier)(min);
     p1 = (*translation_bezier)(max);
     pMid = (*translation_bezier)((max + min) / 2.);
     if (cBezier.min() != min) {
       error = true;
-      std::cout << "SE3 constructor from translation bezier do not respect the min time interval" << std::endl;
+      std::cout << "SE3 constructor from translation bezier do not respect the "
+                   "min time interval"
+                << std::endl;
     }
     if (cBezier.max() != max) {
       error = true;
-      std::cout << "SE3 constructor from translation bezier do not respect the max time interval" << std::endl;
+      std::cout << "SE3 constructor from translation bezier do not respect the "
+                   "max time interval"
+                << std::endl;
     }
     double t = min;
     while (t < max) {
       if (!cBezier(t).translation().isApprox((*translation_bezier)(t))) {
         error = true;
-        std::cout << "SE3 translation is not equivalent to bezier for t = " << t << std::endl;
+        std::cout << "SE3 translation is not equivalent to bezier for t = " << t
+                  << std::endl;
       }
       t += 0.1;
     }
@@ -2006,10 +2355,12 @@ void se3CurveTest(bool& error) {
     for (size_t i = 1; i < 3; i++) {
       t = min;
       while (t < max) {
-        if (!cBezier.derivate(t, i).head<3>().isApprox(translation_bezier->derivate(t, i))) {
+        if (!cBezier.derivate(t, i).head<3>().isApprox(
+                translation_bezier->derivate(t, i))) {
           error = true;
-          std::cout << "SE3 curve derivative is not equivalent to bezier for t = " << t << " and order = " << i
-                    << std::endl;
+          std::cout
+              << "SE3 curve derivative is not equivalent to bezier for t = "
+              << t << " and order = " << i << std::endl;
         }
         t += 0.1;
       }
@@ -2045,91 +2396,115 @@ void se3CurveTest(bool& error) {
   }
 
   // check derivatives for rotation:
-  if (cBezier.derivate(min, 1).tail<3>() != cBezier.derivate(max, 1).tail<3>()) {
+  if (cBezier.derivate(min, 1).tail<3>() !=
+      cBezier.derivate(max, 1).tail<3>()) {
     error = true;
-    std::cout << "SE3 curve : first order derivative for rotation should be constant." << std::endl;
+    std::cout
+        << "SE3 curve : first order derivative for rotation should be constant."
+        << std::endl;
   }
   if (cBezier.derivate(min, 2).tail<3>() != point3_t::Zero(3)) {
     error = true;
-    std::cout << "SE3 curve : second order derivative for rotation should be null" << std::endl;
+    std::cout
+        << "SE3 curve : second order derivative for rotation should be null"
+        << std::endl;
   }
 
   // check accessor to translation curves :
   curve_ptr_t translation = cBezier.translation_curve();
   if (translation->operator()(min) != cBezier(min).translation()) {
     error = true;
-    std::cout << "SE3 curve : translation curve not equal to se3.translation" << std::endl;
+    std::cout << "SE3 curve : translation curve not equal to se3.translation"
+              << std::endl;
   }
   if (translation->operator()(max) != cBezier(max).translation()) {
     error = true;
-    std::cout << "SE3 curve : translation curve not equal to se3.translation" << std::endl;
+    std::cout << "SE3 curve : translation curve not equal to se3.translation"
+              << std::endl;
   }
-  if (translation->operator()((max + min) / 2.) != cBezier((max + min) / 2.).translation()) {
+  if (translation->operator()((max + min) / 2.) !=
+      cBezier((max + min) / 2.).translation()) {
     error = true;
-    std::cout << "SE3 curve : translation curve not equal to se3.translation" << std::endl;
+    std::cout << "SE3 curve : translation curve not equal to se3.translation"
+              << std::endl;
   }
   // check accessor to rotation curves :
   curve_rotation_ptr_t rotation = cBezier.rotation_curve();
   if (!rotation->operator()(min).isApprox(cBezier(min).rotation())) {
     error = true;
-    std::cout << "SE3 curve : rotation curve not equal to se3.rotation" << std::endl;
+    std::cout << "SE3 curve : rotation curve not equal to se3.rotation"
+              << std::endl;
   }
   if (!rotation->operator()(max).isApprox(cBezier(max).rotation())) {
     error = true;
-    std::cout << "SE3 curve : rotation curve not equal to se3.rotation" << std::endl;
+    std::cout << "SE3 curve : rotation curve not equal to se3.rotation"
+              << std::endl;
   }
-  if (!rotation->operator()((max + min) / 2.).isApprox(cBezier((max + min) / 2.).rotation())) {
+  if (!rotation->operator()((max + min) / 2.)
+           .isApprox(cBezier((max + min) / 2.).rotation())) {
     error = true;
-    std::cout << "SE3 curve : rotation curve not equal to se3.rotation" << std::endl;
+    std::cout << "SE3 curve : rotation curve not equal to se3.rotation"
+              << std::endl;
   }
 
   // check if errors are correctly raised
   try {
     cBezier(0.1);
     error = true;
-    std::cout << "SE3 curve: calling () with t < tmin should raise an invalid_argument error" << std::endl;
+    std::cout << "SE3 curve: calling () with t < tmin should raise an "
+                 "invalid_argument error"
+              << std::endl;
   } catch (std::invalid_argument e) {
   }
   try {
     cBezier(2.3);
     error = true;
-    std::cout << "SE3 curve: calling () with t > tmin should raise an invalid_argument error" << std::endl;
+    std::cout << "SE3 curve: calling () with t > tmin should raise an "
+                 "invalid_argument error"
+              << std::endl;
   } catch (std::invalid_argument e) {
   }
   try {
     cBezier.derivate(0.6, 0);
     error = true;
-    std::cout << "SE3 curve: calling derivate with order = 0 should raise an invalid_argument error" << std::endl;
+    std::cout << "SE3 curve: calling derivate with order = 0 should raise an "
+                 "invalid_argument error"
+              << std::endl;
   } catch (std::invalid_argument e) {
   }
 }
 
 void Se3serializationTest(bool& error) {
   std::string fileName("fileTest");
-  std::string errmsg("SE3serializationTest : curve serialized is not equivalent to the original curve.");
+  std::string errmsg(
+      "SE3serializationTest : curve serialized is not equivalent to the "
+      "original curve.");
   quaternion_t q0(1, 0, 0, 0);
   quaternion_t q1(0., 1., 0, 0);
   pointX_t p0 = point3_t(1., 1.5, -2.);
   pointX_t p1 = point3_t(3., 0, 1.);
   double min = 0.5, max = 2.;
-  // constructor from init/end position/rotation : automatically create a linear interpolation for position and slerp
-  // for rotation
+  // constructor from init/end position/rotation : automatically create a linear
+  // interpolation for position and slerp for rotation
   SE3Curve_t cLinear(p0, p1, q0, q1, min, max);
 
   cLinear.saveAsText<SE3Curve_t>(fileName + ".txt");
   SE3Curve_t se3_from_txt;
   se3_from_txt.loadFromText<SE3Curve_t>(fileName + ".txt");
-  CompareCurves<SE3Curve_t, SE3Curve_t>(cLinear, se3_from_txt, errmsg + " For text serialization", error);
+  CompareCurves<SE3Curve_t, SE3Curve_t>(
+      cLinear, se3_from_txt, errmsg + " For text serialization", error);
 
   cLinear.saveAsXML<SE3Curve_t>(fileName + ".xml", "se3Curve");
   SE3Curve_t se3_from_xml;
   se3_from_xml.loadFromXML<SE3Curve_t>(fileName + ".xml", "se3Curve");
-  CompareCurves<SE3Curve_t, SE3Curve_t>(cLinear, se3_from_xml, errmsg + " For XML serialization", error);
+  CompareCurves<SE3Curve_t, SE3Curve_t>(
+      cLinear, se3_from_xml, errmsg + " For XML serialization", error);
 
   cLinear.saveAsBinary<SE3Curve_t>(fileName);
   SE3Curve_t se3_from_binary;
   se3_from_binary.loadFromBinary<SE3Curve_t>(fileName);
-  CompareCurves<SE3Curve_t, SE3Curve_t>(cLinear, se3_from_binary, errmsg + " For binary serialization", error);
+  CompareCurves<SE3Curve_t, SE3Curve_t>(
+      cLinear, se3_from_binary, errmsg + " For binary serialization", error);
 
   // constructor with specific translation curve
   SE3Curve_t cBezier;
@@ -2147,38 +2522,44 @@ void Se3serializationTest(bool& error) {
     params.push_back(b);
     params.push_back(c);
     params.push_back(d);
-    boost::shared_ptr<bezier_t> translation_bezier(new bezier_t(params.begin(), params.end(), min, max));
+    boost::shared_ptr<bezier_t> translation_bezier(
+        new bezier_t(params.begin(), params.end(), min, max));
     cBezier = SE3Curve_t(translation_bezier, q0, q1);
   }
 
   cBezier.saveAsText<SE3Curve_t>(fileName + ".txt");
   SE3Curve_t se3_from_txt_bezier;
   se3_from_txt_bezier.loadFromText<SE3Curve_t>(fileName + ".txt");
-  CompareCurves<SE3Curve_t, SE3Curve_t>(cBezier, se3_from_txt_bezier, errmsg + " For text serialization", error);
+  CompareCurves<SE3Curve_t, SE3Curve_t>(
+      cBezier, se3_from_txt_bezier, errmsg + " For text serialization", error);
 
   cBezier.saveAsXML<SE3Curve_t>(fileName + ".xml", "se3Curve");
   SE3Curve_t se3_from_xml_bezier;
   se3_from_xml_bezier.loadFromXML<SE3Curve_t>(fileName + ".xml", "se3Curve");
-  CompareCurves<SE3Curve_t, SE3Curve_t>(cBezier, se3_from_xml_bezier, errmsg + " For XML serialization", error);
+  CompareCurves<SE3Curve_t, SE3Curve_t>(
+      cBezier, se3_from_xml_bezier, errmsg + " For XML serialization", error);
 
   cBezier.saveAsBinary<SE3Curve_t>(fileName);
   SE3Curve_t se3_from_binary_bezier;
   se3_from_binary_bezier.loadFromBinary<SE3Curve_t>(fileName);
-  CompareCurves<SE3Curve_t, SE3Curve_t>(cBezier, se3_from_binary_bezier, errmsg + " For binary serialization", error);
+  CompareCurves<SE3Curve_t, SE3Curve_t>(cBezier, se3_from_binary_bezier,
+                                        errmsg + " For binary serialization",
+                                        error);
 }
 
 /**
- * @brief BezierLinearProblemTests test the generation of linear / quadratic problems with
- * variable control points bezier curves
+ * @brief BezierLinearProblemTests test the generation of linear / quadratic
+ * problems with variable control points bezier curves
  * @param error
  */
 
 using namespace ndcurves::optimization;
 
-var_pair_t setup_control_points(const std::size_t degree, const constraint_flag flag,
-                                const point3_t& initPos = point3_t(), const point3_t& endPos = point3_t(),
-                                const constraint_linear& constraints = constraint_linear(3),
-                                const double totalTime = 1.) {
+var_pair_t setup_control_points(
+    const std::size_t degree, const constraint_flag flag,
+    const point3_t& initPos = point3_t(), const point3_t& endPos = point3_t(),
+    const constraint_linear& constraints = constraint_linear(3),
+    const double totalTime = 1.) {
   problem_definition_t pDef(constraints);
   pDef.init_pos = initPos;
   pDef.end_pos = endPos;
@@ -2186,19 +2567,23 @@ var_pair_t setup_control_points(const std::size_t degree, const constraint_flag 
   pDef.totalTime = totalTime;
   pDef.degree = degree;
   problem_data_t pData = setup_control_points<point3_t, double, true>(pDef);
-  return std::make_pair(pData.variables_, std::make_pair(pData.startVariableIndex, pData.numVariables));
+  return std::make_pair(
+      pData.variables_,
+      std::make_pair(pData.startVariableIndex, pData.numVariables));
 }
 
 enum vartype { variable, constant };
 
 bool isVar(const linear_variable_t& var) {
-  return !var.isZero() && var.B() == linear_variable_t::matrix_x_t::Identity(3, 3) &&
+  return !var.isZero() &&
+         var.B() == linear_variable_t::matrix_x_t::Identity(3, 3) &&
          var.c() == linear_variable_t::vector_x_t::Zero(3);
 }
 
 bool isConstant(const linear_variable_t& var) {
   return var.isZero() ||
-         (var.B() == linear_variable_t::matrix_x_t::Zero(3, 3) && var.c() != linear_variable_t::vector_x_t::Zero(3));
+         (var.B() == linear_variable_t::matrix_x_t::Zero(3, 3) &&
+          var.c() != linear_variable_t::vector_x_t::Zero(3));
 }
 
 /*bool isMixed(const linear_variable_t& var)
@@ -2214,37 +2599,42 @@ bool checkValue(const linear_variable_t& var, const vartype vart) {
     return isVar(var);
 }
 
-void checksequence(const T_linear_variable_t& vars, vartype* expected, const std::string testname, bool& error) {
+void checksequence(const T_linear_variable_t& vars, vartype* expected,
+                   const std::string testname, bool& error) {
   int i = 0;
-  for (CIT_linear_variable_t cit = vars.begin(); cit != vars.end(); ++cit, ++i) {
+  for (CIT_linear_variable_t cit = vars.begin(); cit != vars.end();
+       ++cit, ++i) {
     if (!checkValue(*cit, expected[i])) {
-      std::cout << "in test: " << testname << ": wrong type for variable at position " << i << std::endl;
+      std::cout << "in test: " << testname
+                << ": wrong type for variable at position " << i << std::endl;
       error = true;
     }
   }
 }
 
-void checkNumVar(const T_linear_variable_t& vars, const std::size_t expected, const std::string testname,
-                 bool& error) {
+void checkNumVar(const T_linear_variable_t& vars, const std::size_t expected,
+                 const std::string testname, bool& error) {
   if (vars.size() != expected) {
     error = true;
-    std::cout << "incorrect number of variables in " << testname << "(" << expected << "," << vars.size() << ")"
-              << std::endl;
+    std::cout << "incorrect number of variables in " << testname << "("
+              << expected << "," << vars.size() << ")" << std::endl;
   }
 }
 
-void checkPair(const pair_size_t pair, const std::size_t start_index, const std::size_t num_vars,
-               const std::string testname, bool& error) {
+void checkPair(const pair_size_t pair, const std::size_t start_index,
+               const std::size_t num_vars, const std::string testname,
+               bool& error) {
   if (pair.first != start_index) {
     error = true;
     std::cout << "incorrect starting index for variablesin "
 
-              << testname << "(" << start_index << "," << pair.first << ")" << std::endl;
+              << testname << "(" << start_index << "," << pair.first << ")"
+              << std::endl;
   }
   if (pair.second != num_vars) {
     error = true;
-    std::cout << "incorrect number of identified variablesin " << testname << "(" << num_vars << "," << pair.second
-              << ")" << std::endl;
+    std::cout << "incorrect number of identified variablesin " << testname
+              << "(" << num_vars << "," << pair.second << ")" << std::endl;
   }
 }
 
@@ -2252,7 +2642,8 @@ void BezierLinearProblemsetup_control_pointsNoConstraint(bool& error) {
   constraint_flag flag = optimization::NONE;
   var_pair_t res_no_constraints = setup_control_points(5, flag);
   T_linear_variable_t& vars = res_no_constraints.first;
-  vartype exptecdvars[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvars[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "setup_control_pointsNoConstraint", error);
   checksequence(vars, exptecdvars, "setup_control_pointsNoConstraint", error);
 }
@@ -2276,7 +2667,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
   point3_t init_pos = point3_t(1., 1., 1.);
   var_pair_t res = setup_control_points(5, flag, init_pos);
   T_linear_variable_t& vars = res.first;
-  vartype exptecdvars[] = {constant, variable, variable, variable, variable, variable};
+  vartype exptecdvars[] = {constant, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialInit", error);
   checksequence(vars, exptecdvars, "VarCombinatorialInit", error);
   checkPair(res.second, 1, 5, "VarCombinatorialInit", error);
@@ -2285,7 +2677,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
   flag = INIT_POS | INIT_VEL;
   res = setup_control_points(5, flag, init_pos, point3_t(), constraints);
   vars = res.first;
-  vartype exptecdvar1[] = {constant, constant, variable, variable, variable, variable};
+  vartype exptecdvar1[] = {constant, constant, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialInit", error);
   checksequence(vars, exptecdvar1, "VarCombinatorialInit", error);
   checkPair(res.second, 2, 4, "VarCombinatorialInit", error);
@@ -2293,7 +2686,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
   flag = INIT_POS | INIT_VEL | INIT_ACC;
   res = setup_control_points(5, flag, init_pos, point3_t(), constraints);
   vars = res.first;
-  vartype exptecdvar2[] = {constant, constant, constant, variable, variable, variable};
+  vartype exptecdvar2[] = {constant, constant, constant,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialInit", error);
   checksequence(vars, exptecdvar2, "VarCombinatorialInit", error);
   checkPair(res.second, 3, 3, "VarCombinatorialInit", error);
@@ -2301,7 +2695,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
   flag = INIT_VEL;
   res = setup_control_points(5, flag, init_pos, point3_t(), constraints);
   vars = res.first;
-  vartype exptecdvar3[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar3[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialInit", error);
   checksequence(vars, exptecdvar3, "VarCombinatorialInit", error);
   checkPair(res.second, 0, 6, "VarCombinatorialInit", error);
@@ -2309,7 +2704,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
   flag = INIT_ACC;
   res = setup_control_points(5, flag, init_pos, point3_t(), constraints);
   vars = res.first;
-  vartype exptecdvar4[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar4[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialInit", error);
   checksequence(vars, exptecdvar4, "VarCombinatorialInit", error);
   checkPair(res.second, 0, 6, "VarCombinatorialInit", error);
@@ -2317,7 +2713,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
   flag = INIT_ACC | INIT_VEL;
   res = setup_control_points(5, flag, init_pos, point3_t(), constraints);
   vars = res.first;
-  vartype exptecdvar5[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar5[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialInit", error);
   checksequence(vars, exptecdvar5, "VarCombinatorialInit", error);
   checkPair(res.second, 0, 6, "VarCombinatorialInit", error);
@@ -2331,7 +2728,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
   }
   if (err) {
     error = true;
-    std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints "
+    std::cout << "exception should be raised when degree of bezier curve is "
+                 "not high enough to handle constraints "
               << std::endl;
   }
 }
@@ -2341,7 +2739,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
   point3_t init_pos = point3_t(1., 1., 1.);
   var_pair_t res = setup_control_points(5, flag, init_pos);
   T_linear_variable_t& vars = res.first;
-  vartype exptecdvars[] = {variable, variable, variable, variable, variable, constant};
+  vartype exptecdvars[] = {variable, variable, variable,
+                           variable, variable, constant};
   checkNumVar(vars, 6, "VarCombinatorialEnd", error);
   checksequence(vars, exptecdvars, "VarCombinatorialEnd", error);
   checkPair(res.second, 0, 5, "VarCombinatorialEnd", error);
@@ -2350,7 +2749,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
   flag = END_POS | END_VEL;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar1[] = {variable, variable, variable, variable, constant, constant};
+  vartype exptecdvar1[] = {variable, variable, variable,
+                           variable, constant, constant};
   checkNumVar(vars, 6, "VarCombinatorialEnd", error);
   checksequence(vars, exptecdvar1, "VarCombinatorialEnd", error);
   checkPair(res.second, 0, 4, "VarCombinatorialEnd", error);
@@ -2358,7 +2758,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
   flag = END_POS | END_VEL | END_ACC;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar2[] = {variable, variable, variable, constant, constant, constant};
+  vartype exptecdvar2[] = {variable, variable, variable,
+                           constant, constant, constant};
   checkNumVar(vars, 6, "VarCombinatorialEnd", error);
   checksequence(vars, exptecdvar2, "VarCombinatorialEnd", error);
   checkPair(res.second, 0, 3, "VarCombinatorialEnd", error);
@@ -2366,7 +2767,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
   flag = END_VEL;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar3[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar3[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialEnd", error);
   checksequence(vars, exptecdvar3, "VarCombinatorialEnd", error);
   checkPair(res.second, 0, 6, "VarCombinatorialEnd", error);
@@ -2374,7 +2776,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
   flag = END_ACC;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar4[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar4[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialEnd", error);
   checksequence(vars, exptecdvar4, "VarCombinatorialEnd", error);
   checkPair(res.second, 0, 6, "VarCombinatorialEnd", error);
@@ -2382,7 +2785,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
   flag = END_ACC | END_VEL;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar5[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar5[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialEnd", error);
   checksequence(vars, exptecdvar5, "VarCombinatorialEnd", error);
   checkPair(res.second, 0, 6, "VarCombinatorialEnd", error);
@@ -2396,7 +2800,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
   }
   if (err) {
     error = true;
-    std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints "
+    std::cout << "exception should be raised when degree of bezier curve is "
+                 "not high enough to handle constraints "
               << std::endl;
   }
 }
@@ -2406,7 +2811,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
   point3_t init_pos = point3_t(1., 1., 1.);
   var_pair_t res = setup_control_points(5, flag, init_pos);
   T_linear_variable_t& vars = res.first;
-  vartype exptecdvars[] = {constant, variable, variable, variable, variable, constant};
+  vartype exptecdvars[] = {constant, variable, variable,
+                           variable, variable, constant};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvars, "VarCombinatorialMix", error);
   checkPair(res.second, 1, 4, "VarCombinatorialMix", error);
@@ -2415,7 +2821,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
   flag = END_POS | END_VEL | INIT_VEL | INIT_POS;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar1[] = {constant, constant, variable, variable, constant, constant};
+  vartype exptecdvar1[] = {constant, constant, variable,
+                           variable, constant, constant};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar1, "VarCombinatorialMix", error);
   checkPair(res.second, 2, 2, "VarCombinatorialMix", error);
@@ -2423,7 +2830,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
   flag = END_POS | END_VEL | END_ACC | INIT_VEL | INIT_POS;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar2[] = {constant, constant, variable, constant, constant, constant};
+  vartype exptecdvar2[] = {constant, constant, variable,
+                           constant, constant, constant};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar2, "VarCombinatorialMix", error);
   checkPair(res.second, 2, 1, "VarCombinatorialMix", error);
@@ -2431,7 +2839,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
   flag = ALL;
   res = setup_control_points(8, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar3[] = {constant, constant, constant, constant, variable, constant, constant, constant, constant};
+  vartype exptecdvar3[] = {constant, constant, constant, constant, variable,
+                           constant, constant, constant, constant};
   checkNumVar(vars, 9, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar3, "VarCombinatorialMix", error);
   checkPair(res.second, 4, 1, "VarCombinatorialMix", error);
@@ -2439,7 +2848,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
   flag = END_VEL | END_ACC | INIT_VEL;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar4[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar4[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar4, "VarCombinatorialMix", error);
   checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
@@ -2447,7 +2857,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
   flag = END_VEL | INIT_VEL;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar5[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar5[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar5, "VarCombinatorialMix", error);
   checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
@@ -2461,7 +2872,8 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
   }
   if (err) {
     error = true;
-    std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints "
+    std::cout << "exception should be raised when degree of bezier curve is "
+                 "not high enough to handle constraints "
               << std::endl;
   }
 }
@@ -2471,7 +2883,8 @@ void BezierLinearProblemInitInequalities(bool& error) {
   point3_t init_pos = point3_t(1., 1., 1.);
   var_pair_t res = setup_control_points(5, flag, init_pos);
   T_linear_variable_t& vars = res.first;
-  vartype exptecdvars[] = {constant, variable, variable, variable, variable, constant};
+  vartype exptecdvars[] = {constant, variable, variable,
+                           variable, variable, constant};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvars, "VarCombinatorialMix", error);
   checkPair(res.second, 1, 4, "VarCombinatorialMix", error);
@@ -2480,7 +2893,8 @@ void BezierLinearProblemInitInequalities(bool& error) {
   flag = END_POS | END_VEL | INIT_VEL | INIT_POS;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar1[] = {constant, constant, variable, variable, constant, constant};
+  vartype exptecdvar1[] = {constant, constant, variable,
+                           variable, constant, constant};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar1, "VarCombinatorialMix", error);
   checkPair(res.second, 2, 2, "VarCombinatorialMix", error);
@@ -2488,7 +2902,8 @@ void BezierLinearProblemInitInequalities(bool& error) {
   flag = END_POS | END_VEL | END_ACC | INIT_VEL | INIT_POS;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar2[] = {constant, constant, variable, constant, constant, constant};
+  vartype exptecdvar2[] = {constant, constant, variable,
+                           constant, constant, constant};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar2, "VarCombinatorialMix", error);
   checkPair(res.second, 2, 1, "VarCombinatorialMix", error);
@@ -2496,7 +2911,8 @@ void BezierLinearProblemInitInequalities(bool& error) {
   flag = ALL;
   res = setup_control_points(6, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar3[] = {constant, constant, constant, variable, constant, constant, constant};
+  vartype exptecdvar3[] = {constant, constant, constant, variable,
+                           constant, constant, constant};
   checkNumVar(vars, 7, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar3, "VarCombinatorialMix", error);
   checkPair(res.second, 3, 1, "VarCombinatorialMix", error);
@@ -2504,7 +2920,8 @@ void BezierLinearProblemInitInequalities(bool& error) {
   flag = END_VEL | END_ACC | INIT_VEL;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar4[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar4[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar4, "VarCombinatorialMix", error);
   checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
@@ -2512,7 +2929,8 @@ void BezierLinearProblemInitInequalities(bool& error) {
   flag = END_VEL | INIT_VEL;
   res = setup_control_points(5, flag, init_pos, init_pos, constraints);
   vars = res.first;
-  vartype exptecdvar5[] = {variable, variable, variable, variable, variable, variable};
+  vartype exptecdvar5[] = {variable, variable, variable,
+                           variable, variable, variable};
   checkNumVar(vars, 6, "VarCombinatorialMix", error);
   checksequence(vars, exptecdvar5, "VarCombinatorialMix", error);
   checkPair(res.second, 0, 6, "VarCombinatorialMix", error);
@@ -2526,7 +2944,8 @@ void BezierLinearProblemInitInequalities(bool& error) {
   }
   if (err) {
     error = true;
-    std::cout << "exception should be raised when degree of bezier curve is not high enough to handle constraints "
+    std::cout << "exception should be raised when degree of bezier curve is "
+                 "not high enough to handle constraints "
               << std::endl;
   }
 }
@@ -2634,7 +3053,8 @@ void testOperatorEqual(bool& error) {
 
   // test bezier / polynomial
   polynomial_t pol_0 = polynomial_from_curve<polynomial_t>(bc_0);
-  CompareCurves<polynomial_t, bezier_t>(pol_0, bc_0, "compare pol_0 and bc_0", error);
+  CompareCurves<polynomial_t, bezier_t>(pol_0, bc_0, "compare pol_0 and bc_0",
+                                        error);
   // std::cout<<"Should call curve_abc method : "<<std::endl;
   if (!bc_0.isEquivalent(&pol_0)) {
     std::cout << "bc_0 and pol_0 should be equivalent" << std::endl;
@@ -2654,8 +3074,10 @@ void testOperatorEqual(bool& error) {
   std::vector<double> time_control_points;
   time_control_points.push_back(T_min);
   time_control_points.push_back(T_max);
-  cubic_hermite_spline_t chs0(ch_control_points.begin(), ch_control_points.end(), time_control_points);
-  cubic_hermite_spline_t chs1(ch_control_points.begin(), ch_control_points.end(), time_control_points);
+  cubic_hermite_spline_t chs0(ch_control_points.begin(),
+                              ch_control_points.end(), time_control_points);
+  cubic_hermite_spline_t chs1(ch_control_points.begin(),
+                              ch_control_points.end(), time_control_points);
   cubic_hermite_spline_t chs2(chs0);
   point3_t ch_p2(3.1, 4, 5);
   point3_t ch_m2(3, 6.5, 6.);
@@ -2663,7 +3085,8 @@ void testOperatorEqual(bool& error) {
   t_pair_point_tangent_t ch_control_points2;
   ch_control_points2.push_back(pair0);
   ch_control_points2.push_back(pair2);
-  cubic_hermite_spline_t chs3(ch_control_points2.begin(), ch_control_points2.end(), time_control_points);
+  cubic_hermite_spline_t chs3(ch_control_points2.begin(),
+                              ch_control_points2.end(), time_control_points);
   // std::cout<<"Should call hermite method : "<<std::endl;
   if (chs0 != chs1) {
     std::cout << "chs0 and chs1 should be equals" << std::endl;
@@ -2701,7 +3124,8 @@ void testOperatorEqual(bool& error) {
   const double tMax = 1.5;
   SO3Linear_t so3Traj1(q0, q1, tMin, tMax);
   SO3Linear_t so3Traj2(q0, q1, tMin, tMax);
-  SO3Linear_t so3TrajMatrix1(q0.toRotationMatrix(), q1.toRotationMatrix(), tMin, tMax);
+  SO3Linear_t so3TrajMatrix1(q0.toRotationMatrix(), q1.toRotationMatrix(), tMin,
+                             tMax);
   SO3Linear_t so3TrajMatrix2(so3TrajMatrix1);
   quaternion_t q2(0.7071, 0., 0.7071, 0);
   q2.normalize();
@@ -2746,14 +3170,21 @@ void testOperatorEqual(bool& error) {
   // SE3
   boost::shared_ptr<bezier_t> translation_bezier(new bezier_t(bc_0));
   boost::shared_ptr<bezier_t> translation_bezier2(new bezier_t(bc_0));
-  boost::shared_ptr<polynomial_t> translation_polynomial(new polynomial_t(pol_0));
-  SE3Curve_t se3_bezier1 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q1.toRotationMatrix());
-  SE3Curve_t se3_bezier12 = SE3Curve_t(translation_bezier2, q0.toRotationMatrix(), q1.toRotationMatrix());
-  SE3Curve_t se3_pol1 = SE3Curve_t(translation_polynomial, q0.toRotationMatrix(), q1.toRotationMatrix());
+  boost::shared_ptr<polynomial_t> translation_polynomial(
+      new polynomial_t(pol_0));
+  SE3Curve_t se3_bezier1 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(),
+                                      q1.toRotationMatrix());
+  SE3Curve_t se3_bezier12 = SE3Curve_t(
+      translation_bezier2, q0.toRotationMatrix(), q1.toRotationMatrix());
+  SE3Curve_t se3_pol1 = SE3Curve_t(
+      translation_polynomial, q0.toRotationMatrix(), q1.toRotationMatrix());
   SE3Curve_t se3_bezier2(se3_bezier1);
-  SE3Curve_t se3_bezier3 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(), q2.toRotationMatrix());
-  boost::shared_ptr<polynomial_t> translation_polynomial2(new polynomial_t(pol_2));
-  SE3Curve_t se3_pol2 = SE3Curve_t(translation_polynomial2, q0.toRotationMatrix(), q1.toRotationMatrix());
+  SE3Curve_t se3_bezier3 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(),
+                                      q2.toRotationMatrix());
+  boost::shared_ptr<polynomial_t> translation_polynomial2(
+      new polynomial_t(pol_2));
+  SE3Curve_t se3_pol2 = SE3Curve_t(
+      translation_polynomial2, q0.toRotationMatrix(), q1.toRotationMatrix());
   // std::cout<<"Should call se3 method : "<<std::endl;
   if (se3_bezier1 == se3_pol1) {
     std::cout << "se3_bezier1 and se3_pol1 should not be equals" << std::endl;
@@ -2785,7 +3216,8 @@ void testOperatorEqual(bool& error) {
   }
   // std::cout<<"Should call se3 -> so3 method : "<<std::endl;
   if (se3_bezier1 == se3_bezier3) {
-    std::cout << "se3_bezier1 and se3_bezier3 should not be equals" << std::endl;
+    std::cout << "se3_bezier1 and se3_bezier3 should not be equals"
+              << std::endl;
     error = true;
   }
 
@@ -2804,8 +3236,10 @@ void testOperatorEqual(bool& error) {
   params1.push_back(c0);
   params1.push_back(b0);
   params1.push_back(a0);
-  boost::shared_ptr<bezier_t> bc0_ptr(new bezier_t(params0.begin(), params0.end(), 0., 1.));
-  boost::shared_ptr<bezier_t> bc1_ptr(new bezier_t(params1.begin(), params1.end(), 1., 2.));
+  boost::shared_ptr<bezier_t> bc0_ptr(
+      new bezier_t(params0.begin(), params0.end(), 0., 1.));
+  boost::shared_ptr<bezier_t> bc1_ptr(
+      new bezier_t(params1.begin(), params1.end(), 1., 2.));
   piecewise_t pc_C0(bc0_ptr);
   pc_C0.add_curve_ptr(bc1_ptr);
   piecewise_t pc_C1(bc0_ptr);
@@ -2813,7 +3247,8 @@ void testOperatorEqual(bool& error) {
   piecewise_t pc_C2(pc_C0);
   piecewise_t pc_C3(bc0_ptr);
   piecewise_t pc_C4(bc0_ptr);
-  boost::shared_ptr<bezier_t> bc2_ptr(new bezier_t(params0.begin(), params0.end(), 1., 2.));
+  boost::shared_ptr<bezier_t> bc2_ptr(
+      new bezier_t(params0.begin(), params0.end(), 1., 2.));
   pc_C4.add_curve_ptr(bc2_ptr);
   // std::cout<<"Should call piecewise method -> bezier , bezier: "<<std::endl;
   if (pc_C0 != pc_C1) {
@@ -2837,7 +3272,8 @@ void testOperatorEqual(bool& error) {
   }
   // piecewise with mixed curves types
   // std::cout<<"Should call piecewise method: "<<std::endl;
-  piecewise_t pc_C5 = pc_C0.convert_piecewise_curve_to_polynomial<polynomial_t>();
+  piecewise_t pc_C5 =
+      pc_C0.convert_piecewise_curve_to_polynomial<polynomial_t>();
   if (pc_C0 == pc_C5) {
     std::cout << "pc_C0 and pc_C5 should be not equals" << std::endl;
     error = true;
@@ -2851,14 +3287,17 @@ void testOperatorEqual(bool& error) {
   // piecewise se3 :
   piecewise_SE3_t pc_se3_1;
   pc_se3_1.add_curve(se3_pol1);
-  point3_t p_init_se3(translation_polynomial->operator()(translation_polynomial->max()));
-  point3_t dp_init_se3(translation_polynomial->derivate(translation_polynomial->max(), 1));
+  point3_t p_init_se3(
+      translation_polynomial->operator()(translation_polynomial->max()));
+  point3_t dp_init_se3(
+      translation_polynomial->derivate(translation_polynomial->max(), 1));
   point3_t p_end_se3(1, -2, 6);
   point3_t dp_end_se3(3.5, 2.5, -9);
-  boost::shared_ptr<polynomial_t> translation_pol3(new polynomial_t(p_init_se3, dp_init_se3, p_end_se3, dp_end_se3,
-                                                                    translation_polynomial->max(),
-                                                                    translation_polynomial->max() + 2.5));
-  curve_SE3_ptr_t se3_pol_3(new SE3Curve_t(translation_pol3, q1.toRotationMatrix(), q2.toRotationMatrix()));
+  boost::shared_ptr<polynomial_t> translation_pol3(new polynomial_t(
+      p_init_se3, dp_init_se3, p_end_se3, dp_end_se3,
+      translation_polynomial->max(), translation_polynomial->max() + 2.5));
+  curve_SE3_ptr_t se3_pol_3(new SE3Curve_t(
+      translation_pol3, q1.toRotationMatrix(), q2.toRotationMatrix()));
   pc_se3_1.add_curve_ptr(se3_pol_3);
   piecewise_SE3_t pc_se3_2(pc_se3_1);
   piecewise_SE3_t pc_se3_3(boost::make_shared<SE3Curve_t>(se3_pol1));
@@ -2875,7 +3314,8 @@ void testOperatorEqual(bool& error) {
     std::cout << "pc_se3_1 and pc_se3_3 should be equals" << std::endl;
     error = true;
   }
-  // std::cout<<"Should call piecewise method -> SE3  -> polynomial : "<<std::endl;
+  // std::cout<<"Should call piecewise method -> SE3  -> polynomial :
+  // "<<std::endl;
   if (pc_se3_1 == pc_se3_4) {
     std::cout << "pc_se3_1 and pc_se3_3 should not be equals" << std::endl;
     error = true;
@@ -2887,7 +3327,8 @@ int main(int /*argc*/, char** /*argv[]*/) {
   bool error = false;
   PolynomialCubicFunctionTest(error);
   ExactCubicNoErrorTest(error);
-  ExactCubicPointsCrossedTest(error);  // checks that given wayPoints are crossed
+  ExactCubicPointsCrossedTest(
+      error);  // checks that given wayPoints are crossed
   ExactCubicTwoPointsTest(error);
   ExactCubicOneDimTest(error);
   ExactCubicVelocityConstraintsTest(error);

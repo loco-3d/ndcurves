@@ -1,8 +1,9 @@
 #define BOOST_TEST_MODULE test_minjerk
 
+#include <boost/test/included/unit_test.hpp>
+
 #include "ndcurves/fwd.h"
 #include "ndcurves/polynomial.h"
-#include <boost/test/included/unit_test.hpp>
 
 using namespace ndcurves;
 
@@ -45,7 +46,8 @@ BOOST_AUTO_TEST_CASE(constructor_error) {
   BOOST_CHECK_THROW(polynomial_t::MinimumJerk(a, b);, std::invalid_argument);
   point3_t a1(1.5, -2, 3.7);
   point3_t b1(2, 3, -4.);
-  BOOST_CHECK_THROW(polynomial_t::MinimumJerk(a1, b1, 1., 0.5);, std::invalid_argument);
+  BOOST_CHECK_THROW(polynomial_t::MinimumJerk(a1, b1, 1., 0.5);
+                    , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(evaluate) {

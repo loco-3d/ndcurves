@@ -9,7 +9,7 @@ def quadprog_solve_qp(P, q, G=None, h=None, C=None, d=None):
     subject to  G x <= h
     subject to  C x  = d
     """
-    qp_G = .5 * (P + P.T)  # make sure P is symmetric
+    qp_G = 0.5 * (P + P.T)  # make sure P is symmetric
     qp_a = -q
     if C is not None:
         if G is not None:
@@ -61,13 +61,13 @@ def solve_lp(q, G=None, h=None, C=None, d=None):
     return quadprog.solve_qp(qp_G, qp_a, qp_C, qp_b, meq)[0]
 
 
-if __name__ == '__main__':
-    A = array([[1., 2., 0.], [-8., 3., 2.], [0., 1., 1.]])
-    b = array([3., 2., 3.])
+if __name__ == "__main__":
+    A = array([[1.0, 2.0, 0.0], [-8.0, 3.0, 2.0], [0.0, 1.0, 1.0]])
+    b = array([3.0, 2.0, 3.0])
     P = dot(A.T, A)
-    q = 2 * dot(b, A).reshape((3, ))
-    G = array([[1., 2., 1.], [2., 0., 1.], [-1., 2., -1.]])
-    h = array([3., 2., -2.]).reshape((3, ))
+    q = 2 * dot(b, A).reshape((3,))
+    G = array([[1.0, 2.0, 1.0], [2.0, 0.0, 1.0], [-1.0, 2.0, -1.0]])
+    h = array([3.0, 2.0, -2.0]).reshape((3,))
     res2 = solve_least_square(A, b, G, h)
     res1 = quadprog_solve_qp(P, q, G, h)
     print(res1)

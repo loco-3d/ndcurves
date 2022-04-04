@@ -18,9 +18,18 @@ def plotControlPoints2D(bez, axes=[0, 1], color="r", ax=None):
         plt.scatter(x, y, color=color)
 
 
-def plotBezier2D(bez, axes=[0, 1], step=100., color="b", showControlPoints=False, ax=None):
-    points1 = np.array([(bez(i / step * (bez.max() - bez.min()) + bez.min())[axes[0]],
-                         bez(i / step * (bez.max() - bez.min()) + bez.min())[axes[1]]) for i in range(int(step) + 1)])
+def plotBezier2D(
+    bez, axes=[0, 1], step=100.0, color="b", showControlPoints=False, ax=None
+):
+    points1 = np.array(
+        [
+            (
+                bez(i / step * (bez.max() - bez.min()) + bez.min())[axes[0]],
+                bez(i / step * (bez.max() - bez.min()) + bez.min())[axes[1]],
+            )
+            for i in range(int(step) + 1)
+        ]
+    )
     x = points1[:, 0]
     y = points1[:, 1]
     if ax is None:
@@ -42,10 +51,19 @@ def plotControlPoints(bez, color="r", ax=None):
     ax.scatter(x, y, z, color=color)
 
 
-def plotBezier(bez, step=100., color="b", linewidth=2., showControlPoints=False, ax=None):
-    points1 = np.array([(bez(i / step * (bez.max() - bez.min()) + bez.min())[0],
-                         bez(i / step * (bez.max() - bez.min()) + bez.min())[1],
-                         bez(i / step * (bez.max() - bez.min()) + bez.min())[2]) for i in range(int(step) + 1)])
+def plotBezier(
+    bez, step=100.0, color="b", linewidth=2.0, showControlPoints=False, ax=None
+):
+    points1 = np.array(
+        [
+            (
+                bez(i / step * (bez.max() - bez.min()) + bez.min())[0],
+                bez(i / step * (bez.max() - bez.min()) + bez.min())[1],
+                bez(i / step * (bez.max() - bez.min()) + bez.min())[2],
+            )
+            for i in range(int(step) + 1)
+        ]
+    )
     x = points1[:, 0]
     y = points1[:, 1]
     z = points1[:, 2]
@@ -58,8 +76,10 @@ def plotBezier(bez, step=100., color="b", linewidth=2., showControlPoints=False,
         plotControlPoints(bez, color=color, ax=ax)
 
 
-if __name__ == '__main__':
-    waypoints = array([[1., 2., 3.], [-4., -5., -6.], [4., 5., 6.], [7., 8., 9.]]).transpose()
+if __name__ == "__main__":
+    waypoints = array(
+        [[1.0, 2.0, 3.0], [-4.0, -5.0, -6.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
+    ).transpose()
     a = bezier(waypoints)
 
     fig = plt.figure()

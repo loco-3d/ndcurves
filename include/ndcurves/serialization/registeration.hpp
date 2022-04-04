@@ -5,11 +5,11 @@
  * \version 0.1
  * \date 27/11/19
  *
- * Boost::serialization need to be aware of all the derived class of the abstract curve_abc,
- * and thier template parameters.
- * Otherwise we cannot serialize a pointer to curve_abc.
- * New class should be added at the end and the order should not change
- * or it will break backward compatibility when deserializing objects.
+ * Boost::serialization need to be aware of all the derived class of the
+ * abstract curve_abc, and thier template parameters. Otherwise we cannot
+ * serialize a pointer to curve_abc. New class should be added at the end and
+ * the order should not change or it will break backward compatibility when
+ * deserializing objects.
  *
  */
 

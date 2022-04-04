@@ -13,14 +13,13 @@
 #ifndef _STRUCT_POLYNOMIAL
 #define _STRUCT_POLYNOMIAL
 
-#include "MathDefs.h"
-
-#include "curve_abc.h"
-
-#include <iostream>
 #include <algorithm>
 #include <functional>
+#include <iostream>
 #include <stdexcept>
+
+#include "MathDefs.h"
+#include "curve_abc.h"
 
 namespace ndcurves {
 /// \class polynomial.
@@ -31,7 +30,8 @@ namespace ndcurves {
 ///
 template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
-          typename T_Point = std::vector<Point, Eigen::aligned_allocator<Point> > >
+          typename T_Point =
+              std::vector<Point, Eigen::aligned_allocator<Point> > >
 struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   typedef Point point_t;
   typedef T_Point t_point_t;
@@ -45,16 +45,17 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
   /* Constructors - destructors */
  public:
-  /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
+  /// \brief Empty constructor. Curve obtained this way can not perform other
+  /// class functions.
   ///
   polynomial() : curve_abc_t(), dim_(0), T_min_(0), T_max_(0) {}
 
   /// \brief Constructor.
-  /// \param coefficients : a reference to an Eigen matrix where each column is a coefficient,
-  /// from the zero order coefficient, up to the highest order. Spline order is given
-  /// by the number of the columns -1.
-  /// \param min  : LOWER bound on interval definition of the curve.
-  /// \param max  : UPPER bound on interval definition of the curve.
+  /// \param coefficients : a reference to an Eigen matrix where each column is
+  /// a coefficient, from the zero order coefficient, up to the highest order.
+  /// Spline order is given by the number of the columns -1. \param min  : LOWER
+  /// bound on interval definition of the curve. \param max  : UPPER bound on
+  /// interval definition of the curve.
   polynomial(const coeff_t& coefficients, const time_t min, const time_t max)
       : curve_abc_t(),
         dim_(coefficients.rows()),
@@ -66,9 +67,10 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
   /// \brief Constructor
-  /// \param coefficients : a container containing all coefficients of the spline, starting
-  ///  with the zero order coefficient, up to the highest order. Spline order is given
-  ///  by the size of the coefficients.
+  /// \param coefficients : a container containing all coefficients of the
+  /// spline, starting
+  ///  with the zero order coefficient, up to the highest order. Spline order is
+  ///  given by the size of the coefficients.
   /// \param min  : LOWER bound on interval definition of the spline.
   /// \param max  : UPPER bound on interval definition of the spline.
   polynomial(const T_Point& coefficients, const time_t min, const time_t max)
@@ -82,14 +84,15 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
   /// \brief Constructor.
-  /// \param zeroOrderCoefficient : an iterator pointing to the first element of a structure containing the
-  /// coefficients
+  /// \param zeroOrderCoefficient : an iterator pointing to the first element of
+  /// a structure containing the coefficients
   ///  it corresponds to the zero degree coefficient.
-  /// \param out   : an iterator pointing to the last element of a structure ofcoefficients.
-  /// \param min   : LOWER bound on interval definition of the spline.
-  /// \param max   : UPPER bound on interval definition of the spline.
+  /// \param out   : an iterator pointing to the last element of a structure
+  /// ofcoefficients. \param min   : LOWER bound on interval definition of the
+  /// spline. \param max   : UPPER bound on interval definition of the spline.
   template <typename In>
-  polynomial(In zeroOrderCoefficient, In out, const time_t min, const time_t max)
+  polynomial(In zeroOrderCoefficient, In out, const time_t min,
+             const time_t max)
       : curve_abc_t(),
         dim_(zeroOrderCoefficient->size()),
         coefficients_(init_coeffs(zeroOrderCoefficient, out)),
@@ -100,14 +103,20 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
   ///
-  /// \brief Constructor from boundary condition with C0 : create a polynomial that connect exactly init and end (order
-  /// 1) \param init the initial point of the curve \param end the final point of the curve \param min   : LOWER bound
-  /// on interval definition of the spline. \param max   : UPPER bound on interval definition of the spline.
+  /// \brief Constructor from boundary condition with C0 : create a polynomial
+  /// that connect exactly init and end (order 1) \param init the initial point
+  /// of the curve \param end the final point of the curve \param min   : LOWER
+  /// bound on interval definition of the spline. \param max   : UPPER bound on
+  /// interval definition of the spline.
   ///
-  polynomial(const Point& init, const Point& end, const time_t min, const time_t max)
+  polynomial(const Point& init, const Point& end, const time_t min,
+             const time_t max)
       : dim_(init.size()), degree_(1), T_min_(min), T_max_(max) {
-    if (T_min_ >= T_max_) throw std::invalid_argument("T_min must be strictly lower than T_max");
-    if (init.size() != end.size()) throw std::invalid_argument("init and end points must have the same dimensions.");
+    if (T_min_ >= T_max_)
+      throw std::invalid_argument("T_min must be strictly lower than T_max");
+    if (init.size() != end.size())
+      throw std::invalid_argument(
+          "init and end points must have the same dimensions.");
     t_point_t coeffs;
     coeffs.push_back(init);
     coeffs.push_back((end - init) / (max - min));
@@ -117,37 +126,43 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
   ///
   /// \brief Constructor from boundary condition with C1 :
-  /// create a polynomial that connect exactly init and end and thier first order derivatives(order 3)
-  /// \param init the initial point of the curve
+  /// create a polynomial that connect exactly init and end and thier first
+  /// order derivatives(order 3) \param init the initial point of the curve
   /// \param d_init the initial value of the derivative of the curve
   /// \param end the final point of the curve
   /// \param d_end the final value of the derivative of the curve
   /// \param min   : LOWER bound on interval definition of the spline.
   /// \param max   : UPPER bound on interval definition of the spline.
   ///
-  polynomial(const Point& init, const Point& d_init, const Point& end, const Point& d_end, const time_t min,
-             const time_t max)
+  polynomial(const Point& init, const Point& d_init, const Point& end,
+             const Point& d_end, const time_t min, const time_t max)
       : dim_(init.size()), degree_(3), T_min_(min), T_max_(max) {
-    if (T_min_ >= T_max_) throw std::invalid_argument("T_min must be strictly lower than T_max");
-    if (init.size() != end.size()) throw std::invalid_argument("init and end points must have the same dimensions.");
+    if (T_min_ >= T_max_)
+      throw std::invalid_argument("T_min must be strictly lower than T_max");
+    if (init.size() != end.size())
+      throw std::invalid_argument(
+          "init and end points must have the same dimensions.");
     if (init.size() != d_init.size())
-      throw std::invalid_argument("init and d_init points must have the same dimensions.");
+      throw std::invalid_argument(
+          "init and d_init points must have the same dimensions.");
     if (init.size() != d_end.size())
-      throw std::invalid_argument("init and d_end points must have the same dimensions.");
-    /* the coefficients [c0 c1 c2 c3] are found by solving the following system of equation
-    (found from the boundary conditions) :
-    [1  0  0   0   ]   [c0]   [ init ]
-    [1  T  T^2 T^3 ] x [c1] = [ end  ]
-    [0  1  0   0   ]   [c2]   [d_init]
+      throw std::invalid_argument(
+          "init and d_end points must have the same dimensions.");
+    /* the coefficients [c0 c1 c2 c3] are found by solving the following system
+    of equation (found from the boundary conditions) : [1  0  0   0   ]   [c0]
+    [ init ] [1  T  T^2 T^3 ] x [c1] = [ end  ] [0  1  0   0   ]   [c2] [d_init]
     [0  1  2T  3T^2]   [c3]   [d_end ]
     */
     double T = max - min;
     Eigen::Matrix<double, 4, 4> m;
-    m << 1., 0, 0, 0, 1., T, T * T, T * T * T, 0, 1., 0, 0, 0, 1., 2. * T, 3. * T * T;
+    m << 1., 0, 0, 0, 1., T, T * T, T * T * T, 0, 1., 0, 0, 0, 1., 2. * T,
+        3. * T * T;
     Eigen::Matrix<double, 4, 4> m_inv = m.inverse();
-    Eigen::Matrix<double, 4, 1> bc;                    // boundary condition vector
-    coefficients_ = coeff_t::Zero(dim_, degree_ + 1);  // init coefficient matrix with the right size
-    for (size_t i = 0; i < dim_; ++i) {                // for each dimension, solve the boundary condition problem :
+    Eigen::Matrix<double, 4, 1> bc;  // boundary condition vector
+    coefficients_ = coeff_t::Zero(
+        dim_, degree_ + 1);  // init coefficient matrix with the right size
+    for (size_t i = 0; i < dim_;
+         ++i) {  // for each dimension, solve the boundary condition problem :
       bc[0] = init[i];
       bc[1] = end[i];
       bc[2] = d_init[i];
@@ -159,9 +174,9 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
   ///
   /// \brief Constructor from boundary condition with C2 :
-  /// create a polynomial that connect exactly init and end and thier first and second order derivatives(order 5)
-  /// \param init the initial point of the curve
-  /// \param d_init the initial value of the derivative of the curve
+  /// create a polynomial that connect exactly init and end and thier first and
+  /// second order derivatives(order 5) \param init the initial point of the
+  /// curve \param d_init the initial value of the derivative of the curve
   /// \param d_init the initial value of the second derivative of the curve
   /// \param end the final point of the curve
   /// \param d_end the final value of the derivative of the curve
@@ -169,36 +184,46 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   /// \param min   : LOWER bound on interval definition of the spline.
   /// \param max   : UPPER bound on interval definition of the spline.
   ///
-  polynomial(const Point& init, const Point& d_init, const Point& dd_init, const Point& end, const Point& d_end,
-             const Point& dd_end, const time_t min, const time_t max)
+  polynomial(const Point& init, const Point& d_init, const Point& dd_init,
+             const Point& end, const Point& d_end, const Point& dd_end,
+             const time_t min, const time_t max)
       : dim_(init.size()), degree_(5), T_min_(min), T_max_(max) {
-    if (T_min_ >= T_max_) throw std::invalid_argument("T_min must be strictly lower than T_max");
-    if (init.size() != end.size()) throw std::invalid_argument("init and end points must have the same dimensions.");
+    if (T_min_ >= T_max_)
+      throw std::invalid_argument("T_min must be strictly lower than T_max");
+    if (init.size() != end.size())
+      throw std::invalid_argument(
+          "init and end points must have the same dimensions.");
     if (init.size() != d_init.size())
-      throw std::invalid_argument("init and d_init points must have the same dimensions.");
+      throw std::invalid_argument(
+          "init and d_init points must have the same dimensions.");
     if (init.size() != d_end.size())
-      throw std::invalid_argument("init and d_end points must have the same dimensions.");
+      throw std::invalid_argument(
+          "init and d_end points must have the same dimensions.");
     if (init.size() != dd_init.size())
-      throw std::invalid_argument("init and dd_init points must have the same dimensions.");
+      throw std::invalid_argument(
+          "init and dd_init points must have the same dimensions.");
     if (init.size() != dd_end.size())
-      throw std::invalid_argument("init and dd_end points must have the same dimensions.");
-    /* the coefficients [c0 c1 c2 c3 c4 c5] are found by solving the following system of equation
-    (found from the boundary conditions) :
-    [1  0  0   0    0     0    ]   [c0]   [ init  ]
-    [1  T  T^2 T^3  T^4   T^5  ]   [c1]   [ end   ]
-    [0  1  0   0    0     0    ]   [c2]   [d_init ]
-    [0  1  2T  3T^2 4T^3  5T^4 ] x [c3] = [d_end  ]
-    [0  0  2   0    0     0    ]   [c4]   [dd_init]
-    [0  0  2   6T   12T^2 20T^3]   [c5]   [dd_end ]
+      throw std::invalid_argument(
+          "init and dd_end points must have the same dimensions.");
+    /* the coefficients [c0 c1 c2 c3 c4 c5] are found by solving the following
+    system of equation (found from the boundary conditions) : [1  0  0   0    0
+    0    ]   [c0]   [ init  ] [1  T  T^2 T^3  T^4   T^5  ]   [c1]   [ end   ] [0
+    1  0   0    0     0    ]   [c2]   [d_init ] [0  1  2T  3T^2 4T^3  5T^4 ] x
+    [c3] = [d_end  ] [0  0  2   0    0     0    ]   [c4]   [dd_init] [0  0  2 6T
+    12T^2 20T^3]   [c5]   [dd_end ]
     */
     double T = max - min;
     Eigen::Matrix<double, 6, 6> m;
-    m << 1., 0, 0, 0, 0, 0, 1., T, T * T, pow(T, 3), pow(T, 4), pow(T, 5), 0, 1., 0, 0, 0, 0, 0, 1., 2. * T,
-        3. * T * T, 4. * pow(T, 3), 5. * pow(T, 4), 0, 0, 2, 0, 0, 0, 0, 0, 2, 6. * T, 12. * T * T, 20. * pow(T, 3);
+    m << 1., 0, 0, 0, 0, 0, 1., T, T * T, pow(T, 3), pow(T, 4), pow(T, 5), 0,
+        1., 0, 0, 0, 0, 0, 1., 2. * T, 3. * T * T, 4. * pow(T, 3),
+        5. * pow(T, 4), 0, 0, 2, 0, 0, 0, 0, 0, 2, 6. * T, 12. * T * T,
+        20. * pow(T, 3);
     Eigen::Matrix<double, 6, 6> m_inv = m.inverse();
-    Eigen::Matrix<double, 6, 1> bc;                    // boundary condition vector
-    coefficients_ = coeff_t::Zero(dim_, degree_ + 1);  // init coefficient matrix with the right size
-    for (size_t i = 0; i < dim_; ++i) {                // for each dimension, solve the boundary condition problem :
+    Eigen::Matrix<double, 6, 1> bc;  // boundary condition vector
+    coefficients_ = coeff_t::Zero(
+        dim_, degree_ + 1);  // init coefficient matrix with the right size
+    for (size_t i = 0; i < dim_;
+         ++i) {  // for each dimension, solve the boundary condition problem :
       bc[0] = init[i];
       bc[1] = end[i];
       bc[2] = d_init[i];
@@ -223,27 +248,33 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   // polynomial& operator=(const polynomial& other);
 
   /**
-   * @brief MinimumJerk Build a polynomial curve connecting p_init to p_final minimizing the time integral of the
-   * squared jerk with a zero initial and final velocity and acceleration
+   * @brief MinimumJerk Build a polynomial curve connecting p_init to p_final
+   * minimizing the time integral of the squared jerk with a zero initial and
+   * final velocity and acceleration
    * @param p_init the initial point
    * @param p_final the final point
    * @param t_min initial time
    * @param t_max final time
    * @return the polynomial curve
    */
-  static polynomial_t MinimumJerk(const point_t& p_init, const point_t& p_final, const time_t t_min = 0.,
+  static polynomial_t MinimumJerk(const point_t& p_init, const point_t& p_final,
+                                  const time_t t_min = 0.,
                                   const time_t t_max = 1.) {
-    if (t_min > t_max) throw std::invalid_argument("final time should be superior or equal to initial time.");
+    if (t_min > t_max)
+      throw std::invalid_argument(
+          "final time should be superior or equal to initial time.");
     const size_t dim(p_init.size());
     if (static_cast<size_t>(p_final.size()) != dim)
-      throw std::invalid_argument("Initial and final points must have the same dimension.");
+      throw std::invalid_argument(
+          "Initial and final points must have the same dimension.");
     const double T = t_max - t_min;
     const double T2 = T * T;
     const double T3 = T2 * T;
     const double T4 = T3 * T;
     const double T5 = T4 * T;
 
-    coeff_t coeffs = coeff_t::Zero(dim, 6);  // init coefficient matrix with the right size
+    coeff_t coeffs =
+        coeff_t::Zero(dim, 6);  // init coefficient matrix with the right size
     coeffs.col(0) = p_init;
     coeffs.col(3) = 10 * (p_final - p_init) / T3;
     coeffs.col(4) = -15 * (p_final - p_init) / T4;
@@ -274,7 +305,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     check_if_not_empty();
     if ((t < T_min_ || t > T_max_) && Safe) {
       throw std::invalid_argument(
-          "error in polynomial : time t to evaluate should be in range [Tmin, Tmax] of the curve");
+          "error in polynomial : time t to evaluate should be in range [Tmin, "
+          "Tmax] of the curve");
     }
     time_t const dt(t - T_min_);
     point_t h = coefficients_.col(degree_);
@@ -286,19 +318,25 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
   /**
    * @brief isApprox check if other and *this are approximately equals.
-   * Only two curves of the same class can be approximately equals, for comparison between different type of curves see
-   * isEquivalent
+   * Only two curves of the same class can be approximately equals, for
+   * comparison between different type of curves see isEquivalent
    * @param other the other curve to check
-   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @param prec the precision treshold, default
+   * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  bool isApprox(const polynomial_t& other, const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
-    return ndcurves::isApprox<num_t>(T_min_, other.min()) && ndcurves::isApprox<num_t>(T_max_, other.max()) &&
-           dim_ == other.dim() && degree_ == other.degree() && coefficients_.isApprox(other.coefficients_, prec);
+  bool isApprox(
+      const polynomial_t& other,
+      const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    return ndcurves::isApprox<num_t>(T_min_, other.min()) &&
+           ndcurves::isApprox<num_t>(T_max_, other.max()) &&
+           dim_ == other.dim() && degree_ == other.degree() &&
+           coefficients_.isApprox(other.coefficients_, prec);
   }
 
-  virtual bool isApprox(const curve_abc_t* other,
-                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+  virtual bool isApprox(
+      const curve_abc_t* other,
+      const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
     const polynomial_t* other_cast = dynamic_cast<const polynomial_t*>(other);
     if (other_cast)
       return isApprox(*other_cast, prec);
@@ -306,19 +344,25 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
       return false;
   }
 
-  virtual bool operator==(const polynomial_t& other) const { return isApprox(other); }
+  virtual bool operator==(const polynomial_t& other) const {
+    return isApprox(other);
+  }
 
-  virtual bool operator!=(const polynomial_t& other) const { return !(*this == other); }
+  virtual bool operator!=(const polynomial_t& other) const {
+    return !(*this == other);
+  }
 
   ///  \brief Evaluation of the derivative of order N of spline at time t.
   ///  \param t : the time when to evaluate the spline.
   ///  \param order : order of derivative.
-  ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative spline at time t.
+  ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ point corresponding on derivative
+  ///  spline at time t.
   virtual point_t derivate(const time_t t, const std::size_t order) const {
     check_if_not_empty();
     if ((t < T_min_ || t > T_max_) && Safe) {
       throw std::invalid_argument(
-          "error in polynomial : time t to evaluate derivative should be in range [Tmin, Tmax] of the curve");
+          "error in polynomial : time t to evaluate derivative should be in "
+          "range [Tmin, Tmax] of the curve");
     }
     time_t const dt(t - T_min_);
     time_t cdt(1);
@@ -341,7 +385,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
-  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the
+  ///  curve.
   polynomial_t* compute_derivate_ptr(const std::size_t order) const {
     return new polynomial_t(compute_derivate(order));
   }
@@ -377,7 +422,9 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
   void check_if_not_empty() const {
     if (coefficients_.size() == 0) {
-      throw std::runtime_error("Error in polynomial : there is no coefficients set / did you use empty constructor ?");
+      throw std::runtime_error(
+          "Error in polynomial : there is no coefficients set / did you use "
+          "empty constructor ?");
     }
   }
   /*Operations*/
@@ -402,11 +449,13 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     assert_operator_compatible(p1);
     if (p1.degree() > degree()) {
       polynomial_t::coeff_t res = p1.coeff();
-      res.block(0, 0, coefficients_.rows(), coefficients_.cols()) += coefficients_;
+      res.block(0, 0, coefficients_.rows(), coefficients_.cols()) +=
+          coefficients_;
       coefficients_ = res;
       degree_ = p1.degree();
     } else {
-      coefficients_.block(0, 0, p1.coeff().rows(), p1.coeff().cols()) += p1.coeff();
+      coefficients_.block(0, 0, p1.coeff().rows(), p1.coeff().cols()) +=
+          p1.coeff();
     }
     return *this;
   }
@@ -415,11 +464,13 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     assert_operator_compatible(p1);
     if (p1.degree() > degree()) {
       polynomial_t::coeff_t res = -p1.coeff();
-      res.block(0, 0, coefficients_.rows(), coefficients_.cols()) += coefficients_;
+      res.block(0, 0, coefficients_.rows(), coefficients_.cols()) +=
+          coefficients_;
       coefficients_ = res;
       degree_ = p1.degree();
     } else {
-      coefficients_.block(0, 0, p1.coeff().rows(), p1.coeff().cols()) -= p1.coeff();
+      coefficients_.block(0, 0, p1.coeff().rows(), p1.coeff().cols()) -=
+          p1.coeff();
     }
     return *this;
   }
@@ -444,15 +495,19 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     return *this;
   }
 
-  ///  \brief Compute the cross product of the current polynomial by another polynomial.
+  ///  \brief Compute the cross product of the current polynomial by another
+  ///  polynomial.
   /// The cross product p1Xp2 of 2 polynomials p1 and p2 is defined such that
   /// forall t, p1Xp2(t) = p1(t) X p2(t), with X designing the cross product.
   /// This method of course only makes sense for dimension 3 polynomials.
   ///  \param pOther other polynomial to compute the cross product with.
-  ///  \return a new polynomial defining the cross product between this and pother
+  ///  \return a new polynomial defining the cross product between this and
+  ///  pother
   polynomial_t cross(const polynomial_t& pOther) const {
     assert_operator_compatible(pOther);
-    if (dim() != 3) throw std::invalid_argument("Can't perform cross product on polynomials with dimensions != 3 ");
+    if (dim() != 3)
+      throw std::invalid_argument(
+          "Can't perform cross product on polynomials with dimensions != 3 ");
     std::size_t new_degree = degree() + pOther.degree();
     coeff_t nCoeffs = Eigen::MatrixXd::Zero(3, new_degree + 1);
     Eigen::Vector3d currentVec;
@@ -466,20 +521,25 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     }
     // remove last degrees is they are equal to 0
     long final_degree = new_degree;
-    while (nCoeffs.col(final_degree).norm() <= ndcurves::MARGIN && final_degree > 0) {
+    while (nCoeffs.col(final_degree).norm() <= ndcurves::MARGIN &&
+           final_degree > 0) {
       --final_degree;
     }
     return polynomial_t(nCoeffs.leftCols(final_degree + 1), min(), max());
   }
 
-  ///  \brief Compute the cross product of the current polynomial p by a point point.
+  ///  \brief Compute the cross product of the current polynomial p by a point
+  ///  point.
   /// The cross product pXpoint of is defined such that
   /// forall t, pXpoint(t) = p(t) X point, with X designing the cross product.
   /// This method of course only makes sense for dimension 3 polynomials.
   ///  \param point point to compute the cross product with.
-  ///  \return a new polynomial defining the cross product between this and point
+  ///  \return a new polynomial defining the cross product between this and
+  ///  point
   polynomial_t cross(const polynomial_t::point_t& point) const {
-    if (dim() != 3) throw std::invalid_argument("Can't perform cross product on polynomials with dimensions != 3 ");
+    if (dim() != 3)
+      throw std::invalid_argument(
+          "Can't perform cross product on polynomials with dimensions != 3 ");
     coeff_t nCoeffs = coefficients_;
     Eigen::Vector3d currentVec;
     Eigen::Vector3d pointVec = point;
@@ -489,7 +549,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     }
     // remove last degrees is they are equal to 0
     long final_degree = degree();
-    while (nCoeffs.col(final_degree).norm() <= ndcurves::MARGIN && final_degree > 0) {
+    while (nCoeffs.col(final_degree).norm() <= ndcurves::MARGIN &&
+           final_degree > 0) {
       --final_degree;
     }
     return polynomial_t(nCoeffs.leftCols(final_degree + 1), min(), max());
@@ -504,19 +565,23 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 
  private:
   void assert_operator_compatible(const polynomial_t& other) const {
-    if ((fabs(min() - other.min()) > ndcurves::MARGIN) || (fabs(max() - other.max()) > ndcurves::MARGIN) ||
+    if ((fabs(min() - other.min()) > ndcurves::MARGIN) ||
+        (fabs(max() - other.max()) > ndcurves::MARGIN) ||
         dim() != other.dim()) {
       throw std::invalid_argument(
-          "Can't perform base operation (+ - ) on two polynomials with different time ranges or different dimensions");
+          "Can't perform base operation (+ - ) on two polynomials with "
+          "different time ranges or different dimensions");
     }
   }
 
   template <typename In>
   coeff_t init_coeffs(In zeroOrderCoefficient, In highestOrderCoefficient) {
-    std::size_t size = std::distance(zeroOrderCoefficient, highestOrderCoefficient);
+    std::size_t size =
+        std::distance(zeroOrderCoefficient, highestOrderCoefficient);
     coeff_t res = coeff_t(dim_, size);
     int i = 0;
-    for (In cit = zeroOrderCoefficient; cit != highestOrderCoefficient; ++cit, ++i) {
+    for (In cit = zeroOrderCoefficient; cit != highestOrderCoefficient;
+         ++cit, ++i) {
       res.col(i) = *cit;
     }
     return res;
@@ -543,35 +608,40 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
 };  // class polynomial
 
 template <typename T, typename N, bool S, typename P, typename TP>
-polynomial<T, N, S, P, TP> operator+(const polynomial<T, N, S, P, TP>& p1, const polynomial<T, N, S, P, TP>& p2) {
+polynomial<T, N, S, P, TP> operator+(const polynomial<T, N, S, P, TP>& p1,
+                                     const polynomial<T, N, S, P, TP>& p2) {
   polynomial<T, N, S, P, TP> res(p1);
   return res += p2;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP>
-polynomial<T, N, S, P, TP> operator+(const polynomial<T, N, S, P, TP>& p1,
-                                     const typename polynomial<T, N, S, P, TP>::point_t& point) {
+polynomial<T, N, S, P, TP> operator+(
+    const polynomial<T, N, S, P, TP>& p1,
+    const typename polynomial<T, N, S, P, TP>::point_t& point) {
   polynomial<T, N, S, P, TP> res(p1);
   return res += point;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP>
-polynomial<T, N, S, P, TP> operator+(const typename polynomial<T, N, S, P, TP>::point_t& point,
-                                     const polynomial<T, N, S, P, TP>& p1) {
+polynomial<T, N, S, P, TP> operator+(
+    const typename polynomial<T, N, S, P, TP>::point_t& point,
+    const polynomial<T, N, S, P, TP>& p1) {
   polynomial<T, N, S, P, TP> res(p1);
   return res += point;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP>
-polynomial<T, N, S, P, TP> operator-(const polynomial<T, N, S, P, TP>& p1,
-                                     const typename polynomial<T, N, S, P, TP>::point_t& point) {
+polynomial<T, N, S, P, TP> operator-(
+    const polynomial<T, N, S, P, TP>& p1,
+    const typename polynomial<T, N, S, P, TP>::point_t& point) {
   polynomial<T, N, S, P, TP> res(p1);
   return res -= point;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP>
-polynomial<T, N, S, P, TP> operator-(const typename polynomial<T, N, S, P, TP>::point_t& point,
-                                     const polynomial<T, N, S, P, TP>& p1) {
+polynomial<T, N, S, P, TP> operator-(
+    const typename polynomial<T, N, S, P, TP>::point_t& point,
+    const polynomial<T, N, S, P, TP>& p1) {
   polynomial<T, N, S, P, TP> res(-p1);
   return res += point;
 }
@@ -583,31 +653,37 @@ polynomial<T, N, S, P, TP> operator-(const polynomial<T, N, S, P, TP>& p1) {
 }
 
 template <typename T, typename N, bool S, typename P, typename TP>
-polynomial<T, N, S, P, TP> operator-(const polynomial<T, N, S, P, TP>& p1, const polynomial<T, N, S, P, TP>& p2) {
+polynomial<T, N, S, P, TP> operator-(const polynomial<T, N, S, P, TP>& p1,
+                                     const polynomial<T, N, S, P, TP>& p2) {
   polynomial<T, N, S, P, TP> res(p1);
   return res -= p2;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP>
-polynomial<T, N, S, P, TP> operator/(const polynomial<T, N, S, P, TP>& p1, const double k) {
+polynomial<T, N, S, P, TP> operator/(const polynomial<T, N, S, P, TP>& p1,
+                                     const double k) {
   polynomial<T, N, S, P, TP> res(p1);
   return res /= k;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP>
-polynomial<T, N, S, P, TP> operator*(const polynomial<T, N, S, P, TP>& p1, const double k) {
+polynomial<T, N, S, P, TP> operator*(const polynomial<T, N, S, P, TP>& p1,
+                                     const double k) {
   polynomial<T, N, S, P, TP> res(p1);
   return res *= k;
 }
 
 template <typename T, typename N, bool S, typename P, typename TP>
-polynomial<T, N, S, P, TP> operator*(const double k, const polynomial<T, N, S, P, TP>& p1) {
+polynomial<T, N, S, P, TP> operator*(const double k,
+                                     const polynomial<T, N, S, P, TP>& p1) {
   polynomial<T, N, S, P, TP> res(p1);
   return res *= k;
 }
 
 }  // namespace ndcurves
 
-DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point, typename T_Point),
-                              SINGLE_ARG(ndcurves::polynomial<Time, Numeric, Safe, Point, T_Point>))
+DEFINE_CLASS_TEMPLATE_VERSION(
+    SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
+               typename T_Point),
+    SINGLE_ARG(ndcurves::polynomial<Time, Numeric, Safe, Point, T_Point>))
 #endif  //_STRUCT_POLYNOMIAL

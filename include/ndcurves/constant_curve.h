@@ -13,22 +13,28 @@
 
 namespace ndcurves {
 /// \class constant_curve.
-/// \brief Represents a constant_curve curve, always returning the same value and a null derivative
+/// \brief Represents a constant_curve curve, always returning the same value
+/// and a null derivative
 ///
 template <typename Time = double, typename Numeric = Time, bool Safe = false,
-          typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>, typename Point_derivate = Point>
-struct constant_curve : public curve_abc<Time, Numeric, Safe, Point, Point_derivate> {
+          typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
+          typename Point_derivate = Point>
+struct constant_curve
+    : public curve_abc<Time, Numeric, Safe, Point, Point_derivate> {
   typedef Point point_t;
   typedef Point_derivate point_derivate_t;
   typedef Time time_t;
   typedef Numeric num_t;
-  typedef constant_curve<Time, Numeric, Safe, Point, Point_derivate> constant_curve_t;
+  typedef constant_curve<Time, Numeric, Safe, Point, Point_derivate>
+      constant_curve_t;
   typedef constant_curve<Time, Numeric, Safe, Point_derivate> curve_derivate_t;
-  typedef curve_abc<Time, Numeric, Safe, point_t, Point_derivate> curve_abc_t;  // parent class
+  typedef curve_abc<Time, Numeric, Safe, point_t, Point_derivate>
+      curve_abc_t;  // parent class
 
   /* Constructors - destructors */
  public:
-  /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
+  /// \brief Empty constructor. Curve obtained this way can not perform other
+  /// class functions.
   ///
   constant_curve() : T_min_(0), T_max_(0), dim_(0) {}
 
@@ -37,17 +43,22 @@ struct constant_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deriv
   /// \param T_min   : lower bound of the time interval
   /// \param T_max   : upper bound of the time interval
   ///
-  constant_curve(const Point& value, const time_t T_min = 0., const time_t T_max = std::numeric_limits<time_t>::max())
+  constant_curve(const Point& value, const time_t T_min = 0.,
+                 const time_t T_max = std::numeric_limits<time_t>::max())
       : value_(value), T_min_(T_min), T_max_(T_max), dim_(value.size()) {
     if (Safe && T_min_ > T_max_) {
-      throw std::invalid_argument("can't create constant curve: min bound is higher than max bound");
+      throw std::invalid_argument(
+          "can't create constant curve: min bound is higher than max bound");
     }
   }
 
   /// \brief Copy constructor
   /// \param other
   constant_curve(const constant_curve_t& other)
-      : value_(other.value_), T_min_(other.T_min_), T_max_(other.T_max_), dim_(other.dim_) {}
+      : value_(other.value_),
+        T_min_(other.T_min_),
+        T_max_(other.T_max_),
+        dim_(other.dim_) {}
 
   /// \brief Destructor.
   virtual ~constant_curve() {}
@@ -60,14 +71,15 @@ struct constant_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deriv
   virtual point_t operator()(const time_t t) const {
     if (Safe && (t < T_min_ || t > T_max_)) {
       throw std::invalid_argument(
-          "error in constant curve : time t to evaluate should be in range [Tmin, Tmax] of the curve");
+          "error in constant curve : time t to evaluate should be in range "
+          "[Tmin, Tmax] of the curve");
     }
     return value_;
   }
 
   ///  \brief Compute the derived curve at order N.
-  ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
-  ///  \param order : order of derivative.
+  ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier
+  ///  curve of parametric equation x(t). \param order : order of derivative.
   ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
   curve_derivate_t compute_derivate() const {
     size_t derivate_size;
@@ -82,7 +94,8 @@ struct constant_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deriv
 
   ///  \brief Compute the derived curve at order N.
   ///  \param order : order of derivative.
-  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the
+  ///  curve.
   virtual curve_derivate_t* compute_derivate_ptr(const std::size_t) const {
     return new curve_derivate_t(compute_derivate());
   }
@@ -90,11 +103,13 @@ struct constant_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deriv
   /// \brief Evaluate the derivative of order N of curve at time t.
   /// \param t : time when to evaluate the spline.
   /// \param order : order of derivative.
-  /// \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
+  /// \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative
+  /// curve of order N at time t.
   virtual point_derivate_t derivate(const time_t t, const std::size_t) const {
     if (Safe && (t < T_min_ || t > T_max_)) {
       throw std::invalid_argument(
-          "error in constant curve : time t to derivate should be in range [Tmin, Tmax] of the curve");
+          "error in constant curve : time t to derivate should be in range "
+          "[Tmin, Tmax] of the curve");
     }
     size_t derivate_size;
     if (point_derivate_t::RowsAtCompileTime == Eigen::Dynamic) {
@@ -106,31 +121,40 @@ struct constant_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deriv
   }
 
   /**
-   * @brief isApprox check if other and *this are approximately equals given a precision treshold
-   * Only two curves of the same class can be approximately equals,
-   * for comparison between different type of curves see isEquivalent.
+   * @brief isApprox check if other and *this are approximately equals given a
+   * precision treshold Only two curves of the same class can be approximately
+   * equals, for comparison between different type of curves see isEquivalent.
    * @param other the other curve to check
-   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @param prec the precision treshold, default
+   * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  virtual bool isApprox(const constant_curve_t& other,
-                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
-    return ndcurves::isApprox<num_t>(T_min_, other.min()) && ndcurves::isApprox<num_t>(T_max_, other.max()) &&
+  virtual bool isApprox(
+      const constant_curve_t& other,
+      const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    return ndcurves::isApprox<num_t>(T_min_, other.min()) &&
+           ndcurves::isApprox<num_t>(T_max_, other.max()) &&
            dim_ == other.dim() && value_.isApprox(other.value_, prec);
   }
 
-  virtual bool isApprox(const curve_abc_t* other,
-                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
-    const constant_curve_t* other_cast = dynamic_cast<const constant_curve_t*>(other);
+  virtual bool isApprox(
+      const curve_abc_t* other,
+      const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    const constant_curve_t* other_cast =
+        dynamic_cast<const constant_curve_t*>(other);
     if (other_cast)
       return isApprox(*other_cast, prec);
     else
       return false;
   }
 
-  virtual bool operator==(const constant_curve_t& other) const { return isApprox(other); }
+  virtual bool operator==(const constant_curve_t& other) const {
+    return isApprox(other);
+  }
 
-  virtual bool operator!=(const constant_curve_t& other) const { return !(*this == other); }
+  virtual bool operator!=(const constant_curve_t& other) const {
+    return !(*this == other);
+  }
 
   /*Helpers*/
   /// \brief Get dimension of curve.
@@ -171,8 +195,10 @@ struct constant_curve : public curve_abc<Time, Numeric, Safe, Point, Point_deriv
 };  // struct constant_curve
 }  // namespace ndcurves
 
-DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
-                                         typename Point_derivate),
-                              SINGLE_ARG(ndcurves::constant_curve<Time, Numeric, Safe, Point, Point_derivate>))
+DEFINE_CLASS_TEMPLATE_VERSION(
+    SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
+               typename Point_derivate),
+    SINGLE_ARG(
+        ndcurves::constant_curve<Time, Numeric, Safe, Point, Point_derivate>))
 
 #endif  // _CLASS_CONSTANTCURVE

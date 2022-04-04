@@ -19,23 +19,23 @@ uuid.uuid4().hex.upper()[0:6]
 
 # ####################### generate problems ########################
 def genBezierInput(numvars=3):
-    valDep = array([np.random.uniform(0., 1.), np.random.uniform(0., 5.), 0.])
-    valEnd = array([np.random.uniform(5., 10.), np.random.uniform(0., 5.), 0.])
-    return varBezier([valDep] + ["" for _ in range(numvars)] + [valEnd], 1.)
+    valDep = array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 5.0), 0.0])
+    valEnd = array([np.random.uniform(5.0, 10.0), np.random.uniform(0.0, 5.0), 0.0])
+    return varBezier([valDep] + ["" for _ in range(numvars)] + [valEnd], 1.0)
 
 
 def genSplit(numCurves):
     splits = []
-    lastval = np.random.uniform(0., 1.)
+    lastval = np.random.uniform(0.0, 1.0)
     for i in range(numCurves):
         splits += [lastval]
-        lastval += np.random.uniform(0., 1.)
+        lastval += np.random.uniform(0.0, 1.0)
     return [el / lastval for el in splits[:-1]]
 
 
 def getRightMostLine(ptList):
-    pt1 = array([0., 0., 0.])
-    pt2 = array([0., 0., 0.])
+    pt1 = array([0.0, 0.0, 0.0])
+    pt2 = array([0.0, 0.0, 0.0])
     for pt in ptList:
         if pt[0] > pt1[0]:
             pt1 = pt
@@ -57,7 +57,7 @@ def getLineFromSegment(line):
     a = line[0]
     b = line[1]
     c = a.copy()
-    c[2] = 1.
+    c[2] = 1.0
     normal = cross((b - a), (c - a))
     normal /= norm(normal)
     # get inequality
@@ -68,10 +68,10 @@ def getLineFromSegment(line):
 
 def computeTrajectory(bezVar, splits, save, filename=uuid.uuid4().hex.upper()[0:6]):
     global idxFile
-    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+    colors = ["b", "g", "r", "c", "m", "y", "k", "w"]
     subs = bezVar.split(splits)
     # generate random constraints for each line
-    line_current = [array([1., 1., 0.]), array([0., 1., 0.])]
+    line_current = [array([1.0, 1.0, 0.0]), array([0.0, 1.0, 0.0])]
     # qp vars
     P = accelerationcost(bezVar)[0]
     P = P + identity(P.shape[0]) * 0.0001
@@ -80,9 +80,9 @@ def computeTrajectory(bezVar, splits, save, filename=uuid.uuid4().hex.upper()[0:
     G = zeros([2, q.shape[0]])
     h = zeros(2)
     G[0, -1] = 1
-    h[0] = 1.
+    h[0] = 1.0
     G[1, -1] = -1
-    h[1] = 0.
+    h[1] = 0.0
     dimExtra = 0
     for i, bez in enumerate(subs):
         color = colors[i]
