@@ -2,7 +2,7 @@ NDCurves
 ===================
 
 [![Pipeline status](https://gitlab.laas.fr/loco-3d/ndcurves/badges/master/pipeline.svg)](https://gitlab.laas.fr/loco-3d/ndcurves/commits/master)
-[![Coverage report](https://gitlab.laas.fr/loco-3d/ndcurves/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/loco-3d/ndcurves/master/coverage/)
+[![Coverage report](https://gitlab.laas.fr/loco-3d/ndcurves/badges/master/coverage.svg?job=doc-coverage)](https://gepettoweb.laas.fr/doc/loco-3d/ndcurves/master/coverage/)
 [![PyPI version](https://badge.fury.io/py/ndcurves.svg)](https://pypi.org/project/ndcurves)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/loco-3d/ndcurves/master.svg)](https://results.pre-commit.ci/latest/github/loco-3d/ndcurves)
