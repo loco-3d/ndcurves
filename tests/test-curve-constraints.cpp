@@ -1,8 +1,9 @@
 #define BOOST_TEST_MODULE test_curve_constraints
 
-#include "ndcurves/fwd.h"
-#include "ndcurves/bezier_curve.h"
 #include <boost/test/included/unit_test.hpp>
+
+#include "ndcurves/bezier_curve.h"
+#include "ndcurves/fwd.h"
 
 using namespace ndcurves;
 
@@ -84,12 +85,14 @@ BOOST_AUTO_TEST_CASE(serialization) {
   std::string fileName("curve_constraints");
 
   constraints.saveAsText<bezier_t::curve_constraints_t>(fileName + ".txt");
-  constraints.saveAsXML<bezier_t::curve_constraints_t>(fileName + ".xml", "curve_constraints");
+  constraints.saveAsXML<bezier_t::curve_constraints_t>(fileName + ".xml",
+                                                       "curve_constraints");
   constraints.saveAsBinary<bezier_t::curve_constraints_t>(fileName);
 
   bezier_t::curve_constraints_t c_txt, c_xml, c_binary;
   c_txt.loadFromText<bezier_t::curve_constraints_t>(fileName + ".txt");
-  c_xml.loadFromXML<bezier_t::curve_constraints_t>(fileName + ".xml", "curve_constraints");
+  c_xml.loadFromXML<bezier_t::curve_constraints_t>(fileName + ".xml",
+                                                   "curve_constraints");
   c_binary.loadFromBinary<bezier_t::curve_constraints_t>(fileName);
 
   BOOST_CHECK(constraints == c_txt);

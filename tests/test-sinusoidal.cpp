@@ -1,9 +1,10 @@
 #define BOOST_TEST_MODULE test_sinusoidal
 
-#include "ndcurves/fwd.h"
-#include "ndcurves/sinusoidal.h"
-#include "ndcurves/serialization/curves.hpp"
 #include <boost/test/included/unit_test.hpp>
+
+#include "ndcurves/fwd.h"
+#include "ndcurves/serialization/curves.hpp"
+#include "ndcurves/sinusoidal.h"
 
 using namespace ndcurves;
 
@@ -39,7 +40,8 @@ BOOST_AUTO_TEST_CASE(constructors) {
   BOOST_CHECK_EQUAL(cT.degree(), 1);
 
   // check if errors are correctly raised
-  BOOST_CHECK_THROW(sinusoidal_t(p0, amp, T, phi, 2., 1.), std::invalid_argument);
+  BOOST_CHECK_THROW(sinusoidal_t(p0, amp, T, phi, 2., 1.),
+                    std::invalid_argument);
   BOOST_CHECK_THROW(sinusoidal_t(p0, amp, -1., phi), std::invalid_argument);
   BOOST_CHECK_THROW(sinusoidal_t(p0, amp, 0., phi), std::invalid_argument);
   pointX_t amp4(4);
@@ -92,12 +94,14 @@ BOOST_AUTO_TEST_CASE(constructors) {
   BOOST_CHECK_EQUAL(cST.degree(), 1);
 
   // check if errors are correctly raised
-  BOOST_CHECK_THROW(sinusoidal_t(duration, p_init, p_end, 1., 0.2);, std::invalid_argument);
+  BOOST_CHECK_THROW(sinusoidal_t(duration, p_init, p_end, 1., 0.2);
+                    , std::invalid_argument);
   BOOST_CHECK_THROW(sinusoidal_t(-1.2, p_init, p_end), std::invalid_argument);
   BOOST_CHECK_THROW(sinusoidal_t(0., p_init, p_end), std::invalid_argument);
   pointX_t p_init3(3);
   p_init3 << 2, -0.8, -1.;
-  BOOST_CHECK_THROW(sinusoidal_t(duration, p_init3, p_end);, std::invalid_argument);
+  BOOST_CHECK_THROW(sinusoidal_t(duration, p_init3, p_end);
+                    , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(call) {
@@ -159,8 +163,10 @@ BOOST_AUTO_TEST_CASE(derivate) {
   BOOST_CHECK(c.derivate(T / 4., 1).isZero());
   BOOST_CHECK(c.derivate(3. * T / 4., 1).isZero());
 
-  BOOST_CHECK(c.derivate(T / 4., 2).isApprox(-(amp * 2. * M_PI / T) * (2. * M_PI / T)));
-  BOOST_CHECK(c.derivate(3. * T / 4., 2).isApprox((amp * 2. * M_PI / T) * (2. * M_PI / T)));
+  BOOST_CHECK(
+      c.derivate(T / 4., 2).isApprox(-(amp * 2. * M_PI / T) * (2. * M_PI / T)));
+  BOOST_CHECK(c.derivate(3. * T / 4., 2)
+                  .isApprox((amp * 2. * M_PI / T) * (2. * M_PI / T)));
   BOOST_CHECK(c.derivate(0, 2).isZero());
   BOOST_CHECK(c.derivate(T, 2).isZero());
   BOOST_CHECK(c.derivate(2. * T, 2).isZero());
@@ -169,7 +175,8 @@ BOOST_AUTO_TEST_CASE(derivate) {
   double two_pi_phi = T * phi / (2. * M_PI);
   sinusoidal_t c2(p0, amp, T, phi, 0., 20.);
   BOOST_CHECK(c2.derivate(T - two_pi_phi, 1).isApprox(amp * 2. * M_PI / T));
-  BOOST_CHECK(c2.derivate(3. * T / 2. - two_pi_phi, 1).isApprox(-amp * 2. * M_PI / T));
+  BOOST_CHECK(
+      c2.derivate(3. * T / 2. - two_pi_phi, 1).isApprox(-amp * 2. * M_PI / T));
   BOOST_CHECK(c2.derivate(3. * T / 4. - two_pi_phi, 1).isZero());
 
   // check outside of the bounds:

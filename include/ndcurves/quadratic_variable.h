@@ -9,15 +9,15 @@
 #ifndef _CLASS_QUADRATIC_VARIABLE
 #define _CLASS_QUADRATIC_VARIABLE
 
-#include "ndcurves/curve_abc.h"
-#include "ndcurves/linear_variable.h"
-
-#include "MathDefs.h"
-
 #include <math.h>
-#include <vector>
+
 #include <Eigen/Core>
 #include <stdexcept>
+#include <vector>
+
+#include "MathDefs.h"
+#include "ndcurves/curve_abc.h"
+#include "ndcurves/linear_variable.h"
 
 namespace ndcurves {
 
@@ -34,16 +34,22 @@ struct quadratic_variable {
     zero = true;
   }
 
-  quadratic_variable(const matrix_x_t& A, const point_t& b, const Numeric c = 0) : c_(c), b_(b), A_(A), zero(false) {
+  quadratic_variable(const matrix_x_t& A, const point_t& b, const Numeric c = 0)
+      : c_(c), b_(b), A_(A), zero(false) {
     if (A.cols() != b.rows() || A.cols() != A.rows()) {
       throw std::invalid_argument("The dimensions of A and b are incorrect.");
     }
   }
 
   quadratic_variable(const point_t& b, const Numeric c = 0)
-      : c_(c), b_(b), A_(matrix_x_t::Zero((int)(b.rows()), (int)(b.rows()))), zero(false) {}
+      : c_(c),
+        b_(b),
+        A_(matrix_x_t::Zero((int)(b.rows()), (int)(b.rows()))),
+        zero(false) {}
 
-  static quadratic_variable_t Zero(size_t /*dim*/ = 0) { return quadratic_variable_t(); }
+  static quadratic_variable_t Zero(size_t /*dim*/ = 0) {
+    return quadratic_variable_t();
+  }
 
   // linear evaluation
   Numeric operator()(const Eigen::Ref<const point_t>& val) const {
@@ -120,7 +126,9 @@ struct quadratic_variable {
     return c_;
   }
   bool isZero() const { return zero; }
-  std::size_t size() const { return zero ? 0 : std::max(A_.cols(), (std::max(b_.cols(), c_.size()))); }
+  std::size_t size() const {
+    return zero ? 0 : std::max(A_.cols(), (std::max(b_.cols(), c_.size())));
+  }
 
  private:
   Numeric c_;
@@ -142,7 +150,8 @@ Eigen::Matrix<N, Eigen::Dynamic, Eigen::Dynamic> to_diagonal(
 
 // only works with diagonal linear variables
 template <typename N>
-inline quadratic_variable<N> operator*(const linear_variable<N>& w1, const linear_variable<N>& w2) {
+inline quadratic_variable<N> operator*(const linear_variable<N>& w1,
+                                       const linear_variable<N>& w2) {
   typedef quadratic_variable<N> quad_var_t;
   typedef linear_variable<N> lin_var_t;
   typedef typename quad_var_t::matrix_x_t matrix_x_t;
@@ -160,31 +169,36 @@ inline quadratic_variable<N> operator*(const linear_variable<N>& w1, const linea
 }
 
 template <typename N>
-inline quadratic_variable<N> operator+(const quadratic_variable<N>& w1, const quadratic_variable<N>& w2) {
+inline quadratic_variable<N> operator+(const quadratic_variable<N>& w1,
+                                       const quadratic_variable<N>& w2) {
   quadratic_variable<N> res(w1.A(), w1.b(), w1.c());
   return res += w2;
 }
 
 template <typename N>
-quadratic_variable<N> operator-(const quadratic_variable<N>& w1, const quadratic_variable<N>& w2) {
+quadratic_variable<N> operator-(const quadratic_variable<N>& w1,
+                                const quadratic_variable<N>& w2) {
   quadratic_variable<N> res(w1.A(), w1.b(), w1.c());
   return res -= w2;
 }
 
 template <typename N>
-quadratic_variable<N> operator*(const double k, const quadratic_variable<N>& w) {
+quadratic_variable<N> operator*(const double k,
+                                const quadratic_variable<N>& w) {
   quadratic_variable<N> res(w.A(), w.b(), w.c());
   return res *= k;
 }
 
 template <typename N>
-quadratic_variable<N> operator*(const quadratic_variable<N>& w, const double k) {
+quadratic_variable<N> operator*(const quadratic_variable<N>& w,
+                                const double k) {
   quadratic_variable<N> res(w.A(), w.b(), w.c());
   return res *= k;
 }
 
 template <typename N>
-quadratic_variable<N> operator/(const quadratic_variable<N>& w, const double k) {
+quadratic_variable<N> operator/(const quadratic_variable<N>& w,
+                                const double k) {
   quadratic_variable<N> res(w.A(), w.b(), w.c());
   return res /= k;
 }

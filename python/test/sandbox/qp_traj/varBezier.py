@@ -7,9 +7,9 @@ __EPS = 1e-6
 
 eigenpy.switchToNumpyArray()
 
-_zeroMat = array([[0., 0., 0.], [0., 0., 0.], [0., 0., 0.]]).transpose()
-_I3 = array([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]).transpose()
-_zeroVec = array([[0., 0., 0.]]).transpose()
+_zeroMat = array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]).transpose()
+_I3 = array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]).transpose()
+_zeroVec = array([[0.0, 0.0, 0.0]]).transpose()
 
 
 def createControlPoint(val):
@@ -24,15 +24,16 @@ def createWaypointList(waypoints):
     vec = zeros([3, len(waypoints)])
     for i, val in enumerate(waypoints):
         mvar, vvar = createControlPoint(val)
-        mat[:, i * 3:i * 3 + 3] = mvar
-        vec[:, i:i + 1] = vvar
+        mat[:, i * 3 : i * 3 + 3] = mvar
+        vec[:, i : i + 1] = vvar
     return mat, vec
 
 
 class varBezier:
-    """waypoints is a list that contains either 3d arrays (constants), or a string "variable" """
+    """waypoints is a list that contains either
+    3d arrays (constants), or a string "variable" """
 
-    def __init__(self, waypoints=None, time=1.):
+    def __init__(self, waypoints=None, time=1.0):
         if waypoints is None:
             mat, vec = createWaypointList(waypoints)
             self.bezier = bezierVar(mat, vec, time)
@@ -55,16 +56,16 @@ class varBezier:
         if varId < 0:
             return self.bezier.waypoints().A, self.bezier.waypoints().b
         assert self.bezier.nbWaypoints > varId
-        mat = self.bezier.waypoints().A[:, varId * 3:varId * 3 + 3]
+        mat = self.bezier.waypoints().A[:, varId * 3 : varId * 3 + 3]
         vec = self.bezier.waypoints().b[:, varId]
         return mat, vec
 
     def matrixFromWaypoints(self, varId):
-        assert (varId >= 0)
+        assert varId >= 0
         mat, vec = self.waypoints(varId)
         resvec = zeros(3)
         for i in range(0, mat.shape[0] / 3, 1):
-            resvec += vec[i * 3:i * 3 + 3]
+            resvec += vec[i * 3 : i * 3 + 3]
         return mat.transpose(), resvec
 
     def toBezier3(self, x):

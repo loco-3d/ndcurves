@@ -28,7 +28,7 @@
 \newcommand{\stn}[1]{\commentt{blue}{ST: #1}}
 
 \maketitle
- 
+
 \tableofcontents
 \newpage
 
@@ -36,10 +36,10 @@
 \subsection{Definition of different types of curves}
 
     % Definitions here : https://math.stackexchange.com/questions/97233/what-is-the-difference-between-natural-cubic-spline-hermite-spline-b%C3%A9zier-spli
-    
+
     \noindent
     \textbf{\textit{Piecewise curve}} : a curve that is formed from a collection of simple segments strung end-to-end so that their junctions are fairly smooth. There are many kinds of spline that use different mathematics functions, but most of splines consist of polynomial segments where we can add some constraints of continuity.\\
-    
+
     \noindent
     \textbf{\textit{Bezier curve}} : Polynomial parametric curve defined by several control points. \textit{Properties} :
     \begin{itemize}
@@ -47,17 +47,17 @@
         \item Curve is contained in the convex hull of its defining control point and smoothly follows the control points.
         \item The degree of polynomial defining the curve segment with $n$ control points is $n-1$.
     \end{itemize}
-    
+
     \noindent
     \textbf{\textit{Cubic spline}} : spline where each polynomial segments has degree 3.\\
-    
+
     \noindent
     \textbf{\textit{Exact Cubic spline*}} : Cubic spline optimized as in the paper : "Task-Space Trajectories via Cubic Spline Optimization" By J. Zico Kolter and Andrew Y.ng (ICRA 2009). \textit{Properties} :
      \begin{itemize}
         \item Pass through each waypoint.
         \item C2 continuous.
     \end{itemize}
-    
+
     \noindent
     \textbf{\textit{Cubic hermite spline}} : spline where each segment is a third degree polynomial and described by its extremum positions end derivatives.
     \begin{itemize}
@@ -65,7 +65,7 @@
         \item No convex hull guarantees.
         \item C1 continuous.
     \end{itemize}
-    
+
 \subsection{curve\_abc}
     All curves in our implementation inherits from class curve\_abc and have to implement the following functions :\\
     \begin{lstlisting}
@@ -88,7 +88,7 @@
     // Get the maximum time for which the curve is defined.
     virtual time_t max()
     \end{lstlisting}
-    
+
     To serialize a curve, curve\_abc inherits from boost::serialization::Serializable where serialization functions are defined in include/curves/serialization/archive.hpp, so it has to implement the function :
     \begin{lstlisting}
     template<class Archive>
@@ -99,32 +99,32 @@
 
     A Bezier curve is a parametric curve defined by a set of control points ${p_0, p_1, ..., p_n}$ where $n$ is its order. The curve passes through its first and last control point.
     All Bezier curves of order superior to 3 can be represented as Bezier curves of order 3 or less joined end-to-end, where the last control point of one curve coincides with the first control point of the next curve. \\\\
-    
-    If you want to create a bezier using five or more control points, we recommend you instead to create a piecewise bezier curve containing bezier curves of four or less control points 
+
+    If you want to create a bezier using five or more control points, we recommend you instead to create a piecewise bezier curve containing bezier curves of four or less control points
     (See section piecewise curve).
-    
+
     \subsubsection{Definition}
     A bezier curve with $n+1$ is represented by :
     \begin{equation}\label{eq:bezierBernstein}
     x(t) = \sum_{i=0}^{N} B_i^N((t-t_{min})/T) \cdot p_i
     \end{equation}
-    where 
+    where
     \begin{equation}\label{eq:bernstein}
     B_i^n((t-t_{min})/T) = \binom{n}{i} \cdot ((t-t_{min})/T)^i \cdot (1-(t-t_{min})/T)^{n-i}
     \end{equation}
     are Bernstein polynomials, $p_i$ is the control point at index $i$, $t \in [t_{min},t_{max}]$ and $T=t_{max}-t_{min}$.\\
-    
+
     To add constraints on initial and final velocity on a Bezier curve x(t), we can set position of control points accordingly to its derivative $x'(t)$ and $x''(t)$. For more details, read subsection III.A of paper "C-CROC: Continuous and Convex Resolution of Centroidal dynamic trajectories for legged robots in multi-contact scenarios" by Pierre Fernbach et al. .
-    
+
     \begin{table}[H]
     \begin{center}
-    \begin{tabular}{ |c|c|c|c| } 
+    \begin{tabular}{ |c|c|c|c| }
      \hline
-     Order of Bezier curve $x(t)$ & Derivative $x'(t)$ & $x'(t=0)$ &  $x'(t=1)$ \\ 
+     Order of Bezier curve $x(t)$ & Derivative $x'(t)$ & $x'(t=0)$ &  $x'(t=1)$ \\
      \hline
-     1 (Linear) & $(p_1-p_0)/T$ & $(p_1-p_0)/T$ & $(p_1-p_0)/T$ \\ 
+     1 (Linear) & $(p_1-p_0)/T$ & $(p_1-p_0)/T$ & $(p_1-p_0)/T$ \\
      \hline
-     2 (Quadratic) & \makecell{$(2(1-t)(p_1-p_0)+$\\$2t(p_2-p_1)))/T$} & $2(p_1-p_0)/T$ & $2(p_2-p_1)/T$ \\ 
+     2 (Quadratic) & \makecell{$(2(1-t)(p_1-p_0)+$\\$2t(p_2-p_1)))/T$} & $2(p_1-p_0)/T$ & $2(p_2-p_1)/T$ \\
      \hline
      3 (Cubic) & \makecell{$(3(1-t)^2(p_1-p_0)+$\\$6t(1-t)(p_2-p_1)+$\\$3t^2(p_3-p_2))/T$} & $3(p_1-p_0)/T$ & $3(p_3-p_2)/T$\\
      \hline
@@ -133,26 +133,26 @@
     \label{table:bezier_derivative1}
     \end{center}
     \end{table}
-    
+
     \begin{table}[H]
     \begin{center}
-    \begin{tabular}{ |c|c|c| } 
+    \begin{tabular}{ |c|c|c| }
      \hline
-     Order of Bezier curve $x(t)$ & $x''(t=0)$ &  $x''(t=1)$ \\ 
+     Order of Bezier curve $x(t)$ & $x''(t=0)$ &  $x''(t=1)$ \\
      \hline
-     1 (Linear) & $(p_1-p_0)/T^2$ & $(p_1-p_0)/T^2$ \\ 
+     1 (Linear) & $(p_1-p_0)/T^2$ & $(p_1-p_0)/T^2$ \\
      \hline
-     2 (Quadratic) & $2(p_1-p_0)/T^2$ & $2(p_2-p_1)/T^2$ \\ 
+     2 (Quadratic) & $2(p_1-p_0)/T^2$ & $2(p_2-p_1)/T^2$ \\
      \hline
-     3 (Cubic) & $3(p_1-p_0)/T^2$ & $3(p_3-p_2)/T^2$ \\ 
+     3 (Cubic) & $3(p_1-p_0)/T^2$ & $3(p_3-p_2)/T^2$ \\
      \hline
     \end{tabular}
     \caption{Derivative order 2 of bezier curve defined between [0,1] at initial and final time.}
     \label{table:bezier_derivative2}
     \end{center}
     \end{table}
-    
-    
+
+
     Our method to ensure that velocity and acceleration constraints are respected on a bezier curve, consists in adding two control points $P_{c1}$, $P_{c2}$ after the first one $P_0$ and two, $Pc_{n-1}$ and $Pc_{n-2}$, before the last one $P_n$. The derivatives order 1 and 2 of a Bezier curve for $N$ control points are :\\\\
     \begin{equation}
     \begin{cases}
@@ -170,7 +170,7 @@
     \end{cases}
     \end{equation}
     By adding $Pc_{1}$, $Pc_{2}$ right after the first control point $P_0$ and $Pc_{n-1}$, $Pc_{n-2}$ before the last control points $P_N$ to bezier curve. We can set them as followed to respect the constraints fixed on acceleration and velocities at initial and final time :\\
-    
+
     \begin{equation}
     \begin{cases}
     Pc_1 = P_0 + \dfrac{constraints.init_vel}{N-1} \cdot T\\
@@ -179,55 +179,55 @@
     Pc_{N-2} = 2 Pc_{N-1} - P_N + \dfrac{constraints.end_acc}{(N-1) \cdot (N-2)}  \cdot T^2
     \end{cases}
     \end{equation}
-    
+
     Evaluation of the curve at time $t$ has been implemented in three different ways.
-    First, the evaluation of \textbf{Bernstein} which consists in solving the equation \eqref{eq:bezierBernstein}. 
-    
+    First, the evaluation of \textbf{Bernstein} which consists in solving the equation \eqref{eq:bezierBernstein}.
+
     The second one is the evaluation \textbf{De Casteljau} which computes the $N-1$ centroids of parameters $(t,1-t)$ of consecutive $N$ control points of bezier curve, and perform it iteratively until getting one point in the list which will be the evaluation of bezier curve at time $t$.
     \begin{center}
         \includegraphics[width=\textwidth]{images/De_Casteljau_construction.png}
         \captionof{figure}{Evaluation of Bezier curve using De Casteljau algorithm.}
     \end{center}
-    
+
     Finally, the last one implemented is  \textbf{Horner} evaluation which is the one used by default in our algorithm as it is faster than the two others. We apply the Horner's scheme in order to reduce complexity of calculation of this polynomial. Applying it transforms equation \eqref{eq:bezierBernstein} into $ x(t) = (1-t)^N(\sum_{i=0}^{N} \binom{N}{i} \frac{1-t}{t}^i P_i)$ reduces computation time.\\
-    
+
     In this implementation we use the Horner evaluation which is faster for low order bezier curve, but which is less stable with higher orders. Otherwise we should use De Casteljau which is more stable and better to use with high orders.\\
-    
+
     \subsubsection{Template and constructors}
-    
-    The template for this class is composed of (See applications of bezier\_curve.h) :\\ 
+
+    The template for this class is composed of (See applications of bezier\_curve.h) :\\
     - typename Time=double\\
     - typename Numeric=Time\\
     - bool Safe=false\\
     - typename Point=Eigen::Matrix$<$Numeric, Eigen::Dynamic, $1>$\\
     The type of point used by default is of dynamic-size. Size of control points given in the constructor will be of the same size as all points returned by bezier\_curve.
-    
+
     \noindent
     The class bezier\_curve has the following constructors :
-    
+
     \begin{lstlisting}
     bezier_curve() // default constructor
     \end{lstlisting}
-    
+
     \begin{lstlisting}
-    bezier_curve(In PointsBegin, In PointsEnd, 
-                 const time_t T_min=0.0, 
-                 const time_t T_max=1.0, 
+    bezier_curve(In PointsBegin, In PointsEnd,
+                 const time_t T_min=0.0,
+                 const time_t T_max=1.0,
                  const time_t mult_T=1.0)
     \end{lstlisting}
-    
+
     \begin{lstlisting}
     bezier_curve(In PointsBegin, In PointsEnd,
                  const curve_constraints_t& constraints
-                 const time_t T_min=0.0, 
-                 const time_t T_max=1.0, 
+                 const time_t T_min=0.0,
+                 const time_t T_max=1.0,
                  const time_t mult_T=1.0)
     \end{lstlisting}
-    
+
     \begin{lstlisting}
     bezier_curve(const bezier_curve& other)
     \end{lstlisting}
-    
+
     \noindent
     Where parameters of constructors are : \\\\
     - \textbf{\textit{PointBegin}} and \textbf{\textit{PointsEnd}} : iterators pointing to the first and last element of a control point container.;\\ The actual implementation of bezier curve allows you to enter any number of control points as long as it is superior or equal to one. But in most of cases if the degree is superior to 3, it is prefered to create a composite Bezier curve with segments of degree inferior or equal to 3.\\\\
@@ -236,9 +236,9 @@
     - \textbf{\textit{constraints}} : constraints applied on start and end point of the curve.\\
     Structure curve\_constraint contains 4 instance variables to set : \textit{init\_vel},\textit{init\_acc}, \textit{end\_vel}, \textit{end\_acc} which correspond to initial and final velocities and accelerations.\\\\
     - \textbf{\textit{other}} : the bezier curve to copy.
-    
+
     \subsubsection{Bezier in C++}
-    
+
     Here are some possible applications using the class bezier\_curve.h in C++ :\\
     \begin{lstlisting}
     #include "curves/bezier_curve.h"
@@ -250,33 +250,33 @@
     typedef Eigen::VectorXd pointX_t;
     typedef double time_t;
     typdef double num_t;
-    typedef bezier_curve  <time_t, num_t, 
+    typedef bezier_curve  <time_t, num_t,
                            true, pointX_t> bezier_curve_t;
     // We will use points of dimension 3 and 4 for the example
     typedef Eigen::Vector3d point3_t;
     typedef Eigen::Vector4d point4_t;
-    
+
     // Creation of control points in 3D : P0, P1, P2, P3
     point3_t P0(1,2,3);
     point3_t P1(2,3,4);
     point3_t P2(3,4,5);
     point3_t P3(3,6,7);
-    
+
     // Creation of control points in 4D : P4_0, P4_1, P4_2
     point4_t P4_0(1,2,3,4);
     point4_t P4_1(2,3,4,5);
     point4_t P4_2(3,4,5,6);
-    
+
     // Creation of the container of control points
     std::vector<point3_t> cp;
     std::vector<point4_t> cp4;
-    
+
     // Creation of bezier curve 4D defined between [0.,1.]
     cp4.push_back(P4_0);
     cp4.push_back(P4_1)
     cp4.push_back(P4_2)
     bezier_curve_t bc_4D(cp4.begin(),cp4.end());
-    
+
     // Create some 3D bezier curves defined between [0.,1.]
     // Two control points = Degree 1 (Linear Bezier curve)
     cp.push_back(P0);
@@ -288,30 +288,30 @@
     // Four control points = Degree 3 (Cubic Bezier curve)
     cp.push_back(P3);
     bezier_curve_t bc3(cp.begin(),cp.end());
-    
+
     // Value of curve at t=0 and t=1
     point3_t res = bc3(0.);
     res = bc3(1.);
-    
+
     // Value of derivative curve at t=0.5
     res = bc3.derivate(0.5,1); // derivative order 1
     res = bc3.derivate(0.5,2); // derivative order 2
-    
-    // Get the derivative or primitive curve at any time t 
+
+    // Get the derivative or primitive curve at any time t
     // (Recommended if derivative computed several times)
     // derivative order 1
     bezier_curve_t bc_der1 = bc3.compute_derivate(1);
     res = bc_der1(0.5); // equivalent to bc3.derivate(0.5,1)
     // primitive order 1
     bezier_curve_t bc_prim1 = bc3.compute_primitive(1);
-    
+
     // Time reparameterization
     time_t T_min = 1.;
     time_t T_max = 3.; // Bezier curve defined between [1.0,3.0]
     bezier_curve_t bc3_T_modif(cp.begin(),cp.end(), T_min, T_max);
     res = bc3_T_modif(T_min); // value at t=T_min equals to bc3(0.)
     res = bc3_T_modif(T_max); // value at t=T_max equals to bc3(1.)
-    
+
     // Add constraints on curve
     bezier_curve_t::curve_constraints_t constraints;
     constraints.init_vel = point3_t(-1.,-1.,-1.);
@@ -320,29 +320,29 @@
     constraints.end_acc = point3_t(3.,2.,3.);
     bezier_curve_t bc4(beg,end,constraints,T_min,T_max);
     bezier_curve_t bc4_der1 = bc4.compute_derivate(1);
-    bezier_curve_t bc4_der2 = bc4.compute_derivate(2);  
+    bezier_curve_t bc4_der2 = bc4.compute_derivate(2);
     res = bc4_der1(T_min); // equal to init_vel
     res = bc4_der1(T_max); // equal to end_vel
     res = bc4_der2(T_min); // equal to init_acc
     res = bc4_der2(T_max); // equal to end_acc
-    
+
     // Upper and Lower bound of definition interval
     T_min = bc3_T_modif.min(); // Equal to 1.0
     T_max = bc3_T_modif.max(); // Equal to 3.0
-    
+
     // Get waypoints
     bezier_curve_t::t_point_t waypoints = bc3.waypoints();
     bezier_curve_t::point_t first_waypoint = bc3.waypointAtIndex(0);
     \end{lstlisting}
 
     \subsubsection{Bezier in Python}
-    
+
     We can use bezier\_curve.h through curves.so as followed :
 
     \begin{lstlisting}
     from curves import bezier, curve_constraints
     \end{lstlisting}
-        
+
     \begin{lstlisting}
     # Creation of bezier in 3D with two control points in [0,1]
     P3_0 = [1., 2., 3.]
@@ -350,21 +350,21 @@
     waypoints = matrix([P3_0,P3_1]).transpose()
     bc_3dim = bezier(waypoints)
     res = bc_3dim(1.) # value at t=1., equal to P3_1
-    
+
     # Creation of bezier in 6D with two control points in [0,1]
     P6_0 = [1., 2., 3., 7., 5., 5.]
     P6_1 = [4., 5., 6., 4., 5., 6.]
     waypoints6 = matrix([P6_0,P6_1]).transpose()
     bc_6dof = bezier6(waypoints6)
     res = bc_6dof(0.) # value at t=0., equal to P6_0
-    
+
     # Time reparameterization
     T_min = 0.0
     T_max = 2.0 # Time range will be [0.,2.]
     bc_3dim_T_modified = bezier3(waypoints3, T_min, T_max)
     res = bc_3dof_T_modified(T_min) # at t=T_min equals to P3_0
     res = bc_3dof_T_modified(T_max) # at t=T_max equals to P3_1
-    
+
     # Add constraints on curve
     c = curve_constraints()
     c.init_vel = matrix([0., 1., 1.]).transpose()
@@ -372,67 +372,67 @@
     c.init_acc = matrix([0., 1., -1.]).transpose()
     c.end_acc = matrix([0., 10., 1.]).transpose()
     bc_3dim_constraints = bezier3(waypoints, c, T_min, T_max)
-    
+
     # Derivative at time t
     res = bc_3dim_constraints.derivate(T_max,1) # Equals to end_vel
     res = bc_3dim_constraints.derivate(T_max,2) # Equals to end_acc
-    
+
     # Derivative & Primitive curve
     bc_derived = bc_3dim_constraints.compute_derivate(1)
     bc_primitive = bc_3dim_constraints.compute_primitive(1)
-    
+
     # Upper and Lower bound of definition interval
     Tmin = bc_3dim_T_modified.min() # Equal to T_min
     Tmax = bc_3dim_T_modified.max() # Equal to T_max
-    
+
     # Get waypoints
     nb_waypoints = bc_3dim_T_modified.nbWaypoints
     waypoint_first_index = bc_3dim.waypointAtIndex(0)
     waypoint_last_index = bc_3dim.waypointAtIndex(nb_waypoints-1)
     \end{lstlisting}
-        
+
 \subsection{Polynomial}
-    Represents a polynomial of an arbitrary order defined on the interval $[t_{min}, t_{max}]$. This polynomial follows the equation : 
+    Represents a polynomial of an arbitrary order defined on the interval $[t_{min}, t_{max}]$. This polynomial follows the equation :
     \begin{equation}\label{eq:polynomial}
     x(t) = a + b\cdot(t - t_{min}) + ... + d\cdot(t - t_{min})^N
     \end{equation}
     where $N$ is the order and $t \in [t_{min}, t_{max}]$.\\
-    
+
     \subsubsection{Template and constructors}
-    
-    The template for this class is composed of (See applications of polynomial.h) :\\ 
+
+    The template for this class is composed of (See applications of polynomial.h) :\\
     typename Time=double\\
     typename Numeric=Time\\
     bool Safe=false\\
     typename Point=Eigen::Matrix$<$Numeric, Dim, $1>$\\
     typename T\_Point=std::vector$<$Point,Eigen::aligned\_allocator$<$Point$> >$\\
     The type of point used by default is of dynamic-size. Dimension of points given in the constructor as coefficients will be the same as all points returned by polynomial.
-        
+
     The class polynomial has the following constructors :
     \begin{lstlisting}
     polynomial() // Default constructor
     \end{lstlisting}
     \begin{lstlisting}
-    polynomial(const coeff_t& coefficients, 
+    polynomial(const coeff_t& coefficients,
                const time_t min, const time_t max)
     \end{lstlisting}
     \begin{lstlisting}
-    polynomial(const T_Point& coefficients, 
+    polynomial(const T_Point& coefficients,
                const time_t min, const time_t max)
     \end{lstlisting}
     \begin{lstlisting}
     template<typename In>
-    polynomial(In zeroOrderCoefficient, In out, 
+    polynomial(In zeroOrderCoefficient, In out,
                const time_t min, const time_t max)
     \end{lstlisting}
     \begin{lstlisting}
-    polynomial(const Point& init,const Point& d_init, 
+    polynomial(const Point& init,const Point& d_init,
                const Point& end, const Point& d_end,
                const time_t min, const time_t max)
     \end{lstlisting}
     \begin{lstlisting}
     polynomial(const Point& init,const Point& d_init,
-               const Point& dd_init, 
+               const Point& dd_init,
                const Point& end, const Point& d_end,
                const Point& dd_end,
                const time_t min, const time_t max )
@@ -440,8 +440,8 @@
     \begin{lstlisting}
     polynomial(const polynomial& other)
     \end{lstlisting}
-    
-    
+
+
     Parameters of constructors are :\\\\
     - \textbf{\textit{coefficients}} : coefficients of polynomial represented in 2 different ways. In the first constructor, \textit{coeff\_t} is a reference to an Eigen Matrix where each column is a coefficient, from the zero order coefficient, up to the highest order. Polynomial order is given by the number of columns minus one. In the second constructor, \textit{T\_Point}\& is a container with all polynomial coefficients, starting with the zero coefficient, up to the highest order. Polynomial order is given by the size of a coefficient minus one.\\\\
     - \textbf{\textit{min}} : lower bound on interval definition of the curve.\\\\
@@ -452,9 +452,9 @@
     - \textbf{\textit{d\_init / d\_end}} : initial and ending velocity of the curve.\\\\
     - \textbf{\textit{dd\_init / dd\_end}} : initial and ending acceleration of the curve.\\\\
     - \textbf{\textit{other}} : polynomial to copy.\\\\
-    
+
     \subsubsection{Polynomial in C++}
-    
+
     Here is an example of application using the class polynomial.h :
     \begin{lstlisting}
     #include "curves/polynomial.h"
@@ -465,55 +465,55 @@
     // We can create polynomial of any dimension
     typedef Eigen::VectorXd pointX_t;
     typedef std::vector<pointX_t,
-                        Eigen::aligned_allocator<pointX_t> 
+                        Eigen::aligned_allocator<pointX_t>
                        >  t_pointX_t;
     typedef double time_t;
     typdef double num_t;
-    typedef polynomial  <time_t, num_t, true, 
+    typedef polynomial  <time_t, num_t, true,
                          pointX_t, t_pointX_t> polynomial_t;
     // Example with vector of dimension 3
     typedef Eigen::Vector3d point_t;
-    
+
     // Creation of polynomial coefficients
     point_t a(1,2,3);
     point_t b(2,3,4);
     point_t c(3,4,5);
     polynomial_t::num_t T_min = 0.0;
     polynomial_t::num_t T_max = 2.0;
-    
+
     // Polynomial order 1 : P(t) = a+b*t in [T_min,T_max]
     std::vector<pointX_t> coefs;
     coefs.push_back(a);
     coefs.push_back(b);
     polynomial_t pol1(coefs.begin(),coefs.end(),T_min,T_max);
-    
+
     // value of polynomial at time t=T_min and t=T_max
     point_t res = pol1(T_min); // Equal to a
     res = pol1(T_max);         // Equal to a+b
-    
+
     // Polynomial order 2 : P(t) = a+b*t+c*t^2 in [T_min,T_max]
     coefs.push_back(c);
     polynomial_t pol2(coefs.begin(),coefs.end(),T_min,T_max);
-    
+
     // value of polynomial at time t=T_min and t=T_max
     res = pol2(T_min); // Equal to a
     res = pol2(T_max); // Equal to a+b+c
-    
+
     // Derivative order one at time t=0.5 in [T_min,T_max]
     res = pol2.derivate(0.5, 1);
-    
+
     // compute derivate
     polynomial_t pol_der1 = pol2.compute_derivate(1);
     res = pol_der1(0.5) // Equal to pol2.derivate(0.5, 1)
-    
+
     // Upper and Lower bound of definition interval
     polynomial_t::num_t T_min_check = pol2.min(); // Equal to T_min
     polynomial_t::num_t T_max_check = pol2.max(); // Equal to T_max
-    
+
     // get coefficients
     Eigen::MatrixXd coeffs = pol2.coeff();
     polynomial_t::point_t coeff_order0 = pol2.coeffAtDegree(0);
-    
+
     // Creation of polynomial from discrete points
     point_t p0(0.,1.,0.);
     point_t p1(1.,2.,-3.);
@@ -533,7 +533,7 @@
                                       p1,dp1,ddp1,
                                       T_min,T_max);
     \end{lstlisting}
-        
+
     \subsubsection{Polynomial in python}
         We can use polynomial.h through curves.so as followed :
     \begin{lstlisting}
@@ -549,7 +549,7 @@
     coeffs = matrix([P0, P1, P2]).transpose()
     pol = polynomial(coeffs) # defined in [0.,1.]
     pol_time = polynomial(coeffs,T_min,T_max) # defined in [1.,3.]
-    
+
     # Value at time t=0.5
     res = pol2(0.5)
     # Derivative order 1 at time t=0.5
@@ -557,15 +557,15 @@
     # Compute derivate order 1
     pol_der1 = pol2.compute_derivate(1)
     res = pol_der1(0.5) # Equal to pol.derivate(0.5, 1)
-    
+
     # Upper and Lower bound of definition interval
     T_min_check = pol_time.min() # Equal to T_min
     T_max_check = pol_time.max() # Equal to T_max
-    
+
     # Get coefficients
     res_coeff = pol.coeff()
     res_coeff_order0 = pol.coeffAtDegree(0)
-    
+
     # Create polynomial from discrete points
     p0 = matrix([1.,3.,-2.]).T
     p1 = matrix([0.6,2.,2.5]).T
@@ -583,9 +583,9 @@
 
 \subsection{Cubic Hermite spline}
     A cubic hermite spline is a polynomial curve of degree 3, defined by its initial and final positions and velocities : $P_i$, $P_{i+1}$ and $m_i$, $m_{i+1}$.\\
-    
+
     \subsubsection{Definition}
-    
+
     A hermite cubic spline has some of the following properties :
     \begin{itemize}
         \item cross each of the waypoints given in its initialization ($P_0$, $P_1$,...,$P_N$).
@@ -602,39 +602,39 @@
         \item $h_{01} = -2 \cdot t^3 + 3 \cdot t^2$
         \item $h_{11} = t^3 - t^2$
     \end{itemize}
-    
+
     If you want to create a cubic Hermite spline containing more than two waypoints,
     we recommend you instead to create a piecewise cubic Hermite curve (See section piecewise curve).
 
     \subsubsection{Template and constructors}
-    
+
     Template for this class is composed of (See applications of cubic\_hermite\_spline):
     - typename Time=double\\
     - typename Numeric=Time\\
     - bool Safe=false\\
     - typename Point=Eigen::Matrix$<$Numeric, Eigen::Dynamic, $1>$\\
-    
+
     \noindent
     The class cubic\_hermite\_spline has the following constructors :
     \begin{lstlisting}
     cubic_hermite_spline() // Default constructor
     \end{lstlisting}
     \begin{lstlisting}
-    cubic_hermite_spline(In PairsBegin, In PairsEnd, 
+    cubic_hermite_spline(In PairsBegin, In PairsEnd,
                          const Vector_time& time_control_points)
     \end{lstlisting}
     \begin{lstlisting}
     cubic_hermite_spline(const cubic_hermite_spline& other)
     \end{lstlisting}
-    
+
     \noindent
     Where parameters of constructors are :\\\\
     - \textbf{\textit{PairsBegin}} : iterator pointing to the first element of a pair(position, derivative) container.\\\\
     - \textbf{\textit{PairsEnd}} : iterator pointing to the last element of a pair(position, derivative) container.\\\\
     \textbf{\textit{time\_control\_points}} : container with time corresponding to each waypoint. To evaluate spline at time t, we find the interval $[T_i,T_{i+1}]$ where t belong to, and we evaluate the segment corresponding using $(P_i,m_i)$ and $(P_{i+1},m_{i+1})$.\\\\
-    
+
     In our implementation, a cubic Hermite spline can be instantiated with several control points but it is deprecated, because we create in other words a piecewise cubic hermite. The class piecewise\_curve exists and should be used instead if we have several control points. In this case, you have create all cubic hermite with $2$ pairs only and add them all to the piecewise\_curve (See subsection for piecewise\_curve).
-    
+
     \subsubsection{Cubic Hermite in C++}
     Here is an example of application using the class cubic\_hermite\_spline.h :\\
     \begin{lstlisting}
@@ -647,11 +647,11 @@
     typedef double time_t;
     typdef double num_t;
     typedef std::pair<pointX_t, pointX_t> pair_point_tangent_t;
-    typedef cubic_hermite_spline <time_t, num_t, true, pointX_t 
+    typedef cubic_hermite_spline <time_t, num_t, true, pointX_t
                                  > cubic_hermite_spline_t;
     // Example with vector of dimension 3
     typedef Eigen::Vector3d point_t;
-    
+
     // Creation of pairs(position, derivative) and times
     point_t P0(1,2,3);
     point_t P1(4,5,6);
@@ -661,7 +661,7 @@
     pair_point_tangent_t pair1(P1,m1);
     time_t T0 = 0.0;
     time_t T1 = 2.0;
-    
+
     // Creation of containers
     std::vector< pair_point_tangent_t > cp; // Control points
     cp.push(pair0);
@@ -669,22 +669,22 @@
     cubic_hermite_spline_t::vector_time_t time_control_points;
     time_cp.push_back(T0);
     time_cp.push_back(T1);
-    
+
     // Creation of cubic hermite spline
     cubic_hermite_spline_t chs(cp.begin(), cp.end(), time_cp);
-    
+
     // Value of curve at time T0 and T1
     Eigen::Vector3d res = chs(T0); // Equal to P0
     res = chs(T1); // Equal to P1
-    
+
     // Value of derivative order 1 at time T0 and T1
     res = chs.derivate(T0, 1); // Equal to m0
     res = chs.derivate(T1, 1); // Equal to m1
-    
+
     // Upper and Lower bound of definition interval
     cubic_hermite_spline_t::num_t Tmin = chs.min(); // Equal to T0
     cubic_hermite_spline_t::num_t Tmax = chs.max(); // Equal to T1
-    
+
     // setTime and getTime
     cubic_hermite_spline_t::vector_time_t time_cp2;
     time_control_points2.push_back(0.);
@@ -692,22 +692,22 @@
     cubic_hermite_spline_t chs2(cp.begin(), cp.end(), time_cp2);
     res = chs(0.);  # Equal to P0
     res = chs(0.5); # Equal to P1
-    
+
     // Get control points and Time
     std::vector<pair_point_tangent_t> r_cp = chs.getControlPoints();
     std::vector<time_t> r_time = chs.getTime();
-    
+
     // If we use several control points (Deprecated)
     // Get number of Intervals (number of splines)
     std::size_t nb_splines = chs.numIntervals(); // Here equal to 1
     // Get number of pairs (control points)
     std::size_t nb_cp = chs.size() // Here equal to 2
     \end{lstlisting}
-    
+
     \subsubsection{Cubic Hermite in Python}
-    
+
     We can use cubic\_hermite\_spline.h through curves.so as followed :
-    
+
     \begin{lstlisting}
     from curves import cubic_hermite_spline
     \end{lstlisting}
@@ -724,25 +724,25 @@
     points = matrix([P0, P1]).transpose()
     tangents = matrix([m0, m1]).transpose()
     time_points = matrix([0., 1.]).transpose()
-    
+
     # Creation of cubic hermite spline
     chs = cubic_hermite_spline(points, tangents, time_points)
-    
+
     # Value of curve at time T0 and T1
     res = chs(T0) # Equal to P0
     res = chs(T1) # Equal to P1
-    
+
     // Value of derivative order 1 at time T0 and T1
     res = chs.derivate(T0, 1) # Equal to m0
     res = chs.derivate(T1, 1) # Equal to m1
-    
+
     # Upper and Lower bound of definition interval
     Tmin = chs.min() # Equal to T0
     Tmax = chs.max() # Equal to T2
     \end{lstlisting}
-    
+
 \subsection{piecewise curve}
-    
+
     A piecewise curve $Pc$ is made of one or several curves $Cf_0, Cf_1,...Cf_N$, where :
     \begin{itemize}
         \item $Pc$ defined in $[Tmin, Tmax]$
@@ -753,7 +753,7 @@
     To evaluate the piecewise curve at time $t \in [Tmin, Tmax]$, we search the curve whose interval of definiton contains $t$, and we evaluate the curve found at time $t$.
 
     \subsubsection{Template and constructors}
-    
+
     Template for this class is composed of (See applications of cubic\_hermite\_spline):
     - typename Time=double\\
     - typename Numeric=Time\\
@@ -761,7 +761,7 @@
     - typename Point=Eigen::Matrix$<$Numeric, Eigen::Dynamic, $1>$\\
     - typename T\_Point= std::vector$<$Point, Eigen::aligned\_allocator$<$Point$>$ $>$\\
     - typename Curve= curve\_abc$<$Time, Numeric, Safe, Point$>$\\
-    
+
     \noindent
     The class piecewise\_curve has the following constructors :
     \begin{lstlisting}
@@ -776,36 +776,36 @@
     \begin{lstlisting}
     piecewise_curve(const piecewise_curve& other)
     \end{lstlisting}
-    
+
     \noindent
     Where parameters of constructors are :\\\\
     - \textbf{\textit{cf}} : A curve of the same type than the one in template. The piecewise curve created will contain this curve.\\
     - \textbf{\textit{list\_curves}} : A list of curves of the same type than the one in template. The piecewise curve created will contain these curves. Curves in list needs to respect the conditions (See subsection piecewise\_curve).\\
     - \textbf{\textit{other}} : The piecewise curve to copy. The type of curve it contains must be of the same type than the one in template.\\\\
-    
+
     We also can get a piecewise polynomial from a set of discrete points with templated functions (See how to use them in section Piecewise curve in C++) :
     \begin{lstlisting}
     template<typename Polynomial>
-    static piecewise_curve<Time, Numeric, Safe, Point, T_Point, 
+    static piecewise_curve<Time, Numeric, Safe, Point, T_Point,
                            Polynomial>
-    convert_discrete_points_to_polynomial(T_Point points, 
+    convert_discrete_points_to_polynomial(T_Point points,
                                           t_time_t time_points)
     \end{lstlisting}
     \begin{lstlisting}
     template<typename Polynomial>
-    static piecewise_curve<Time, Numeric, Safe, Point, T_Point, 
+    static piecewise_curve<Time, Numeric, Safe, Point, T_Point,
                            Polynomial>
-    convert_discrete_points_to_polynomial(T_Point points, 
+    convert_discrete_points_to_polynomial(T_Point points,
                                           t_time_t time_points)
     \end{lstlisting}
     \begin{lstlisting}
     template<typename Polynomial>
-    static piecewise_curve<Time, Numeric, Safe, Point, T_Point, 
+    static piecewise_curve<Time, Numeric, Safe, Point, T_Point,
                            Polynomial>
-    convert_discrete_points_to_polynomial(T_Point points, 
+    convert_discrete_points_to_polynomial(T_Point points,
                                           t_time_t time_points)
     \end{lstlisting}
-    
+
     \subsubsection{Piecewise curve in C++}
     Here is an example of application using the class piecewise\_curve.h :
     \begin{lstlisting}
@@ -818,47 +818,47 @@
     #include "curves/cubic_hermite_spline.h"
     using namespace curves;
     \end{lstlisting}
-    
+
     \begin{lstlisting}
     typedef Eigen::VectorXd pointX_t;
     typedef std::vector<pointX_t,
-                        Eigen::aligned_allocator<pointX_t> 
+                        Eigen::aligned_allocator<pointX_t>
                        >  t_pointX_t;
     typedef double time_t;
     typdef double num_t;
     // Example with vector of dimension 3
     typedef Eigen::Vector3d point3_t;
-    
+
     // ***** Curves inheriting from curve_abc *****
     // Polynomial
-    typedef polynomial  <time_t, num_t, true, 
+    typedef polynomial  <time_t, num_t, true,
                          pointX_t, t_pointX_t> polynomial_t;
     // Bezier
-    typedef bezier_curve  <double, double, 
+    typedef bezier_curve  <double, double,
                            true, pointX_t
                           > bezier_curve_t;
     // Cubic Hermite
-    typedef cubic_hermite_spline <double, double, 
+    typedef cubic_hermite_spline <double, double,
                                   true, pointX_t
                                  > cubic_hermite_spline_t;
-    
+
     // ***** Piecewise curves *****
     // Piecewise polynomial curve
-    typedef piecewise_curve <double, double, 
-                             true, pointX_t, 
+    typedef piecewise_curve <double, double,
+                             true, pointX_t,
                              t_pointX_t, polynomial_t
                             > piecewise_polynomial_curve_t;
     // Piecewise bezier curve
-    typedef piecewise_curve <double, double, 
-                             true, pointX_t, 
+    typedef piecewise_curve <double, double,
+                             true, pointX_t,
                              t_pointX_t, bezier_curve_t
                             > piecewise_bezier_curve_t;
     // Piecewise cubic hermite curve
-    typedef piecewise_curve <double, double, 
-                             true, pointX_t, 
+    typedef piecewise_curve <double, double,
+                             true, pointX_t,
                              t_pointX_t, cubic_hermite_spline_t
                             > piecewise_cubic_hermite_curve_t;
-                            
+
     // ** Example with piecewise polynomial curve **
     // Create polynomials
     point3_t a(1,1,1);
@@ -875,15 +875,15 @@
     polynomial_t pol1(vec1.begin(), vec1.end(), T0, T1);
     polynomial_t pol2(vec2.begin(), vec2.end(), T1, T2);
     polynomial_t pol3(vec3.begin(), vec3.end(), T2, T3);
-    
+
     // Create an empty piecewise polynomial curve
     piecewise_polynomial_curve_t pc();
-    
+
     // Add some polynomial in pc
     pc.add_curve(pol1); // pc defined on [T0,T1]
     pc.add_curve(pol1); // pc defined on [T0,T2]
     pc.add_curve(pol1); // pc defined on [T0,T3]
-    
+
     // Evaluation of piecewise polynomial curve
     point3_t res;
     // position
@@ -898,22 +898,22 @@
     res = pc.derivate(T3,1); // Equal to pol3(T3)
     // derivative order 2
     res = pc.derivate(0.5,2); // Equal to pol1.derivate(0.5,2)
-    
+
     // Continuity at specified order of piecewise curve
     bool isC0 = pc.is_continuous(0);
     bool isC1 = pc.is_continuous(1);
     bool isC2 = pc.is_continuous(2);
-    
+
     // Convert discrete points to piecewise polynomial curves
-    // We have : 
+    // We have :
     // - t_pointX_t points : list of discrete points.
     // - t_pointX_t points_derivative : list of velocity at these points.
-    // - t_pointX_t points_second_derivative : list of acceleration 
+    // - t_pointX_t points_second_derivative : list of acceleration
     //                                         at these points.
-    // - std::vector<time_t> time_points : list of time corresponding 
+    // - std::vector<time_t> time_points : list of time corresponding
     //                                     to these points.
     // Piecewise polynomial curve C0
-    piecewise_polynomial_curve_t ppc = 
+    piecewise_polynomial_curve_t ppc =
         piecewise_polynomial_curve_t::
         convert_discrete_points_to_polynomial<polynomial_t>
         (points,time_points);
@@ -926,17 +926,17 @@
         convert_discrete_points_to_polynomial<polynomial_t>
         (points,points_derivative,points_second_derivative,time_points);
     \end{lstlisting}
-    
+
     \subsubsection{Piecewise curve in Python}
     We can use piecewise\_curve.h through curves.so as followed :
     \begin{lstlisting}
     # You can use the three kinds of piecewise curves :
     from curves import ( polynomial, bezier, cubic_hermite_spline,
-                         piecewise_polynomial_curve, 
+                         piecewise_polynomial_curve,
                          piecewise_bezier_curve,
                          piecewise_cubic_hermite_curve )
     \end{lstlisting}
-    
+
     \begin{lstlisting}
     # Example with piecewise_bezier_curve
     # Create two bezier curves (with two control points)
@@ -948,18 +948,18 @@
     waypoints1 = matrix([P2, P3]).transpose()
     bc0 = bezier(waypoints0, 0., 1.)
     bc1 = bezier(waypoints1, 1., 3.)
-    
+
     # Create an empty piecewise bezier curve
     pc = piecewise_bezier_curve()
-    
+
     # Add two bezier curves
     pc.add_curve(bc0)
     pc.add_curve(bc1)
-    
+
     # Evaluation
     res = pc(0.) # Equal to P0
     res = pc(3.) # Equal to P3
-    
+
     # Continuity at specified order of piecewise curve
     isC0 = pc.is_continuous(0)
     isC1 = pc.is_continuous(1)
@@ -987,7 +987,7 @@
     \end{equation}
 
     \subsubsection{Template and constructors}
-    
+
     The class exact\_cubic.h has four constructor with templated types :\\
     \begin{lstlisting}
     exact_cubic() // Default constructor :
@@ -997,7 +997,7 @@
     exact_cubic(In wayPointsBegin, In wayPointsEnd)
     \end{lstlisting}
     \begin{lstlisting}
-    exact_cubic(In wayPointsBegin, In wayPointsEnd, 
+    exact_cubic(In wayPointsBegin, In wayPointsEnd,
                 const spline_constraints& constraints)
     \end{lstlisting}
     \begin{lstlisting}
@@ -1006,26 +1006,26 @@
     \begin{lstlisting}
     exact_cubic(const exact\_cubic\& other)
     \end{lstlisting}
-    
+
     \noindent
-    The template for this class is composed of (See applications of exact\_cubic.h) :\\ 
+    The template for this class is composed of (See applications of exact\_cubic.h) :\\
     typename Time=double\\
     typename Numeric=Time\\
     bool Safe=false\\
     typename Point=Eigen::Matrix$<$Numeric, Eigen::Dynamic, $1>$\\
     typename T\_Point=std::vector$<$Point,Eigen::aligned\_allocator$<$Point$> >$\\
     typename SplineBase=polynomial$<$Time, Numeric, Dim, Safe, Point, T\_Point$>$\\
-    
+
     Parameters of constructors are :\\\\
     \textbf{\textit{wayPointsBegin}} : an iterator pointing to the first element of a waypoint container. A waypoint is represented as a std::pair$<t_i, P_i>$ with $t_i$ the time where $x(t_i)=P_i$.\\
     \textbf{\textit{wayPointsEnd}} :an iterator pointing to the last element of a waypoint container.\\
     \textbf{\textit{spline\_constraints}} : constraints applied on start and end point of the curve.\\
     Structure curve\_constraint contains 4 instance variables to set : \textit{init\_vel}, \textit{init\_acc}, \textit{end\_vel}, \textit{end\_acc} which correspond to initial and final velocities and accelerations. For more details, read paper on how to apply it, read paper "Task-Space Trajectories via Cubic Spline Optimization" by J. Zico Kolter and Andrew Y.ng (ICRA 2009).\\
     \textbf{\textit{other}} : The exact cubic spline to copy.\\\\
-    
+
     \subsubsection{Exact cubic in C++}
     Here is an example of application using the class exact\_cubic.h :
-        
+
     \begin{lstlisting}
     #include "curves/exact_cubic.h"
     using namespace curves;
@@ -1034,16 +1034,16 @@
     // Template
     typedef Eigen::VectorXd pointX_t;
     typedef std::vector<pointX_t,
-                        Eigen::aligned_allocator<pointX_t> 
+                        Eigen::aligned_allocator<pointX_t>
                        >  t_pointX_t;
     typedef double time_t;
     typdef double num_t;
-    typedef exact_cubic <double, double, 
+    typedef exact_cubic <double, double,
                          true, pointX_t
                         > exact_cubic_t;
     // Example with vector of dimension 3
     typedef Eigen::Vector3d point3_t;
-    
+
     // Creation of waypoint container
     typedef std::pair<double, pointX_t> Waypoint;
     typedef std::vector<Waypoint> T_Waypoint;
@@ -1060,28 +1060,28 @@
     waypoints.push_back(pair_P0);
     waypoints.push_back(pair_P1)
     waypoints.push_back(pair_P2)
-    
+
     // Creation of exact cubic
     exact_cubic_t ec(waypoints.begin(), waypoints.end());
-    
+
     // Get number of splines (Polynomials)
     std::size_t numberSegments = ec.getNumberSplines();
-    
+
     // Get spline at index
     exact_cubic_t::spline_t first_spline = ec.getSplineAt(0);
-    
+
     // Value of curve at time t=T0, t=T1 and t=T2
     Eigen::Vector3d res = ec(T0) // Equal to P0
     res = ec(T1)                 // Equal to P1
     res = ec(T2)                 // Equal to P2
-    
+
     // Value of derivative order 1 at time t=0.5
     res = ec.derivate(0.5, 1)
-    
+
     // Upper and Lower bound of definition interval
     double Tmin = ec.min() // Equal to T0
     double Tmax = ec.max() // Equal to T2
-    
+
     // Creation of exact cubic with constraints
     exact_cubic_t::spline_constraints constraints;
     constraints.end_vel = point3_t(1,2,3);
@@ -1089,14 +1089,14 @@
     constraints.end_acc = point3_t(4,5,6);
     constraints.init_acc = point3_t(-4,-4,-6);
     exact_cubic_t ec2(waypoints.begin(), waypoints.end(),constraints);
-    
+
     // Check derivatives
     res = ec2.derivate(T0,1); // Equal to init_vel
     res = ec2.derivate(T0,2); // Equal to init_acc
     res = ec2.derivate(T2,1); // Equal to end_vel
     res = ec2.derivate(T2,2); // Equal to end_acc
     \end{lstlisting}
-    
+
     \subsubsection{Exact cubic in Python}
 
     We can use exact\_cubic.h through curves.so as followed :
@@ -1114,16 +1114,16 @@
     ec = exact_cubic(waypoints, time_waypoints)
     NumberOfSplines = ec.getNumberSplines() # Get number of splines
     FirstSpline = ec.getSplineAt(0) # Get first spline (polynomial)
-    
+
     # Evaluation at t=0.5
     res = ec(0.5)
     # Derivative order 1 at t=0.5
     res = ec.derivate(0.5, 1)
-    
+
     # Upper and lower bound of definition interval
     T_min_check = ec.min()
     T_min_check = ec.max()
-    
+
     # Creation of exact cubic with constraints
     c = curve_constraints()
     c.init_vel = matrix([0., 1., 1.]).transpose()
@@ -1131,14 +1131,14 @@
     c.init_acc = matrix([0., 3., 3.]).transpose()
     c.end_acc = matrix([0., 4., 4.]).transpose()
     ec2 = exact_cubic(waypoints, time_waypoints, c)
-    
+
     # Derivative at time t
     res = ec2.derivate(T0,1) # Equal to init_vel
     res = ec2.derivate(T0,2) # Equal to init_acc
     res = ec2.derivate(T2,1) # Equal to end_vel
     res = ec2.derivate(T2,2) # Equal to end_acc
     \end{lstlisting}
-    
+
 \section{Conversion of cubic curves}
 
 In our actual implementation, we can convert our curves between bezier, cubic hermite and polynomial curves of degree 3 (cubic curves) or less. We can also convert piecewise curves containing these types of curves if they are all of degree 3 or less.
@@ -1157,7 +1157,7 @@ In our actual implementation, we can convert our curves between bezier, cubic he
     template<typename Hermite, typename curveTypeToConvert>
     Hermite hermite_from_curve(const curveTypeToConvert& curve)
     \end{lstlisting}
-    
+
     \subsubsection{Conversion of basic cubic curves in C++}
     \begin{lstlisting}
     #include "curves/curve_conversion.h"
@@ -1172,40 +1172,40 @@ In our actual implementation, we can convert our curves between bezier, cubic he
     \begin{lstlisting}
     // We take the same typedef than in previous
     // examples in C++ for all curves.
-    
+
     // We have 3 curves :
     // polynomial_t pol  => Polynomial with Degree 3 or less.
     // bezier_curve_t bc => Bezier with 4 or less control points.
     // cubic_hermite_spline_t chs => Cubic Hermite spline
-    
+
     // Convert : Polynomial=>Bezier
-    bezier_curve_t bc_res = bezier_from_curve<bezier_curve_t, 
+    bezier_curve_t bc_res = bezier_from_curve<bezier_curve_t,
                                               polynomial_t
                                              >(pol);
     // Convert : Bezier=>Polynomial
     polynomial_t pol_res = polynomial_from_curve<polynomial_t,
-                                                 bezier_curve_t 
+                                                 bezier_curve_t
                                                 >(bc);
     // Convert : Bezier=>Cubic Hermite
     cubic_hermite_spline_t chs_res = hermite_from_curve
                                      <cubic_hermite_spline_t,
                                       bezier_curve_t
                                      >(bc)
-                                     
+
     // For all t in interval of definition of :
     // - bc_res : bc_res(t) = pol(t)
     // - pol_res : pol_res(t) = bc(t)
     // - chs_res : chs_res(t) = bc(t)
     \end{lstlisting}
-    
+
     \subsubsection{Conversion of basic cubic curves in Python}
     \begin{lstlisting}
     # Select the type of conversion needed
-    from curves import (bezier_from_hermite, 
-                        bezier_from_polynomial, 
+    from curves import (bezier_from_hermite,
+                        bezier_from_polynomial,
                         hermite_from_polynomial,
-                        hermite_from_bezier, 
-                        polynomial_from_hermite, 
+                        hermite_from_bezier,
+                        polynomial_from_hermite,
                         polynomial_from_bezier)
     \end{lstlisting}
     \begin{lstlisting}
@@ -1214,88 +1214,88 @@ In our actual implementation, we can convert our curves between bezier, cubic he
     chs_res = hermite_from_polynomial(pol_res)
     bc_res = bezier_from_hermite(chs_res) # Same as bc
     \end{lstlisting}
-    
+
 \subsection{Piecewise cubic curves conversion}
-    If we need to convert a piecewise curve containing one type of curve of 
-    degree 3 or less to another one, three functions are available 
+    If we need to convert a piecewise curve containing one type of curve of
+    degree 3 or less to another one, three functions are available
     in piecewise curve that :\\
     - create a new empty piecewise curve which will contain the type wanted;\\
     - convert all curves in the actual one to the type wanted;
     - add them all to the new piecewise curve returned.
     \begin{lstlisting}
     template<typename Bezier>
-    piecewise_curve<Time, Numeric, Safe, 
+    piecewise_curve<Time, Numeric, Safe,
                     Point, T_Point, Bezier
                    > convert_piecewise_curve_to_bezier()
     \end{lstlisting}
     \begin{lstlisting}
     template<typename Polynomial>
-    piecewise_curve<Time, Numeric, Safe, 
+    piecewise_curve<Time, Numeric, Safe,
                     Point, T_Point, Polynomial
                    > convert_piecewise_curve_to_polynomial()
     \end{lstlisting}
     \begin{lstlisting}
     template<typename Hermite>
-    piecewise_curve<Time, Numeric, Safe, 
+    piecewise_curve<Time, Numeric, Safe,
                     Point, T_Point, Hermite
                    > convert_piecewise_curve_to_cubic_hermite()
     \end{lstlisting}
-    
+
     \subsubsection{Conversion of piecewise cubic curves in C++}
     \begin{lstlisting}
     // We take the same typedef than in previous
     // examples in C++ for all curves.
-    
+
     // Example : we have a piecewise_polynomial_curve_t : ppc
-    
+
     // Piecewise Polynomial => Piecewise Bezier
-    piecewise_bezier_curve_t pc_bezier = 
+    piecewise_bezier_curve_t pc_bezier =
         ppc.convert_piecewise_curve_to_bezier
            <bezier_curve_t>();
-    
+
     // Piecewise Polynomial => Piecewise Cubic Hermite
-    piecewise_bezier_curve_t pc_bezier = 
+    piecewise_bezier_curve_t pc_bezier =
         ppc.convert_piecewise_curve_to_cubic_hermite
            <cubic_hermite_spline_t>();
-        
+
     // Piecewise Bezier => Piecewise Polynomial
-    piecewise_polynomial_curve_t pc_pol = 
+    piecewise_polynomial_curve_t pc_pol =
         pc_bezier.convert_piecewise_curve_to_polynomial
            <polynomial_t>();
     \end{lstlisting}
-    
+
     \subsubsection{Conversion of piecewise cubic curves in Python}
     \begin{lstlisting}
-    from curves import ( piecewise_polynomial_curve, 
+    from curves import ( piecewise_polynomial_curve,
                          piecewise_bezier_curve,
                          piecewise_cubic_hermite_curve )
     \end{lstlisting}
     \begin{lstlisting}
     # Piecewise curve with polynomials of degree 3 or less : pc
-    
+
     # Convert to piecewise cubic hermite curve
     pc_chs = pc.convert_piecewise_curve_to_cubic_hermite()
-    
+
     # Convert to piecewise bezier curve
     pc_bc = pc.convert_piecewise_curve_to_bezier()
-    
+
     # Convert to piecewise polynomial curve
     pc_pol = pc_bc.convert_piecewise_curve_to_polynomial()
     \end{lstlisting}
-    
+
 \section{Serialization}
     For serializing curves, we use boost::serialization which allows us to serialize entire classes. Eigen matrices have been serialized in file include/curves/serialization/eigen-matrix.hpp.
     All curves and piecewise curves can be serialized simply by overriding the function of curve\_abc :
     \begin{lstlisting}
     void serialize(Archive& ar, const unsigned int version)
     \end{lstlisting}
-    
+
     Example in polynomial.h :
     \begin{lstlisting}
     public:
     // Serialization of the class
     friend class boost::serialization::access;
-    
+
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version){
         if (version) {
@@ -1309,7 +1309,7 @@ In our actual implementation, we can convert our curves between bezier, cubic he
         ar & boost::serialization::make_nvp("T_max", T_max_);
     }
     \end{lstlisting}
-    
+
     Functions to call to serialize an object are defined in include/curves/serialization/archive.hpp :
     \begin{lstlisting}
     // Save/Load from Text file
@@ -1317,13 +1317,13 @@ In our actual implementation, we can convert our curves between bezier, cubic he
     void saveAsText(const std::string & filename)
     template<class Derived>
     void loadFromText(const std::string & filename)
-    
+
     // Save/Load from XML file
     template<class Derived>
     void saveAsXML(const std::string & filename)
     template<class Derived>
     void loadFromXML(const std::string & filename)
-    
+
     // Save/Load from Binary file
     template<class Derived>
     void saveAsBinary(const std::string & filename)
@@ -1335,36 +1335,36 @@ In our actual implementation, we can convert our curves between bezier, cubic he
     \begin{lstlisting}
     // We take the same typedef than in previous
     // examples in C++ for all curves.
-    
+
     // Example with a polynomial_t : pol
     // Serialize in file : pathToFile0
     pol.saveAsText<polynomial_t>(pathToFile0);
     polynomial_t pol_res;
     pol_res.loadFromText<polynomial_t>(pathToFile0); // Equal to pol
-    
+
     // Example with piecewise_bezier_curve_t : pc
     // Serialize in file : pathToFile1
     pc.saveAsBinary<piecewise_bezier_curve_t>(pathToFile1)
     piecewise_bezier_curve_t pc_res;
     pc_res.loadFromBinary<piecewise_bezier_curve_t>(pathToFile1)
     \end{lstlisting}
-    
+
     \subsubsection{Serialization in Python}
     \begin{lstlisting}
     # We take the same import than in previous
     # examples in Python for all curves
-    
+
     # Example with bezier curve : bc
     # Serialize in file : pathToFile0
     bc.saveAsText(pathToFile0)
     bc_res = bezier()
     bc_res.loadFromText(pathToFile0)
-    
+
     # Example with piecewise_polynomial_curve : pc
     # Serialize in file : pathToFile1
     pc.saveAsText(pathToFile1)
     pc_res = piecewise_polynomial_curve()
     pc_res.loadFromText(pathToFile1)
     \end{lstlisting}
-    
+
 \end{document}

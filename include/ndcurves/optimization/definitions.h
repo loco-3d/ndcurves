@@ -10,9 +10,9 @@
 #define _CLASS_DEFINITIONS_H
 
 #include <ndcurves/bezier_curve.h>
+#include <ndcurves/curve_constraint.h>
 #include <ndcurves/linear_variable.h>
 #include <ndcurves/quadratic_variable.h>
-#include <ndcurves/curve_constraint.h>
 
 namespace ndcurves {
 namespace optimization {
@@ -44,8 +44,10 @@ struct problem_definition : public curve_constraints<Point> {
   typedef curve_constraints<point_t> curve_constraints_t;
   typedef Eigen::Matrix<num_t, Eigen::Dynamic, 1> vector_x_t;
   typedef Eigen::Matrix<num_t, Eigen::Dynamic, Eigen::Dynamic> matrix_x_t;
-  typedef std::vector<matrix_x_t, Eigen::aligned_allocator<matrix_x_t> > T_matrix_x_t;
-  typedef std::vector<vector_x_t, Eigen::aligned_allocator<vector_x_t> > T_vector_x_t;
+  typedef std::vector<matrix_x_t, Eigen::aligned_allocator<matrix_x_t> >
+      T_matrix_x_t;
+  typedef std::vector<vector_x_t, Eigen::aligned_allocator<vector_x_t> >
+      T_vector_x_t;
   typedef typename T_matrix_x_t::const_iterator CIT_matrix_x_t;
   typedef typename T_vector_x_t::const_iterator CIT_vector_x_t;
 

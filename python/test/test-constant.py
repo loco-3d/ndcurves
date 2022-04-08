@@ -8,62 +8,63 @@ from numpy import array, array_equal
 
 
 class ConstantCurveTest(unittest.TestCase):
-
     def test_constructor(self):
         # default constructor
         c = constant()
-        self.assertEqual(c.min(), 0.)
+        self.assertEqual(c.min(), 0.0)
         self.assertEqual(c.max(), 0)
         self.assertEqual(c.dim(), 0)
         self.assertEqual(c.degree(), 0)
 
         # constructor from a point
-        p = array([1, 23., 5., 9, -5])
+        p = array([1, 23.0, 5.0, 9, -5])
         c = constant(p)
-        self.assertEqual(c.min(), 0.)
-        self.assertTrue(c.max() > 1e100)  # convert std::numeric_limits<time_t>::max() to python ?
+        self.assertEqual(c.min(), 0.0)
+        self.assertTrue(
+            c.max() > 1e100
+        )  # convert std::numeric_limits<time_t>::max() to python ?
         self.assertEqual(c.dim(), 5)
         self.assertEqual(c.degree(), 0)
 
         # constructor with timing
-        c = constant(p, 1., 5.)
-        self.assertEqual(c.min(), 1.)
-        self.assertEqual(c.max(), 5.)
+        c = constant(p, 1.0, 5.0)
+        self.assertEqual(c.min(), 1.0)
+        self.assertEqual(c.max(), 5.0)
         self.assertEqual(c.dim(), 5)
         self.assertEqual(c.degree(), 0)
 
         with self.assertRaises(ValueError):
-            c = constant(p, 2., 1.)
+            c = constant(p, 2.0, 1.0)
 
     def test_evaluate(self):
-        p = array([1, 23., 5., 9, -5])
-        c = constant(p, 1., 3.)
+        p = array([1, 23.0, 5.0, 9, -5])
+        c = constant(p, 1.0, 3.0)
 
-        self.assertTrue(array_equal(c(1.), p))
+        self.assertTrue(array_equal(c(1.0), p))
         self.assertTrue(array_equal(c(2.5), p))
-        self.assertTrue(array_equal(c(3.), p))
+        self.assertTrue(array_equal(c(3.0), p))
 
         with self.assertRaises(ValueError):
             c(0.5)
 
         with self.assertRaises(ValueError):
-            c(4.)
+            c(4.0)
 
     def test_derivate(self):
-        p = array([1, 23., 5., 9, -5])
+        p = array([1, 23.0, 5.0, 9, -5])
         p0 = np.zeros(5)
-        c = constant(p, 1., 3.)
+        c = constant(p, 1.0, 3.0)
 
-        self.assertTrue(array_equal(c.derivate(1., 1), p0))
-        self.assertTrue(array_equal(c.derivate(1., 2), p0))
-        self.assertTrue(array_equal(c.derivate(3., 1), p0))
+        self.assertTrue(array_equal(c.derivate(1.0, 1), p0))
+        self.assertTrue(array_equal(c.derivate(1.0, 2), p0))
+        self.assertTrue(array_equal(c.derivate(3.0, 1), p0))
         self.assertTrue(array_equal(c.derivate(1.5, 1), p0))
 
         with self.assertRaises(ValueError):
             c.derivate(0.5, 1)
 
         with self.assertRaises(ValueError):
-            c.derivate(4., 3)
+            c.derivate(4.0, 3)
 
         c_deriv = c.compute_derivate(1)
         self.assertTrue(array_equal(c_deriv(1.5), p0))
@@ -72,17 +73,17 @@ class ConstantCurveTest(unittest.TestCase):
         self.assertEqual(c_deriv.dim(), c.dim())
 
     def test_comparator(self):
-        p = array([1, 23., 5., 9, -5])
-        c1 = constant(p, 1., 3.)
-        c2 = constant(p, 1., 3.)
+        p = array([1, 23.0, 5.0, 9, -5])
+        c1 = constant(p, 1.0, 3.0)
+        c2 = constant(p, 1.0, 3.0)
         c3 = c1
 
-        pn = array([1, 23., 5., 9])
-        p2 = array([1, 17., 5., 9, -5])
-        cn1 = constant(pn, 1., 3.)
-        cn2 = constant(p, 1.5, 3.)
-        cn3 = constant(p, 1., 2.)
-        cn4 = constant(p2, 1., 3.)
+        pn = array([1, 23.0, 5.0, 9])
+        p2 = array([1, 17.0, 5.0, 9, -5])
+        cn1 = constant(pn, 1.0, 3.0)
+        cn2 = constant(p, 1.5, 3.0)
+        cn3 = constant(p, 1.0, 2.0)
+        cn4 = constant(p2, 1.0, 3.0)
 
         self.assertEqual(c1, c2)
         self.assertEqual(c1, c3)
@@ -94,8 +95,8 @@ class ConstantCurveTest(unittest.TestCase):
         self.assertTrue(c1.isEquivalent(c2))
 
     def test_serialization(self):
-        p = array([1, 23., 5., 9, -5])
-        c = constant(p, 1., 3.)
+        p = array([1, 23.0, 5.0, 9, -5])
+        c = constant(p, 1.0, 3.0)
         c.saveAsText("serialization_curve.txt")
         c.saveAsXML("serialization_curve.xml", "constant")
         c.saveAsBinary("serialization_curve")
@@ -114,36 +115,37 @@ class ConstantCurveTest(unittest.TestCase):
 
 
 class Constant3CurveTest(unittest.TestCase):
-
     def test_constructor(self):
         # default constructor
         c = constant()
-        self.assertEqual(c.min(), 0.)
+        self.assertEqual(c.min(), 0.0)
         self.assertEqual(c.max(), 0)
         self.assertEqual(c.dim(), 0)
         self.assertEqual(c.degree(), 0)
 
         # constructor from a point
-        p = array([1, 23., 5.])
+        p = array([1, 23.0, 5.0])
         c = constant3(p)
-        self.assertEqual(c.min(), 0.)
-        self.assertTrue(c.max() > 1e100)  # convert std::numeric_limits<time_t>::max() to python ?
+        self.assertEqual(c.min(), 0.0)
+        self.assertTrue(
+            c.max() > 1e100
+        )  # convert std::numeric_limits<time_t>::max() to python ?
         self.assertEqual(c.dim(), 3)
         self.assertEqual(c.degree(), 0)
 
         # constructor with timing
-        c = constant3(p, 1., 5.)
-        self.assertEqual(c.min(), 1.)
-        self.assertEqual(c.max(), 5.)
+        c = constant3(p, 1.0, 5.0)
+        self.assertEqual(c.min(), 1.0)
+        self.assertEqual(c.max(), 5.0)
         self.assertEqual(c.dim(), 3)
         self.assertEqual(c.degree(), 0)
 
         with self.assertRaises(ValueError):
-            c = constant(p, 2., 1.)
+            c = constant(p, 2.0, 1.0)
 
     def test_serialization(self):
-        p = array([1, 23., 5.])
-        c = constant3(p, 0., 2.)
+        p = array([1, 23.0, 5.0])
+        c = constant3(p, 0.0, 2.0)
         c.saveAsText("serialization_constant.txt")
         c.saveAsXML("serialization_constant.xml", "constant")
         c.saveAsBinary("serialization_constant")
@@ -161,5 +163,5 @@ class Constant3CurveTest(unittest.TestCase):
         self.assertEqual(c, c_bin)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

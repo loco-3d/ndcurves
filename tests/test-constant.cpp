@@ -1,9 +1,10 @@
 #define BOOST_TEST_MODULE test_constant
 
-#include "ndcurves/fwd.h"
-#include "ndcurves/constant_curve.h"
-#include "ndcurves/serialization/curves.hpp"
 #include <boost/test/included/unit_test.hpp>
+
+#include "ndcurves/constant_curve.h"
+#include "ndcurves/fwd.h"
+#include "ndcurves/serialization/curves.hpp"
 
 using namespace ndcurves;
 
@@ -113,14 +114,16 @@ BOOST_AUTO_TEST_CASE(derivate) {
   BOOST_CHECK_THROW(cX3.derivate(0.2, 1), std::invalid_argument);
   BOOST_CHECK_THROW(cX3.derivate(7., 1), std::invalid_argument);
 
-  constant_curve<double, double, true, point3_t> cX3_derivate = cX3.compute_derivate();
+  constant_curve<double, double, true, point3_t> cX3_derivate =
+      cX3.compute_derivate();
   BOOST_CHECK_EQUAL(cX3_derivate.min(), cX3.min());
   BOOST_CHECK_EQUAL(cX3_derivate.max(), cX3.max());
   BOOST_CHECK_EQUAL(cX3_derivate.dim(), 3);
   BOOST_CHECK_EQUAL(cX3_derivate.value_, p03);
   BOOST_CHECK_EQUAL(cX3_derivate(1.5), p03);
 
-  constant_curve<double, double, true, point3_t>* cX3_derivate_ptr = cX3.compute_derivate_ptr(2);
+  constant_curve<double, double, true, point3_t>* cX3_derivate_ptr =
+      cX3.compute_derivate_ptr(2);
   BOOST_CHECK_EQUAL(cX3_derivate_ptr->min(), cX3.min());
   BOOST_CHECK_EQUAL(cX3_derivate_ptr->max(), cX3.max());
   BOOST_CHECK_EQUAL(cX3_derivate_ptr->dim(), 3);

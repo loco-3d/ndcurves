@@ -23,27 +23,34 @@ class TestNotebook(unittest.TestCase):
         print("test_notebook")
 
         # We describe a degree 3 curve as a Bezier curve with 4 control points
-        waypoints = array([[1., 2., 3.], [-4., -5., -6.], [4., 5., 6.], [7., 8., 9.]]).transpose()
+        waypoints = array(
+            [[1.0, 2.0, 3.0], [-4.0, -5.0, -6.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
+        ).transpose()
         ref = bezier(waypoints)
 
         numSamples = 10
         fNumSamples = float(numSamples)
-        ptsTime = [(ref(float(t) / fNumSamples), float(t) / fNumSamples) for t in range(numSamples + 1)]
+        ptsTime = [
+            (ref(float(t) / fNumSamples), float(t) / fNumSamples)
+            for t in range(numSamples + 1)
+        ]
 
-        from ndcurves.optimization import (problem_definition, setup_control_points)
+        from ndcurves.optimization import problem_definition, setup_control_points
 
         # dimension of our problem (here 3 as our curve is 3D)
         dim = 3
         refDegree = 3
         pD = problem_definition(dim)
-        pD.degree = refDegree  # we want to fit a curve of the same degree as the reference curve for the sanity check
+        # we want to fit a curve of the same degree
+        # as the reference curve for the sanity check
+        pD.degree = refDegree
 
         # generates the variable bezier curve with the parameters of problemDefinition
         problem = setup_control_points(pD)
         # for now we only care about the curve itself
         variableBezier = problem.bezier()
 
-        variableBezier(0.)
+        variableBezier(0.0)
 
         # least square form of ||Ax-b||**2
         def to_least_square(A, b):
@@ -53,7 +60,9 @@ class TestNotebook(unittest.TestCase):
             # first evaluate variableBezier for each time sampled
             allsEvals = [(variableBezier(time), pt) for (pt, time) in ptsTime]
             # then compute the least square form of the cost for each points
-            allLeastSquares = [to_least_square(el.B(), el.c() + pt) for (el, pt) in allsEvals]
+            allLeastSquares = [
+                to_least_square(el.B(), el.c() + pt) for (el, pt) in allsEvals
+            ]
             # and finally sum the costs
             Ab = [sum(x) for x in zip(*allLeastSquares)]
             return Ab[0], Ab[1]
@@ -97,12 +106,18 @@ class TestNotebook(unittest.TestCase):
         evalAndPlot(variableBezier, res)
 
         # values are 0 by default, so if the constraint is zero this can be skipped
-        pD.init_vel = array([[0., 0., 0.]]).T
-        pD.init_acc = array([[0., 0., 0.]]).T
-        pD.end_vel = array([[0., 0., 0.]]).T
-        pD.end_acc = array([[0., 0., 0.]]).T
-        pD.flag = (constraint_flag.END_POS | constraint_flag.INIT_POS | constraint_flag.INIT_VEL
-                   | constraint_flag.END_VEL | constraint_flag.INIT_ACC | constraint_flag.END_ACC)
+        pD.init_vel = array([[0.0, 0.0, 0.0]]).T
+        pD.init_acc = array([[0.0, 0.0, 0.0]]).T
+        pD.end_vel = array([[0.0, 0.0, 0.0]]).T
+        pD.end_acc = array([[0.0, 0.0, 0.0]]).T
+        pD.flag = (
+            constraint_flag.END_POS
+            | constraint_flag.INIT_POS
+            | constraint_flag.INIT_VEL
+            | constraint_flag.END_VEL
+            | constraint_flag.INIT_ACC
+            | constraint_flag.END_ACC
+        )
 
         err = False
         try:
@@ -174,5 +189,5 @@ class TestNotebook(unittest.TestCase):
         fitBezier
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

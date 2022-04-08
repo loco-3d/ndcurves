@@ -8,35 +8,34 @@ from numpy import array
 
 
 class CurveConstraintsTest(unittest.TestCase):
-
     def test_operator_equal(self):
         c = curve_constraints(3)
-        c.init_vel = array([[0., 1., 1.]]).transpose()
-        c.end_vel = array([[0., -1., 1.]]).transpose()
-        c.init_acc = array([[0., 1., -1.]]).transpose()
-        c.end_acc = array([[0., 100., 1.]]).transpose()
-        c.init_jerk = array([[2., 4., 1.]]).transpose()
-        c.end_jerk = array([[-1., 2., 7.]]).transpose()
+        c.init_vel = array([[0.0, 1.0, 1.0]]).transpose()
+        c.end_vel = array([[0.0, -1.0, 1.0]]).transpose()
+        c.init_acc = array([[0.0, 1.0, -1.0]]).transpose()
+        c.end_acc = array([[0.0, 100.0, 1.0]]).transpose()
+        c.init_jerk = array([[2.0, 4.0, 1.0]]).transpose()
+        c.end_jerk = array([[-1.0, 2.0, 7.0]]).transpose()
 
         c2 = curve_constraints(3)
-        c2.init_vel = array([[0., 1., 1.]]).transpose()
-        c2.end_vel = array([[0., -1., 1.]]).transpose()
-        c2.init_acc = array([[0., 1., -1.]]).transpose()
-        c2.end_acc = array([[0., 100., 1.]]).transpose()
-        c2.init_jerk = array([[2., 4., 1.]]).transpose()
-        c2.end_jerk = array([[-1., 2., 7.]]).transpose()
+        c2.init_vel = array([[0.0, 1.0, 1.0]]).transpose()
+        c2.end_vel = array([[0.0, -1.0, 1.0]]).transpose()
+        c2.init_acc = array([[0.0, 1.0, -1.0]]).transpose()
+        c2.end_acc = array([[0.0, 100.0, 1.0]]).transpose()
+        c2.init_jerk = array([[2.0, 4.0, 1.0]]).transpose()
+        c2.end_jerk = array([[-1.0, 2.0, 7.0]]).transpose()
         self.assertTrue(c == c2)
-        c2.init_vel = array([[1., 1., 1.]]).transpose()
+        c2.init_vel = array([[1.0, 1.0, 1.0]]).transpose()
         self.assertTrue(c != c2)
 
     def test_serialization(self):
         c = curve_constraints(3)
-        c.init_vel = array([[0., 1., 1.]]).transpose()
-        c.end_vel = array([[0., -1., 1.]]).transpose()
-        c.init_acc = array([[0., 1., -1.]]).transpose()
-        c.end_acc = array([[0., 100., 1.]]).transpose()
-        c.init_jerk = array([[2., 4., 1.]]).transpose()
-        c.end_jerk = array([[-1., 2., 7.]]).transpose()
+        c.init_vel = array([[0.0, 1.0, 1.0]]).transpose()
+        c.end_vel = array([[0.0, -1.0, 1.0]]).transpose()
+        c.init_acc = array([[0.0, 1.0, -1.0]]).transpose()
+        c.end_acc = array([[0.0, 100.0, 1.0]]).transpose()
+        c.init_jerk = array([[2.0, 4.0, 1.0]]).transpose()
+        c.end_jerk = array([[-1.0, 2.0, 7.0]]).transpose()
 
         c.saveAsText("curve_constraints.txt")
         c.saveAsXML("curve_constraints.xml", "curve_constraints")
@@ -59,5 +58,5 @@ class CurveConstraintsTest(unittest.TestCase):
         self.assertEqual(c_from_pickle, c)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

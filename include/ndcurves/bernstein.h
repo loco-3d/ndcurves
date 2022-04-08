@@ -9,13 +9,13 @@
 #ifndef _CLASS_BERNSTEIN
 #define _CLASS_BERNSTEIN
 
-#include "curve_abc.h"
+#include <math.h>
+
+#include <stdexcept>
+#include <vector>
 
 #include "MathDefs.h"
-
-#include <math.h>
-#include <vector>
-#include <stdexcept>
+#include "curve_abc.h"
 
 namespace ndcurves {
 /// \brief Computes a binomial coefficient  .
@@ -24,7 +24,8 @@ namespace ndcurves {
 /// \return \f$\binom{n}{k}f$
 ///
 inline unsigned int bin(const unsigned int n, const unsigned int k) {
-  if (k > n) throw std::runtime_error("binomial coefficient higher than degree");
+  if (k > n)
+    throw std::runtime_error("binomial coefficient higher than degree");
   if (k == 0) return 1;
   if (k > n / 2) return bin(n, n - k);
   return n * bin(n - 1, k - 1) / k;
@@ -36,7 +37,8 @@ inline unsigned int bin(const unsigned int n, const unsigned int k) {
 template <typename Numeric = double>
 struct Bern {
   Bern() {}
-  Bern(const unsigned int m, const unsigned int i) : m_minus_i(m - i), i_(i), bin_m_i_(bin(m, i)) {}
+  Bern(const unsigned int m, const unsigned int i)
+      : m_minus_i(m - i), i_(i), bin_m_i_(bin(m, i)) {}
 
   virtual ~Bern() {}
 
@@ -50,11 +52,12 @@ struct Bern {
     return bin_m_i_ * (pow(u, i_)) * pow((1 - u), m_minus_i);
   }
 
-  /// \brief Check if actual Bernstein polynomial and other are approximately equal.
-  /// \param other : the other Bernstein polynomial to check.
-  /// \return true if the two Bernstein polynomials are approximately equals.
+  /// \brief Check if actual Bernstein polynomial and other are approximately
+  /// equal. \param other : the other Bernstein polynomial to check. \return
+  /// true if the two Bernstein polynomials are approximately equals.
   virtual bool operator==(const Bern& other) const {
-    return ndcurves::isApprox<Numeric>(m_minus_i, other.m_minus_i) && ndcurves::isApprox<Numeric>(i_, other.i_) &&
+    return ndcurves::isApprox<Numeric>(m_minus_i, other.m_minus_i) &&
+           ndcurves::isApprox<Numeric>(i_, other.i_) &&
            ndcurves::isApprox<Numeric>(bin_m_i_, other.bin_m_i_);
   }
 

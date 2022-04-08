@@ -2,18 +2,19 @@
 #ifndef _CLASS_LOAD_TEST_PROBLEMS
 #define _CLASS_LOAD_TEST_PROBLEMS
 
-#include "ndcurves/exact_cubic.h"
+#include <stdlib.h>
+
+#include <fstream>
+#include <iostream>
+#include <string>
+
 #include "ndcurves/bezier_curve.h"
+#include "ndcurves/exact_cubic.h"
 #include "ndcurves/helpers/effector_spline.h"
 #include "ndcurves/helpers/effector_spline_rotation.h"
-#include "ndcurves/optimization/quadratic_problem.h"
-#include "ndcurves/optimization/integral_cost.h"
 #include "ndcurves/optimization/details.h"
-
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <stdlib.h>
+#include "ndcurves/optimization/integral_cost.h"
+#include "ndcurves/optimization/quadratic_problem.h"
 
 namespace ndcurves {
 

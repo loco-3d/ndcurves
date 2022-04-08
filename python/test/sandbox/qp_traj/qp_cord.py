@@ -22,17 +22,19 @@ def concatvec(m1, m2):
 
 
 # constraint to lie between 2 extremities of a segment
-def segmentConstraint(varBez, a, b, wpIndex, constraintVarIndex, totalAddVarConstraints):
+def segmentConstraint(
+    varBez, a, b, wpIndex, constraintVarIndex, totalAddVarConstraints
+):
     mat, vec = varBez.matrixFromWaypoints(wpIndex)
     vec = b - vec
     resmat = zeros([mat.shape[0], mat.shape[1] + totalAddVarConstraints])
-    resmat[:, :mat.shape[1]] = mat
+    resmat[:, : mat.shape[1]] = mat
     resmat[:, mat.shape[1] + constraintVarIndex - 1] = b - a
     return (resmat, vec)
 
 
 def lineConstraint(varBez, C, d, totalAddVarConstraints):
-    """ constraint to lie one side of a line """
+    """constraint to lie one side of a line"""
     resmat = None
     resvec = None
     for wpIndex in range(varBez.bezier.nbWaypoints):
@@ -42,16 +44,16 @@ def lineConstraint(varBez, C, d, totalAddVarConstraints):
         resmat = concat(resmat, mat)
         resvec = concatvec(resvec, vec)
     augmented = zeros([resmat.shape[0], resmat.shape[1] + totalAddVarConstraints])
-    augmented[:, :resmat.shape[1]] = resmat
+    augmented[:, : resmat.shape[1]] = resmat
     return (augmented, resvec)
 
 
 # #### cost function integrals #####
 def compute_primitive(wps):
-    """ compute bezier primitive of variable waypoints given these waypoints"""
-    new_degree = (len(wps) - 1 + 1)
+    """compute bezier primitive of variable waypoints given these waypoints"""
+    new_degree = len(wps) - 1 + 1
     current_sum = [zeros(wps[0][0].shape), 0]
-    n_wp = [(current_sum[0], 0.)]
+    n_wp = [(current_sum[0], 0.0)]
     for wp in wps:
         current_sum[0] = current_sum[0] + wp[0]
         current_sum[1] = current_sum[1] + wp[1]

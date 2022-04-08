@@ -1,20 +1,21 @@
 #define BOOST_TEST_MODULE test_operations
 
-#include "ndcurves/fwd.h"
-#include "ndcurves/exact_cubic.h"
+#include <boost/test/included/unit_test.hpp>
+
+#include "load_problem.h"
 #include "ndcurves/bezier_curve.h"
-#include "ndcurves/polynomial.h"
+#include "ndcurves/cubic_hermite_spline.h"
+#include "ndcurves/curve_conversion.h"
+#include "ndcurves/exact_cubic.h"
+#include "ndcurves/fwd.h"
 #include "ndcurves/helpers/effector_spline.h"
 #include "ndcurves/helpers/effector_spline_rotation.h"
-#include "ndcurves/curve_conversion.h"
-#include "ndcurves/cubic_hermite_spline.h"
-#include "ndcurves/piecewise_curve.h"
 #include "ndcurves/optimization/definitions.h"
-#include "load_problem.h"
-#include "ndcurves/so3_linear.h"
+#include "ndcurves/piecewise_curve.h"
+#include "ndcurves/polynomial.h"
 #include "ndcurves/se3_curve.h"
 #include "ndcurves/serialization/curves.hpp"
-#include <boost/test/included/unit_test.hpp>
+#include "ndcurves/so3_linear.h"
 
 using namespace ndcurves;
 
@@ -146,8 +147,10 @@ BOOST_AUTO_TEST_CASE(bezierPointOperations) {
 }
 
 BOOST_AUTO_TEST_CASE(crossPoductLinearVariable) {
-  linear_variable_t l1(Eigen::Matrix3d::Identity() * 5., Eigen::Vector3d::Random());
-  linear_variable_t l2(Eigen::Matrix3d::Identity() * 1., Eigen::Vector3d::Random());
+  linear_variable_t l1(Eigen::Matrix3d::Identity() * 5.,
+                       Eigen::Vector3d::Random());
+  linear_variable_t l2(Eigen::Matrix3d::Identity() * 1.,
+                       Eigen::Vector3d::Random());
   linear_variable_t lE(Eigen::Matrix3d::Random(), Eigen::Vector3d::Random());
   BOOST_CHECK_THROW(l1.cross(lE), std::exception);
   BOOST_CHECK_THROW(lE.cross(l1), std::exception);
@@ -165,23 +168,29 @@ BOOST_AUTO_TEST_CASE(crossProductBezierLinearVariable) {
   bezier_linear_variable_t::t_point_t vec2;
   bezier_linear_variable_t::t_point_t zeroVec;
   for (int i = 0; i < 3; ++i) {
-    vec1.push_back(linear_variable_t(Eigen::Matrix3d::Identity() * i, Eigen::Vector3d::Random()));
-    vec2.push_back(linear_variable_t(Eigen::Matrix3d::Identity() * i, Eigen::Vector3d::Random()));
+    vec1.push_back(linear_variable_t(Eigen::Matrix3d::Identity() * i,
+                                     Eigen::Vector3d::Random()));
+    vec2.push_back(linear_variable_t(Eigen::Matrix3d::Identity() * i,
+                                     Eigen::Vector3d::Random()));
     zeroVec.push_back(linear_variable_t());
   }
   for (int i = 0; i < 2; ++i) {
-    vec1.push_back(linear_variable_t(Eigen::Matrix3d::Identity() * i, Eigen::Vector3d::Random()));
+    vec1.push_back(linear_variable_t(Eigen::Matrix3d::Identity() * i,
+                                     Eigen::Vector3d::Random()));
   }
   bezier_linear_variable_t p1(vec1.begin(), vec1.end(), 0., 1.);
   bezier_linear_variable_t p2(vec2.begin(), vec2.end(), 0., 1.);
   bezier_linear_variable_t pZero(zeroVec.begin(), zeroVec.end(), 0., 1.);
   bezier_linear_variable_t pCross(p1.cross(p2));
   bezier_linear_variable_t pCrossZero(p1.cross(pZero));
-  bezier_linear_variable_t primitive = pCross.compute_primitive(1, *vec1.begin());
+  bezier_linear_variable_t primitive =
+      pCross.compute_primitive(1, *vec1.begin());
   for (double i = 0.; i <= 1.; ++i) {
     Eigen::Vector3d x = Eigen::Vector3d::Random();
-    bezier_t fcross = evaluateLinear<bezier_t, bezier_linear_variable_t>(pCross, x);
-    bezier_t fCrossZero = evaluateLinear<bezier_t, bezier_linear_variable_t>(pCrossZero, x);
+    bezier_t fcross =
+        evaluateLinear<bezier_t, bezier_linear_variable_t>(pCross, x);
+    bezier_t fCrossZero =
+        evaluateLinear<bezier_t, bezier_linear_variable_t>(pCrossZero, x);
     bezier_t f1 = evaluateLinear<bezier_t, bezier_linear_variable_t>(p1, x);
     bezier_t f2 = evaluateLinear<bezier_t, bezier_linear_variable_t>(p2, x);
     for (double i = 0.; i <= 10.; ++i) {

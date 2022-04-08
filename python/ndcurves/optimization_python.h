@@ -1,10 +1,9 @@
-#include "python_variables.h"
-#include "namespace.h"
+#include <boost/python.hpp>
 
+#include "namespace.h"
 #include "ndcurves/optimization/definitions.h"
 #include "ndcurves/optimization/quadratic_problem.h"
-
-#include <boost/python.hpp>
+#include "python_variables.h"
 
 #ifndef _OPTIMIZATION_PYTHON
 #define _OPTIMIZATION_PYTHON

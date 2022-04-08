@@ -9,30 +9,34 @@
 #ifndef _CLASS_LINEAR_PROBLEM
 #define _CLASS_LINEAR_PROBLEM
 
+#include <Eigen/Core>
+
 #include "ndcurves/optimization/definitions.h"
 #include "ndcurves/optimization/details.h"
 #include "ndcurves/optimization/integral_cost.h"
-
-#include <Eigen/Core>
 
 namespace ndcurves {
 namespace optimization {
 
 template <typename Point, typename Numeric, bool Safe>
-quadratic_problem<Point, Numeric> generate_problem(const problem_definition<Point, Numeric>& pDef,
-                                                   const quadratic_variable<Numeric>& cost) {
+quadratic_problem<Point, Numeric> generate_problem(
+    const problem_definition<Point, Numeric>& pDef,
+    const quadratic_variable<Numeric>& cost) {
   quadratic_problem<Point, Numeric> prob;
-  problem_data<Point, Numeric> pData = setup_control_points<Point, Numeric, Safe>(pDef);
+  problem_data<Point, Numeric> pData =
+      setup_control_points<Point, Numeric, Safe>(pDef);
   initInequalityMatrix<Point, Numeric>(pDef, pData, prob);
   prob.cost = cost;
   return prob;
 }
 
 template <typename Point, typename Numeric, bool Safe>
-quadratic_problem<Point, Numeric> generate_problem(const problem_definition<Point, Numeric>& pDef,
-                                                   const integral_cost_flag costFlag) {
+quadratic_problem<Point, Numeric> generate_problem(
+    const problem_definition<Point, Numeric>& pDef,
+    const integral_cost_flag costFlag) {
   quadratic_problem<Point, Numeric> prob;
-  problem_data<Point, Numeric> pData = setup_control_points<Point, Numeric, Safe>(pDef);
+  problem_data<Point, Numeric> pData =
+      setup_control_points<Point, Numeric, Safe>(pDef);
   initInequalityMatrix<Point, Numeric>(pDef, pData, prob);
   prob.cost = compute_integral_cost<Point, Numeric>(pData, costFlag);
   return prob;

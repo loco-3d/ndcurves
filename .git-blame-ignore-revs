@@ -1,0 +1,17 @@
+# format (Guilhem Saurel, 2022-04-04)
+1f1525de5b2ae9daef224cc8b0c4f6e12edccc12
+
+# Format: yapf 0.32 (Guilhem Saurel, 2022-01-28)
+906e28c6bbae602474778823dc2fd934dfd2c479
+
+# format (Guilhem Saurel, 2022-01-07)
+631b1a618da82af020e7b1fb2fe5662d49a32c13
+
+# python tests: format (Guilhem Saurel, 2022-01-07)
+d6a87cf82c953e89e403e2cd1ce057a768697a8c
+
+# [Tests][Python] clean formatting (Pierre Fernbach, 2020-05-04)
+810ba652943b272a3e86eb888e1fec89959fc2a3
+
+# remove StringIO, not available in Python 3 (Guilhem Saurel, 2019-08-06)
+2c88bfbe0b9775f9da51d550c352e493430d3e60

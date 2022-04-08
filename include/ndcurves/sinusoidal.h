@@ -9,8 +9,9 @@
 #ifndef _CLASS_SINUSOIDALCURVE
 #define _CLASS_SINUSOIDALCURVE
 
-#include "curve_abc.h"
 #include <cmath>
+
+#include "curve_abc.h"
 
 namespace ndcurves {
 /// \class sinusoidal.
@@ -29,7 +30,8 @@ struct sinusoidal : public curve_abc<Time, Numeric, Safe, Point> {
 
   /* Constructors - destructors */
  public:
-  /// \brief Empty constructor. Curve obtained this way can not perform other class functions.
+  /// \brief Empty constructor. Curve obtained this way can not perform other
+  /// class functions.
   ///
   sinusoidal() : T_min_(0), T_max_(0), dim_(0) {}
 
@@ -41,7 +43,8 @@ struct sinusoidal : public curve_abc<Time, Numeric, Safe, Point> {
   /// \param T_min    : lower bound of the time interval (default to 0)
   /// \param T_max    : upper bound of the time interval (default to +inf)
   ///
-  sinusoidal(const Point& p0, const Point& amplitude, const time_t T, const time_t phi, const time_t T_min = 0.,
+  sinusoidal(const Point& p0, const Point& amplitude, const time_t T,
+             const time_t phi, const time_t T_min = 0.,
              const time_t T_max = std::numeric_limits<time_t>::max())
       : p0_(p0),
         amplitude_(amplitude),
@@ -51,11 +54,14 @@ struct sinusoidal : public curve_abc<Time, Numeric, Safe, Point> {
         T_max_(T_max),
         dim_(p0_.size()) {
     if (Safe && T_min_ > T_max_) {
-      throw std::invalid_argument("can't create constant curve: min bound is higher than max bound");
+      throw std::invalid_argument(
+          "can't create constant curve: min bound is higher than max bound");
     }
-    if (T_ <= 0.) throw std::invalid_argument("The period must be strictly positive");
+    if (T_ <= 0.)
+      throw std::invalid_argument("The period must be strictly positive");
     if (static_cast<size_t>(amplitude_.size()) != dim_)
-      throw std::invalid_argument("The offset and the amplitude must have the same dimension");
+      throw std::invalid_argument(
+          "The offset and the amplitude must have the same dimension");
   }
 
   /// \brief Constructor from stationary points
@@ -65,15 +71,23 @@ struct sinusoidal : public curve_abc<Time, Numeric, Safe, Point> {
   /// \param T_min    : lower bound of the time interval (default to 0)
   /// \param T_max    : upper bound of the time interval (default to +inf)
   ///
-  sinusoidal(const time_t traj_time, const Point& p_init, const Point& p_final, const time_t T_min = 0.,
+  sinusoidal(const time_t traj_time, const Point& p_init, const Point& p_final,
+             const time_t T_min = 0.,
              const time_t T_max = std::numeric_limits<time_t>::max())
-      : T_(2. * traj_time), phi_(M_PI / 2.), T_min_(T_min), T_max_(T_max), dim_(p_init.size()) {
+      : T_(2. * traj_time),
+        phi_(M_PI / 2.),
+        T_min_(T_min),
+        T_max_(T_max),
+        dim_(p_init.size()) {
     if (Safe && T_min_ > T_max_) {
-      throw std::invalid_argument("can't create constant curve: min bound is higher than max bound");
+      throw std::invalid_argument(
+          "can't create constant curve: min bound is higher than max bound");
     }
-    if (T_ <= 0) throw std::invalid_argument("The period must be strictly positive");
+    if (T_ <= 0)
+      throw std::invalid_argument("The period must be strictly positive");
     if (p_init.size() != p_final.size())
-      throw std::invalid_argument("The two stationary points must have the same dimension");
+      throw std::invalid_argument(
+          "The two stationary points must have the same dimension");
     p0_ = (p_init + p_final) / 2.;
     amplitude_ = (p_init - p_final) / 2.;
   }
@@ -100,7 +114,8 @@ struct sinusoidal : public curve_abc<Time, Numeric, Safe, Point> {
   virtual point_t operator()(const time_t t) const {
     if (Safe && (t < T_min_ || t > T_max_)) {
       throw std::invalid_argument(
-          "error in sinusoidal curve : time t to evaluate should be in range [Tmin, Tmax] of the curve");
+          "error in sinusoidal curve : time t to evaluate should be in range "
+          "[Tmin, Tmax] of the curve");
     }
     return p0_ + amplitude_ * sin(two_pi_f(t) + phi_);
   }
@@ -108,52 +123,66 @@ struct sinusoidal : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Evaluate the derivative of order N of curve at time t.
   /// \param t : time when to evaluate the spline.
   /// \param order : order of derivative.
-  /// \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative curve of order N at time t.
-  virtual point_derivate_t derivate(const time_t t, const std::size_t order) const {
+  /// \return \f$\frac{d^Nx(t)}{dt^N}\f$, point corresponding on derivative
+  /// curve of order N at time t.
+  virtual point_derivate_t derivate(const time_t t,
+                                    const std::size_t order) const {
     if (Safe && (t < T_min_ || t > T_max_)) {
       throw std::invalid_argument(
-          "error in constant curve : time t to derivate should be in range [Tmin, Tmax] of the curve");
+          "error in constant curve : time t to derivate should be in range "
+          "[Tmin, Tmax] of the curve");
     }
-    if (order <= 0) throw std::invalid_argument("Order must be strictly positive");
+    if (order <= 0)
+      throw std::invalid_argument("Order must be strictly positive");
     return amplitude_ * pow(2. * M_PI / T_, static_cast<num_t>(order)) *
            sin(two_pi_f(t) + phi_ + (M_PI * static_cast<num_t>(order) / 2.));
   }
 
   ///  \brief Compute the derived curve at order N.
-  ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier curve of parametric equation x(t).
-  ///  \param order : order of derivative.
+  ///  Computes the derivative order N, \f$\frac{d^Nx(t)}{dt^N}\f$ of bezier
+  ///  curve of parametric equation x(t). \param order : order of derivative.
   ///  \return \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
   sinusoidal_t compute_derivate(const std::size_t order) const {
-    if (order <= 0) throw std::invalid_argument("Order must be strictly positive");
-    const point_t amplitude = amplitude_ * pow(2. * M_PI / T_, static_cast<num_t>(order));
+    if (order <= 0)
+      throw std::invalid_argument("Order must be strictly positive");
+    const point_t amplitude =
+        amplitude_ * pow(2. * M_PI / T_, static_cast<num_t>(order));
     const time_t phi = phi_ + (M_PI * static_cast<num_t>(order) / 2.);
-    return sinusoidal_t(point_t::Zero(dim_), amplitude, T_, phi, T_min_, T_max_);
+    return sinusoidal_t(point_t::Zero(dim_), amplitude, T_, phi, T_min_,
+                        T_max_);
   }
 
   ///  \brief Compute the derived curve at orderN.
   ///  \param order : order of derivative.
-  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the curve.
+  ///  \return A pointer to \f$\frac{d^Nx(t)}{dt^N}\f$ derivative order N of the
+  ///  curve.
   virtual sinusoidal_t* compute_derivate_ptr(const std::size_t order) const {
     return new sinusoidal_t(compute_derivate(order));
   }
 
   /**
-   * @brief isApprox check if other and *this are approximately equals given a precision treshold
-   * Only two curves of the same class can be approximately equals,
-   * for comparison between different type of curves see isEquivalent.
+   * @brief isApprox check if other and *this are approximately equals given a
+   * precision treshold Only two curves of the same class can be approximately
+   * equals, for comparison between different type of curves see isEquivalent.
    * @param other the other curve to check
-   * @param prec the precision treshold, default Eigen::NumTraits<Numeric>::dummy_precision()
+   * @param prec the precision treshold, default
+   * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
-  virtual bool isApprox(const sinusoidal_t& other,
-                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
-    return ndcurves::isApprox<time_t>(T_min_, other.min()) && ndcurves::isApprox<time_t>(T_max_, other.max()) &&
-           dim_ == other.dim() && p0_.isApprox(other.p0_, prec) && amplitude_.isApprox(other.amplitude_, prec) &&
-           ndcurves::isApprox<time_t>(T_, other.T_) && ndcurves::isApprox<time_t>(phi_, other.phi_);
+  virtual bool isApprox(
+      const sinusoidal_t& other,
+      const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+    return ndcurves::isApprox<time_t>(T_min_, other.min()) &&
+           ndcurves::isApprox<time_t>(T_max_, other.max()) &&
+           dim_ == other.dim() && p0_.isApprox(other.p0_, prec) &&
+           amplitude_.isApprox(other.amplitude_, prec) &&
+           ndcurves::isApprox<time_t>(T_, other.T_) &&
+           ndcurves::isApprox<time_t>(phi_, other.phi_);
   }
 
-  virtual bool isApprox(const curve_abc_t* other,
-                        const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
+  virtual bool isApprox(
+      const curve_abc_t* other,
+      const Numeric prec = Eigen::NumTraits<Numeric>::dummy_precision()) const {
     const sinusoidal_t* other_cast = dynamic_cast<const sinusoidal_t*>(other);
     if (other_cast)
       return isApprox(*other_cast, prec);
@@ -161,9 +190,13 @@ struct sinusoidal : public curve_abc<Time, Numeric, Safe, Point> {
       return false;
   }
 
-  virtual bool operator==(const sinusoidal_t& other) const { return isApprox(other); }
+  virtual bool operator==(const sinusoidal_t& other) const {
+    return isApprox(other);
+  }
 
-  virtual bool operator!=(const sinusoidal_t& other) const { return !(*this == other); }
+  virtual bool operator!=(const sinusoidal_t& other) const {
+    return !(*this == other);
+  }
 
   /*Helpers*/
   /// \brief Get dimension of curve.
@@ -208,12 +241,15 @@ struct sinusoidal : public curve_abc<Time, Numeric, Safe, Point> {
   }
 
  private:
-  inline const num_t two_pi_f(const time_t& t) const { return (2 * M_PI / T_) * t; }
+  inline const num_t two_pi_f(const time_t& t) const {
+    return (2 * M_PI / T_) * t;
+  }
 
 };  // struct sinusoidal
 }  // namespace ndcurves
 
-DEFINE_CLASS_TEMPLATE_VERSION(SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point),
-                              SINGLE_ARG(ndcurves::sinusoidal<Time, Numeric, Safe, Point>))
+DEFINE_CLASS_TEMPLATE_VERSION(
+    SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point),
+    SINGLE_ARG(ndcurves::sinusoidal<Time, Numeric, Safe, Point>))
 
 #endif  // _CLASS_SINUSOIDALCURVE
