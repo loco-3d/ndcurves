@@ -34,7 +34,8 @@ template <typename Time = double, typename Numeric = Time, bool Safe = false,
 struct cubic_hermite_spline : public curve_abc<Time, Numeric, Safe, Point> {
   typedef Point point_t;
   typedef std::pair<Point, Point> pair_point_tangent_t;
-  typedef std::vector<pair_point_tangent_t, Eigen::aligned_allocator<pair_point_tangent_t> >
+  typedef std::vector<pair_point_tangent_t,
+                      Eigen::aligned_allocator<pair_point_tangent_t> >
       t_pair_point_tangent_t;
   typedef std::vector<Time> vector_time_t;
   typedef Time time_t;
