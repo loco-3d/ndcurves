@@ -34,8 +34,7 @@ bool isApprox(const T a, const T b, const T eps = 1e-6) {
 template <typename Time = double, typename Numeric = Time, bool Safe = false,
           typename Point = Eigen::Matrix<Numeric, Eigen::Dynamic, 1>,
           typename Point_derivate = Point>
-struct curve_abc : std::unary_function<Time, Point>,
-                   public serialization::Serializable {
+struct curve_abc : public serialization::Serializable {
   typedef Point point_t;
   typedef Point_derivate point_derivate_t;
   typedef Time time_t;
