@@ -76,3 +76,17 @@ Documentation and tutorial
 
 For a python tutorial, you can refer to the [jupyter notebook](https://github.com/loco-3d/ndcurves/blob/master/python/test/sandbox/test.ipynb).
 The [test file](https://github.com/loco-3d/ndcurves/blob/master/python/test/test.py) is more exhaustive and rather self explanatory.
+
+Citation
+------
+
+If you wish to cite this work please use the bibtex below:
+
+```bib
+@software{ndcurves,
+  author = {Tonneau, Steve and Fernbach, Pierre and Chemin, Jason and Saurel, Guilhem},
+  title = {ndcurves},
+  url = {https://github.com/loco-3d/ndcurves},
+  year = {2013}
+}
+```
