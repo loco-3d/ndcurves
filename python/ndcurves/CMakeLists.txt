@@ -16,9 +16,9 @@ SET_TARGET_PROPERTIES(${wrap} PROPERTIES
   INSTALL_RPATH "\$ORIGIN/../../.."
   )
 TARGET_COMPILE_OPTIONS(${wrap} PRIVATE "-Wno-conversion")
-TARGET_LINK_LIBRARIES(${wrap} ${PROJECT_NAME})
-TARGET_LINK_LIBRARIES(${wrap} eigenpy::eigenpy)
-TARGET_LINK_BOOST_PYTHON(${wrap})
+TARGET_LINK_LIBRARIES(${wrap} PUBLIC ${PROJECT_NAME})
+TARGET_LINK_LIBRARIES(${wrap} PUBLIC eigenpy::eigenpy)
+TARGET_LINK_BOOST_PYTHON(${wrap} PUBLIC)
 
 IF(APPLE)
   # We need to change the extension for python bindings
