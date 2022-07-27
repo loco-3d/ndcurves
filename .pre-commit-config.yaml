@@ -32,3 +32,7 @@ repos:
     rev: 4.0.1
     hooks:
     -   id: flake8
+-   repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+    - id: cmake-format
