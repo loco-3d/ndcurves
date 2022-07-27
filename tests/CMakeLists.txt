@@ -1,17 +1,13 @@
-ADD_UNIT_TEST(curves_tests Main.cpp)
-TARGET_LINK_LIBRARIES(curves_tests ${PROJECT_NAME})
-TARGET_COMPILE_DEFINITIONS(curves_tests PRIVATE -DTEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
+add_unit_test(curves_tests Main.cpp)
+target_link_libraries(curves_tests ${PROJECT_NAME})
+target_compile_definitions(
+  curves_tests PRIVATE -DTEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
 
-SET(${PROJECT_NAME}_TESTS
-  test-constant
-  test-sinusoidal
-  test-sinusoidal-serialization
-  test-minjerk
-  test-operations
-  test-curve-constraints
-  )
+set(${PROJECT_NAME}_TESTS
+    test-constant test-sinusoidal test-sinusoidal-serialization test-minjerk
+    test-operations test-curve-constraints)
 
-FOREACH(TEST ${${PROJECT_NAME}_TESTS})
-  ADD_UNIT_TEST(${TEST} ${TEST}.cpp)
-  TARGET_LINK_LIBRARIES(${TEST} ${PROJECT_NAME})
-ENDFOREACH(TEST ${${PROJECT_NAME}_TESTS})
+foreach(TEST ${${PROJECT_NAME}_TESTS})
+  add_unit_test(${TEST} ${TEST}.cpp)
+  target_link_libraries(${TEST} ${PROJECT_NAME})
+endforeach(TEST ${${PROJECT_NAME}_TESTS})

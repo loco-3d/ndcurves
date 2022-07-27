@@ -1,106 +1,122 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
+cmake_minimum_required(VERSION 3.1)
 
 # Project properties
-SET(PROJECT_ORG loco-3d)
-SET(PROJECT_NAME ndcurves)
-SET(PROJECT_DESCRIPTION "creatie and manipulate spline and bezier curves.")
-SET(PROJECT_URL "https://github.com/${PROJECT_ORG}/${PROJECT_NAME}")
+set(PROJECT_ORG loco-3d)
+set(PROJECT_NAME ndcurves)
+set(PROJECT_DESCRIPTION "creatie and manipulate spline and bezier curves.")
+set(PROJECT_URL "https://github.com/${PROJECT_ORG}/${PROJECT_NAME}")
 
 # Project options
-OPTION(BUILD_PYTHON_INTERFACE "Build the python bindings" ON)
-OPTION(INSTALL_PYTHON_INTERFACE_ONLY "Install *ONLY* the python bindings" OFF)
-OPTION(SUFFIX_SO_VERSION "Suffix library name with its version" ON)
+option(BUILD_PYTHON_INTERFACE "Build the python bindings" ON)
+option(INSTALL_PYTHON_INTERFACE_ONLY "Install *ONLY* the python bindings" OFF)
+option(SUFFIX_SO_VERSION "Suffix library name with its version" ON)
 
 # Project configuration
-IF(NOT INSTALL_PYTHON_INTERFACE_ONLY)
-  SET(PROJECT_USE_CMAKE_EXPORT TRUE)
-ENDIF(NOT INSTALL_PYTHON_INTERFACE_ONLY)
-SET(CXX_DISABLE_WERROR TRUE)
+if(NOT INSTALL_PYTHON_INTERFACE_ONLY)
+  set(PROJECT_USE_CMAKE_EXPORT TRUE)
+endif(NOT INSTALL_PYTHON_INTERFACE_ONLY)
+set(CXX_DISABLE_WERROR TRUE)
 
 # JRL-cmakemodule setup
-INCLUDE(cmake/base.cmake)
-INCLUDE(cmake/boost.cmake)
+include(cmake/base.cmake)
+include(cmake/boost.cmake)
 
 # Project definition
-COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
-PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
-CHECK_MINIMAL_CXX_STANDARD(11 ENFORCE)
+compute_project_args(PROJECT_ARGS LANGUAGES CXX)
+project(${PROJECT_NAME} ${PROJECT_ARGS})
+check_minimal_cxx_standard(11 ENFORCE)
 
 # Project dependencies
-FIND_PACKAGE(Eigen3 QUIET NO_CMAKE_PACKAGE_REGISTRY)
-IF(Eigen3_FOUND)
-  ADD_PROJECT_DEPENDENCY(Eigen3 REQUIRED NO_CMAKE_PACKAGE_REGISTRY PKG_CONFIG_REQUIRES eigen3)
-ELSE(Eigen3_FOUND)
-  ADD_PROJECT_DEPENDENCY(Eigen3 MODULE REQUIRED PKG_CONFIG_REQUIRES eigen3)
-ENDIF(Eigen3_FOUND)
-FIND_PACKAGE(pinocchio QUIET)
-OPTION(CURVES_WITH_PINOCCHIO_SUPPORT "Build with pinocchio support" ${pinocchio_FOUND})
-IF(CURVES_WITH_PINOCCHIO_SUPPORT)
-  IF(NOT pinocchio_FOUND)
-    MESSAGE(FATAL_ERROR "CURVES_WITH_PINOCCHIO_SUPPORT selected, but pinocchio has not been found")
-  ENDIF(NOT pinocchio_FOUND)
-  ADD_PROJECT_DEPENDENCY(pinocchio REQUIRED)
-  PKG_CONFIG_APPEND_CFLAGS("-DCURVES_WITH_PINOCCHIO_SUPPORT")
-ENDIF(CURVES_WITH_PINOCCHIO_SUPPORT)
-SET(PACKAGE_EXTRA_MACROS "SET(CURVES_WITH_PINOCCHIO_SUPPORT ${CURVES_WITH_PINOCCHIO_SUPPORT})")
+find_package(Eigen3 QUIET NO_CMAKE_PACKAGE_REGISTRY)
+if(Eigen3_FOUND)
+  add_project_dependency(Eigen3 REQUIRED NO_CMAKE_PACKAGE_REGISTRY
+                         PKG_CONFIG_REQUIRES eigen3)
+else(Eigen3_FOUND)
+  add_project_dependency(Eigen3 MODULE REQUIRED PKG_CONFIG_REQUIRES eigen3)
+endif(Eigen3_FOUND)
+find_package(pinocchio QUIET)
+option(CURVES_WITH_PINOCCHIO_SUPPORT "Build with pinocchio support"
+       ${pinocchio_FOUND})
+if(CURVES_WITH_PINOCCHIO_SUPPORT)
+  if(NOT pinocchio_FOUND)
+    message(
+      FATAL_ERROR
+        "CURVES_WITH_PINOCCHIO_SUPPORT selected, but pinocchio has not been found"
+    )
+  endif(NOT pinocchio_FOUND)
+  add_project_dependency(pinocchio REQUIRED)
+  pkg_config_append_cflags("-DCURVES_WITH_PINOCCHIO_SUPPORT")
+endif(CURVES_WITH_PINOCCHIO_SUPPORT)
+set(PACKAGE_EXTRA_MACROS
+    "SET(CURVES_WITH_PINOCCHIO_SUPPORT ${CURVES_WITH_PINOCCHIO_SUPPORT})")
 
-ADD_PROJECT_DEPENDENCY(Boost REQUIRED COMPONENTS serialization)
+add_project_dependency(Boost REQUIRED COMPONENTS serialization)
 
-IF(BUILD_PYTHON_INTERFACE)
-  ADD_PROJECT_DEPENDENCY(eigenpy 2.7.10 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 2.7.10")
-ENDIF(BUILD_PYTHON_INTERFACE)
+if(BUILD_PYTHON_INTERFACE)
+  add_project_dependency(eigenpy 2.7.10 REQUIRED PKG_CONFIG_REQUIRES
+                         "eigenpy >= 2.7.10")
+endif(BUILD_PYTHON_INTERFACE)
 
 # Main Library
-SET(${PROJECT_NAME}_HEADERS
-  include/${PROJECT_NAME}/bernstein.h
-  include/${PROJECT_NAME}/bezier_curve.h
-  include/${PROJECT_NAME}/constant_curve.h
-  include/${PROJECT_NAME}/cross_implementation.h
-  include/${PROJECT_NAME}/cubic_hermite_spline.h
-  include/${PROJECT_NAME}/curve_abc.h
-  include/${PROJECT_NAME}/curve_constraint.h
-  include/${PROJECT_NAME}/curve_conversion.h
-  include/${PROJECT_NAME}/exact_cubic.h
-  include/${PROJECT_NAME}/fwd.h
-  include/${PROJECT_NAME}/helpers/effector_spline.h
-  include/${PROJECT_NAME}/helpers/effector_spline_rotation.h
-  include/${PROJECT_NAME}/linear_variable.h
-  include/${PROJECT_NAME}/MathDefs.h
-  include/${PROJECT_NAME}/optimization/definitions.h
-  include/${PROJECT_NAME}/optimization/details.h
-  include/${PROJECT_NAME}/optimization/integral_cost.h
-  include/${PROJECT_NAME}/optimization/quadratic_problem.h
-  include/${PROJECT_NAME}/piecewise_curve.h
-  include/${PROJECT_NAME}/polynomial.h
-  include/${PROJECT_NAME}/python/python_definitions.h
-  include/${PROJECT_NAME}/quadratic_variable.h
-  include/${PROJECT_NAME}/se3_curve.h
-  include/${PROJECT_NAME}/serialization/archive.hpp
-  include/${PROJECT_NAME}/serialization/curves.hpp
-  include/${PROJECT_NAME}/serialization/eigen-matrix.hpp
-  include/${PROJECT_NAME}/serialization/registeration.hpp
-  include/${PROJECT_NAME}/sinusoidal.h
-  include/${PROJECT_NAME}/so3_linear.h
-  )
+set(${PROJECT_NAME}_HEADERS
+    include/${PROJECT_NAME}/bernstein.h
+    include/${PROJECT_NAME}/bezier_curve.h
+    include/${PROJECT_NAME}/constant_curve.h
+    include/${PROJECT_NAME}/cross_implementation.h
+    include/${PROJECT_NAME}/cubic_hermite_spline.h
+    include/${PROJECT_NAME}/curve_abc.h
+    include/${PROJECT_NAME}/curve_constraint.h
+    include/${PROJECT_NAME}/curve_conversion.h
+    include/${PROJECT_NAME}/exact_cubic.h
+    include/${PROJECT_NAME}/fwd.h
+    include/${PROJECT_NAME}/helpers/effector_spline.h
+    include/${PROJECT_NAME}/helpers/effector_spline_rotation.h
+    include/${PROJECT_NAME}/linear_variable.h
+    include/${PROJECT_NAME}/MathDefs.h
+    include/${PROJECT_NAME}/optimization/definitions.h
+    include/${PROJECT_NAME}/optimization/details.h
+    include/${PROJECT_NAME}/optimization/integral_cost.h
+    include/${PROJECT_NAME}/optimization/quadratic_problem.h
+    include/${PROJECT_NAME}/piecewise_curve.h
+    include/${PROJECT_NAME}/polynomial.h
+    include/${PROJECT_NAME}/python/python_definitions.h
+    include/${PROJECT_NAME}/quadratic_variable.h
+    include/${PROJECT_NAME}/se3_curve.h
+    include/${PROJECT_NAME}/serialization/archive.hpp
+    include/${PROJECT_NAME}/serialization/curves.hpp
+    include/${PROJECT_NAME}/serialization/eigen-matrix.hpp
+    include/${PROJECT_NAME}/serialization/registeration.hpp
+    include/${PROJECT_NAME}/sinusoidal.h
+    include/${PROJECT_NAME}/so3_linear.h)
 
-ADD_LIBRARY(${PROJECT_NAME} INTERFACE)
-MODERNIZE_TARGET_LINK_LIBRARIES(${PROJECT_NAME} SCOPE INTERFACE
-  TARGETS Eigen3::Eigen
-  INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} INTERFACE $<INSTALL_INTERFACE:include>)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} INTERFACE Boost::serialization)
-IF(CURVES_WITH_PINOCCHIO_SUPPORT)
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME} INTERFACE pinocchio::pinocchio)
-  TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} INTERFACE -DCURVES_WITH_PINOCCHIO_SUPPORT)
-ENDIF(CURVES_WITH_PINOCCHIO_SUPPORT)
+add_library(${PROJECT_NAME} INTERFACE)
+modernize_target_link_libraries(
+  ${PROJECT_NAME}
+  SCOPE
+  INTERFACE
+  TARGETS
+  Eigen3::Eigen
+  INCLUDE_DIRS
+  ${EIGEN3_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME}
+                           INTERFACE $<INSTALL_INTERFACE:include>)
+target_link_libraries(${PROJECT_NAME} INTERFACE Boost::serialization)
+if(CURVES_WITH_PINOCCHIO_SUPPORT)
+  target_link_libraries(${PROJECT_NAME} INTERFACE pinocchio::pinocchio)
+  target_compile_definitions(${PROJECT_NAME}
+                             INTERFACE -DCURVES_WITH_PINOCCHIO_SUPPORT)
+endif(CURVES_WITH_PINOCCHIO_SUPPORT)
 
-IF(NOT INSTALL_PYTHON_INTERFACE_ONLY)
-  INSTALL(TARGETS ${PROJECT_NAME} EXPORT ${TARGETS_EXPORT_NAME} DESTINATION lib)
-  INSTALL(FILES package.xml DESTINATION share/${PROJECT_NAME})
-ENDIF(NOT INSTALL_PYTHON_INTERFACE_ONLY)
+if(NOT INSTALL_PYTHON_INTERFACE_ONLY)
+  install(
+    TARGETS ${PROJECT_NAME}
+    EXPORT ${TARGETS_EXPORT_NAME}
+    DESTINATION lib)
+  install(FILES package.xml DESTINATION share/${PROJECT_NAME})
+endif(NOT INSTALL_PYTHON_INTERFACE_ONLY)
 
-IF(BUILD_PYTHON_INTERFACE)
-  ADD_SUBDIRECTORY(python)
-ENDIF(BUILD_PYTHON_INTERFACE)
+if(BUILD_PYTHON_INTERFACE)
+  add_subdirectory(python)
+endif(BUILD_PYTHON_INTERFACE)
 
-ADD_SUBDIRECTORY(tests)
+add_subdirectory(tests)
