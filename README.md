@@ -84,7 +84,7 @@ If you wish to cite this work please use the bibtex below:
 
 ```bib
 @software{ndcurves,
-  author = {Tonneau, Steve and Fernbach, Pierre and Chemin, Jason and Saurel, Guilhem},
+  author = {Tonneau, Steve and Chemin, Jason and Fernbach, Pierre and Saurel, Guilhem},
   title = {ndcurves},
   url = {https://github.com/loco-3d/ndcurves},
   year = {2013}
