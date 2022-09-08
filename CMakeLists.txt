@@ -7,7 +7,7 @@ set(PROJECT_DESCRIPTION "creatie and manipulate spline and bezier curves.")
 set(PROJECT_URL "https://github.com/${PROJECT_ORG}/${PROJECT_NAME}")
 
 # Project options
-option(BUILD_PYTHON_INTERFACE "Build the python bindings" ON)
+option(BUILD_PYTHON_INTERFACE "Build the python bindings" OFF)
 option(INSTALL_PYTHON_INTERFACE_ONLY "Install *ONLY* the python bindings" OFF)
 option(SUFFIX_SO_VERSION "Suffix library name with its version" ON)
 
