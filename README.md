@@ -48,8 +48,10 @@ The library is header only, so the build only serves to build the tests and pyth
 
 ```sh
 cd $NDCURVES_DIR && mkdir build && cd build
-cmake .. && make && make test
+cmake -DBUILD_PYTHON_INTERFACE=ON .. && make && make test
 ```
+
+Switch the BUILD_PYTHON argument to OFF if you don't want to use the python bindings of the package.
 
 If everything went fine you should obtain the following output:
 ```sh
