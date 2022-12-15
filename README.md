@@ -76,6 +76,8 @@ In spite of an exhaustive documentation, please refer to the C++ documentation, 
 Documentation and tutorial
 -------------
 
+For the C++ / Python detailed documentation, you can consult [this pdf](https://github.com/loco-3d/ndcurves/blob/devel/doc/curves.pdf) available in the doc folder
+
 For a python tutorial, you can refer to the [jupyter notebook](https://github.com/loco-3d/ndcurves/blob/master/python/test/sandbox/test.ipynb).
 The [test file](https://github.com/loco-3d/ndcurves/blob/master/python/test/test.py) is more exhaustive and rather self explanatory.
 
