@@ -53,8 +53,8 @@ set(PACKAGE_EXTRA_MACROS
 add_project_dependency(Boost REQUIRED COMPONENTS serialization)
 
 if(BUILD_PYTHON_INTERFACE)
-  add_project_dependency(eigenpy 2.7.10 REQUIRED PKG_CONFIG_REQUIRES
-                         "eigenpy >= 2.7.10")
+  add_project_dependency(eigenpy 2.9.0 REQUIRED PKG_CONFIG_REQUIRES
+                         "eigenpy >= 2.9.0")
 endif(BUILD_PYTHON_INTERFACE)
 
 # Main Library
