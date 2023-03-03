@@ -166,6 +166,38 @@ struct curve_pickle_suite : pickle_suite {
   }
 };
 
+template<class T>
+inline PyObject * managingPyObject(T *p) {
+    return typename bp::manage_new_object::apply<T *>::type()(p);
+}
+
+template<class Copyable>
+bp::object generic__copy__(bp::object copyable) {
+    Copyable *newCopyable(new Copyable(bp::extract<const Copyable&>(copyable)));
+    bp::object result(bp::detail::new_reference(managingPyObject(newCopyable)));
+
+    bp::extract<bp::dict>(result.attr("__dict__"))().update(copyable.attr("__dict__"));
+
+    return result;
+}
+
+template<class Copyable>
+bp::object generic__deepcopy__(bp::object copyable, bp::dict memo) {
+    bp::object copyMod = bp::import("copy");
+    bp::object deepcopy = copyMod.attr("deepcopy");
+
+    Copyable *newCopyable(new Copyable(bp::extract<const Copyable&>(copyable)));
+    bp::object result(bp::detail::new_reference(managingPyObject(newCopyable)));
+
+    // HACK: copyableId shall be the same as the result of id(copyable) in Python -
+    // please tell me that there is a better way! (and which ;-p)
+    int copyableId = (long long)(copyable.ptr());
+    memo[copyableId] = result;
+
+    bp::extract<bp::dict>(result.attr("__dict__"))().update(deepcopy(bp::extract<bp::dict>(copyable.attr("__dict__"))(), memo));
+    return result;
+}
+
 /* Template constructor bezier */
 template <typename Bezier, typename PointList, typename T_Point>
 Bezier* wrapBezierConstructorTemplate(const PointList& array,
@@ -949,6 +981,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(-self)
       .def(self * double())
       .def(self / double())
+      .def("__copy__", &generic__copy__<bezier3_t>)
+      .def("__deepcopy__", &generic__deepcopy__<bezier3_t>)
       .def_pickle(curve_pickle_suite<bezier3_t>());
   /** END bezier3 curve**/
   /** BEGIN bezier curve**/
@@ -1017,6 +1051,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(self * double())
       .def(self / double())
       //.def(SerializableVisitor<bezier_t>())
+      .def("__copy__", &generic__copy__<bezier_t>)
+      .def("__deepcopy__", &generic__deepcopy__<bezier_t>)
       .def_pickle(curve_pickle_suite<bezier_t>());
   /** END bezier curve**/
   /** BEGIN variable points bezier curve**/
@@ -1112,6 +1148,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(-self)
       .def(self * double())
       .def(self / double())
+      .def("__copy__", &generic__copy__<bezier_linear_variable_t>)
+      .def("__deepcopy__", &generic__deepcopy__<bezier_linear_variable_t>)
       .def_pickle(curve_pickle_suite<bezier_linear_variable_t>());
 
   class_<quadratic_variable_t>("cost", no_init)
@@ -1223,6 +1261,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(-self)
       .def(self * double())
       .def(self / double())
+      .def("__copy__", &generic__copy__<polynomial_t>)
+      .def("__deepcopy__", &generic__deepcopy__<polynomial_t>)
       .def_pickle(curve_pickle_suite<polynomial_t>());
 
   /** END polynomial function**/
@@ -1313,6 +1353,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<piecewise_t>)
+      .def("__deepcopy__", &generic__deepcopy__<piecewise_t>)
       .def_pickle(curve_pickle_suite<piecewise_t>());
 
   class_<piecewise_bezier_t, bases<curve_abc_t>,
@@ -1350,6 +1392,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<piecewise_bezier_t>)
+      .def("__deepcopy__", &generic__deepcopy__<piecewise_bezier_t>)
       .def_pickle(curve_pickle_suite<piecewise_bezier_t>());
 
   class_<piecewise_linear_bezier_t, bases<curve_abc_t>,
@@ -1393,6 +1437,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
           bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<piecewise_linear_bezier_t>)
+      .def("__deepcopy__", &generic__deepcopy__<piecewise_linear_bezier_t>)
       .def_pickle(curve_pickle_suite<piecewise_linear_bezier_t>());
 
   class_<piecewise_SE3_t, bases<curve_SE3_t>,
@@ -1433,6 +1479,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<piecewise_SE3_t>)
+      .def("__deepcopy__", &generic__deepcopy__<piecewise_SE3_t>)
       .def_pickle(curve_pickle_suite<piecewise_SE3_t>())
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("append", &addFinalSE3,
@@ -1465,6 +1513,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<exact_cubic_t>)
+      .def("__deepcopy__", &generic__deepcopy__<exact_cubic_t>)
       .def_pickle(curve_pickle_suite<exact_cubic_t>());
 
   /** END exact_cubic curve**/
@@ -1493,6 +1543,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<cubic_hermite_spline_t>)
+      .def("__deepcopy__", &generic__deepcopy__<cubic_hermite_spline_t>)
       .def_pickle(curve_pickle_suite<cubic_hermite_spline_t>());
 
   /** END cubic_hermite_spline **/
@@ -1523,6 +1575,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("loadFromBinary",
            &curve_constraints_t::loadFromBinary<curve_constraints_t>,
            bp::args("filename"), "Loads *this from a binary file.")
+      .def("__copy__", &generic__copy__<curve_constraints_t>)
+      .def("__deepcopy__", &generic__deepcopy__<curve_constraints_t>)
       .def_pickle(curve_pickle_suite<curve_constraints_t>());
   ;
   /** END curve constraints**/
@@ -1569,6 +1623,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<SO3Linear_t>)
+      .def("__deepcopy__", &generic__deepcopy__<SO3Linear_t>)
       .def_pickle(curve_pickle_suite<SO3Linear_t>());
 
   /** END  SO3 Linear**/
@@ -1642,6 +1698,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<SE3Curve_t>)
+      .def("__deepcopy__", &generic__deepcopy__<SE3Curve_t>)
       .def_pickle(curve_pickle_suite<SE3Curve_t>())
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("__init__",
@@ -1686,6 +1744,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<constant_t>)
+      .def("__deepcopy__", &generic__deepcopy__<constant_t>)
       .def_pickle(curve_pickle_suite<constant_t>());
   /** END constant function**/
   /** BEGIN constant 3 curve function**/
@@ -1718,6 +1778,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<constant3_t>)
+      .def("__deepcopy__", &generic__deepcopy__<constant3_t>)
       .def_pickle(curve_pickle_suite<constant3_t>());
   /** END constant 3 function**/
   /** BEGIN sinusoidal curve function**/
@@ -1763,6 +1825,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
            bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
+      .def("__copy__", &generic__copy__<sinusoidal_t>)
+      .def("__deepcopy__", &generic__deepcopy__<sinusoidal_t>)
       .def_pickle(curve_pickle_suite<sinusoidal_t>());
   /** END sinusoidal function**/
   /** BEGIN curves conversion**/
