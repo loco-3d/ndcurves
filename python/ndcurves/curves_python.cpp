@@ -189,8 +189,6 @@ bp::object generic__deepcopy__(bp::object copyable, bp::dict memo) {
     Copyable *newCopyable(new Copyable(bp::extract<const Copyable&>(copyable)));
     bp::object result(bp::detail::new_reference(managingPyObject(newCopyable)));
 
-    // HACK: copyableId shall be the same as the result of id(copyable) in Python -
-    // please tell me that there is a better way! (and which ;-p)
     int copyableId = (long long)(copyable.ptr());
     memo[copyableId] = result;
 
