@@ -1,12 +1,9 @@
 import unittest
 
-import eigenpy
 from numpy import array, dot, identity, zeros
 
 # importing the bezier curve class
 from ndcurves import bezier
-
-eigenpy.switchToNumpyArray()
 
 
 # dummy methods

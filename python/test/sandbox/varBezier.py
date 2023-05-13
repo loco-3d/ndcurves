@@ -1,11 +1,9 @@
 from numpy import array, zeros
 
-import eigenpy
 from curves import bezier, bezierVar
 
 __EPS = 1e-6
 
-eigenpy.switchToNumpyArray()
 
 _zeroMat = array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]).transpose()
 _I3 = array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]).transpose()
