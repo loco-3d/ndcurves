@@ -18,13 +18,26 @@ endif(NOT INSTALL_PYTHON_INTERFACE_ONLY)
 set(CXX_DISABLE_WERROR TRUE)
 
 # JRL-cmakemodule setup
-include(cmake/base.cmake)
-include(cmake/boost.cmake)
+set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+  message(STATUS "JRL cmakemodules not found. Let's fetch it.")
+  include(FetchContent)
+  FetchContent_Declare(
+    "jrl-cmakemodules"
+    GIT_REPOSITORY "https://github.com/jrl-umi3218/jrl-cmakemodules.git")
+  FetchContent_MakeAvailable("jrl-cmakemodules")
+  FetchContent_GetProperties("jrl-cmakemodules" SOURCE_DIR JRL_CMAKE_MODULES)
+endif()
+
+include("${JRL_CMAKE_MODULES}/base.cmake")
+include("${JRL_CMAKE_MODULES}/boost.cmake")
+
+set_default_cmake_build_type("Release")
 
 # Project definition
 compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
-check_minimal_cxx_standard(11 ENFORCE)
+check_minimal_cxx_standard(14 ENFORCE)
 
 # Project dependencies
 find_package(Eigen3 QUIET NO_CMAKE_PACKAGE_REGISTRY)
