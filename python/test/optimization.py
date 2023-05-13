@@ -16,7 +16,6 @@ eigenpy.switchToNumpyArray()
 
 
 class TestProblemDefinition(unittest.TestCase):
-
     # generate problem data
     def test_problem_definition(self):
         pD = problem_definition(3)

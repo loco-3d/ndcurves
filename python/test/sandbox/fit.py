@@ -59,7 +59,6 @@ def default_fit(
 # return A, b
 
 if __name__ == "__main__":
-
     waypoints = array(
         [
             [1.0, 2.0, 3.0, 0.0],
