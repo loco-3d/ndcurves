@@ -1,11 +1,9 @@
-import eigenpy
 from numpy import array
 
 from curves import bezierVar
 
 __EPS = 1e-6
 
-eigenpy.switchToNumpyArray()
 
 waypointsA = array(
     [

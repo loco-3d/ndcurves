@@ -1,11 +1,8 @@
-import eigenpy
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import array
 
 from .ndcurves import bezier
-
-eigenpy.switchToNumpyArray()
 
 
 def plotControlPoints2D(bez, axes=[0, 1], color="r", ax=None):

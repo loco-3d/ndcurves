@@ -2,7 +2,6 @@ import os
 import unittest
 from math import sqrt
 
-import eigenpy
 import numpy as np
 from numpy import array, array_equal, isclose, random, zeros
 from numpy.linalg import norm
@@ -25,7 +24,6 @@ from ndcurves import (
     polynomial,
 )
 
-eigenpy.switchToNumpyArray()
 
 if CURVES_WITH_PINOCCHIO_SUPPORT:
     from pinocchio import SE3, Motion

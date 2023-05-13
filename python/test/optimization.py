@@ -1,6 +1,5 @@
 import unittest
 
-import eigenpy
 from numpy import array, matrix, zeros
 from numpy.linalg import norm
 
@@ -11,8 +10,6 @@ from ndcurves.optimization import (
     problem_definition,
     setup_control_points,
 )
-
-eigenpy.switchToNumpyArray()
 
 
 class TestProblemDefinition(unittest.TestCase):
