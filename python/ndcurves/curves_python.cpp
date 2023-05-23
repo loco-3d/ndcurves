@@ -1522,10 +1522,9 @@ BOOST_PYTHON_MODULE(ndcurves) {
   class_<cubic_hermite_spline_t, bases<curve_abc_t>,
          boost::shared_ptr<cubic_hermite_spline_t> >("cubic_hermite_spline",
                                                      init<>(args("self")))
-      .def("__init__",
-           make_constructor(&wrapCubicHermiteSplineConstructor,
-                            bp::default_call_policies(),
-                            args("points", "tangents", "times")))
+      .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor,
+                                        bp::default_call_policies(),
+                                        args("points", "tangents", "times")))
       .def("saveAsText",
            &cubic_hermite_spline_t::saveAsText<cubic_hermite_spline_t>,
            bp::args("filename"), "Saves *this inside a text file.")
@@ -1553,7 +1552,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END cubic_hermite_spline **/
   /** BEGIN curve constraints**/
   class_<curve_constraints_t>("curve_constraints", init<>())
-      .def(bp::init<int>(args("self", "dimension"), "Init with a given dimension."))
+      .def(bp::init<int>(args("self", "dimension"),
+                         "Init with a given dimension."))
       .add_property("init_vel", &get_init_vel, &set_init_vel)
       .add_property("init_acc", &get_init_acc, &set_init_acc)
       .add_property("init_jerk", &get_init_jerk, &set_init_jerk)
