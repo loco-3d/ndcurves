@@ -1,3 +1,7 @@
+if(GENERATE_PYTHON_STUBS)
+  include("${JRL_CMAKE_MODULES}/stubs.cmake")
+endif(GENERATE_PYTHON_STUBS)
+
 set(${PROJECT_NAME}_WRAP_SOURCES
     curves_python.cpp
     optimization_python.cpp
@@ -18,6 +22,12 @@ target_compile_options(${wrap} PRIVATE "-Wno-conversion")
 target_link_libraries(${wrap} PUBLIC ${PROJECT_NAME})
 target_link_libraries(${wrap} PUBLIC eigenpy::eigenpy)
 target_link_boost_python(${wrap} PUBLIC)
+
+if(GENERATE_PYTHON_STUBS)
+  load_stubgen()
+  generate_stubs(${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${PYTHON_SITELIB}
+                 ${wrap})
+endif(GENERATE_PYTHON_STUBS)
 
 if(APPLE)
   # We need to change the extension for python bindings
