@@ -31,6 +31,12 @@ endif()
 
 include("${JRL_CMAKE_MODULES}/base.cmake")
 include("${JRL_CMAKE_MODULES}/boost.cmake")
+include(CMakeDependentOption)
+
+cmake_dependent_option(
+  GENERATE_PYTHON_STUBS
+  "Generate the Python stubs associated to the Python library" OFF
+  BUILD_PYTHON_INTERFACE ON)
 
 set_default_cmake_build_type("Release")
 

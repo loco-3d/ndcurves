@@ -1325,7 +1325,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_t::is_continuous,
            "Check if the curve is continuous at the given order.",
-           args("self,order"))
+           args("self", "order"))
       .def("convert_piecewise_curve_to_polynomial",
            &piecewise_t::convert_piecewise_curve_to_polynomial<polynomial_t>,
            "Convert a piecewise curve to to a piecewise polynomial curve")
@@ -1371,7 +1371,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_bezier_t::is_continuous,
            "Check if the curve is continuous at the given order.",
-           args("self,order"))
+           args("self", "order"))
       .def("curve_at_index", &piecewise_bezier_t::curve_at_index)
       .def("curve_at_time", &piecewise_bezier_t::curve_at_time)
       .def("num_curves", &piecewise_bezier_t::num_curves)
@@ -1398,7 +1398,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   class_<piecewise_linear_bezier_t, bases<curve_abc_t>,
          boost::shared_ptr<piecewise_linear_bezier_t> >(
-      "piecewise_bezier_linear", init<>())
+      "piecewise_bezier_linear", init<>(args("self")))
       .def("__init__",
            make_constructor(&wrapPiecewiseBezierLinearConstructor,
                             default_call_policies(), arg("curve")),
@@ -1412,7 +1412,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "where T_{min} is equal toT_{max} of the actual piecewise curve.")
       .def("is_continuous", &piecewise_linear_bezier_t::is_continuous,
            "Check if the curve is continuous at the given order.",
-           args("self,order"))
+           args("self", "order"))
       .def("curve_at_index", &piecewise_linear_bezier_t::curve_at_index)
       .def("curve_at_time", &piecewise_linear_bezier_t::curve_at_time)
       .def("num_curves", &piecewise_linear_bezier_t::num_curves)
@@ -1453,10 +1453,10 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "Add a new curve to piecewise curve, which should be defined in "
            "T_{min},T_{max}] "
            "where T_{min} is equal toT_{max} of the actual piecewise curve.",
-           args("self,curve"))
+           args("self", "curve"))
       .def("is_continuous", &piecewise_SE3_t::is_continuous,
            "Check if the curve is continuous at the given order.",
-           args("self,order"))
+           args("self", "order"))
       .def("curve_at_index", &piecewise_SE3_t::curve_at_index)
       .def("curve_at_time", &piecewise_SE3_t::curve_at_time)
       .def("num_curves", &piecewise_SE3_t::num_curves)
@@ -1497,8 +1497,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       "exact_cubic", init<>())
       .def("__init__", make_constructor(&wrapExactCubicConstructor))
       .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
-      .def("getNumberSplines", &exact_cubic_t::getNumberSplines)
-      .def("getSplineAt", &exact_cubic_t::getSplineAt)
+      .def("getNumberSplines", &exact_cubic_t::getNumberSplines, args("self"))
+      .def("getSplineAt", &exact_cubic_t::getSplineAt, args("self", "index"))
       .def("saveAsText", &exact_cubic_t::saveAsText<exact_cubic_t>,
            bp::args("filename"), "Saves *this inside a text file.")
       .def("loadFromText", &exact_cubic_t::loadFromText<exact_cubic_t>,
@@ -1521,8 +1521,10 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** BEGIN cubic_hermite_spline **/
   class_<cubic_hermite_spline_t, bases<curve_abc_t>,
          boost::shared_ptr<cubic_hermite_spline_t> >("cubic_hermite_spline",
-                                                     init<>())
-      .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor))
+                                                     init<>(args("self")))
+      .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor,
+                                        bp::default_call_policies(),
+                                        args("points", "tangents", "times")))
       .def("saveAsText",
            &cubic_hermite_spline_t::saveAsText<cubic_hermite_spline_t>,
            bp::args("filename"), "Saves *this inside a text file.")
@@ -1550,7 +1552,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END cubic_hermite_spline **/
   /** BEGIN curve constraints**/
   class_<curve_constraints_t>("curve_constraints", init<>())
-      .def(bp::init<int>(bp::arg("dimension"), "Init with a given dimension."))
+      .def(bp::init<int>(args("self", "dimension"),
+                         "Init with a given dimension."))
       .add_property("init_vel", &get_init_vel, &set_init_vel)
       .add_property("init_acc", &get_init_acc, &set_init_acc)
       .add_property("init_jerk", &get_init_jerk, &set_init_jerk)
