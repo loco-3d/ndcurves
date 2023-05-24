@@ -12,16 +12,16 @@ set(${PROJECT_NAME}_WRAP_SOURCES
     namespace.h)
 
 set(wrap ${PROJECT_NAME}_wrap)
+set(${wrap}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 add_library(${wrap} SHARED ${${PROJECT_NAME}_WRAP_SOURCES})
+get_relative_rpath(${${wrap}_INSTALL_DIR} ${wrap}_INSTALL_RPATH)
 set_target_properties(
   ${wrap}
   PROPERTIES PREFIX ""
              OUTPUT_NAME ${PROJECT_NAME}
-             INSTALL_RPATH "\$ORIGIN/../../..")
+             INSTALL_RPATH "${${wrap}_INSTALL_RPATH}")
 target_compile_options(${wrap} PRIVATE "-Wno-conversion")
-target_link_libraries(${wrap} PUBLIC ${PROJECT_NAME})
-target_link_libraries(${wrap} PUBLIC eigenpy::eigenpy)
-target_link_boost_python(${wrap} PUBLIC)
+target_link_libraries(${wrap} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
 
 if(GENERATE_PYTHON_STUBS)
   load_stubgen()
@@ -34,4 +34,4 @@ if(APPLE)
   set_target_properties(${wrap} PROPERTIES SUFFIX ".so")
 endif(APPLE)
 
-install(TARGETS ${wrap} DESTINATION ${PYTHON_SITELIB}/${PROJECT_NAME})
+install(TARGETS ${wrap} DESTINATION ${${wrap}_INSTALL_DIR})
