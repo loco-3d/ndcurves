@@ -31,6 +31,7 @@ endif()
 
 include("${JRL_CMAKE_MODULES}/base.cmake")
 include("${JRL_CMAKE_MODULES}/boost.cmake")
+include("${JRL_CMAKE_MODULES}/python.cmake")
 include(CMakeDependentOption)
 
 cmake_dependent_option(
