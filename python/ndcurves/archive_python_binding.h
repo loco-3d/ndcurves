@@ -13,23 +13,20 @@ struct SerializableVisitor
     : public boost::python::def_visitor<SerializableVisitor<Derived> > {
   template <class PyClass>
   void visit(PyClass& cl) const {
-    cl
-        // TO DO : try to define save and load functions with template
-        /*
-        .def("saveAsText",&Derived::saveAsText,bp::args("filename"),"Saves *this
-        inside a text file.")
-        .def("loadFromText",&Derived::loadFromText,bp::args("filename"),"Loads
-        *this from a text file.")
-        .def("saveAsXML",&Derived::saveAsXML,bp::args("filename","tag_name"),"Saves
-        *this inside a XML file.")
-        .def("loadFromXML",&Derived::loadFromXML,bp::args("filename","tag_name"),"Loads
-        *this from a XML file.")
-        .def("saveAsBinary",&Derived::saveAsBinary,bp::args("filename"),"Saves
-        *this inside a binary file.")
-        .def("loadFromBinary",&Derived::loadFromBinary,bp::args("filename"),"Loads
-        *this from a binary file.")
-        */
-        ;
+    cl.def("saveAsText", &Derived::template saveAsText<Derived>,
+           bp::args("self", "filename"), "Saves *this inside a text file.")
+        .def("loadFromText", &Derived::template loadFromText<Derived>,
+             bp::args("self", "filename"), "Loads *this from a text file.")
+        .def("saveAsXML", &Derived::template saveAsXML<Derived>,
+             bp::args("self", "filename", "tag_name"),
+             "Saves *this inside a XML file.")
+        .def("loadFromXML", &Derived::template loadFromXML<Derived>,
+             bp::args("self", "filename", "tag_name"),
+             "Loads *this from a XML file.")
+        .def("saveAsBinary", &Derived::template saveAsBinary<Derived>,
+             bp::args("self", "filename"), "Saves *this inside a binary file.")
+        .def("loadFromBinary", &Derived::template loadFromBinary<Derived>,
+             bp::args("self", "filename"), "Loads *this from a binary file.");
   }
 };
 }  // namespace ndcurves

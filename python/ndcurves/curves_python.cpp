@@ -198,6 +198,15 @@ bp::object generic__deepcopy__(bp::object copyable, bp::dict memo) {
   return result;
 }
 
+template <class T>
+struct CopyableVisitor : public def_visitor<CopyableVisitor<T>> {
+  template <class PyClass>
+  void visit(PyClass& cl) const {
+    cl.def("__copy__", &generic__copy__<T>)
+        .def("__deepcopy__", &generic__deepcopy__<T>);
+  }
+};
+
 /* Template constructor bezier */
 template <typename Bezier, typename PointList, typename T_Point>
 Bezier* wrapBezierConstructorTemplate(const PointList& array,
@@ -773,7 +782,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END eigenpy init**/
   /** Expose base abstracts class for each dimension/type : **/
   class_<curve_abc_t, boost::noncopyable,
-         boost::shared_ptr<curve_abc_callback> >("curve")
+         boost::shared_ptr<curve_abc_callback>>("curve")
       .def("__call__", &curve_abc_t::operator(),
            "Evaluate the curve at the given time.", args("self", "t"))
       .def("derivate", &curve_abc_t::derivate,
@@ -814,7 +823,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<curve_abc_t>());
 
   class_<curve_3_t, boost::noncopyable, bases<curve_abc_t>,
-         boost::shared_ptr<curve_3_callback> >("curve3")
+         boost::shared_ptr<curve_3_callback>>("curve3")
       .def("__call__", &curve_3_t::operator(),
            "Evaluate the curve at the given time.", args("self", "t"))
       .def("derivate", &curve_3_t::derivate,
@@ -840,7 +849,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<curve_3_t>());
 
   class_<curve_rotation_t, boost::noncopyable, bases<curve_abc_t>,
-         boost::shared_ptr<curve_rotation_callback> >("curve_rotation")
+         boost::shared_ptr<curve_rotation_callback>>("curve_rotation")
       .def("__call__", &curve_rotation_t::operator(),
            "Evaluate the curve at the given time.", args("self", "t"))
       .def("derivate", &curve_rotation_t::derivate,
@@ -866,7 +875,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<curve_rotation_t>());
 
   class_<curve_SE3_t, boost::noncopyable, bases<curve_abc_t>,
-         boost::shared_ptr<curve_SE3_callback> >("curve_SE3")
+         boost::shared_ptr<curve_SE3_callback>>("curve_SE3")
       .def("__call__", &se3Return,
            "Evaluate the curve at the given time. Return as an homogeneous "
            "matrix.",
@@ -919,8 +928,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       &bezier3_t::cross;
   bezier3_t (bezier3_t::*cross_pointBez3)(const bezier3_t::point_t&) const =
       &bezier3_t::cross;
-  class_<bezier3_t, bases<curve_3_t>, boost::shared_ptr<bezier3_t> >("bezier3",
-                                                                     init<>())
+  class_<bezier3_t, bases<curve_3_t>, boost::shared_ptr<bezier3_t>>("bezier3",
+                                                                    init<>())
       .def("__init__", make_constructor(&wrapBezier3Constructor))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
       .def("__init__", make_constructor(&wrapBezier3ConstructorConstraints))
@@ -981,16 +990,15 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(-self)
       .def(self * double())
       .def(self / double())
-      .def("__copy__", &generic__copy__<bezier3_t>)
-      .def("__deepcopy__", &generic__deepcopy__<bezier3_t>)
+      .def(CopyableVisitor<bezier3_t>())
       .def_pickle(curve_pickle_suite<bezier3_t>());
   /** END bezier3 curve**/
   /** BEGIN bezier curve**/
   bezier_t (bezier_t::*cross_bez)(const bezier_t&) const = &bezier_t::cross;
   bezier_t (bezier_t::*cross_pointBez)(const bezier_t::point_t&) const =
       &bezier_t::cross;
-  class_<bezier_t, bases<curve_abc_t>, boost::shared_ptr<bezier_t> >("bezier",
-                                                                     init<>())
+  class_<bezier_t, bases<curve_abc_t>, boost::shared_ptr<bezier_t>>("bezier",
+                                                                    init<>())
       .def("__init__", make_constructor(&wrapBezierConstructor))
       .def("__init__", make_constructor(&wrapBezierConstructorBounds))
       .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
@@ -1012,18 +1020,6 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_readonly("degree", &bezier_t::degree_)
       .def_readonly("nbWaypoints", &bezier_t::size_)
       .def("split", splitspe)
-      .def("saveAsText", &bezier_t::saveAsText<bezier_t>, bp::args("filename"),
-           "Saves *this inside a text file.")
-      .def("loadFromText", &bezier_t::loadFromText<bezier_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &bezier_t::saveAsXML<bezier_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &bezier_t::loadFromXML<bezier_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &bezier_t::saveAsBinary<bezier_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &bezier_t::loadFromBinary<bezier_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
       .def("cross", cross_bez, bp::args("other"),
@@ -1050,9 +1046,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(-self)
       .def(self * double())
       .def(self / double())
-      //.def(SerializableVisitor<bezier_t>())
-      .def("__copy__", &generic__copy__<bezier_t>)
-      .def("__deepcopy__", &generic__deepcopy__<bezier_t>)
+      .def(SerializableVisitor<bezier_t>())
+      .def(CopyableVisitor<bezier_t>())
       .def_pickle(curve_pickle_suite<bezier_t>());
   /** END bezier curve**/
   /** BEGIN variable points bezier curve**/
@@ -1098,8 +1093,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       const bezier_linear_variable_t::point_t&) const =
       &bezier_linear_variable_t::cross;
   class_<bezier_linear_variable_t, bases<curve_abc_t>,
-         boost::shared_ptr<bezier_linear_variable_t> >("bezier_linear_variable",
-                                                       no_init)
+         boost::shared_ptr<bezier_linear_variable_t>>("bezier_linear_variable",
+                                                      no_init)
       .def("__init__", make_constructor(&wrapBezierLinearConstructor))
       .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
       .def("min", &bezier_linear_variable_t::min)
@@ -1148,8 +1143,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(-self)
       .def(self * double())
       .def(self / double())
-      .def("__copy__", &generic__copy__<bezier_linear_variable_t>)
-      .def("__deepcopy__", &generic__deepcopy__<bezier_linear_variable_t>)
+      .def(CopyableVisitor<bezier_linear_variable_t>())
       .def_pickle(curve_pickle_suite<bezier_linear_variable_t>());
 
   class_<quadratic_variable_t>("cost", no_init)
@@ -1164,7 +1158,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
   polynomial_t (polynomial_t::*cross_point)(const polynomial_t::point_t&)
       const = &polynomial_t::cross;
 
-  class_<polynomial_t, bases<curve_abc_t>, boost::shared_ptr<polynomial_t> >(
+  class_<polynomial_t, bases<curve_abc_t>, boost::shared_ptr<polynomial_t>>(
       "polynomial", init<>())
       .def(
           "__init__",
@@ -1223,18 +1217,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .staticmethod("MinimumJerk")
       .def("coeffAtDegree", &polynomial_t::coeffAtDegree)
       .def("coeff", &polynomial_t::coeff)
-      .def("saveAsText", &polynomial_t::saveAsText<polynomial_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &polynomial_t::loadFromText<polynomial_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &polynomial_t::saveAsXML<polynomial_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &polynomial_t::loadFromXML<polynomial_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &polynomial_t::saveAsBinary<polynomial_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &polynomial_t::loadFromBinary<polynomial_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<polynomial_t>())
       .def("cross", cross_pol, bp::args("other"),
            "Compute the cross product of the current polynomial by another "
            "polynomial. The cross product p1Xp2 of 2 "
@@ -1261,13 +1244,12 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(-self)
       .def(self * double())
       .def(self / double())
-      .def("__copy__", &generic__copy__<polynomial_t>)
-      .def("__deepcopy__", &generic__deepcopy__<polynomial_t>)
+      .def(CopyableVisitor<polynomial_t>())
       .def_pickle(curve_pickle_suite<polynomial_t>());
 
   /** END polynomial function**/
   /** BEGIN piecewise curve function **/
-  class_<piecewise_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_t> >(
+  class_<piecewise_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_t>>(
       "piecewise", init<>())
       .def("__init__",
            make_constructor(&wrapPiecewiseCurveConstructor,
@@ -1339,26 +1321,14 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("curve_at_index", &piecewise_t::curve_at_index)
       .def("curve_at_time", &piecewise_t::curve_at_time)
       .def("num_curves", &piecewise_t::num_curves)
-      .def("saveAsText", &piecewise_t::saveAsText<piecewise_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &piecewise_t::loadFromText<piecewise_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &piecewise_t::saveAsXML<piecewise_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &piecewise_t::loadFromXML<piecewise_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &piecewise_t::saveAsBinary<piecewise_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &piecewise_t::loadFromBinary<piecewise_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<piecewise_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<piecewise_t>)
-      .def("__deepcopy__", &generic__deepcopy__<piecewise_t>)
+      .def(CopyableVisitor<piecewise_t>())
       .def_pickle(curve_pickle_suite<piecewise_t>());
 
   class_<piecewise_bezier_t, bases<curve_abc_t>,
-         boost::shared_ptr<piecewise_bezier_t> >("piecewise_bezier", init<>())
+         boost::shared_ptr<piecewise_bezier_t>>("piecewise_bezier", init<>())
       .def("__init__",
            make_constructor(&wrapPiecewiseBezierConstructor,
                             default_call_policies(), arg("curve")),
@@ -1375,29 +1345,14 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("curve_at_index", &piecewise_bezier_t::curve_at_index)
       .def("curve_at_time", &piecewise_bezier_t::curve_at_time)
       .def("num_curves", &piecewise_bezier_t::num_curves)
-      .def("saveAsText", &piecewise_bezier_t::saveAsText<piecewise_bezier_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText",
-           &piecewise_bezier_t::loadFromText<piecewise_bezier_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &piecewise_bezier_t::saveAsXML<piecewise_bezier_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &piecewise_bezier_t::loadFromXML<piecewise_bezier_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary",
-           &piecewise_bezier_t::saveAsBinary<piecewise_bezier_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary",
-           &piecewise_bezier_t::loadFromBinary<piecewise_bezier_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<piecewise_bezier_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<piecewise_bezier_t>)
-      .def("__deepcopy__", &generic__deepcopy__<piecewise_bezier_t>)
+      .def(CopyableVisitor<piecewise_bezier_t>())
       .def_pickle(curve_pickle_suite<piecewise_bezier_t>());
 
   class_<piecewise_linear_bezier_t, bases<curve_abc_t>,
-         boost::shared_ptr<piecewise_linear_bezier_t> >(
+         boost::shared_ptr<piecewise_linear_bezier_t>>(
       "piecewise_bezier_linear", init<>(args("self")))
       .def("__init__",
            make_constructor(&wrapPiecewiseBezierLinearConstructor,
@@ -1416,33 +1371,14 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("curve_at_index", &piecewise_linear_bezier_t::curve_at_index)
       .def("curve_at_time", &piecewise_linear_bezier_t::curve_at_time)
       .def("num_curves", &piecewise_linear_bezier_t::num_curves)
-      .def("saveAsText",
-           &piecewise_linear_bezier_t::saveAsText<piecewise_linear_bezier_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText",
-           &piecewise_linear_bezier_t::loadFromText<piecewise_linear_bezier_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML",
-           &piecewise_linear_bezier_t::saveAsXML<piecewise_linear_bezier_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML",
-           &piecewise_linear_bezier_t::loadFromXML<piecewise_linear_bezier_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary",
-           &piecewise_linear_bezier_t::saveAsBinary<piecewise_linear_bezier_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def(
-          "loadFromBinary",
-          &piecewise_linear_bezier_t::loadFromBinary<piecewise_linear_bezier_t>,
-          bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<piecewise_linear_bezier_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<piecewise_linear_bezier_t>)
-      .def("__deepcopy__", &generic__deepcopy__<piecewise_linear_bezier_t>)
+      .def(CopyableVisitor<piecewise_linear_bezier_t>())
       .def_pickle(curve_pickle_suite<piecewise_linear_bezier_t>());
 
   class_<piecewise_SE3_t, bases<curve_SE3_t>,
-         boost::shared_ptr<piecewise_SE3_t> >("piecewise_SE3", init<>())
+         boost::shared_ptr<piecewise_SE3_t>>("piecewise_SE3", init<>())
       .def("__init__",
            make_constructor(&wrapPiecewiseSE3Constructor,
                             default_call_policies(), arg("curve")),
@@ -1465,22 +1401,10 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "defined between self.max() "
            "and time and connecting exactly self(self.max()) and end",
            args("self", "end", "time"))
-      .def("saveAsText", &piecewise_SE3_t::saveAsText<piecewise_SE3_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &piecewise_SE3_t::loadFromText<piecewise_SE3_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &piecewise_SE3_t::saveAsXML<piecewise_SE3_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &piecewise_SE3_t::loadFromXML<piecewise_SE3_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &piecewise_SE3_t::saveAsBinary<piecewise_SE3_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &piecewise_SE3_t::loadFromBinary<piecewise_SE3_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<piecewise_SE3_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<piecewise_SE3_t>)
-      .def("__deepcopy__", &generic__deepcopy__<piecewise_SE3_t>)
+      .def(CopyableVisitor<piecewise_SE3_t>())
       .def_pickle(curve_pickle_suite<piecewise_SE3_t>())
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("append", &addFinalSE3,
@@ -1493,60 +1417,36 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END piecewise curve function **/
   /** BEGIN exact_cubic curve**/
-  class_<exact_cubic_t, bases<curve_abc_t>, boost::shared_ptr<exact_cubic_t> >(
-      "exact_cubic", init<>())
-      .def("__init__", make_constructor(&wrapExactCubicConstructor))
-      .def("__init__", make_constructor(&wrapExactCubicConstructorConstraint))
+  class_<exact_cubic_t, bases<curve_abc_t>, boost::shared_ptr<exact_cubic_t>>(
+      "exact_cubic", init<>(args("self")))
+      .def("__init__",
+           make_constructor(&wrapExactCubicConstructor, default_call_policies(),
+                            args("array", "time_wp")))
+      .def("__init__",
+           make_constructor(&wrapExactCubicConstructorConstraint,
+                            default_call_policies(),
+                            args("array", "time_wp", "constraints")))
       .def("getNumberSplines", &exact_cubic_t::getNumberSplines, args("self"))
       .def("getSplineAt", &exact_cubic_t::getSplineAt, args("self", "index"))
-      .def("saveAsText", &exact_cubic_t::saveAsText<exact_cubic_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &exact_cubic_t::loadFromText<exact_cubic_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &exact_cubic_t::saveAsXML<exact_cubic_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &exact_cubic_t::loadFromXML<exact_cubic_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &exact_cubic_t::saveAsBinary<exact_cubic_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &exact_cubic_t::loadFromBinary<exact_cubic_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<exact_cubic_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<exact_cubic_t>)
-      .def("__deepcopy__", &generic__deepcopy__<exact_cubic_t>)
+      .def(CopyableVisitor<exact_cubic_t>())
       .def_pickle(curve_pickle_suite<exact_cubic_t>());
 
   /** END exact_cubic curve**/
   /** BEGIN cubic_hermite_spline **/
   class_<cubic_hermite_spline_t, bases<curve_abc_t>,
-         boost::shared_ptr<cubic_hermite_spline_t> >("cubic_hermite_spline",
-                                                     init<>(args("self")))
+         boost::shared_ptr<cubic_hermite_spline_t>>("cubic_hermite_spline",
+                                                    init<>(args("self")))
       .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor,
                                         bp::default_call_policies(),
                                         args("points", "tangents", "times")))
-      .def("saveAsText",
-           &cubic_hermite_spline_t::saveAsText<cubic_hermite_spline_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText",
-           &cubic_hermite_spline_t::loadFromText<cubic_hermite_spline_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML",
-           &cubic_hermite_spline_t::saveAsXML<cubic_hermite_spline_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML",
-           &cubic_hermite_spline_t::loadFromXML<cubic_hermite_spline_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary",
-           &cubic_hermite_spline_t::saveAsBinary<cubic_hermite_spline_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary",
-           &cubic_hermite_spline_t::loadFromBinary<cubic_hermite_spline_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<cubic_hermite_spline_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<cubic_hermite_spline_t>)
-      .def("__deepcopy__", &generic__deepcopy__<cubic_hermite_spline_t>)
+      .def(CopyableVisitor<cubic_hermite_spline_t>())
+      .def(bp::self == bp::self)
       .def_pickle(curve_pickle_suite<cubic_hermite_spline_t>());
 
   /** END cubic_hermite_spline **/
@@ -1562,24 +1462,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .add_property("end_jerk", &get_end_jerk, &set_end_jerk)
       .def("__eq__", &curve_constraints_t::operator==)
       .def("__ne__", &curve_constraints_t::operator!=)
-      .def("saveAsText", &curve_constraints_t::saveAsText<curve_constraints_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText",
-           &curve_constraints_t::loadFromText<curve_constraints_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &curve_constraints_t::saveAsXML<curve_constraints_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML",
-           &curve_constraints_t::loadFromXML<curve_constraints_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary",
-           &curve_constraints_t::saveAsBinary<curve_constraints_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary",
-           &curve_constraints_t::loadFromBinary<curve_constraints_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
-      .def("__copy__", &generic__copy__<curve_constraints_t>)
-      .def("__deepcopy__", &generic__deepcopy__<curve_constraints_t>)
+      .def(SerializableVisitor<curve_constraints_t>())
+      .def(CopyableVisitor<curve_constraints_t>())
       .def_pickle(curve_pickle_suite<curve_constraints_t>());
   ;
   /** END curve constraints**/
@@ -1592,7 +1476,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END bernstein polynomial**/
 
   /** BEGIN SO3 Linear**/
-  class_<SO3Linear_t, bases<curve_rotation_t>, boost::shared_ptr<SO3Linear_t> >(
+  class_<SO3Linear_t, bases<curve_rotation_t>, boost::shared_ptr<SO3Linear_t>>(
       "SO3Linear", init<>())
       .def("__init__",
            make_constructor(
@@ -1612,27 +1496,15 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "Output the quaternion of the rotation at the given time. This "
            "rotation is obtained by a Spherical Linear "
            "Interpolation between the initial and final rotation.")
-      .def("saveAsText", &SO3Linear_t::saveAsText<SO3Linear_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &SO3Linear_t::loadFromText<SO3Linear_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &SO3Linear_t::saveAsXML<SO3Linear_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &SO3Linear_t::loadFromXML<SO3Linear_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &SO3Linear_t::saveAsBinary<SO3Linear_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &SO3Linear_t::loadFromBinary<SO3Linear_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<SO3Linear_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<SO3Linear_t>)
-      .def("__deepcopy__", &generic__deepcopy__<SO3Linear_t>)
+      .def(CopyableVisitor<SO3Linear_t>())
       .def_pickle(curve_pickle_suite<SO3Linear_t>());
 
   /** END  SO3 Linear**/
   /** BEGIN SE3 Curve**/
-  class_<SE3Curve_t, bases<curve_SE3_t>, boost::shared_ptr<SE3Curve_t> >(
+  class_<SE3Curve_t, bases<curve_SE3_t>, boost::shared_ptr<SE3Curve_t>>(
       "SE3Curve", init<>())
       .def("__init__",
            make_constructor(
@@ -1687,22 +1559,10 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "Return a curve corresponding to the translation part of self.")
       .def("rotation_curve", &SE3Curve_t::rotation_curve,
            "Return a curve corresponding to the rotation part of self.")
-      .def("saveAsText", &SE3Curve_t::saveAsText<SE3Curve_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &SE3Curve_t::loadFromText<SE3Curve_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &SE3Curve_t::saveAsXML<SE3Curve_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &SE3Curve_t::loadFromXML<SE3Curve_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &SE3Curve_t::saveAsBinary<SE3Curve_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &SE3Curve_t::loadFromBinary<SE3Curve_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<SE3Curve_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<SE3Curve_t>)
-      .def("__deepcopy__", &generic__deepcopy__<SE3Curve_t>)
+      .def(CopyableVisitor<SE3Curve_t>())
       .def_pickle(curve_pickle_suite<SE3Curve_t>())
 #ifdef CURVES_WITH_PINOCCHIO_SUPPORT
       .def("__init__",
@@ -1718,7 +1578,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END SE3 Curve**/
   /** BEGIN constant curve function**/
-  class_<constant_t, bases<curve_abc_t>, boost::shared_ptr<constant_t> >(
+  class_<constant_t, bases<curve_abc_t>, boost::shared_ptr<constant_t>>(
       "constant", init<>())
       .def("__init__",
            make_constructor(&wrapConstantConstructorTime,
@@ -1733,26 +1593,14 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "Create a constant curve defined for t in [0,inf]."
            " This curve always evaluate to the given value and derivate to "
            "zero value.")
-      .def("saveAsText", &constant_t::saveAsText<constant_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &constant_t::loadFromText<constant_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &constant_t::saveAsXML<constant_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &constant_t::loadFromXML<constant_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &constant_t::saveAsBinary<constant_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &constant_t::loadFromBinary<constant_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<constant_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<constant_t>)
-      .def("__deepcopy__", &generic__deepcopy__<constant_t>)
+      .def(CopyableVisitor<constant_t>())
       .def_pickle(curve_pickle_suite<constant_t>());
   /** END constant function**/
   /** BEGIN constant 3 curve function**/
-  class_<constant3_t, bases<curve_3_t>, boost::shared_ptr<constant3_t> >(
+  class_<constant3_t, bases<curve_3_t>, boost::shared_ptr<constant3_t>>(
       "constant3", init<>())
       .def("__init__",
            make_constructor(&wrapConstant3ConstructorTime,
@@ -1767,26 +1615,14 @@ BOOST_PYTHON_MODULE(ndcurves) {
            "Create a constant curve defined for t in [0,inf]."
            " This curve always evaluate to the given value and derivate to "
            "zero value.")
-      .def("saveAsText", &constant3_t::saveAsText<constant3_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &constant3_t::loadFromText<constant3_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &constant3_t::saveAsXML<constant3_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &constant3_t::loadFromXML<constant3_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &constant3_t::saveAsBinary<constant3_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &constant3_t::loadFromBinary<constant3_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<constant3_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<constant3_t>)
-      .def("__deepcopy__", &generic__deepcopy__<constant3_t>)
+      .def(CopyableVisitor<constant3_t>())
       .def_pickle(curve_pickle_suite<constant3_t>());
   /** END constant 3 function**/
   /** BEGIN sinusoidal curve function**/
-  class_<sinusoidal_t, bases<curve_abc_t>, boost::shared_ptr<sinusoidal_t> >(
+  class_<sinusoidal_t, bases<curve_abc_t>, boost::shared_ptr<sinusoidal_t>>(
       "sinusoidal", init<>())
       .def("__init__",
            make_constructor(&wrapSinusoidalConstructor, default_call_policies(),
@@ -1814,22 +1650,10 @@ BOOST_PYTHON_MODULE(ndcurves) {
           "Create a sinusoidal curve defined for t in [min, max]."
           "That connect the two stationnary points p_init and p_final in "
           "duration (an half period)")
-      .def("saveAsText", &sinusoidal_t::saveAsText<sinusoidal_t>,
-           bp::args("filename"), "Saves *this inside a text file.")
-      .def("loadFromText", &sinusoidal_t::loadFromText<sinusoidal_t>,
-           bp::args("filename"), "Loads *this from a text file.")
-      .def("saveAsXML", &sinusoidal_t::saveAsXML<sinusoidal_t>,
-           bp::args("filename", "tag_name"), "Saves *this inside a XML file.")
-      .def("loadFromXML", &sinusoidal_t::loadFromXML<sinusoidal_t>,
-           bp::args("filename", "tag_name"), "Loads *this from a XML file.")
-      .def("saveAsBinary", &sinusoidal_t::saveAsBinary<sinusoidal_t>,
-           bp::args("filename"), "Saves *this inside a binary file.")
-      .def("loadFromBinary", &sinusoidal_t::loadFromBinary<sinusoidal_t>,
-           bp::args("filename"), "Loads *this from a binary file.")
+      .def(SerializableVisitor<sinusoidal_t>())
       .def(bp::self == bp::self)
       .def(bp::self != bp::self)
-      .def("__copy__", &generic__copy__<sinusoidal_t>)
-      .def("__deepcopy__", &generic__deepcopy__<sinusoidal_t>)
+      .def(CopyableVisitor<sinusoidal_t>())
       .def_pickle(curve_pickle_suite<sinusoidal_t>());
   /** END sinusoidal function**/
   /** BEGIN curves conversion**/
