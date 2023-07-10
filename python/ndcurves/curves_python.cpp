@@ -198,17 +198,14 @@ bp::object generic__deepcopy__(bp::object copyable, bp::dict memo) {
   return result;
 }
 
-template<class T>
-struct CopyableVisitor : public def_visitor<CopyableVisitor<T>>
-{
+template <class T>
+struct CopyableVisitor : public def_visitor<CopyableVisitor<T>> {
   template <class PyClass>
-  void visit(PyClass &cl) const {
-    cl
-      .def("__copy__", &generic__copy__<T>)
-      .def("__deepcopy__", &generic__deepcopy__<T>);
+  void visit(PyClass& cl) const {
+    cl.def("__copy__", &generic__copy__<T>)
+        .def("__deepcopy__", &generic__deepcopy__<T>);
   }
 };
-
 
 /* Template constructor bezier */
 template <typename Bezier, typename PointList, typename T_Point>
@@ -785,7 +782,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END eigenpy init**/
   /** Expose base abstracts class for each dimension/type : **/
   class_<curve_abc_t, boost::noncopyable,
-         boost::shared_ptr<curve_abc_callback> >("curve")
+         boost::shared_ptr<curve_abc_callback>>("curve")
       .def("__call__", &curve_abc_t::operator(),
            "Evaluate the curve at the given time.", args("self", "t"))
       .def("derivate", &curve_abc_t::derivate,
@@ -826,7 +823,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<curve_abc_t>());
 
   class_<curve_3_t, boost::noncopyable, bases<curve_abc_t>,
-         boost::shared_ptr<curve_3_callback> >("curve3")
+         boost::shared_ptr<curve_3_callback>>("curve3")
       .def("__call__", &curve_3_t::operator(),
            "Evaluate the curve at the given time.", args("self", "t"))
       .def("derivate", &curve_3_t::derivate,
@@ -852,7 +849,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<curve_3_t>());
 
   class_<curve_rotation_t, boost::noncopyable, bases<curve_abc_t>,
-         boost::shared_ptr<curve_rotation_callback> >("curve_rotation")
+         boost::shared_ptr<curve_rotation_callback>>("curve_rotation")
       .def("__call__", &curve_rotation_t::operator(),
            "Evaluate the curve at the given time.", args("self", "t"))
       .def("derivate", &curve_rotation_t::derivate,
@@ -878,7 +875,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<curve_rotation_t>());
 
   class_<curve_SE3_t, boost::noncopyable, bases<curve_abc_t>,
-         boost::shared_ptr<curve_SE3_callback> >("curve_SE3")
+         boost::shared_ptr<curve_SE3_callback>>("curve_SE3")
       .def("__call__", &se3Return,
            "Evaluate the curve at the given time. Return as an homogeneous "
            "matrix.",
@@ -931,8 +928,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       &bezier3_t::cross;
   bezier3_t (bezier3_t::*cross_pointBez3)(const bezier3_t::point_t&) const =
       &bezier3_t::cross;
-  class_<bezier3_t, bases<curve_3_t>, boost::shared_ptr<bezier3_t> >("bezier3",
-                                                                     init<>())
+  class_<bezier3_t, bases<curve_3_t>, boost::shared_ptr<bezier3_t>>("bezier3",
+                                                                    init<>())
       .def("__init__", make_constructor(&wrapBezier3Constructor))
       .def("__init__", make_constructor(&wrapBezier3ConstructorBounds))
       .def("__init__", make_constructor(&wrapBezier3ConstructorConstraints))
@@ -1000,8 +997,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
   bezier_t (bezier_t::*cross_bez)(const bezier_t&) const = &bezier_t::cross;
   bezier_t (bezier_t::*cross_pointBez)(const bezier_t::point_t&) const =
       &bezier_t::cross;
-  class_<bezier_t, bases<curve_abc_t>, boost::shared_ptr<bezier_t> >("bezier",
-                                                                     init<>())
+  class_<bezier_t, bases<curve_abc_t>, boost::shared_ptr<bezier_t>>("bezier",
+                                                                    init<>())
       .def("__init__", make_constructor(&wrapBezierConstructor))
       .def("__init__", make_constructor(&wrapBezierConstructorBounds))
       .def("__init__", make_constructor(&wrapBezierConstructorConstraints))
@@ -1096,8 +1093,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
       const bezier_linear_variable_t::point_t&) const =
       &bezier_linear_variable_t::cross;
   class_<bezier_linear_variable_t, bases<curve_abc_t>,
-         boost::shared_ptr<bezier_linear_variable_t> >("bezier_linear_variable",
-                                                       no_init)
+         boost::shared_ptr<bezier_linear_variable_t>>("bezier_linear_variable",
+                                                      no_init)
       .def("__init__", make_constructor(&wrapBezierLinearConstructor))
       .def("__init__", make_constructor(&wrapBezierLinearConstructorBounds))
       .def("min", &bezier_linear_variable_t::min)
@@ -1161,7 +1158,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
   polynomial_t (polynomial_t::*cross_point)(const polynomial_t::point_t&)
       const = &polynomial_t::cross;
 
-  class_<polynomial_t, bases<curve_abc_t>, boost::shared_ptr<polynomial_t> >(
+  class_<polynomial_t, bases<curve_abc_t>, boost::shared_ptr<polynomial_t>>(
       "polynomial", init<>())
       .def(
           "__init__",
@@ -1252,7 +1249,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END polynomial function**/
   /** BEGIN piecewise curve function **/
-  class_<piecewise_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_t> >(
+  class_<piecewise_t, bases<curve_abc_t>, boost::shared_ptr<piecewise_t>>(
       "piecewise", init<>())
       .def("__init__",
            make_constructor(&wrapPiecewiseCurveConstructor,
@@ -1331,7 +1328,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<piecewise_t>());
 
   class_<piecewise_bezier_t, bases<curve_abc_t>,
-         boost::shared_ptr<piecewise_bezier_t> >("piecewise_bezier", init<>())
+         boost::shared_ptr<piecewise_bezier_t>>("piecewise_bezier", init<>())
       .def("__init__",
            make_constructor(&wrapPiecewiseBezierConstructor,
                             default_call_policies(), arg("curve")),
@@ -1355,7 +1352,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<piecewise_bezier_t>());
 
   class_<piecewise_linear_bezier_t, bases<curve_abc_t>,
-         boost::shared_ptr<piecewise_linear_bezier_t> >(
+         boost::shared_ptr<piecewise_linear_bezier_t>>(
       "piecewise_bezier_linear", init<>(args("self")))
       .def("__init__",
            make_constructor(&wrapPiecewiseBezierLinearConstructor,
@@ -1381,7 +1378,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<piecewise_linear_bezier_t>());
 
   class_<piecewise_SE3_t, bases<curve_SE3_t>,
-         boost::shared_ptr<piecewise_SE3_t> >("piecewise_SE3", init<>())
+         boost::shared_ptr<piecewise_SE3_t>>("piecewise_SE3", init<>())
       .def("__init__",
            make_constructor(&wrapPiecewiseSE3Constructor,
                             default_call_policies(), arg("curve")),
@@ -1420,7 +1417,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END piecewise curve function **/
   /** BEGIN exact_cubic curve**/
-  class_<exact_cubic_t, bases<curve_abc_t>, boost::shared_ptr<exact_cubic_t> >(
+  class_<exact_cubic_t, bases<curve_abc_t>, boost::shared_ptr<exact_cubic_t>>(
       "exact_cubic", init<>(args("self")))
       .def("__init__",
            make_constructor(&wrapExactCubicConstructor, default_call_policies(),
@@ -1440,8 +1437,8 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END exact_cubic curve**/
   /** BEGIN cubic_hermite_spline **/
   class_<cubic_hermite_spline_t, bases<curve_abc_t>,
-         boost::shared_ptr<cubic_hermite_spline_t> >("cubic_hermite_spline",
-                                                     init<>(args("self")))
+         boost::shared_ptr<cubic_hermite_spline_t>>("cubic_hermite_spline",
+                                                    init<>(args("self")))
       .def("__init__", make_constructor(&wrapCubicHermiteSplineConstructor,
                                         bp::default_call_policies(),
                                         args("points", "tangents", "times")))
@@ -1479,7 +1476,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
   /** END bernstein polynomial**/
 
   /** BEGIN SO3 Linear**/
-  class_<SO3Linear_t, bases<curve_rotation_t>, boost::shared_ptr<SO3Linear_t> >(
+  class_<SO3Linear_t, bases<curve_rotation_t>, boost::shared_ptr<SO3Linear_t>>(
       "SO3Linear", init<>())
       .def("__init__",
            make_constructor(
@@ -1507,7 +1504,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END  SO3 Linear**/
   /** BEGIN SE3 Curve**/
-  class_<SE3Curve_t, bases<curve_SE3_t>, boost::shared_ptr<SE3Curve_t> >(
+  class_<SE3Curve_t, bases<curve_SE3_t>, boost::shared_ptr<SE3Curve_t>>(
       "SE3Curve", init<>())
       .def("__init__",
            make_constructor(
@@ -1581,7 +1578,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
 
   /** END SE3 Curve**/
   /** BEGIN constant curve function**/
-  class_<constant_t, bases<curve_abc_t>, boost::shared_ptr<constant_t> >(
+  class_<constant_t, bases<curve_abc_t>, boost::shared_ptr<constant_t>>(
       "constant", init<>())
       .def("__init__",
            make_constructor(&wrapConstantConstructorTime,
@@ -1603,7 +1600,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<constant_t>());
   /** END constant function**/
   /** BEGIN constant 3 curve function**/
-  class_<constant3_t, bases<curve_3_t>, boost::shared_ptr<constant3_t> >(
+  class_<constant3_t, bases<curve_3_t>, boost::shared_ptr<constant3_t>>(
       "constant3", init<>())
       .def("__init__",
            make_constructor(&wrapConstant3ConstructorTime,
@@ -1625,7 +1622,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def_pickle(curve_pickle_suite<constant3_t>());
   /** END constant 3 function**/
   /** BEGIN sinusoidal curve function**/
-  class_<sinusoidal_t, bases<curve_abc_t>, boost::shared_ptr<sinusoidal_t> >(
+  class_<sinusoidal_t, bases<curve_abc_t>, boost::shared_ptr<sinusoidal_t>>(
       "sinusoidal", init<>())
       .def("__init__",
            make_constructor(&wrapSinusoidalConstructor, default_call_policies(),
