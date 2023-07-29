@@ -47,6 +47,7 @@ project(${PROJECT_NAME} ${PROJECT_ARGS})
 check_minimal_cxx_standard(14 ENFORCE)
 
 # Project dependencies
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/find-external/CppAD/" ${CMAKE_MODULE_PATH})
 find_package(Eigen3 QUIET NO_CMAKE_PACKAGE_REGISTRY)
 if(Eigen3_FOUND)
   add_project_dependency(Eigen3 REQUIRED NO_CMAKE_PACKAGE_REGISTRY
@@ -64,7 +65,7 @@ if(CURVES_WITH_PINOCCHIO_SUPPORT)
         "CURVES_WITH_PINOCCHIO_SUPPORT selected, but pinocchio has not been found"
     )
   endif(NOT pinocchio_FOUND)
-  add_project_dependency(pinocchio REQUIRED)
+  add_project_dependency(pinocchio REQUIRED PKG_CONFIG_REQUIRES)
   pkg_config_append_cflags("-DCURVES_WITH_PINOCCHIO_SUPPORT")
 endif(CURVES_WITH_PINOCCHIO_SUPPORT)
 set(PACKAGE_EXTRA_MACROS
