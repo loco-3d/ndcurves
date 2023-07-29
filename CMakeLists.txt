@@ -47,7 +47,8 @@ project(${PROJECT_NAME} ${PROJECT_ARGS})
 check_minimal_cxx_standard(14 ENFORCE)
 
 # Project dependencies
-SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/find-external/CppAD/" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/find-external/CppAD/"
+                      ${CMAKE_MODULE_PATH})
 find_package(Eigen3 QUIET NO_CMAKE_PACKAGE_REGISTRY)
 if(Eigen3_FOUND)
   add_project_dependency(Eigen3 REQUIRED NO_CMAKE_PACKAGE_REGISTRY
