@@ -31,5 +31,6 @@ foreach(TEST ${${PROJECT_NAME}_TESTS})
   add_test_cflags(${TEST} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
   target_link_libraries(${TEST} ${PROJECT_NAME})
-  target_compile_definitions(${TEST} PRIVATE -DTEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
+  target_compile_definitions(
+    ${TEST} PRIVATE -DTEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
 endforeach(TEST ${${PROJECT_NAME}_TESTS})
