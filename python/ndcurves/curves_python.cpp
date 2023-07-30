@@ -166,45 +166,19 @@ struct curve_pickle_suite : pickle_suite {
   }
 };
 
-template <class T>
-inline PyObject* managingPyObject(T* p) {
-  return typename bp::manage_new_object::apply<T*>::type()(p);
-}
-
-template <class Copyable>
-bp::object generic__copy__(bp::object copyable) {
-  Copyable* newCopyable(new Copyable(bp::extract<const Copyable&>(copyable)));
-  bp::object result(bp::detail::new_reference(managingPyObject(newCopyable)));
-
-  bp::extract<bp::dict>(result.attr("__dict__"))().update(
-      copyable.attr("__dict__"));
-
-  return result;
-}
-
-template <class Copyable>
-bp::object generic__deepcopy__(bp::object copyable, bp::dict memo) {
-  bp::object copyMod = bp::import("copy");
-  bp::object deepcopy = copyMod.attr("deepcopy");
-
-  Copyable* newCopyable(new Copyable(bp::extract<const Copyable&>(copyable)));
-  bp::object result(bp::detail::new_reference(managingPyObject(newCopyable)));
-
-  int copyableId = (long long)(copyable.ptr());
-  memo[copyableId] = result;
-
-  bp::extract<bp::dict>(result.attr("__dict__"))().update(
-      deepcopy(bp::extract<bp::dict>(copyable.attr("__dict__"))(), memo));
-  return result;
-}
-
-template <class T>
-struct CopyableVisitor : public def_visitor<CopyableVisitor<T>> {
+template <class C>
+struct CopyableVisitor : public def_visitor<CopyableVisitor<C>> {
   template <class PyClass>
   void visit(PyClass& cl) const {
-    cl.def("__copy__", &generic__copy__<T>)
-        .def("__deepcopy__", &generic__deepcopy__<T>);
+    cl.def("copy", &copy, bp::arg("self"), "Returns a copy of *this.");
+    cl.def("__copy__", &copy, bp::arg("self"), "Returns a copy of *this.");
+    cl.def("__deepcopy__", &deepcopy, bp::args("self", "memo"),
+           "Returns a deep copy of *this.");
   }
+
+ private:
+  static C copy(const C& self) { return C(self); }
+  static C deepcopy(const C& self, bp::dict) { return C(self); }
 };
 
 /* Template constructor bezier */
