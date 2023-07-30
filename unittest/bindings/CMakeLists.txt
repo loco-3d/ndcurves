@@ -15,6 +15,6 @@ foreach(TEST ${${PROJECT_NAME}_PYTHON_BINDINGS_TESTS})
     add_custom_target(
       "test_pybinds_${TEST}"
       ${CMAKE_COMMAND} -E env
-      PYTHONPATH=${PROJECT_BINARY_DIR}/python/ndcurve:$ENV{PYTHONPATH}
+      PYTHONPATH=${PROJECT_BINARY_DIR}/python/ndcurves:$ENV{PYTHONPATH}
       ${PYTHON_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/test_${TEST}.py")
 endforeach(TEST ${${PROJECT_NAME}_PYTHON_BINDINGS_TESTS})
