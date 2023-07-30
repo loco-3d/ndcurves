@@ -1,3 +1,7 @@
+if(BUILD_PYTHON_INTERFACE)
+  add_subdirectory(bindings)
+endif(BUILD_PYTHON_INTERFACE)
+
 set(${PROJECT_NAME}_TESTS
     test_curves
     test_constant
