@@ -14,5 +14,6 @@ set(${PROJECT_NAME}_TESTS
 foreach(TEST ${${PROJECT_NAME}_TESTS})
   add_unit_test(${TEST} ${TEST}.cpp)
   target_link_libraries(${TEST} ${PROJECT_NAME})
-  target_compile_definitions(${TEST} PRIVATE -DTEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
+  target_compile_definitions(
+    ${TEST} PRIVATE -DTEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
 endforeach(TEST ${${PROJECT_NAME}_TESTS})
