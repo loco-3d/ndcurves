@@ -11,7 +11,7 @@ _zeroVec = array([[0.0, 0.0, 0.0]]).transpose()
 
 
 def createControlPoint(val):
-    if type(val) == str:
+    if isinstance(val, str):
         return (_I3, _zeroVec)
     else:
         return (_zeroMat, val.reshape([3, 1]))
