@@ -3,8 +3,8 @@
 #define EIGEN_RUNTIME_NO_MALLOC
 #define BOOST_TEST_MODULE test_polynomial
 
-#include <random>
 #include <boost/test/included/unit_test.hpp>
+#include <random>
 
 #include "ndcurves/polynomial.h"
 
@@ -12,8 +12,7 @@ using namespace ndcurves;
 
 BOOST_AUTO_TEST_SUITE(BOOST_TEST_MODULE)
 
-double generateRandomNumber(double lower, double upper)
-{
+double generateRandomNumber(double lower, double upper) {
   // Some random number
   std::random_device rd;
   std::mt19937 gen(rd());

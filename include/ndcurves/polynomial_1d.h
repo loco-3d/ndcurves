@@ -23,7 +23,8 @@ namespace ndcurves {
 /// where N is the order and \f$ t \in [t_{min}, t_{max}] \f$.
 ///
 template <typename Time, typename Numeric, bool Safe>
-struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public curve_abc<Time, Numeric, Safe, double> {
+struct polynomial<Time, Numeric, Safe, double, std::vector<double> >
+    : public curve_abc<Time, Numeric, Safe, double> {
   typedef double point_t;
   typedef std::vector<double> t_point_t;
   typedef Time time_t;
@@ -39,7 +40,13 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
   /// \brief Empty constructor. Curve obtained this way can not perform other
   /// class functions.
   ///
-  polynomial() : curve_abc_t(), dim_(1), t_min_(0), t_max_(1), degree_(0), coefficients_() {}
+  polynomial()
+      : curve_abc_t(),
+        dim_(1),
+        t_min_(0),
+        t_max_(1),
+        degree_(0),
+        coefficients_() {}
 
   /// \brief Constructor.
   /// \param coefficients : a reference to an Eigen matrix where each column is
@@ -67,7 +74,8 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
   polynomial(const t_point_t& coefficients, const time_t min, const time_t max)
       : curve_abc_t(),
         dim_(1),
-        coefficients_(Eigen::Map<Eigen::VectorXd>(coefficients.data(), coefficients.size())),
+        coefficients_(Eigen::Map<Eigen::VectorXd>(coefficients.data(),
+                                                  coefficients.size())),
         degree_(coefficients_.size() - 1),
         t_min_(min),
         t_max_(max) {
@@ -86,7 +94,8 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
              const time_t max)
       : curve_abc_t(),
         dim_(zeroOrderCoefficient->size()),
-        coefficients_(Eigen::Map<Eigen::VectorXd>(zeroOrderCoefficient, std::distance(zeroOrderCoefficient, out))),
+        coefficients_(Eigen::Map<Eigen::VectorXd>(
+            zeroOrderCoefficient, std::distance(zeroOrderCoefficient, out))),
         degree_(coefficients_.size() - 1),
         t_min_(min),
         t_max_(max) {
@@ -106,7 +115,7 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
     if (t_min_ >= t_max_)
       throw std::invalid_argument("T_min must be strictly lower than T_max");
     coefficients_.setZero(2);
-    coefficients_ <<  init, (end - init) / (max - min);
+    coefficients_ << init, (end - init) / (max - min);
     safe_check();
   }
 
@@ -126,18 +135,18 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
     if (t_min_ >= t_max_)
       throw std::invalid_argument("T_min must be strictly lower than T_max");
     /** the coefficients [c0 c1 c2 c3] are found by solving the following system
-      * of equation (found from the boundary conditions) :
-      * [1  0  0   0   ] [c0]   [ init ]
-      * [1  T  T^2 T^3 ] [c1] = [ end  ]
-      * [0  1  0   0   ] [c2]   [d_init]
-      * [0  1  2T  3T^2] [c3]   [d_end ]
-      */
+     * of equation (found from the boundary conditions) :
+     * [1  0  0   0   ] [c0]   [ init ]
+     * [1  T  T^2 T^3 ] [c1] = [ end  ]
+     * [0  1  0   0   ] [c2]   [d_init]
+     * [0  1  2T  3T^2] [c3]   [d_end ]
+     */
     double T = max - min;
     Eigen::Matrix<double, 4, 4> m;
     m << 1., 0, 0, 0, 1., T, T * T, T * T * T, 0, 1., 0, 0, 0, 1., 2. * T,
         3. * T * T;
     Eigen::Matrix<double, 4, 4> m_inv = m.inverse();
-    Eigen::Matrix<double, 4, 1> bc;  // boundary condition vector
+    Eigen::Matrix<double, 4, 1> bc;              // boundary condition vector
     coefficients_ = coeff_t::Zero(degree_ + 1);  // init coefficient size
     for (size_t i = 0; i < dim_;
          ++i) {  // for each dimension, solve the boundary condition problem :
@@ -177,7 +186,7 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
      * [0  1  2T  3T^2 4T^3  5T^4 ] x [c3] = [d_end  ]
      * [0  0  2   0    0     0    ]   [c4]   [dd_init]
      * [0  0  2   6T   12T^2 20T^3]   [c5]   [dd_end ]
-    */
+     */
     double T = max - min;
     Eigen::Matrix<double, 6, 6> m;
     m << 1., 0, 0, 0, 0, 0, 1., T, T * T, pow(T, 3), pow(T, 4), pow(T, 5), 0,
@@ -215,7 +224,7 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
    *        This is a real-time safe method, hence no dynamic allocation is
    *        made. This imply that the user already set the size of the
    *        coefficient matrix of the polynomial to the correct size, i.e. 6.
-   * 
+   *
    * @param p_init Initial point from which the trajectory starts.
    * @param p_final Reaching point of the trajectory.
    * @param t_min Starting time point.
@@ -223,12 +232,11 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
    */
   void generate_minimum_jerk(const point_t& p_init, const point_t& p_final,
                              const time_t t_min = 0., const time_t t_max = 1.) {
-    if (t_min > t_max)
-    {
+    if (t_min > t_max) {
       throw std::invalid_argument(
           "final time should be superior or equal to initial time.");
     }
-    assert (coefficients_.size() == 6);
+    assert(coefficients_.size() == 6);
 
     const double T = t_max - t_min;
     const double T2 = T * T;
@@ -263,8 +271,7 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
   static polynomial_t MinimumJerk(const point_t& p_init, const point_t& p_final,
                                   const time_t t_min = 0.,
                                   const time_t t_max = 1.) {
-    if (t_min > t_max)
-    {
+    if (t_min > t_max) {
       throw std::invalid_argument(
           "final time should be superior or equal to initial time.");
     }
@@ -298,7 +305,6 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
 
   /*Operations*/
  public:
-
   ///  \brief Evaluation of the cubic spline at time t using horner's scheme.
   ///         Implementation for point_t = double.
   ///  \param t : time when to evaluate the spline.
@@ -306,15 +312,15 @@ struct polynomial<Time, Numeric, Safe, double, std::vector<double> > : public cu
   point_t operator()(const time_t t) const {
     check_if_not_empty();
     if ((t < t_min_ || t > t_max_) && Safe) {
-        throw std::invalid_argument(
-            "error in polynomial : time t to evaluate should be in range [Tmin, "
-            "Tmax] of the curve");
+      throw std::invalid_argument(
+          "error in polynomial : time t to evaluate should be in range [Tmin, "
+          "Tmax] of the curve");
     }
-    point_t out (0.0);
+    point_t out(0.0);
     time_t const dt(t - t_min_);
     out = coefficients_(degree_);
     for (int i = static_cast<int>(degree_ - 1); i >= 0; i--) {
-        out = dt * out + coefficients_(i);
+      out = dt * out + coefficients_(i);
     }
     return out;
   }

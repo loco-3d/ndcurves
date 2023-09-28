@@ -3,8 +3,8 @@
 #define EIGEN_RUNTIME_NO_MALLOC
 #define BOOST_TEST_MODULE test_so3_smooth
 
-#include <random>
 #include <boost/test/included/unit_test.hpp>
+#include <random>
 
 #include "ndcurves/fwd.h"
 #include "ndcurves/so3_smooth.h"
@@ -13,8 +13,7 @@ using namespace ndcurves;
 
 BOOST_AUTO_TEST_SUITE(BOOST_TEST_MODULE)
 
-double generateRandomNumber(double lower, double upper)
-{
+double generateRandomNumber(double lower, double upper) {
   // Some random number
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -28,8 +27,10 @@ BOOST_AUTO_TEST_CASE(default_constructor) {
   BOOST_CHECK_EQUAL(traj.min(), 0.0);
   BOOST_CHECK_EQUAL(traj.max(), 1.0);
   BOOST_CHECK_EQUAL(traj.degree(), 5.0);
-  BOOST_CHECK(ndcurves::matrix3_t::Identity().isApprox(traj.get_init_rotation()));
-  BOOST_CHECK(ndcurves::matrix3_t::Identity().isApprox(traj.get_end_rotation()));
+  BOOST_CHECK(
+      ndcurves::matrix3_t::Identity().isApprox(traj.get_init_rotation()));
+  BOOST_CHECK(
+      ndcurves::matrix3_t::Identity().isApprox(traj.get_end_rotation()));
 }
 
 BOOST_AUTO_TEST_CASE(default_generate) {
@@ -79,7 +80,7 @@ BOOST_AUTO_TEST_CASE(from_quat_and_time_generate) {
 
   // Create the object.
   SO3Smooth_t traj;
-  
+
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(false);
 
@@ -130,7 +131,7 @@ BOOST_AUTO_TEST_CASE(from_rot_and_time_generate) {
 
   // Create the object.
   SO3Smooth_t traj;
-  
+
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(false);
 
@@ -177,7 +178,7 @@ BOOST_AUTO_TEST_CASE(from_quat_generate) {
 
   // Create the object.
   SO3Smooth_t traj;
-  
+
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(false);
 
@@ -224,7 +225,7 @@ BOOST_AUTO_TEST_CASE(from_rot_generate) {
 
   // Create the object.
   SO3Smooth_t traj;
-  
+
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(false);
 
@@ -242,7 +243,6 @@ BOOST_AUTO_TEST_CASE(from_rot_generate) {
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(true);
 }
-
 
 BOOST_AUTO_TEST_CASE(copy_real_time) {
   // None real_time critical
@@ -285,11 +285,11 @@ BOOST_AUTO_TEST_CASE(computation_check) {
   std::vector<matrix3_t, Eigen::aligned_allocator<matrix3_t>> traj_discr;
   double dt = 1e-4;
   std::size_t nb_sample = static_cast<std::size_t>((t_max - t_min) / dt);
-  traj_discr.resize(nb_sample, matrix3_t::Zero());  
+  traj_discr.resize(nb_sample, matrix3_t::Zero());
 
   // Create the object.
   SO3Smooth_t traj;
-  
+
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(false);
 
@@ -297,8 +297,7 @@ BOOST_AUTO_TEST_CASE(computation_check) {
   traj.generate(init_rot, end_rot, t_min, t_max);
 
   // Evaluate the trajectory.
-  for(std::size_t i = 0 ; i < traj_discr.size() ; ++i)
-  {
+  for (std::size_t i = 0; i < traj_discr.size(); ++i) {
     traj_discr[i] = traj(t_min + static_cast<double>(i) * dt);
   }
 
@@ -316,13 +315,10 @@ BOOST_AUTO_TEST_CASE(computation_check) {
   Eigen::internal::set_is_malloc_allowed(true);
 
   // Continuity test.
-  for(std::size_t i = 1 ; i < traj_discr.size() ; ++i)
-  {
-    matrix3_t error = traj_discr[i] - traj_discr[i-1];
-    for (Eigen::Index row = 0 ; row < error.rows() ; ++row)
-    {
-      for (Eigen::Index col = 0 ; col < error.cols() ; ++col)
-      {
+  for (std::size_t i = 1; i < traj_discr.size(); ++i) {
+    matrix3_t error = traj_discr[i] - traj_discr[i - 1];
+    for (Eigen::Index row = 0; row < error.rows(); ++row) {
+      for (Eigen::Index col = 0; col < error.cols(); ++col) {
         BOOST_CHECK_LE(std::abs(error(row, col)), 1e-2);
       }
     }
@@ -346,7 +342,7 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
 
   // Create the object.
   SO3Smooth_t traj;
-  
+
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(false);
 
@@ -354,8 +350,7 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
   traj.generate(init_rot, end_rot, t_min, t_max);
 
   // Evaluate the trajectory.
-  for(std::size_t i = 0 ; i < traj_vel_discr.size() ; ++i)
-  {
+  for (std::size_t i = 0; i < traj_vel_discr.size(); ++i) {
     double t = t_min + static_cast<double>(i) * dt;
     traj_vel_discr[i] = traj.derivate(t, 1);
     traj_acc_discr[i] = traj.derivate(t, 2);
@@ -379,24 +374,18 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
   Eigen::internal::set_is_malloc_allowed(true);
 
   // Continuity test.
-  for(std::size_t i = 1 ; i < traj_vel_discr.size() ; ++i)
-  {
-    point3_t error = traj_vel_discr[i] - traj_vel_discr[i-1];
-    for (Eigen::Index row = 0 ; row < error.rows() ; ++row)
-    {
-      for (Eigen::Index col = 0 ; col < error.cols() ; ++col)
-      {
+  for (std::size_t i = 1; i < traj_vel_discr.size(); ++i) {
+    point3_t error = traj_vel_discr[i] - traj_vel_discr[i - 1];
+    for (Eigen::Index row = 0; row < error.rows(); ++row) {
+      for (Eigen::Index col = 0; col < error.cols(); ++col) {
         BOOST_CHECK_LE(std::abs(error(row, col)), 1e-2);
       }
     }
   }
-  for(std::size_t i = 1 ; i < traj_acc_discr.size() ; ++i)
-  {
-    point3_t error = traj_acc_discr[i] - traj_acc_discr[i-1];
-    for (Eigen::Index row = 0 ; row < error.rows() ; ++row)
-    {
-      for (Eigen::Index col = 0 ; col < error.cols() ; ++col)
-      {
+  for (std::size_t i = 1; i < traj_acc_discr.size(); ++i) {
+    point3_t error = traj_acc_discr[i] - traj_acc_discr[i - 1];
+    for (Eigen::Index row = 0; row < error.rows(); ++row) {
+      for (Eigen::Index col = 0; col < error.cols(); ++col) {
         BOOST_CHECK_LE(std::abs(error(row, col)), 1e-2);
       }
     }

@@ -240,7 +240,8 @@ split(const problem_definition<Point, Numeric>& pDef,
   Numeric tmp;
   for (int i = 0; i < times.rows(); ++i) {
     tmp = times[i];
-    std::pair<bezier_t, bezier_t> pairsplit = current->split(tmp - current_time);
+    std::pair<bezier_t, bezier_t> pairsplit =
+        current->split(tmp - current_time);
     res.push_back(pairsplit.first);
     current = &(pairsplit.second);
     current_time += tmp - current_time;

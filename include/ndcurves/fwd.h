@@ -75,9 +75,9 @@ typedef Eigen::Matrix<double, 3, 3> matrix3_t;
 typedef Eigen::Matrix<double, 4, 4> matrix4_t;
 typedef Eigen::Quaternion<double> quaternion_t;
 typedef Eigen::Transform<double, 3, Eigen::Affine> transform_t;
-typedef std::vector<point1_t, Eigen::aligned_allocator<point1_t> > t_point1_t;
-typedef std::vector<point3_t, Eigen::aligned_allocator<point3_t> > t_point3_t;
-typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_pointX_t;
+typedef std::vector<point1_t, Eigen::aligned_allocator<point1_t>> t_point1_t;
+typedef std::vector<point3_t, Eigen::aligned_allocator<point3_t>> t_point3_t;
+typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t>> t_pointX_t;
 typedef Eigen::Ref<const matrix3_t> matrix3_t_cst_ref;
 
 // abstract curves types:
@@ -116,7 +116,8 @@ typedef sinusoidal<double, double, true, pointX_t> sinusoidal_t;
 // definition of all curves class with point3 as return type:
 typedef polynomial<double, double, true, point3_t, t_point3_t> polynomial3_t;
 typedef polynomial<double, double, true, point1_t, t_point1_t> polynomial1_t;
-typedef polynomial<double, double, true, double, std::vector<double>> polynomial_1d_t;
+typedef polynomial<double, double, true, double, std::vector<double>>
+    polynomial_1d_t;
 typedef exact_cubic<double, double, true, point3_t, t_point3_t, polynomial_t>
     exact_cubic3_t;
 typedef bezier_curve<double, double, true, point3_t> bezier3_t;

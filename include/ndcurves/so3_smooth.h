@@ -3,16 +3,16 @@
 #ifndef NDCURVES_SO3_SMOOTH_H
 #define NDCURVES_SO3_SMOOTH_H
 
-#include <pinocchio/fwd.hpp>
-#include <pinocchio/spatial/explog.hpp>
 #include <Eigen/Geometry>
 #include <boost/math/constants/constants.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/vector.hpp>
+#include <pinocchio/fwd.hpp>
+#include <pinocchio/spatial/explog.hpp>
 
 #include "ndcurves/MathDefs.h"
-#include "ndcurves/curve_abc.h"
 #include "ndcurves/constant_curve.h"
+#include "ndcurves/curve_abc.h"
 #include "ndcurves/polynomial.h"
 
 namespace ndcurves {
@@ -118,8 +118,7 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
   /// \brief Empty constructor. Curve obtained this way can not perform other
   /// class functions.
   ///
-  void generate()
-  {
+  void generate() {
     init_rot_.setIdentity();
     end_rot_.setIdentity();
     t_min_ = 0.0;
@@ -131,8 +130,7 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
 
   /// \brief constructor with initial and final rotation and time bounds
   void generate(const matrix3_t& init_rot, const matrix3_t& end_rot,
-                const time_t t_min, const time_t t_max)
-  {
+                const time_t t_min, const time_t t_max) {
     init_rot_ = init_rot;
     end_rot_ = end_rot;
     t_min_ = t_min;
@@ -145,16 +143,14 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
   /// \brief constructor with initial and final rotation expressed as rotation
   /// matrix and time bounds
   void generate(const quaternion_t& init_rot, const quaternion_t& end_rot,
-                const time_t t_min, const time_t t_max)
-  {
+                const time_t t_min, const time_t t_max) {
     quaternion_t init_rot_normalized = init_rot.normalized();
     quaternion_t end_rot_normalized = end_rot.normalized();
     generate(init_rot_normalized.toRotationMatrix(),
              end_rot_normalized.toRotationMatrix(), t_min, t_max);
   }
 
-  void generate(const quaternion_t& init_rot, const quaternion_t& end_rot)
-  {
+  void generate(const quaternion_t& init_rot, const quaternion_t& end_rot) {
     quaternion_t init_rot_normalized = init_rot.normalized();
     quaternion_t end_rot_normalized = end_rot.normalized();
     generate(init_rot_normalized.toRotationMatrix(),
@@ -163,8 +159,7 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
 
   /// \brief constructor with initial and final rotation expressed as rotation
   /// matrix, time bounds are set to [0;1]
-  void generate(const matrix3_t& init_rot, const matrix3_t& end_rot)
-  {
+  void generate(const matrix3_t& init_rot, const matrix3_t& end_rot) {
     generate(init_rot, end_rot, 0.0, 1.0);
   }
 
@@ -182,9 +177,9 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
         rot_diff_(other.rot_diff_),
         dt_(1e-3) {}
 
-  ///  \brief Evaluation of the SO3Smooth at time t using \$f R(t) = R1 * exp3(min_jerk(t) log3(R1.T * R2)) \$f.
-  ///  \param t : time when to evaluate the spline.
-  ///  \return \f$x(t)\f$ point corresponding on spline at time t.
+  ///  \brief Evaluation of the SO3Smooth at time t using \$f R(t) = R1 *
+  ///  exp3(min_jerk(t) log3(R1.T * R2)) \$f. \param t : time when to evaluate
+  ///  the spline. \return \f$x(t)\f$ point corresponding on spline at time t.
   virtual point_t operator()(const time_t t) const {
     if ((t < t_min_ || t > t_max_) && Safe) {
       throw std::invalid_argument(
@@ -235,9 +230,12 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
   ///  \param order : order of derivative.
   ///  \return \f$ \frac{d^N x(t)}{dt^N} \f$ point corresponding on derivative
   ///          spline at time t. Specifically
-  ///          \f$ \frac{d R(t)}{dt} = R1 * \frac{d exp^{min_jerk(t) diff}{dw} * \frac{d min_jerk(t)}{dt} diff \f$ with \f$ R^3 \f$ -> \f$ SO3 \f$ : \f$ R = exp(w) \f$
-  ///          or \frac{d R(t)}{dt} =  = R1 * Jexp3(min_jerk(t) diff) * \frac{d min_jerk(t)}{dt} diff \f$.
-  ///          We use the pinocchio library in order to compute the exp3, log3, and Jexp3 fonctions.
+  ///          \f$ \frac{d R(t)}{dt} = R1 * \frac{d exp^{min_jerk(t) diff}{dw} *
+  ///          \frac{d min_jerk(t)}{dt} diff \f$ with \f$ R^3 \f$ -> \f$ SO3 \f$
+  ///          : \f$ R = exp(w) \f$ or \frac{d R(t)}{dt} =  = R1 *
+  ///          Jexp3(min_jerk(t) diff) * \frac{d min_jerk(t)}{dt} diff \f$. We
+  ///          use the pinocchio library in order to compute the exp3, log3, and
+  ///          Jexp3 fonctions.
   virtual point_derivate_t derivate(const time_t t,
                                     const std::size_t order) const {
     point_derivate_t out = point_derivate_t::Zero();
@@ -251,18 +249,18 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
     } else if (order == 2) {
       double t1 = t;
       double t2 = t + dt_;
-      if(t2 > t_max_) {
+      if (t2 > t_max_) {
         t1 = t - dt_;
         t2 = t;
       }
-      if(t1 < t_min_) {
+      if (t1 < t_min_) {
         t1 = t_min_;
         t2 = t_max_;
       }
-      if(t1 == t2) {
+      if (t1 == t2) {
         out.setZero();
-      }else{
-        out = (derivate(t1, 1) - derivate(t2, 1))/(t2-t1);
+      } else {
+        out = (derivate(t1, 1) - derivate(t2, 1)) / (t2 - t1);
       }
     } else if (order == 1) {
       matrix3_t jexp;
@@ -304,12 +302,15 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
 
   /*Attributes*/
   point_t init_rot_; /*! @brief Initial rotation. */
-  point_t end_rot_; /*! @brief End rotation. */
-  time_t t_min_; /*! @brief Start time of the trajectory. */
-  time_t t_max_; /*! @brief End time of the trajectory. */
-  min_jerk_t min_jerk_; /*! @brief Min jerk trajectory from t_min_ and t_max_. */
-  point3_t rot_diff_; /*! @brief The difference between init_rot_ and end_rot_. */
-  const double dt_; /*! @brief Finite differentiation delta time for the acceleration computation. */
+  point_t end_rot_;  /*! @brief End rotation. */
+  time_t t_min_;     /*! @brief Start time of the trajectory. */
+  time_t t_max_;     /*! @brief End time of the trajectory. */
+  min_jerk_t
+      min_jerk_; /*! @brief Min jerk trajectory from t_min_ and t_max_. */
+  point3_t
+      rot_diff_;    /*! @brief The difference between init_rot_ and end_rot_. */
+  const double dt_; /*! @brief Finite differentiation delta time for the
+                       acceleration computation. */
 
   // Serialization of the class
   friend class boost::serialization::access;
