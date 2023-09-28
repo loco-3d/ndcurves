@@ -592,7 +592,7 @@ void cubicConversionTest(bool& error) {
                  "degree > 3, should raise an error"
               << std::endl;
     error = true;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     bezier_t b3 = bezier_from_curve<bezier_t>(pol_4);
@@ -600,7 +600,7 @@ void cubicConversionTest(bool& error) {
                  "degree > 3, should raise an error"
               << std::endl;
     error = true;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
 }
 
@@ -1839,7 +1839,7 @@ void PiecewisePolynomialCurveFromFile(bool& error) {
                  "match, an error should be raised"
               << std::endl;
     error = true;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     piecewise_t c_error =
@@ -1849,7 +1849,7 @@ void PiecewisePolynomialCurveFromFile(bool& error) {
                  "discrete_points_error should not be parsed correctly"
               << std::endl;
     error = true;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
 }
 
@@ -2127,14 +2127,14 @@ void polynomialFromBoundaryConditions(bool& error) {
     error = true;
     std::cout << "Created a polynomial with tMin > tMax without error. "
               << std::endl;
-  } catch (invalid_argument e) {
+  } catch (const invalid_argument& /*e*/) {
   }
   try {
     polynomial_t polC1Err = polynomial_t(p0, dp0, p1, dp1, max, min);
     error = true;
     std::cout << "Created a polynomial with tMin > tMax without error. "
               << std::endl;
-  } catch (invalid_argument e) {
+  } catch (const invalid_argument& /*e*/) {
   }
   try {
     polynomial_t polC2Err =
@@ -2142,7 +2142,7 @@ void polynomialFromBoundaryConditions(bool& error) {
     error = true;
     std::cout << "Created a polynomial with tMin > tMax without error. "
               << std::endl;
-  } catch (invalid_argument e) {
+  } catch (const invalid_argument& /*e*/) {
   }
 }
 
@@ -2214,7 +2214,7 @@ void so3LinearTest(bool& error) {
     std::cout << "SO3Linear: calling () with t < tmin should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     so3Traj(1.7);
@@ -2222,7 +2222,7 @@ void so3LinearTest(bool& error) {
     std::cout << "SO3Linear: calling () with t > tmin should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     so3Traj.derivate(0, 0);
@@ -2230,7 +2230,7 @@ void so3LinearTest(bool& error) {
     std::cout << "SO3Linear: calling derivate with order = 0 should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
 
   SO3Linear_t so3TrajMatrix(q0.toRotationMatrix(), q1.toRotationMatrix(), tMin,
@@ -2454,7 +2454,7 @@ void se3CurveTest(bool& error) {
     std::cout << "SE3 curve: calling () with t < tmin should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     cBezier(2.3);
@@ -2462,7 +2462,7 @@ void se3CurveTest(bool& error) {
     std::cout << "SE3 curve: calling () with t > tmin should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     cBezier.derivate(0.6, 0);
@@ -2470,7 +2470,7 @@ void se3CurveTest(bool& error) {
     std::cout << "SE3 curve: calling derivate with order = 0 should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
 }
 

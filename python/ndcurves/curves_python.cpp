@@ -768,7 +768,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
                 bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(),
                 bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal "
-               "by values, given a precision treshold."))
+               "by values, given a precision threshold."))
       .def("compute_derivate", &curve_abc_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(),
            "Return the derivative of *this at the order N.", args("self", "N"))
@@ -809,7 +809,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
                 bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(),
                 bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal "
-               "by values, given a precision treshold."))
+               "by values, given a precision threshold."))
       .def("compute_derivate", &curve_3_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(),
            "Return the derivative of *this at the order N.", args("self", "N"))
@@ -835,7 +835,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
                 bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(),
                 bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal "
-               "by values, given a precision treshold."))
+               "by values, given a precision threshold."))
       .def("compute_derivate", &curve_rotation_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(),
            "Return the derivative of *this at the order N.", args("self", "N"))
@@ -864,7 +864,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
                 bp::arg("prec") = Eigen::NumTraits<double>::dummy_precision(),
                 bp::arg("order") = 5),
                "isEquivalent check if self and other are approximately equal "
-               "by values, given a precision treshold."))
+               "by values, given a precision threshold."))
       .def("compute_derivate", &curve_SE3_t::compute_derivate_ptr,
            return_value_policy<manage_new_object>(),
            "Return the derivative of *this at the order N.", args("self", "N"))

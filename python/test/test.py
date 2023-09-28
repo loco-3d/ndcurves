@@ -24,7 +24,6 @@ from ndcurves import (
     polynomial,
 )
 
-
 if CURVES_WITH_PINOCCHIO_SUPPORT:
     from pinocchio import SE3, Motion
 

@@ -4,7 +4,6 @@ from curves import bezier, bezierVar
 
 __EPS = 1e-6
 
-
 _zeroMat = array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]).transpose()
 _I3 = array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]).transpose()
 _zeroVec = array([[0.0, 0.0, 0.0]]).transpose()
