@@ -46,9 +46,9 @@ BOOST_AUTO_TEST_CASE(min_jerk_constructor) {
   BOOST_CHECK_EQUAL(traj(traj.min()), init);
   BOOST_CHECK_CLOSE(traj(traj.max()), end, 1e-8);
   BOOST_CHECK_EQUAL(traj.derivate(traj.min(), 1), 0.0);
-  BOOST_CHECK_CLOSE(traj.derivate(traj.max(), 1), 0.0, 1e-8);
+  BOOST_CHECK_LE(std::abs(traj.derivate(traj.max(), 1)), 1e-8);
   BOOST_CHECK_EQUAL(traj.derivate(traj.min(), 2), 0.0);
-  BOOST_CHECK_CLOSE(traj.derivate(traj.max(), 2), 0.0, 1e-8);
+  BOOST_CHECK_LE(std::abs(traj.derivate(traj.max(), 2)), 1e-8);
   Eigen::internal::set_is_malloc_allowed(true);
 }
 
