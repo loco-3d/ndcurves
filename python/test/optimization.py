@@ -1,6 +1,6 @@
 import unittest
 
-from numpy import array, matrix, zeros
+from numpy import array, zeros
 from numpy.linalg import norm
 
 from ndcurves.optimization import (
