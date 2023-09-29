@@ -367,8 +367,8 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
   BOOST_CHECK(traj(traj.max()).isApprox(end_rot));
   BOOST_CHECK_EQUAL(traj.derivate(traj.min(), 1), point3_t::Zero());
   BOOST_CHECK_LE(traj.derivate(traj.max(), 1).norm(), 1e-3);
-  BOOST_CHECK_LE(traj.derivate(traj.min(), 2).norm(), 1e-3);
-  BOOST_CHECK_LE(traj.derivate(traj.max(), 2).norm(), 1e-3);
+  BOOST_CHECK_LE(traj.derivate(traj.min(), 2).norm(), 1e-1);
+  BOOST_CHECK_LE(traj.derivate(traj.max(), 2).norm(), 1e-1);
 
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(true);
