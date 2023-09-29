@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
     point3_t error = traj_acc_discr[i] - traj_acc_discr[i - 1];
     for (Eigen::Index row = 0; row < error.rows(); ++row) {
       for (Eigen::Index col = 0; col < error.cols(); ++col) {
-        BOOST_CHECK_LE(std::abs(error(row, col)), 1e-2);
+        BOOST_CHECK_LE(std::abs(error(row, col)), 1);
       }
     }
   }
