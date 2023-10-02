@@ -461,7 +461,8 @@ void addFinalPointC2(piecewise_t& self, const pointX_t& end,
 /* end wrap piecewise polynomial curve */
 
 /* Wrap piecewise3 curve */
-piecewise3_t* wrapPiecewise3CurveConstructor(const curve_translation_ptr_t& curve) {
+piecewise3_t* wrapPiecewise3CurveConstructor(
+    const curve_translation_ptr_t& curve) {
   return new piecewise3_t(curve);
 }
 piecewise3_t* wrapPiecewise3PolynomialCurveEmptyConstructor() {
@@ -533,11 +534,12 @@ static piecewise3_t discretPointsToPolynomial3C2(
 static piecewise3_t load_piecewise3_from_text_file(const std::string& filename,
                                                    const real dt,
                                                    const std::size_t dim) {
-  return piecewise3_t::load_piecewise_from_text_file<polynomial3_t>(
-     filename, dt, dim);
+  return piecewise3_t::load_piecewise_from_text_file<polynomial3_t>(filename,
+                                                                    dt, dim);
 }
 
-void addFinalPoint3C0(piecewise3_t& self, const pointX_t& end, const real time) {
+void addFinalPoint3C0(piecewise3_t& self, const pointX_t& end,
+                      const real time) {
   if (self.num_curves() == 0)
     throw std::runtime_error(
         "Piecewise append : you need to add at least one curve before using "
@@ -547,11 +549,12 @@ void addFinalPoint3C0(piecewise3_t& self, const pointX_t& end, const real time) 
                  "you loose C1 continuity and only "
                  "guarantee C0 continuity."
               << std::endl;
-  curve_translation_ptr_t pol(new polynomial3_t(self(self.max()), end, self.max(), time));
+  curve_translation_ptr_t pol(
+      new polynomial3_t(self(self.max()), end, self.max(), time));
   self.add_curve_ptr(pol);
 }
 void addFinalPoint3C1(piecewise3_t& self, const pointX_t& end,
-                     const pointX_t& d_end, const real time) {
+                      const pointX_t& d_end, const real time) {
   if (self.num_curves() == 0)
     throw std::runtime_error(
         "Piecewise append : you need to add at least one curve before using "
@@ -565,13 +568,13 @@ void addFinalPoint3C1(piecewise3_t& self, const pointX_t& end,
     std::cout << "Warning: the current piecewise curve is not C1 continuous."
               << std::endl;
   curve_translation_ptr_t pol(new polynomial3_t(self(self.max()),
-                                    self.derivate(self.max(), 1), end, d_end,
-                                    self.max(), time));
+                                                self.derivate(self.max(), 1),
+                                                end, d_end, self.max(), time));
   self.add_curve_ptr(pol);
 }
 void addFinalPoint3C2(piecewise3_t& self, const pointX_t& end,
-                     const pointX_t& d_end, const pointX_t& dd_end,
-                     const real time) {
+                      const pointX_t& d_end, const pointX_t& dd_end,
+                      const real time) {
   if (self.num_curves() == 0)
     throw std::runtime_error(
         "Piecewise append : you need to add at least one curve before using "
@@ -748,14 +751,14 @@ SE3Curve_t* wrapSE3CurveFromBezier3Translation(bezier3_t& translation_curve,
                                                const matrix3_t& end_rot) {
   boost::shared_ptr<bezier3_t> translation(
       new bezier3_t(translation_curve.waypoints().begin(),
-                    translation_curve.waypoints().end(), translation_curve.min(),
-                    translation_curve.max()));
+                    translation_curve.waypoints().end(),
+                    translation_curve.min(), translation_curve.max()));
   return new SE3Curve_t(translation, init_rot, end_rot);
 }
 
 SE3Curve_t* wrapSE3CurveFromTranslation(
-     const curve_translation_ptr_t& translation_curve,
-     const matrix3_t& init_rot, const matrix3_t& end_rot) {
+    const curve_translation_ptr_t& translation_curve, const matrix3_t& init_rot,
+    const matrix3_t& end_rot) {
   return new SE3Curve_t(translation_curve, init_rot, end_rot);
 }
 
@@ -1435,7 +1438,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(CopyableVisitor<piecewise_t>())
       .def_pickle(curve_pickle_suite<piecewise_t>());
 
-     class_<piecewise3_t, bases<curve_3_t>, boost::shared_ptr<piecewise3_t>>(
+  class_<piecewise3_t, bases<curve_3_t>, boost::shared_ptr<piecewise3_t>>(
       "piecewise3", init<>())
       .def("__init__",
            make_constructor(&wrapPiecewise3CurveConstructor,

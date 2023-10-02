@@ -84,7 +84,7 @@ typedef Eigen::Ref<const matrix3_t> matrix3_t_cst_ref;
 typedef curve_abc<double, double, true, pointX_t, pointX_t>
     curve_abc_t;  // base abstract class
 typedef curve_abc<double, double, true, point3_t, point3_t>
-    curve_3_t;  // generic class of curve of size 3
+    curve_3_t;                          // generic class of curve of size 3
 typedef curve_3_t curve_translation_t;  // generic class of a translation curve
 typedef curve_abc<double, double, true, matrix3_t, point3_t>
     curve_rotation_t;  // templated class used for the rotation (return
