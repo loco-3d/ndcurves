@@ -397,6 +397,7 @@ static piecewise_t discretPointToPolynomialC2(
       points_list, points_derivative_list, points_second_derivative_list,
       time_points_list);
 }
+
 static piecewise_t load_piecewise_from_text_file(const std::string& filename,
                                                  const real dt,
                                                  const std::size_t dim) {
@@ -458,6 +459,138 @@ void addFinalPointC2(piecewise_t& self, const pointX_t& end,
 }
 
 /* end wrap piecewise polynomial curve */
+
+/* Wrap piecewise3 curve */
+piecewise3_t* wrapPiecewise3CurveConstructor(const curve_translation_ptr_t& curve) {
+  return new piecewise3_t(curve);
+}
+piecewise3_t* wrapPiecewise3PolynomialCurveEmptyConstructor() {
+  return new piecewise3_t();
+}
+piecewise_SE3_t* wrapPiecewise3SE3Constructor(const curve_SE3_ptr_t& curve) {
+  return new piecewise_SE3_t(curve);
+}
+piecewise_SE3_t* wrapPiecewise3SE3EmptyConstructor() {
+  return new piecewise_SE3_t();
+}
+
+typedef bezier3_t::piecewise_curve_t piecewise_bezier3_t;
+piecewise_bezier3_t* wrapPiecewise3BezierConstructor(
+    const bezier3_t::bezier_curve_ptr_t& curve) {
+  return new piecewise_bezier3_t(curve);
+}
+piecewise_bezier3_t* wrapPiecewise3BezierEmptyConstructor() {
+  return new piecewise_bezier3_t();
+}
+typedef bezier_linear_variable_t::piecewise_curve_t piecewise_linear_bezier_t;
+piecewise_linear_bezier_t* wrapPiecewise3BezierLinearConstructor(
+    const bezier_linear_variable_t::bezier_curve_ptr_t& curve) {
+  return new piecewise_linear_bezier_t(curve);
+}
+piecewise_linear_bezier_t* wrapPiecewise3BezierLinearEmptyConstructor() {
+  return new piecewise_linear_bezier_t();
+}
+
+static piecewise3_t discretPointsToPolynomial3C0(
+    const pointX_list_t& points, const time_waypoints_t& time_points) {
+  t_point3_t points_list =
+      vectorFromEigenArray<pointX_list_t, t_point3_t>(points);
+  t_time_t time_points_list =
+      vectorFromEigenVector<time_waypoints_t, t_time_t>(time_points);
+  return piecewise3_t::convert_discrete_points_to_polynomial<polynomial3_t>(
+      points_list, time_points_list);
+}
+static piecewise3_t discretPointsToPolynomial3C1(
+    const pointX_list_t& points, const pointX_list_t& points_derivative,
+    const time_waypoints_t& time_points) {
+  t_point3_t points_list =
+      vectorFromEigenArray<pointX_list_t, t_point3_t>(points);
+  t_point3_t points_derivative_list =
+      vectorFromEigenArray<pointX_list_t, t_point3_t>(points_derivative);
+  t_time_t time_points_list =
+      vectorFromEigenVector<time_waypoints_t, t_time_t>(time_points);
+  return piecewise3_t::convert_discrete_points_to_polynomial<polynomial3_t>(
+      points_list, points_derivative_list, time_points_list);
+}
+static piecewise3_t discretPointsToPolynomial3C2(
+    const pointX_list_t& points, const pointX_list_t& points_derivative,
+    const pointX_list_t& points_second_derivative,
+    const time_waypoints_t& time_points) {
+  t_point3_t points_list =
+      vectorFromEigenArray<pointX_list_t, t_point3_t>(points);
+  t_point3_t points_derivative_list =
+      vectorFromEigenArray<pointX_list_t, t_point3_t>(points_derivative);
+  t_point3_t points_second_derivative_list =
+      vectorFromEigenArray<pointX_list_t, t_point3_t>(points_second_derivative);
+
+  t_time_t time_points_list =
+      vectorFromEigenVector<time_waypoints_t, t_time_t>(time_points);
+  return piecewise3_t::convert_discrete_points_to_polynomial<polynomial3_t>(
+      points_list, points_derivative_list, points_second_derivative_list,
+      time_points_list);
+}
+
+static piecewise3_t load_piecewise3_from_text_file(const std::string& filename,
+                                                   const real dt,
+                                                   const std::size_t dim) {
+  return piecewise3_t::load_piecewise_from_text_file<polynomial3_t>(
+     filename, dt, dim);
+}
+
+void addFinalPoint3C0(piecewise3_t& self, const pointX_t& end, const real time) {
+  if (self.num_curves() == 0)
+    throw std::runtime_error(
+        "Piecewise append : you need to add at least one curve before using "
+        "append(finalPoint) method.");
+  if (self.is_continuous(1) && self.num_curves() > 1)
+    std::cout << "Warning: by adding this final point to the piecewise curve, "
+                 "you loose C1 continuity and only "
+                 "guarantee C0 continuity."
+              << std::endl;
+  curve_translation_ptr_t pol(new polynomial3_t(self(self.max()), end, self.max(), time));
+  self.add_curve_ptr(pol);
+}
+void addFinalPoint3C1(piecewise3_t& self, const pointX_t& end,
+                     const pointX_t& d_end, const real time) {
+  if (self.num_curves() == 0)
+    throw std::runtime_error(
+        "Piecewise append : you need to add at least one curve before using "
+        "append(finalPoint) method.");
+  if (self.is_continuous(2) && self.num_curves() > 1)
+    std::cout << "Warning: by adding this final point to the piecewise curve, "
+                 "you loose C2 continuity and only "
+                 "guarantee C1 continuity."
+              << std::endl;
+  if (!self.is_continuous(1))
+    std::cout << "Warning: the current piecewise curve is not C1 continuous."
+              << std::endl;
+  curve_translation_ptr_t pol(new polynomial3_t(self(self.max()),
+                                    self.derivate(self.max(), 1), end, d_end,
+                                    self.max(), time));
+  self.add_curve_ptr(pol);
+}
+void addFinalPoint3C2(piecewise3_t& self, const pointX_t& end,
+                     const pointX_t& d_end, const pointX_t& dd_end,
+                     const real time) {
+  if (self.num_curves() == 0)
+    throw std::runtime_error(
+        "Piecewise append : you need to add at least one curve before using "
+        "append(finalPoint) method.");
+  if (self.is_continuous(3) && self.num_curves() > 1)
+    std::cout << "Warning: by adding this final point to the piecewise curve, "
+                 "you loose C3 continuity and only "
+                 "guarantee C2 continuity."
+              << std::endl;
+  if (!self.is_continuous(2))
+    std::cout << "Warning: the current piecewise curve is not C2 continuous."
+              << std::endl;
+  curve_translation_ptr_t pol(new polynomial3_t(
+      self(self.max()), self.derivate(self.max(), 1),
+      self.derivate(self.max(), 2), end, d_end, dd_end, self.max(), time));
+  self.add_curve_ptr(pol);
+}
+
+/* end wrap piecewise polynomial3 curve */
 
 /* Wrap exact cubic spline */
 t_waypoint_t getWayPoints(const coeff_t& array,
@@ -613,21 +746,21 @@ SE3Curve_t* wrapSE3CurveFromPosAndRotation(const pointX_t& init_pos,
 SE3Curve_t* wrapSE3CurveFromBezier3Translation(bezier3_t& translation_curve,
                                                const matrix3_t& init_rot,
                                                const matrix3_t& end_rot) {
-  boost::shared_ptr<bezier_t> translation(
-      new bezier_t(translation_curve.waypoints().begin(),
-                   translation_curve.waypoints().end(), translation_curve.min(),
-                   translation_curve.max()));
+  boost::shared_ptr<bezier3_t> translation(
+      new bezier3_t(translation_curve.waypoints().begin(),
+                    translation_curve.waypoints().end(), translation_curve.min(),
+                    translation_curve.max()));
   return new SE3Curve_t(translation, init_rot, end_rot);
 }
 
-SE3Curve_t* wrapSE3CurveFromTranslation(const curve_ptr_t& translation_curve,
-                                        const matrix3_t& init_rot,
-                                        const matrix3_t& end_rot) {
+SE3Curve_t* wrapSE3CurveFromTranslation(
+     const curve_translation_ptr_t& translation_curve,
+     const matrix3_t& init_rot, const matrix3_t& end_rot) {
   return new SE3Curve_t(translation_curve, init_rot, end_rot);
 }
 
 SE3Curve_t* wrapSE3CurveFromTwoCurves(
-    const curve_ptr_t& translation_curve,
+    const curve_translation_ptr_t& translation_curve,
     const curve_rotation_ptr_t& rotation_curve) {
   return new SE3Curve_t(translation_curve, rotation_curve);
 }
@@ -893,6 +1026,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       ;
   register_ptr_to_python<curve_ptr_t>();
   register_ptr_to_python<curve3_ptr_t>();
+  register_ptr_to_python<curve_translation_ptr_t>();
   register_ptr_to_python<curve_rotation_ptr_t>();
   register_ptr_to_python<curve_SE3_ptr_t>();
   /** END base abstracts class for each dimension/type : **/
@@ -1228,7 +1362,7 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def("__init__",
            make_constructor(&wrapPiecewiseCurveConstructor,
                             default_call_policies(), arg("curve")),
-           "Create a peicewise curve containing the given curve.")
+           "Create a piecewise curve containing the given curve.")
       .def("FromPointsList", &discretPointToPolynomialC0,
            "Create a piecewise-polynomial connecting exactly all the given "
            "points at the given time. The created "
@@ -1300,6 +1434,80 @@ BOOST_PYTHON_MODULE(ndcurves) {
       .def(bp::self != bp::self)
       .def(CopyableVisitor<piecewise_t>())
       .def_pickle(curve_pickle_suite<piecewise_t>());
+
+     class_<piecewise3_t, bases<curve_3_t>, boost::shared_ptr<piecewise3_t>>(
+      "piecewise3", init<>())
+      .def("__init__",
+           make_constructor(&wrapPiecewise3CurveConstructor,
+                            default_call_policies(), arg("curve")),
+           "Create a piecewise curve containing the given curve.")
+      .def("FromPointsList", &discretPointsToPolynomial3C0,
+           "Create a piecewise-polynomial connecting exactly all the given "
+           "points at the given time. The created "
+           "piecewise is C0 continuous.",
+           args("points", "time_points"))
+      .def("FromPointsList", &discretPointsToPolynomial3C1,
+           "Create a piecewise-polynomial connecting exactly all the given "
+           "points at the given time and respect the "
+           "given points derivative values. The created piecewise is C1 "
+           "continuous.",
+           args("points", "points_derivative", "time_points"))
+      .def("FromPointsList", &discretPointsToPolynomial3C2,
+           "Create a piecewise-polynomial connecting exactly all the given "
+           "points at the given time and respect the "
+           "given points derivative and second derivative values. The created "
+           "piecewise is C2 continuous.",
+           args("points", "points_derivative", "points_second_derivative",
+                "time_points"))
+      .staticmethod("FromPointsList")
+      .def("FromPointsFile", &load_piecewise3_from_text_file,
+           args("filename", "dt", "dimension"),
+           "Create a piecewise-polynomial connecting exactly all the points in "
+           "the given text file."
+           "The file should contains one points per line, optionally with it's "
+           "derivative and second derivatives."
+           "Each lines should thus contains dim, 2*dim or 3*dim values")
+      .staticmethod("FromPointsFile")
+      .def("append", &addFinalPoint3C0,
+           "Append a new polynomial curve of degree 1 at the end of the "
+           "piecewise curve, defined between self.max() "
+           "and time and connecting exactly self(self.max()) and end",
+           args("self", "end", "time"))
+      .def("append", &addFinalPoint3C1,
+           "Append a new polynomial curve of degree 3 at the end of the "
+           "piecewise curve, defined between self.max() "
+           "and time and connecting exactly self(self.max()) and end. It "
+           "guarantee C1 continuity and guarantee that "
+           "self.derivate(time,1) == d_end",
+           args("self", "end", "d_end", "time"))
+      .def("append", &addFinalPoint3C2,
+           "Append a new polynomial curve of degree 5 at the end of the "
+           "piecewise curve, defined between self.max() "
+           "and time and connecting exactly self(self.max()) and end. It "
+           "guarantee C2 continuity and guarantee that "
+           "self.derivate(time,1) == d_end and self.derivate(time,2) == dd_end",
+           args("self", "end", "d_end", "d_end", "time"))
+      .def("append", &piecewise3_t::add_curve_ptr,
+           "Add a new curve to piecewise curve, which should be defined in "
+           "T_{min},T_{max}] "
+           "where T_{min} is equal toT_{max} of the actual piecewise curve.")
+      .def("is_continuous", &piecewise3_t::is_continuous,
+           "Check if the curve is continuous at the given order.",
+           args("self", "order"))
+      .def("convert_piecewise_curve_to_polynomial",
+           &piecewise3_t::convert_piecewise_curve_to_polynomial<polynomial3_t>,
+           "Convert a piecewise curve to to a piecewise polynomial curve")
+      .def("convert_piecewise_curve_to_bezier",
+           &piecewise3_t::convert_piecewise_curve_to_bezier<bezier3_t>,
+           "Convert a piecewise curve to to a piecewise bezier curve")
+      .def("curve_at_index", &piecewise3_t::curve_at_index)
+      .def("curve_at_time", &piecewise3_t::curve_at_time)
+      .def("num_curves", &piecewise3_t::num_curves)
+      .def(SerializableVisitor<piecewise3_t>())
+      .def(bp::self == bp::self)
+      .def(bp::self != bp::self)
+      .def(CopyableVisitor<piecewise3_t>())
+      .def_pickle(curve_pickle_suite<piecewise3_t>());
 
   class_<piecewise_bezier_t, bases<curve_abc_t>,
          boost::shared_ptr<piecewise_bezier_t>>("piecewise_bezier", init<>())
