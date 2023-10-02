@@ -85,6 +85,7 @@ typedef curve_abc<double, double, true, pointX_t, pointX_t>
     curve_abc_t;  // base abstract class
 typedef curve_abc<double, double, true, point3_t, point3_t>
     curve_3_t;  // generic class of curve of size 3
+typedef curve_3_t curve_translation_t;  // generic class of a translation curve
 typedef curve_abc<double, double, true, matrix3_t, point3_t>
     curve_rotation_t;  // templated class used for the rotation (return
                        // dimension are fixed)
@@ -96,6 +97,7 @@ typedef curve_abc<double, double, true, transform_t, point6_t>
 typedef boost::shared_ptr<curve_abc_t> curve_ptr_t;
 typedef boost::shared_ptr<curve_3_t> curve3_ptr_t;
 typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
+typedef boost::shared_ptr<curve_translation_t> curve_translation_ptr_t;
 typedef boost::shared_ptr<curve_SE3_t> curve_SE3_ptr_t;
 
 // definition of all curves class with pointX as return type:
