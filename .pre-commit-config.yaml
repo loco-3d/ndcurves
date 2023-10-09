@@ -7,7 +7,7 @@ repos:
     -   id: clang-format
         args: [--style=Google]
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
     -   id: check-added-large-files
     -   id: check-ast
@@ -25,7 +25,7 @@ repos:
     -   id: mixed-line-ending
     -   id: trailing-whitespace
 -   repo: https://github.com/psf/black
-    rev: 23.7.0
+    rev: 23.9.1
     hooks:
     -   id: black
 -   repo: https://github.com/PyCQA/flake8
