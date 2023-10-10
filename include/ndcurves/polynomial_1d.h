@@ -23,10 +23,10 @@ namespace ndcurves {
 /// where N is the order and \f$ t \in [t_{min}, t_{max}] \f$.
 ///
 template <typename Time, typename Numeric, bool Safe>
-struct polynomial<Time, Numeric, Safe, double, std::vector<double> >
-    : public curve_abc<Time, Numeric, Safe, double> {
-  typedef double point_t;
-  typedef std::vector<double> t_point_t;
+struct polynomial<Time, Numeric, Safe, Numeric, std::vector<Numeric> >
+    : public curve_abc<Time, Numeric, Safe, Numeric> {
+  typedef Numeric point_t;
+  typedef std::vector<Numeric> t_point_t;
   typedef Time time_t;
   typedef Numeric num_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;
