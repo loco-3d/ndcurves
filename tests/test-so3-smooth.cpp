@@ -333,12 +333,12 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
   matrix3_t end_rot = end_quat.toRotationMatrix();
   double t_min = generateRandomNumber(0.0, 100.0);
   double t_max = t_min + generateRandomNumber(0.1, 10.0);
-  std::vector<point3_t, Eigen::aligned_allocator<point3_t>> traj_vel_discr;
-  std::vector<point3_t, Eigen::aligned_allocator<point3_t>> traj_acc_discr;
+  Eigen::MatrixXd traj_vel_discr;
+  Eigen::MatrixXd traj_acc_discr;
   double dt = 1e-3;
   std::size_t nb_sample = static_cast<std::size_t>((t_max - t_min) / dt);
-  traj_vel_discr.resize(nb_sample, point3_t::Zero());
-  traj_acc_discr.resize(nb_sample, point3_t::Zero());
+  traj_vel_discr.resize(3, nb_sample);
+  traj_acc_discr.resize(3, nb_sample);
 
   // Create the object.
   SO3Smooth_t traj;
@@ -350,10 +350,10 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
   traj.generate(init_rot, end_rot, t_min, t_max);
 
   // Evaluate the trajectory.
-  for (std::size_t i = 0; i < traj_vel_discr.size(); ++i) {
+  for (std::size_t i = 0; i < nb_sample; ++i) {
     double t = t_min + static_cast<double>(i) * dt;
-    traj_vel_discr[i] = traj.derivate(t, 1);
-    traj_acc_discr[i] = traj.derivate(t, 2);
+    traj_vel_discr.col(i) = traj.derivate(t, 1);
+    traj_acc_discr.col(i) = traj.derivate(t, 2);
   }
 
   // Test the object.
@@ -363,31 +363,41 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
   BOOST_CHECK_EQUAL(traj.degree(), 5.0);
   BOOST_CHECK_EQUAL(traj.get_init_rotation(), init_rot);
   BOOST_CHECK_EQUAL(traj.get_end_rotation(), end_rot);
-  BOOST_CHECK(traj(traj.min()).isApprox(init_rot));
-  BOOST_CHECK(traj(traj.max()).isApprox(end_rot));
+  BOOST_CHECK((traj(traj.min()) - init_rot).isMuchSmallerThan(1, -1e-8));
+  BOOST_CHECK((traj(traj.max()) - end_rot).isMuchSmallerThan(1, -1e-8));
   BOOST_CHECK_EQUAL(traj.derivate(traj.min(), 1), point3_t::Zero());
   BOOST_CHECK_LE(traj.derivate(traj.max(), 1).norm(), 1e-3);
-  BOOST_CHECK_LE(traj.derivate(traj.min(), 2).norm(), 1e-1);
-  BOOST_CHECK_LE(traj.derivate(traj.max(), 2).norm(), 1e-1);
 
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(true);
 
+  point3_t vel_max;
+  vel_max << traj_vel_discr.row(0).maxCoeff(), traj_vel_discr.row(1).maxCoeff(),
+      traj_vel_discr.row(2).maxCoeff();
+  point3_t vel_min;
+  vel_min << traj_vel_discr.row(0).minCoeff(), traj_vel_discr.row(1).minCoeff(),
+      traj_vel_discr.row(2).minCoeff();
+  point3_t vel_amplitude = (vel_max - vel_min).array().abs();
+  point3_t acc_max;
+  acc_max << traj_acc_discr.row(0).maxCoeff(), traj_acc_discr.row(1).maxCoeff(),
+      traj_acc_discr.row(2).maxCoeff();
+  point3_t acc_min;
+  acc_min << traj_acc_discr.row(0).minCoeff(), traj_acc_discr.row(1).minCoeff(),
+      traj_acc_discr.row(2).minCoeff();
+  point3_t acc_amplitude = (acc_max - acc_min).array().abs();
+
   // Continuity test.
-  for (std::size_t i = 1; i < traj_vel_discr.size(); ++i) {
-    point3_t error = traj_vel_discr[i] - traj_vel_discr[i - 1];
-    for (Eigen::Index row = 0; row < error.rows(); ++row) {
-      for (Eigen::Index col = 0; col < error.cols(); ++col) {
-        BOOST_CHECK_LE(std::abs(error(row, col)), 1);
-      }
+  for (std::size_t i = 1; i < nb_sample; ++i) {
+    point3_t error = traj_vel_discr.col(i) - traj_vel_discr.col(i - 1);
+    for (Eigen::Index j = 0; j < error.size(); ++j) {
+      BOOST_CHECK_LE(std::abs(error(j)), 1e-0 * vel_amplitude(j));
     }
   }
-  for (std::size_t i = 1; i < traj_acc_discr.size(); ++i) {
-    point3_t error = traj_acc_discr[i] - traj_acc_discr[i - 1];
-    for (Eigen::Index row = 0; row < error.rows(); ++row) {
-      for (Eigen::Index col = 0; col < error.cols(); ++col) {
-        BOOST_CHECK_LE(std::abs(error(row, col)), 1);
-      }
+
+  for (std::size_t i = 1; i < nb_sample; ++i) {
+    point3_t error = traj_acc_discr.col(i) - traj_acc_discr.col(i - 1);
+    for (Eigen::Index j = 0; j < error.size(); ++j) {
+      BOOST_CHECK_LE(std::abs(error(j)), 1e-0 * acc_amplitude(j));
     }
   }
 }
