@@ -119,7 +119,6 @@ set(${PROJECT_NAME}_HEADERS
     include/${PROJECT_NAME}/optimization/quadratic_problem.h
     include/${PROJECT_NAME}/piecewise_curve.h
     include/${PROJECT_NAME}/polynomial.h
-    include/${PROJECT_NAME}/polynomial_1d.h
     include/${PROJECT_NAME}/python/python_definitions.h
     include/${PROJECT_NAME}/quadratic_variable.h
     include/${PROJECT_NAME}/se3_curve.h
