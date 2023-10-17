@@ -687,6 +687,4 @@ DEFINE_CLASS_TEMPLATE_VERSION(
                typename T_Point),
     SINGLE_ARG(ndcurves::polynomial<Time, Numeric, Safe, Point, T_Point>))
 
-#include "ndcurves/polynomial_1d.h"
-
 #endif  //_STRUCT_POLYNOMIAL
