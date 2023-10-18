@@ -118,8 +118,6 @@ typedef sinusoidal<double, double, true, pointX_t> sinusoidal_t;
 // definition of all curves class with point3 as return type:
 typedef polynomial<double, double, true, point3_t, t_point3_t> polynomial3_t;
 typedef polynomial<double, double, true, point1_t, t_point1_t> polynomial1_t;
-typedef polynomial<double, double, true, double, std::vector<double>>
-    polynomial_1d_t;
 typedef exact_cubic<double, double, true, point3_t, t_point3_t, polynomial_t>
     exact_cubic3_t;
 typedef bezier_curve<double, double, true, point3_t> bezier3_t;
