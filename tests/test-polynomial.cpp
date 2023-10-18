@@ -22,7 +22,7 @@ double generateRandomNumber(double lower, double upper) {
 
 BOOST_AUTO_TEST_CASE(default_constructor) {
   polynomial1_t traj;
-  BOOST_CHECK_EQUAL(traj.dim(), 1);
+  BOOST_CHECK_EQUAL(traj.dim(), 0);
   BOOST_CHECK_EQUAL(traj.min(), 0.0);
   BOOST_CHECK_EQUAL(traj.max(), 1.0);
   BOOST_CHECK_EQUAL(traj.degree(), 0);
