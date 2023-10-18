@@ -21,7 +21,7 @@ double generateRandomNumber(double lower, double upper) {
 }
 
 BOOST_AUTO_TEST_CASE(default_constructor) {
-  polynomial_1d_t traj;
+  polynomial1_t traj;
   BOOST_CHECK_EQUAL(traj.dim(), 1);
   BOOST_CHECK_EQUAL(traj.min(), 0.0);
   BOOST_CHECK_EQUAL(traj.max(), 1.0);
@@ -34,7 +34,8 @@ BOOST_AUTO_TEST_CASE(min_jerk_constructor) {
   double init = generateRandomNumber(-100.0, 100.0);
   double end = generateRandomNumber(-100.0, 100.0);
 
-  polynomial_1d_t traj = polynomial_1d_t::MinimumJerk(init, end, t_min, t_max);
+  polynomial1_t traj =
+      polynomial1_t::MinimumJerk(point1_t(init), point1_t(end), t_min, t_max);
 
   // Real-time critical
   Eigen::internal::set_is_malloc_allowed(false);
@@ -42,12 +43,12 @@ BOOST_AUTO_TEST_CASE(min_jerk_constructor) {
   BOOST_CHECK_EQUAL(traj.min(), t_min);
   BOOST_CHECK_EQUAL(traj.max(), t_max);
   BOOST_CHECK_EQUAL(traj.degree(), 5);
-  BOOST_CHECK_EQUAL(traj(traj.min()), init);
-  BOOST_CHECK_CLOSE(traj(traj.max()), end, 1e-8);
-  BOOST_CHECK_EQUAL(traj.derivate(traj.min(), 1), 0.0);
-  BOOST_CHECK_LE(std::abs(traj.derivate(traj.max(), 1)), 1e-8);
-  BOOST_CHECK_EQUAL(traj.derivate(traj.min(), 2), 0.0);
-  BOOST_CHECK_LE(std::abs(traj.derivate(traj.max(), 2)), 1e-8);
+  BOOST_CHECK_EQUAL(traj(traj.min())[0], init);
+  BOOST_CHECK_CLOSE(traj(traj.max())[0], end, 1e-8);
+  BOOST_CHECK_EQUAL(traj.derivate(traj.min(), 1)[0], 0.0);
+  BOOST_CHECK_LE(std::abs(traj.derivate(traj.max(), 1)[0]), 1e-8);
+  BOOST_CHECK_EQUAL(traj.derivate(traj.min(), 2)[0], 0.0);
+  BOOST_CHECK_LE(std::abs(traj.derivate(traj.max(), 2)[0]), 1e-8);
   Eigen::internal::set_is_malloc_allowed(true);
 }
 

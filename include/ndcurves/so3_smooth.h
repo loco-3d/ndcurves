@@ -13,6 +13,7 @@
 #include "ndcurves/MathDefs.h"
 #include "ndcurves/constant_curve.h"
 #include "ndcurves/curve_abc.h"
+#include "ndcurves/fwd.h"
 #include "ndcurves/polynomial.h"
 
 namespace ndcurves {
@@ -32,7 +33,7 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
   typedef constant_curve<Time, Numeric, Safe, point_derivate_t>
       curve_derivate_t;
   typedef SO3Smooth<Time, Numeric, Safe> SO3Smooth_t;
-  typedef polynomial<Time, Numeric, Safe, Time, std::vector<Time> > min_jerk_t;
+  typedef polynomial<Time, Numeric, Safe, point1_t> min_jerk_t;
 
  public:
   /* Constructors - destructors */
@@ -45,7 +46,8 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
         end_rot_(point_t::Identity()),
         t_min_(0.0),
         t_max_(1.0),
-        min_jerk_(min_jerk_t::MinimumJerk(0.0, 1.0, t_min_, t_max_)),
+        min_jerk_(min_jerk_t::MinimumJerk(point1_t(0.0), point1_t(1.0), t_min_,
+                                          t_max_)),
         rot_diff_(pinocchio::log3(init_rot_.transpose() * end_rot_)),
         dt_(1e-3) {}
 
@@ -55,7 +57,8 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
       : curve_abc_t(),
         t_min_(t_min),
         t_max_(t_max),
-        min_jerk_(min_jerk_t::MinimumJerk(0.0, 1.0, t_min_, t_max_)),
+        min_jerk_(min_jerk_t::MinimumJerk(point1_t(0.0), point1_t(1.0), t_min_,
+                                          t_max_)),
         dt_(1e-3) {
     quaternion_t tmp_init_quat = init_quat;
     quaternion_t tmp_end_quat = end_quat;
@@ -76,7 +79,8 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
         end_rot_(end_rot),
         t_min_(t_min),
         t_max_(t_max),
-        min_jerk_(min_jerk_t::MinimumJerk(0.0, 1.0, t_min_, t_max_)),
+        min_jerk_(min_jerk_t::MinimumJerk(point1_t(0.0), point1_t(1.0), t_min_,
+                                          t_max_)),
         rot_diff_(pinocchio::log3(init_rot_.transpose() * end_rot_)),
         dt_(1e-3) {
     safe_check();
@@ -88,7 +92,8 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
       : curve_abc_t(),
         t_min_(0.),
         t_max_(1.),
-        min_jerk_(min_jerk_t::MinimumJerk(0.0, 1.0, t_min_, t_max_)),
+        min_jerk_(min_jerk_t::MinimumJerk(point1_t(0.0), point1_t(1.0), t_min_,
+                                          t_max_)),
         dt_(1e-3) {
     quaternion_t init_rot_normalized = init_rot.normalized();
     quaternion_t end_rot_normalized = end_rot.normalized();
@@ -106,7 +111,8 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
         end_rot_(end_rot),
         t_min_(0.),
         t_max_(1.),
-        min_jerk_(min_jerk_t::MinimumJerk(0.0, 1.0, t_min_, t_max_)),
+        min_jerk_(min_jerk_t::MinimumJerk(point1_t(0.0), point1_t(1.0), t_min_,
+                                          t_max_)),
         dt_(1e-3) {
     rot_diff_ = pinocchio::log3(init_rot_.transpose() * end_rot_);
     safe_check();
@@ -123,7 +129,8 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
     end_rot_.setIdentity();
     t_min_ = 0.0;
     t_max_ = 1.0;
-    min_jerk_.generate_minimum_jerk(0.0, 1.0, t_min_, t_max_);
+    min_jerk_t::MinimumJerk(min_jerk_, point1_t(0.0), point1_t(1.0), t_min_,
+                            t_max_);
     rot_diff_ = pinocchio::log3(init_rot_.transpose() * end_rot_);
     safe_check();
   }
@@ -135,7 +142,8 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
     end_rot_ = end_rot;
     t_min_ = t_min;
     t_max_ = t_max;
-    min_jerk_.generate_minimum_jerk(0.0, 1.0, t_min_, t_max_);
+    min_jerk_t::MinimumJerk(min_jerk_, point1_t(0.0), point1_t(1.0), t_min_,
+                            t_max_);
     rot_diff_ = pinocchio::log3(init_rot_.transpose() * end_rot_);
     safe_check();
   }
@@ -186,7 +194,7 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
           "error in SO3Smooth : time t to evaluate derivative should be in "
           "range [Tmin, Tmax] of the curve");
     }
-    return init_rot_ * pinocchio::exp3(min_jerk_(t) * rot_diff_);
+    return init_rot_ * pinocchio::exp3(min_jerk_(t)[0] * rot_diff_);
   }
 
   /**
@@ -264,8 +272,9 @@ struct SO3Smooth : public curve_abc<Time, Numeric, Safe, matrix3_t, point3_t> {
       }
     } else if (order == 1) {
       matrix3_t jexp;
-      pinocchio::Jexp3(min_jerk_(t) * rot_diff_, jexp);
-      out.noalias() = init_rot_ * jexp * min_jerk_.derivate(t, 1) * rot_diff_;
+      pinocchio::Jexp3(min_jerk_(t)[0] * rot_diff_, jexp);
+      out.noalias() =
+          init_rot_ * jexp * min_jerk_.derivate(t, 1)[0] * rot_diff_;
     } else {
       throw std::invalid_argument("Order must be > 0 ");
     }
