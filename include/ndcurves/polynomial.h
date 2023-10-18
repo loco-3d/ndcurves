@@ -48,7 +48,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Empty constructor. Curve obtained this way can not perform other
   /// class functions.
   ///
-  polynomial() : curve_abc_t(), dim_(0), degree_(0), T_min_(0), T_max_(0) {}
+  polynomial() : curve_abc_t(), dim_(0), degree_(0), T_min_(0), T_max_(1.0) {}
 
   /// \brief Constructor.
   /// \param coefficients : a reference to an Eigen matrix where each column is
