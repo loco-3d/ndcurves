@@ -1,10 +1,10 @@
-NDCurves
-===================
+# NDCurves
 
 [![Pipeline status](https://gitlab.laas.fr/loco-3d/ndcurves/badges/master/pipeline.svg)](https://gitlab.laas.fr/loco-3d/ndcurves/commits/master)
 [![Coverage report](https://gitlab.laas.fr/loco-3d/ndcurves/badges/master/coverage.svg?job=doc-coverage)](https://gepettoweb.laas.fr/doc/loco-3d/ndcurves/master/coverage/)
 [![PyPI version](https://badge.fury.io/py/ndcurves.svg)](https://pypi.org/project/ndcurves)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/loco-3d/ndcurves/master.svg)](https://results.pre-commit.ci/latest/github/loco-3d/ndcurves)
 
 
@@ -118,16 +118,14 @@ which is rather self explanatory:
 
 In spite of an exhaustive documentation, please refer to the C++ documentation, which mostly applies to python.
 
-Documentation and tutorial
--------------
+## Documentation and tutorial
 
 For the C++ / Python detailed documentation, you can consult [this pdf](https://github.com/loco-3d/ndcurves/blob/devel/doc/curves.pdf) available in the doc folder
 
 For a python tutorial, you can refer to the [jupyter notebook](https://github.com/loco-3d/ndcurves/blob/master/python/test/sandbox/test.ipynb).
 The [test file](https://github.com/loco-3d/ndcurves/blob/master/python/test/test.py) is more exhaustive and rather self explanatory.
 
-Citation
-------
+## Citation
 
 If you wish to cite this work please use the bibtex below:
 
