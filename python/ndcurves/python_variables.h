@@ -69,5 +69,6 @@ struct LinearBezierVector {
 
 /*** TEMPLATE SPECIALIZATION FOR PYTHON ****/
 }  // namespace ndcurves
+// EIGENPY_DEFINE_STRUCT_ALLOCATOR_SPECIALIZATION(ndcurves::piecewise_SE3_t)
 
 #endif  //_VARIABLES_PYTHON_BINDINGS

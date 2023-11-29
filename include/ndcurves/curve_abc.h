@@ -77,12 +77,12 @@ struct curve_abc : public serialization::Serializable {
 
   /**
    * @brief isEquivalent check if other and *this are approximately equal by
-   * values, given a precision treshold. This test is done by discretizing both
+   * values, given a precision threshold. This test is done by discretizing both
    * curves and evaluating them and their derivatives.
    * @param other the other curve to check
    * @param order the order up to which the derivatives of the curves are
    * checked for equality
-   * @param prec the precision treshold, default
+   * @param prec the precision threshold, default
    * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true if the two curves are approximately equal
    */
@@ -121,10 +121,10 @@ struct curve_abc : public serialization::Serializable {
 
   /**
    * @brief isApprox check if other and *this are approximately equal given a
-   * precision treshold Only two curves of the same class can be approximately
+   * precision threshold Only two curves of the same class can be approximately
    * equal, for comparison between different type of curves see isEquivalent.
    * @param other the other curve to check
-   * @param prec the precision treshold, default
+   * @param prec the precision threshold, default
    * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true if the two curves are approximately equal
    */

@@ -592,7 +592,7 @@ void cubicConversionTest(bool& error) {
                  "degree > 3, should raise an error"
               << std::endl;
     error = true;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     bezier_t b3 = bezier_from_curve<bezier_t>(pol_4);
@@ -600,7 +600,7 @@ void cubicConversionTest(bool& error) {
                  "degree > 3, should raise an error"
               << std::endl;
     error = true;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
 }
 
@@ -1839,7 +1839,7 @@ void PiecewisePolynomialCurveFromFile(bool& error) {
                  "match, an error should be raised"
               << std::endl;
     error = true;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     piecewise_t c_error =
@@ -1849,7 +1849,7 @@ void PiecewisePolynomialCurveFromFile(bool& error) {
                  "discrete_points_error should not be parsed correctly"
               << std::endl;
     error = true;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
 }
 
@@ -2127,14 +2127,14 @@ void polynomialFromBoundaryConditions(bool& error) {
     error = true;
     std::cout << "Created a polynomial with tMin > tMax without error. "
               << std::endl;
-  } catch (invalid_argument e) {
+  } catch (const invalid_argument& /*e*/) {
   }
   try {
     polynomial_t polC1Err = polynomial_t(p0, dp0, p1, dp1, max, min);
     error = true;
     std::cout << "Created a polynomial with tMin > tMax without error. "
               << std::endl;
-  } catch (invalid_argument e) {
+  } catch (const invalid_argument& /*e*/) {
   }
   try {
     polynomial_t polC2Err =
@@ -2142,7 +2142,7 @@ void polynomialFromBoundaryConditions(bool& error) {
     error = true;
     std::cout << "Created a polynomial with tMin > tMax without error. "
               << std::endl;
-  } catch (invalid_argument e) {
+  } catch (const invalid_argument& /*e*/) {
   }
 }
 
@@ -2214,7 +2214,7 @@ void so3LinearTest(bool& error) {
     std::cout << "SO3Linear: calling () with t < tmin should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     so3Traj(1.7);
@@ -2222,7 +2222,7 @@ void so3LinearTest(bool& error) {
     std::cout << "SO3Linear: calling () with t > tmin should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     so3Traj.derivate(0, 0);
@@ -2230,7 +2230,7 @@ void so3LinearTest(bool& error) {
     std::cout << "SO3Linear: calling derivate with order = 0 should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
 
   SO3Linear_t so3TrajMatrix(q0.toRotationMatrix(), q1.toRotationMatrix(), tMin,
@@ -2323,8 +2323,8 @@ void se3CurveTest(bool& error) {
     params.push_back(b);
     params.push_back(c);
     params.push_back(d);
-    boost::shared_ptr<bezier_t> translation_bezier(
-        new bezier_t(params.begin(), params.end(), min, max));
+    boost::shared_ptr<bezier3_t> translation_bezier(
+        new bezier3_t(params.begin(), params.end(), min, max));
     cBezier = SE3Curve_t(translation_bezier, q0.toRotationMatrix(),
                          q1.toRotationMatrix());
     p0 = (*translation_bezier)(min);
@@ -2411,7 +2411,7 @@ void se3CurveTest(bool& error) {
   }
 
   // check accessor to translation curves :
-  curve_ptr_t translation = cBezier.translation_curve();
+  curve_translation_ptr_t translation = cBezier.translation_curve();
   if (translation->operator()(min) != cBezier(min).translation()) {
     error = true;
     std::cout << "SE3 curve : translation curve not equal to se3.translation"
@@ -2454,7 +2454,7 @@ void se3CurveTest(bool& error) {
     std::cout << "SE3 curve: calling () with t < tmin should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     cBezier(2.3);
@@ -2462,7 +2462,7 @@ void se3CurveTest(bool& error) {
     std::cout << "SE3 curve: calling () with t > tmin should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
   try {
     cBezier.derivate(0.6, 0);
@@ -2470,7 +2470,7 @@ void se3CurveTest(bool& error) {
     std::cout << "SE3 curve: calling derivate with order = 0 should raise an "
                  "invalid_argument error"
               << std::endl;
-  } catch (std::invalid_argument e) {
+  } catch (std::invalid_argument& /*e*/) {
   }
 }
 
@@ -2522,8 +2522,8 @@ void Se3serializationTest(bool& error) {
     params.push_back(b);
     params.push_back(c);
     params.push_back(d);
-    boost::shared_ptr<bezier_t> translation_bezier(
-        new bezier_t(params.begin(), params.end(), min, max));
+    boost::shared_ptr<bezier3_t> translation_bezier(
+        new bezier3_t(params.begin(), params.end(), min, max));
     cBezier = SE3Curve_t(translation_bezier, q0, q1);
   }
 
@@ -3010,6 +3010,7 @@ void testOperatorEqual(bool& error) {
   bezier_t::num_t T_min = 1.0;
   bezier_t::num_t T_max = 3.0;
   bezier_t bc_0(control_points.begin(), control_points.end(), T_min, T_max);
+  bezier3_t bc3_0(control_points.begin(), control_points.end(), T_min, T_max);
   bezier_t bc_1(bc_0);
   // std::cout<<"Should call Bezier method : "<<std::endl;
   if (bc_1 != bc_0) {
@@ -3022,6 +3023,7 @@ void testOperatorEqual(bool& error) {
   control_points2.push_back(c);
   control_points2.push_back(d);
   bezier_t bc_2(control_points2.begin(), control_points2.end(), T_min, T_max);
+  bezier3_t bc3_2(control_points2.begin(), control_points2.end(), T_min, T_max);
   if (bc_2 == bc_0) {
     std::cout << "bc_0 and bc_2 should not be equals" << std::endl;
     error = true;
@@ -3045,6 +3047,7 @@ void testOperatorEqual(bool& error) {
     error = true;
   }
   polynomial_t pol_2 = polynomial_from_curve<polynomial_t>(bc_2);
+  polynomial3_t pol3_2 = polynomial_from_curve<polynomial3_t>(bc3_2);
   bezier_t bc_3 = bezier_from_curve<bezier_t>(pol_2);
   if (bc_2 != bc_3) {
     std::cout << "bc_2 and bc_3 should be equals" << std::endl;
@@ -3168,10 +3171,11 @@ void testOperatorEqual(bool& error) {
   }
 
   // SE3
-  boost::shared_ptr<bezier_t> translation_bezier(new bezier_t(bc_0));
-  boost::shared_ptr<bezier_t> translation_bezier2(new bezier_t(bc_0));
-  boost::shared_ptr<polynomial_t> translation_polynomial(
-      new polynomial_t(pol_0));
+  polynomial3_t pol3_0 = polynomial_from_curve<polynomial3_t>(bc3_0);
+  boost::shared_ptr<bezier3_t> translation_bezier(new bezier3_t(bc3_0));
+  boost::shared_ptr<bezier3_t> translation_bezier2(new bezier3_t(bc3_0));
+  boost::shared_ptr<polynomial3_t> translation_polynomial(
+      new polynomial3_t(pol3_0));
   SE3Curve_t se3_bezier1 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(),
                                       q1.toRotationMatrix());
   SE3Curve_t se3_bezier12 = SE3Curve_t(
@@ -3181,8 +3185,8 @@ void testOperatorEqual(bool& error) {
   SE3Curve_t se3_bezier2(se3_bezier1);
   SE3Curve_t se3_bezier3 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(),
                                       q2.toRotationMatrix());
-  boost::shared_ptr<polynomial_t> translation_polynomial2(
-      new polynomial_t(pol_2));
+  boost::shared_ptr<polynomial3_t> translation_polynomial2(
+      new polynomial3_t(pol3_2));
   SE3Curve_t se3_pol2 = SE3Curve_t(
       translation_polynomial2, q0.toRotationMatrix(), q1.toRotationMatrix());
   // std::cout<<"Should call se3 method : "<<std::endl;
@@ -3293,7 +3297,7 @@ void testOperatorEqual(bool& error) {
       translation_polynomial->derivate(translation_polynomial->max(), 1));
   point3_t p_end_se3(1, -2, 6);
   point3_t dp_end_se3(3.5, 2.5, -9);
-  boost::shared_ptr<polynomial_t> translation_pol3(new polynomial_t(
+  boost::shared_ptr<polynomial3_t> translation_pol3(new polynomial3_t(
       p_init_se3, dp_init_se3, p_end_se3, dp_end_se3,
       translation_polynomial->max(), translation_polynomial->max() + 2.5));
   curve_SE3_ptr_t se3_pol_3(new SE3Curve_t(

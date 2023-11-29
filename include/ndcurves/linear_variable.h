@@ -210,8 +210,8 @@ struct linear_variable : public serialization::Serializable {
   Numeric norm() const { return isZero() ? 0 : (B_.norm() + c_.norm()); }
 
   /// \brief Check if actual linear variable and other are approximately equal
-  /// given a precision treshold. Only two curves of the same class can be
-  /// approximately equal, \param prec : the precision treshold, default
+  /// given a precision threshold. Only two curves of the same class can be
+  /// approximately equal, \param prec : the precision threshold, default
   /// Eigen::NumTraits<Numeric>::dummy_precision() \return true if the two
   /// linear variables are approximately equal.
   bool isApprox(
@@ -235,6 +235,19 @@ struct linear_variable : public serialization::Serializable {
     ar& boost::serialization::make_nvp("B_", B_);
     ar& boost::serialization::make_nvp("c_", c_);
     ar& boost::serialization::make_nvp("zero", zero);
+  }
+
+  linear_variable& operator=(const linear_variable& other) {
+    if (this == &other) {
+      return *this;
+    }
+    // Perform a deep copy here to copy all necessary data.
+    // Make sure to handle memory allocation properly.
+    // You may need to copy the data contained within the linear_variable.
+    this->B_ = other.B_;
+    this->c_ = other.c_;
+    this->zero = other.zero;
+    return *this;
   }
 
  private:

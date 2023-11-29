@@ -35,11 +35,15 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
   typedef polynomial<Time, Numeric, Safe, point_derivate_t> curve_derivate_t;
   typedef curve_abc<Time, Numeric, Safe, pointX_t>
       curve_X_t;  // generic class of curve
+  typedef curve_abc<Time, Numeric, Safe, point3_t, point3_t>
+      curve_translation_t;  // templated class used for the translation (return
+                            // dimension are fixed)
   typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t>
       curve_rotation_t;  // templated class used for the rotation (return
                          // dimension are fixed)
   typedef boost::shared_ptr<curve_X_t> curve_ptr_t;
   typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
+  typedef boost::shared_ptr<curve_translation_t> curve_translation_ptr_t;
 
   typedef SO3Linear<Time, Numeric, Safe> SO3Linear_t;
   typedef polynomial<Time, Numeric, Safe, pointX_t> polynomial_t;
@@ -71,9 +75,9 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
            const time_t& t_min, const time_t& t_max)
       : curve_abc_t(),
         dim_(6),
-        translation_curve_(new polynomial_t(
-            pointX_t(init_transform.translation()),
-            pointX_t(end_transform.translation()), t_min, t_max)),
+        translation_curve_(new polynomial3_t(
+            point3_t(init_transform.translation()),
+            point3_t(end_transform.translation()), t_min, t_max)),
         rotation_curve_(new SO3Linear_t(
             init_transform.rotation(), end_transform.rotation(), t_min, t_max)),
         T_min_(t_min),
@@ -83,12 +87,12 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
 
   /// \brief Constructor from init/end pose, with quaternion. use polynomial of
   /// degree 1 for position and SO3Linear for rotation
-  SE3Curve(const pointX_t& init_pos, const pointX_t& end_pos,
+  SE3Curve(const point3_t& init_pos, const point3_t& end_pos,
            const Quaternion& init_rot, const Quaternion& end_rot,
            const time_t& t_min, const time_t& t_max)
       : curve_abc_t(),
         dim_(6),
-        translation_curve_(new polynomial_t(init_pos, end_pos, t_min, t_max)),
+        translation_curve_(new polynomial3_t(init_pos, end_pos, t_min, t_max)),
         rotation_curve_(new SO3Linear_t(init_rot, end_rot, t_min, t_max)),
         T_min_(t_min),
         T_max_(t_max) {
@@ -97,12 +101,12 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
 
   /// \brief Constructor from init/end pose, with rotation matrix. use
   /// polynomial of degree 1 for position and SO3Linear for rotation
-  SE3Curve(const pointX_t& init_pos, const pointX_t& end_pos,
+  SE3Curve(const point3_t& init_pos, const point3_t& end_pos,
            const matrix3_t& init_rot, const matrix3_t& end_rot,
            const time_t& t_min, const time_t& t_max)
       : curve_abc_t(),
         dim_(6),
-        translation_curve_(new polynomial_t(init_pos, end_pos, t_min, t_max)),
+        translation_curve_(new polynomial3_t(init_pos, end_pos, t_min, t_max)),
         rotation_curve_(new SO3Linear_t(init_rot, end_rot, t_min, t_max)),
         T_min_(t_min),
         T_max_(t_max) {
@@ -113,8 +117,8 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
   /// \brief Constructor from curve for the translation and init/end rotation,
   /// with quaternion. Use SO3Linear for rotation with the same time bounds as
   /// the
-  SE3Curve(curve_ptr_t translation_curve, const Quaternion& init_rot,
-           const Quaternion& end_rot)
+  SE3Curve(curve_translation_ptr_t translation_curve,
+           const Quaternion& init_rot, const Quaternion& end_rot)
       : curve_abc_t(),
         dim_(6),
         translation_curve_(translation_curve),
@@ -128,7 +132,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
   /// \brief Constructor from curve for the translation and init/end rotation,
   /// with rotation matrix. Use SO3Linear for rotation with the same time bounds
   /// as the
-  SE3Curve(curve_ptr_t translation_curve, const matrix3_t& init_rot,
+  SE3Curve(curve_translation_ptr_t translation_curve, const matrix3_t& init_rot,
            const matrix3_t& end_rot)
       : curve_abc_t(),
         dim_(6),
@@ -143,7 +147,8 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
 
   /* Constructor from translation and rotation curves object : */
   /// \brief Constructor from from translation and rotation curves object
-  SE3Curve(curve_ptr_t translation_curve, curve_rotation_ptr_t rotation_curve)
+  SE3Curve(curve_translation_ptr_t translation_curve,
+           curve_rotation_ptr_t rotation_curve)
       : curve_abc_t(),
         dim_(6),
         translation_curve_(translation_curve),
@@ -185,7 +190,7 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
    * Only two curves of the same class can be approximately equals, for
    * comparison between different type of curves see isEquivalent
    * @param other the other curve to check
-   * @param prec the precision treshold, default
+   * @param prec the precision threshold, default
    * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
@@ -262,14 +267,16 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
   /// \return \f$degree\f$, the degree of the curve.
   virtual std::size_t degree() const { return translation_curve_->degree(); }
   /// \brief const accessor to the translation curve
-  const curve_ptr_t translation_curve() const { return translation_curve_; }
+  const curve_translation_ptr_t translation_curve() const {
+    return translation_curve_;
+  }
   /// \brief const accessor to the rotation curve
   const curve_rotation_ptr_t rotation_curve() const { return rotation_curve_; }
   /*Helpers*/
 
   /*Attributes*/
   std::size_t dim_;  // dim doesn't mean anything in this class ...
-  curve_ptr_t translation_curve_;
+  curve_translation_ptr_t translation_curve_;
   curve_rotation_ptr_t rotation_curve_;
   time_t T_min_, T_max_;
   /*Attributes*/

@@ -71,7 +71,7 @@ class rotation_spline : public curve_abc_quat_t {
     if (t >= max()) return quat_to_.coeffs();
     // normalize u
     Numeric u = (t - min()) / (max() - min());
-    // reparametrize u
+    // re-parametrize u
     return quat_from_.slerp(time_reparam_(u)[0], quat_to_).coeffs();
   }
 
@@ -80,7 +80,7 @@ class rotation_spline : public curve_abc_quat_t {
    * Only two curves of the same class can be approximately equals, for
    * comparison between different type of curves see isEquivalent
    * @param other the other curve to check
-   * @param prec the precision treshold, default
+   * @param prec the precision threshold, default
    * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
@@ -127,7 +127,7 @@ class rotation_spline : public curve_abc_quat_t {
         "Compute derivate for quaternion spline is not implemented yet.");
   }
 
-  /// \brief Initialize time reparametrization for spline.
+  /// \brief Initialize time re-parametrization for spline.
   exact_cubic_constraint_one_dim computeWayPoints() const {
     t_waypoint_one_dim_t waypoints;
     waypoints.push_back(std::make_pair(0, point_one_dim_t::Zero()));
