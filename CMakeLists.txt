@@ -31,7 +31,6 @@ endif()
 
 include("${JRL_CMAKE_MODULES}/base.cmake")
 include("${JRL_CMAKE_MODULES}/boost.cmake")
-include("${JRL_CMAKE_MODULES}/python.cmake")
 include(CMakeDependentOption)
 
 cmake_dependent_option(
@@ -75,8 +74,8 @@ set(PACKAGE_EXTRA_MACROS
 add_project_dependency(Boost REQUIRED COMPONENTS serialization)
 
 if(BUILD_PYTHON_INTERFACE)
-  add_project_dependency(eigenpy 2.9.0 REQUIRED PKG_CONFIG_REQUIRES
-                         "eigenpy >= 2.9.0")
+  add_project_dependency(eigenpy 3.0.0 REQUIRED PKG_CONFIG_REQUIRES
+                         "eigenpy >= 3.0.0")
 endif(BUILD_PYTHON_INTERFACE)
 
 # Main Library
