@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - update tooling
 - update packaging
+- add pip CI
 
 ## [1.3.1] - 2023-11-29
 
