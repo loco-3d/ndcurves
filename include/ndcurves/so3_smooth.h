@@ -3,12 +3,12 @@
 #ifndef NDCURVES_SO3_SMOOTH_H
 #define NDCURVES_SO3_SMOOTH_H
 
-#include <pinocchio/fwd.hpp>
-#include <pinocchio/spatial/explog.hpp>
 #include <Eigen/Geometry>
 #include <boost/math/constants/constants.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/vector.hpp>
+#include <pinocchio/fwd.hpp>
+#include <pinocchio/spatial/explog.hpp>
 
 #include "ndcurves/MathDefs.h"
 #include "ndcurves/constant_curve.h"

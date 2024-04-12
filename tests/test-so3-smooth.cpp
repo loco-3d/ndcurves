@@ -7,8 +7,8 @@
 #include <random>
 
 #include "ndcurves/fwd.h"
-#include "ndcurves/so3_smooth.h"
 #include "ndcurves/serialization/curves.hpp"
+#include "ndcurves/so3_smooth.h"
 
 using namespace ndcurves;
 
@@ -405,7 +405,7 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
 
 BOOST_AUTO_TEST_CASE(serialization) {
   std::string fileName("fileTest_constant");
-  
+
   // Create some start variables.
   quaternion_t init_quat = quaternion_t::UnitRandom();
   matrix3_t init_rot = init_quat.toRotationMatrix();
@@ -416,7 +416,6 @@ BOOST_AUTO_TEST_CASE(serialization) {
 
   // Create the object.
   SO3Smooth_t c(init_quat, end_quat, t_min, t_max);
-
 
   c.saveAsText<SO3Smooth_t>(fileName + ".txt");
   c.saveAsXML<SO3Smooth_t>(fileName + ".xml", "constant");
