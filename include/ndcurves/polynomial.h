@@ -260,8 +260,8 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   static polynomial_t MinimumJerk(const point_t& p_init, const point_t& p_final,
                                   const time_t t_min = 0.,
                                   const time_t t_max = 1.) {
-    polynomial_t out = polynomial(
-      coeff_t::Zero(p_init.size(), 6), t_min, t_max);
+    polynomial_t out =
+        polynomial(coeff_t::Zero(p_init.size(), 6), t_min, t_max);
     MinimumJerk(out, p_init, p_final, t_min, t_max);
     return out;
   }
