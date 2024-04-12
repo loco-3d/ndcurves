@@ -1,2 +1,8 @@
-[tool.black]
-exclude = "cmake"
+[tool.ruff]
+extend-exclude = ["cmake"]
+
+[tool.ruff.lint]
+extend-select = ["I", "NPY", "RUF", "UP", "W"]
+
+[tool.tomlsort]
+all = true
