@@ -8,6 +8,7 @@
 
 #include "ndcurves/fwd.h"
 #include "ndcurves/so3_smooth.h"
+#include "ndcurves/serialization/curves.hpp"
 
 using namespace ndcurves;
 
@@ -400,6 +401,35 @@ BOOST_AUTO_TEST_CASE(derivate_computation_check) {
       BOOST_CHECK_LE(std::abs(error(j)), 1e-0 * acc_amplitude(j));
     }
   }
+}
+
+BOOST_AUTO_TEST_CASE(serialization) {
+  std::string fileName("fileTest_constant");
+  
+  // Create some start variables.
+  quaternion_t init_quat = quaternion_t::UnitRandom();
+  matrix3_t init_rot = init_quat.toRotationMatrix();
+  quaternion_t end_quat = quaternion_t::UnitRandom();
+  matrix3_t end_rot = end_quat.toRotationMatrix();
+  double t_min = generateRandomNumber(0.0, 100.0);
+  double t_max = t_min + generateRandomNumber(0.1, 10.0);
+
+  // Create the object.
+  SO3Smooth_t c(init_quat, end_quat, t_min, t_max);
+
+
+  c.saveAsText<SO3Smooth_t>(fileName + ".txt");
+  c.saveAsXML<SO3Smooth_t>(fileName + ".xml", "constant");
+  c.saveAsBinary<SO3Smooth_t>(fileName);
+
+  SO3Smooth_t c_txt, c_xml, c_binary;
+  c_txt.loadFromText<SO3Smooth_t>(fileName + ".txt");
+  c_xml.loadFromXML<SO3Smooth_t>(fileName + ".xml", "constant");
+  c_binary.loadFromBinary<SO3Smooth_t>(fileName);
+
+  BOOST_CHECK(c == c_txt);
+  BOOST_CHECK(c == c_xml);
+  BOOST_CHECK(c == c_binary);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

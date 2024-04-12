@@ -37,18 +37,25 @@ void register_types(Archive& ar, const unsigned int version) {
   ar.template register_type<bezier_t>();
   ar.template register_type<cubic_hermite_spline_t>();
   ar.template register_type<piecewise_t>();
+
   ar.template register_type<polynomial3_t>();
   ar.template register_type<exact_cubic3_t>();
   ar.template register_type<bezier3_t>();
   ar.template register_type<cubic_hermite_spline3_t>();
   ar.template register_type<piecewise3_t>();
+  
   ar.template register_type<SO3Linear_t>();
   ar.template register_type<SE3Curve_t>();
   ar.template register_type<piecewise_SE3_t>();
+  
   if (version >= 1) {
     ar.template register_type<constant3_t>();
     ar.template register_type<sinusoidal_t>();
     ar.template register_type<constant_t>();
+    ar.template register_type<polynomial1_t>();
+#ifdef CURVES_WITH_PINOCCHIO_SUPPORT
+    ar.template register_type<SO3Smooth_t>();
+#endif
   }
 }
 
