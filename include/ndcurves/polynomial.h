@@ -48,7 +48,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   /// \brief Empty constructor. Curve obtained this way can not perform other
   /// class functions.
   ///
-  polynomial() : curve_abc_t(), dim_(0), T_min_(0), T_max_(0) {}
+  polynomial() : curve_abc_t(), dim_(0), degree_(0), T_min_(0), T_max_(1.0) {}
 
   /// \brief Constructor.
   /// \param coefficients : a reference to an Eigen matrix where each column is
@@ -260,6 +260,26 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
   static polynomial_t MinimumJerk(const point_t& p_init, const point_t& p_final,
                                   const time_t t_min = 0.,
                                   const time_t t_max = 1.) {
+    polynomial_t out =
+        polynomial(coeff_t::Zero(p_init.size(), 6), t_min, t_max);
+    MinimumJerk(out, p_init, p_final, t_min, t_max);
+    return out;
+  }
+
+  /**
+   * @brief MinimumJerk Build a polynomial curve connecting p_init to p_final
+   * minimizing the time integral of the squared jerk with a zero initial and
+   * final velocity and acceleration.
+   * @param out The output polynomial needs to be of the correct size.
+   * @param p_init the initial point
+   * @param p_final the final point
+   * @param t_min initial time
+   * @param t_max final time
+   * @return the polynomial curve
+   */
+  static void MinimumJerk(polynomial_t& out, const point_t& p_init,
+                          const point_t& p_final, const time_t t_min = 0.,
+                          const time_t t_max = 1.) {
     if (t_min > t_max)
       throw std::invalid_argument(
           "final time should be superior or equal to initial time.");
@@ -273,13 +293,18 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
     const double T4 = T3 * T;
     const double T5 = T4 * T;
 
-    coeff_t coeffs =
-        coeff_t::Zero(dim, 6);  // init coefficient matrix with the right size
-    coeffs.col(0) = p_init;
-    coeffs.col(3) = 10 * (p_final - p_init) / T3;
-    coeffs.col(4) = -15 * (p_final - p_init) / T4;
-    coeffs.col(5) = 6 * (p_final - p_init) / T5;
-    return polynomial_t(coeffs, t_min, t_max);
+    assert(out.coefficients_.cols() == 6);
+    assert(out.coefficients_.rows() == static_cast<Eigen::Index>(dim));
+    assert(out.dim_ == dim);
+    out.coefficients_.fill(0.0);
+    out.coefficients_.col(0) = p_init;
+    out.coefficients_.col(3) = 10 * (p_final - p_init) / T3;
+    out.coefficients_.col(4) = -15 * (p_final - p_init) / T4;
+    out.coefficients_.col(5) = 6 * (p_final - p_init) / T5;
+    out.degree_ = 5;
+    out.T_min_ = t_min;
+    out.T_max_ = t_max;
+    out.safe_check();
   }
 
  private:
@@ -321,7 +346,7 @@ struct polynomial : public curve_abc<Time, Numeric, Safe, Point> {
    * Only two curves of the same class can be approximately equals, for
    * comparison between different type of curves see isEquivalent
    * @param other the other curve to check
-   * @param prec the precision treshold, default
+   * @param prec the precision threshold, default
    * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */
@@ -686,4 +711,5 @@ DEFINE_CLASS_TEMPLATE_VERSION(
     SINGLE_ARG(typename Time, typename Numeric, bool Safe, typename Point,
                typename T_Point),
     SINGLE_ARG(ndcurves::polynomial<Time, Numeric, Safe, Point, T_Point>))
+
 #endif  //_STRUCT_POLYNOMIAL

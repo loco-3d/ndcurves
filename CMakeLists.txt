@@ -127,7 +127,8 @@ set(${PROJECT_NAME}_HEADERS
     include/${PROJECT_NAME}/serialization/eigen-matrix.hpp
     include/${PROJECT_NAME}/serialization/registeration.hpp
     include/${PROJECT_NAME}/sinusoidal.h
-    include/${PROJECT_NAME}/so3_linear.h)
+    include/${PROJECT_NAME}/so3_linear.h
+    include/${PROJECT_NAME}/so3_smooth.h)
 
 add_library(${PROJECT_NAME} INTERFACE)
 modernize_target_link_libraries(
