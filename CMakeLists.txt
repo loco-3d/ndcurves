@@ -138,8 +138,8 @@ modernize_target_link_libraries(
   Eigen3::Eigen
   INCLUDE_DIRS
   ${EIGEN3_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME}
-                           INTERFACE $<INSTALL_INTERFACE:include>)
+target_include_directories(
+  ${PROJECT_NAME} INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_link_libraries(${PROJECT_NAME} INTERFACE Boost::serialization)
 if(CURVES_WITH_PINOCCHIO_SUPPORT)
   target_link_libraries(${PROJECT_NAME} INTERFACE pinocchio::pinocchio)
