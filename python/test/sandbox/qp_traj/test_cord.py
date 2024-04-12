@@ -14,22 +14,23 @@ from .varBezier import varBezier
 __EPS = 1e-6
 
 idxFile = 0
+rng = np.random.default_rng()
 uuid.uuid4().hex.upper()[0:6]
 
 
 # ####################### generate problems ########################
 def genBezierInput(numvars=3):
-    valDep = array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 5.0), 0.0])
-    valEnd = array([np.random.uniform(5.0, 10.0), np.random.uniform(0.0, 5.0), 0.0])
+    valDep = array([rng.uniform(0.0, 1.0), rng.uniform(0.0, 5.0), 0.0])
+    valEnd = array([rng.uniform(5.0, 10.0), rng.uniform(0.0, 5.0), 0.0])
     return varBezier([valDep] + ["" for _ in range(numvars)] + [valEnd], 1.0)
 
 
 def genSplit(numCurves):
     splits = []
-    lastval = np.random.uniform(0.0, 1.0)
+    lastval = rng.uniform(0.0, 1.0)
     for i in range(numCurves):
         splits += [lastval]
-        lastval += np.random.uniform(0.0, 1.0)
+        lastval += rng.uniform(0.0, 1.0)
     return [el / lastval for el in splits[:-1]]
 
 

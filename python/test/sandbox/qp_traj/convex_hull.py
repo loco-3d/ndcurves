@@ -31,11 +31,12 @@ def genFromLine(line, num_points, ranges, existing_points=[]):
     """generate right of the line"""
     coeff, rhs = getLineFromSegment(line)
     gen = [*existing_points, line[0][:2], line[1][:2]]
+    rng = np.random.default_rng()
     while len(gen) < num_points:
         pt = array(
             [
-                np.random.uniform(ranges[0][0], ranges[0][1]),
-                np.random.uniform(ranges[1][0], ranges[1][1]),
+                rng.uniform(ranges[0][0], ranges[0][1]),
+                rng.uniform(ranges[1][0], ranges[1][1]),
             ]
         )
         if coeff[:2].dot(pt) <= rhs:
