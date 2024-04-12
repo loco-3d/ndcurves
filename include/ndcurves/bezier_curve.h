@@ -159,7 +159,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
    * Only two curves of the same class can be approximately equals, for
    * comparison between different type of curves see isEquivalent
    * @param other the other curve to check
-   * @param prec the precision treshold, default
+   * @param prec the precision threshold, default
    * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true if the two curves are approximately equals
    */
@@ -633,7 +633,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
 
  private:
   /// \brief Ensure constraints of bezier curve.
-  /// Add 4 points (2 after the first one, 2 before the last one) to biezer
+  /// Add 4 points (2 after the first one, 2 before the last one) to Bezier
   /// curve to ensure that velocity and acceleration constraints are respected.
   ///
   template <typename In>

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Add a SO3 curves which is C2. It's called S03Smooth
+- Add some typedef on using 3D curves.
+- Fix typos around the package
+- Add some tests on polynomials and the new structs.
 - update tooling
 - update packaging
 - add pip CI

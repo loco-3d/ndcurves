@@ -21,6 +21,7 @@ from ndcurves import (
     curve_constraints,
     exact_cubic,
     piecewise,
+    piecewise3,
     piecewise_SE3,
     polynomial,
 )
@@ -792,7 +793,7 @@ class TestCurves(unittest.TestCase):
         ).transpose()
         min = 0.2
         max = 1.5
-        translation = bezier(waypoints, min, max)
+        translation = bezier3(waypoints, min, max)
         # test with bezier
         se3 = SE3Curve(translation, init_rot, end_rot)
         pc = piecewise_SE3(se3)
@@ -867,7 +868,7 @@ class TestCurves(unittest.TestCase):
         ).transpose()
         min = 0.2
         max = 1.5
-        translation = bezier(waypoints, min, max)
+        translation = bezier3(waypoints, min, max)
         # test with bezier
         se3 = SE3Curve(translation, init_rot, end_rot)
         pc = piecewise_SE3()
@@ -1190,7 +1191,7 @@ class TestCurves(unittest.TestCase):
         ).transpose()
         min = 0.2
         max = 1.5
-        translation = bezier(waypoints, min, max)
+        translation = bezier3(waypoints, min, max)
         # test with bezier
         se3 = SE3Curve(translation, init_rot, end_rot)
         self.assertEqual(se3.min(), min)
@@ -1290,7 +1291,7 @@ class TestCurves(unittest.TestCase):
         # points_second_derivative = array(random.rand(3, N))
         time_points = array(rng.random(1, N)).T
         time_points.sort(0)
-        translation = piecewise.FromPointsList(points, time_points)
+        translation = piecewise3.FromPointsList(points, time_points)
         min = translation.min()
         max = translation.max()
         se3 = SE3Curve(translation, init_rot, end_rot)
@@ -1343,7 +1344,7 @@ class TestCurves(unittest.TestCase):
         ).transpose()
         min = 0.2
         max = 1.5
-        translation = bezier(waypoints, min, max)
+        translation = bezier3(waypoints, min, max)
         rotation = SO3Linear(init_rot, end_rot, min, max)
         se3 = SE3Curve(translation, rotation)
         self.assertEqual(se3.min(), min)
@@ -1540,7 +1541,7 @@ class TestCurves(unittest.TestCase):
         ).transpose()
         min = 0.2
         max = 1.5
-        translation = bezier(waypoints, min, max)
+        translation = bezier3(waypoints, min, max)
         rotation = SO3Linear(init_rot, end_rot, min, max)
         se3_curves = SE3Curve(translation, rotation)
 
@@ -1619,7 +1620,7 @@ class TestCurves(unittest.TestCase):
         ).transpose()
         min = 0.2
         max = 1.5
-        translation = bezier(waypoints, min, max)
+        translation = bezier3(waypoints, min, max)
         se3_1 = SE3Curve(translation, init_rot, end_rot)
         se3_2 = SE3Curve(translation, init_rot, end_rot)
         waypoints2 = array(
@@ -1631,7 +1632,7 @@ class TestCurves(unittest.TestCase):
                 [4.0, 5.0, 6.0],
             ]
         ).transpose()
-        translation3 = bezier(waypoints2, min, max)
+        translation3 = bezier3(waypoints2, min, max)
         se3_3 = SE3Curve(translation3, init_rot, end_rot)
         end_quat2 = Quaternion(sqrt(2.0) / 2.0, 0.0, sqrt(2.0) / 2.0, 0)
         end_rot2 = end_quat2.matrix()

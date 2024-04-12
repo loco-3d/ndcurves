@@ -50,6 +50,9 @@ struct sinusoidal;
 template <typename Time, typename Numeric, bool Safe>
 struct SO3Linear;
 
+template <typename Time, typename Numeric, bool Safe>
+struct SO3Smooth;
+
 template <typename Numeric>
 struct Bern;
 
@@ -64,6 +67,7 @@ struct quadratic_variable;
 
 // typedef of the commonly used templates arguments :
 // eigen types :
+typedef Eigen::Matrix<double, 1, 1> point1_t;
 typedef Eigen::Vector3d point3_t;
 typedef Eigen::Matrix<double, 6, 1> point6_t;
 typedef Eigen::VectorXd pointX_t;
@@ -71,14 +75,17 @@ typedef Eigen::Matrix<double, 3, 3> matrix3_t;
 typedef Eigen::Matrix<double, 4, 4> matrix4_t;
 typedef Eigen::Quaternion<double> quaternion_t;
 typedef Eigen::Transform<double, 3, Eigen::Affine> transform_t;
-typedef std::vector<point3_t, Eigen::aligned_allocator<point3_t> > t_point3_t;
-typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t> > t_pointX_t;
+typedef std::vector<point1_t, Eigen::aligned_allocator<point1_t>> t_point1_t;
+typedef std::vector<point3_t, Eigen::aligned_allocator<point3_t>> t_point3_t;
+typedef std::vector<pointX_t, Eigen::aligned_allocator<pointX_t>> t_pointX_t;
+typedef Eigen::Ref<const matrix3_t> matrix3_t_cst_ref;
 
 // abstract curves types:
 typedef curve_abc<double, double, true, pointX_t, pointX_t>
     curve_abc_t;  // base abstract class
 typedef curve_abc<double, double, true, point3_t, point3_t>
-    curve_3_t;  // generic class of curve of size 3
+    curve_3_t;                          // generic class of curve of size 3
+typedef curve_3_t curve_translation_t;  // generic class of a translation curve
 typedef curve_abc<double, double, true, matrix3_t, point3_t>
     curve_rotation_t;  // templated class used for the rotation (return
                        // dimension are fixed)
@@ -90,6 +97,7 @@ typedef curve_abc<double, double, true, transform_t, point6_t>
 typedef boost::shared_ptr<curve_abc_t> curve_ptr_t;
 typedef boost::shared_ptr<curve_3_t> curve3_ptr_t;
 typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
+typedef boost::shared_ptr<curve_translation_t> curve_translation_ptr_t;
 typedef boost::shared_ptr<curve_SE3_t> curve_SE3_ptr_t;
 
 // definition of all curves class with pointX as return type:
@@ -109,6 +117,7 @@ typedef sinusoidal<double, double, true, pointX_t> sinusoidal_t;
 
 // definition of all curves class with point3 as return type:
 typedef polynomial<double, double, true, point3_t, t_point3_t> polynomial3_t;
+typedef polynomial<double, double, true, point1_t, t_point1_t> polynomial1_t;
 typedef exact_cubic<double, double, true, point3_t, t_point3_t, polynomial_t>
     exact_cubic3_t;
 typedef bezier_curve<double, double, true, point3_t> bezier3_t;
@@ -119,6 +128,7 @@ typedef piecewise_curve<double, double, true, point3_t, point3_t, curve_3_t>
     piecewise3_t;
 
 // special curves with return type fixed:
+typedef SO3Smooth<double, double, true> SO3Smooth_t;
 typedef SO3Linear<double, double, true> SO3Linear_t;
 typedef SE3Curve<double, double, true> SE3Curve_t;
 typedef piecewise_curve<double, double, true, transform_t, point6_t,

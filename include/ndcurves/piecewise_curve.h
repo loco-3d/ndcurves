@@ -105,7 +105,7 @@ struct piecewise_curve
    * Only two curves of the same class can be approximately equals, for
    * comparison between different type of curves see isEquivalent
    * @param other the other curve to check
-   * @param prec the precision treshold, default
+   * @param prec the precision threshold, default
    * Eigen::NumTraits<Numeric>::dummy_precision()
    * @return true is the two curves are approximately equals
    */

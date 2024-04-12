@@ -235,17 +235,18 @@ split(const problem_definition<Point, Numeric>& pDef,
 
   const Eigen::VectorXd& times = pDef.splitTimes_;
   T_bezier_t res;
-  bezier_t& current = *pData.bezier;
+  bezier_t* current = pData.bezier;
   Numeric current_time = 0.;
   Numeric tmp;
   for (int i = 0; i < times.rows(); ++i) {
     tmp = times[i];
-    std::pair<bezier_t, bezier_t> pairsplit = current.split(tmp - current_time);
+    std::pair<bezier_t, bezier_t> pairsplit =
+        current->split(tmp - current_time);
     res.push_back(pairsplit.first);
-    current = pairsplit.second;
+    current = &(pairsplit.second);
     current_time += tmp - current_time;
   }
-  res.push_back(current);
+  res.push_back(*current);
   return res;
 }
 
@@ -350,34 +351,34 @@ quadratic_variable<Numeric> bezier_product(In PointsBegin1, In PointsEnd1,
 }
 
 inline constraint_flag operator~(constraint_flag a) {
-  return static_cast<constraint_flag>(~static_cast<const int>(a));
+  return static_cast<constraint_flag>(~static_cast<int>(a));
 }
 
 inline constraint_flag operator|(constraint_flag a, constraint_flag b) {
-  return static_cast<constraint_flag>(static_cast<const int>(a) |
-                                      static_cast<const int>(b));
+  return static_cast<constraint_flag>(static_cast<int>(a) |
+                                      static_cast<int>(b));
 }
 
 inline constraint_flag operator&(constraint_flag a, constraint_flag b) {
-  return static_cast<constraint_flag>(static_cast<const int>(a) &
-                                      static_cast<const int>(b));
+  return static_cast<constraint_flag>(static_cast<int>(a) &
+                                      static_cast<int>(b));
 }
 
 inline constraint_flag operator^(constraint_flag a, constraint_flag b) {
-  return static_cast<constraint_flag>(static_cast<const int>(a) ^
-                                      static_cast<const int>(b));
+  return static_cast<constraint_flag>(static_cast<int>(a) ^
+                                      static_cast<int>(b));
 }
 
 inline constraint_flag& operator|=(constraint_flag& a, constraint_flag b) {
-  return (constraint_flag&)((int&)(a) |= static_cast<const int>(b));
+  return (constraint_flag&)((int&)(a) |= static_cast<int>(b));
 }
 
 inline constraint_flag& operator&=(constraint_flag& a, constraint_flag b) {
-  return (constraint_flag&)((int&)(a) &= static_cast<const int>(b));
+  return (constraint_flag&)((int&)(a) &= static_cast<int>(b));
 }
 
 inline constraint_flag& operator^=(constraint_flag& a, constraint_flag b) {
-  return (constraint_flag&)((int&)(a) ^= static_cast<const int>(b));
+  return (constraint_flag&)((int&)(a) ^= static_cast<int>(b));
 }
 
 }  // namespace optimization

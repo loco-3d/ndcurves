@@ -24,6 +24,7 @@
 #include "ndcurves/se3_curve.h"
 #include "ndcurves/sinusoidal.h"
 #include "ndcurves/so3_linear.h"
+#include "ndcurves/so3_smooth.h"
 #include "registeration.hpp"
 
 #endif  // ifndef CURVES_SERIALIZAION
