@@ -1,10 +1,12 @@
 # Copyright (c) 2020, CNRS
 # Authors: Pierre Fernbach <pfernbac@laas.fr>
 
-import unittest
-from ndcurves import curve_constraints
 import pickle
+import unittest
+
 from numpy import array
+
+from ndcurves import curve_constraints
 
 
 class CurveConstraintsTest(unittest.TestCase):

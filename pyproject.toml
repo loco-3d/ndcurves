@@ -4,5 +4,8 @@ extend-exclude = ["cmake"]
 [tool.ruff.lint]
 extend-select = ["I", "NPY", "RUF", "UP", "W"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["ndcurves"]
+
 [tool.tomlsort]
 all = true

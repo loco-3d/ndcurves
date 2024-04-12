@@ -1,6 +1,5 @@
-from numpy import array, dot, hstack, identity, vstack
-
 import quadprog
+from numpy import array, dot, hstack, identity, vstack
 
 
 def quadprog_solve_qp(P, q, G=None, h=None, C=None, d=None):

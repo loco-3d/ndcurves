@@ -1,16 +1,16 @@
 import numpy as np
-from numpy import array, identity
-
 from curves import bezier, curve_constraints
 from curves.optimization import (
     constraint_flag,
     problem_definition,
     setup_control_points,
 )
-from .plot_bezier import plotBezier, plt
+from numpy import array, identity
 from qp import quadprog_solve_qp, to_least_square
 
-np.set_printoptions(formatter={"float": lambda x: "{0:0.1f}".format(x)})
+from .plot_bezier import plotBezier, plt
+
+np.set_printoptions(formatter={"float": lambda x: f"{x:0.1f}"})
 
 
 # points given as pairs (pt, t)

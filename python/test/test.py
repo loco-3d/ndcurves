@@ -1,11 +1,12 @@
 import os
+import pickle
 import unittest
 from math import sqrt
 
 import numpy as np
 from numpy import array, array_equal, isclose, random, zeros
 from numpy.linalg import norm
-import pickle
+
 from ndcurves import (
     CURVES_WITH_PINOCCHIO_SUPPORT,
     Quaternion,
@@ -23,7 +24,6 @@ from ndcurves import (
     piecewise_SE3,
     polynomial,
 )
-
 
 if CURVES_WITH_PINOCCHIO_SUPPORT:
     from pinocchio import SE3, Motion

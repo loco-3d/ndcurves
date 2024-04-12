@@ -2,9 +2,11 @@
 # Authors: Pierre Fernbach <pfernbac@laas.fr>
 
 import unittest
-from ndcurves import constant, constant3
+
 import numpy as np
 from numpy import array, array_equal
+
+from ndcurves import constant, constant3
 
 
 class ConstantCurveTest(unittest.TestCase):

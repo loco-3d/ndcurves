@@ -1,6 +1,5 @@
-from numpy import array
-
 from curves import bezierVar
+from numpy import array
 
 __EPS = 1e-6
 

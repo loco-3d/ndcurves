@@ -2,9 +2,11 @@
 # Authors: Pierre Fernbach <pfernbac@laas.fr>
 
 import unittest
-from ndcurves import sinusoidal
+
 import numpy as np
 from numpy import array, isclose
+
+from ndcurves import sinusoidal
 
 
 class SinusoidalCurveTest(unittest.TestCase):
