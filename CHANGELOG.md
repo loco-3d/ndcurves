@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- fix use of np.random in tests
+- tests: fix use of np.random in tests
+- CMake: enable python bindings by default
 
 ## [1.4.0] - 2024-04-12
 
