@@ -546,10 +546,10 @@ class TestCurves(unittest.TestCase):
     def test_piecewise_from_points_list(self):
         N = 7
         rng = random.default_rng()
-        points = array(rng.random(3, N))
-        points_derivative = array(rng.random(3, N))
-        points_second_derivative = array(rng.random(3, N))
-        time_points = array(rng.random(1, N)).T
+        points = array(rng.random((3, N)))
+        points_derivative = array(rng.random((3, N)))
+        points_second_derivative = array(rng.random((3, N)))
+        time_points = array(rng.random((1, N))).T
         time_points.sort(0)
         polC0 = piecewise.FromPointsList(points, time_points)
         self.assertEqual(polC0.min(), time_points[0, 0])
@@ -1286,10 +1286,10 @@ class TestCurves(unittest.TestCase):
         # test with piecewise polynomial
         N = 7
         rng = random.default_rng()
-        points = array(rng.random(3, N))
+        points = array(rng.random((3, N)))
         # points_derivative = array(random.rand(3, N))
         # points_second_derivative = array(random.rand(3, N))
-        time_points = array(rng.random(1, N)).T
+        time_points = array(rng.random((1, N))).T
         time_points.sort(0)
         translation = piecewise3.FromPointsList(points, time_points)
         min = translation.min()

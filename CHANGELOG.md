@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix use of np.random in tests
+
 ## [1.4.0] - 2024-04-12
 
 - Add a SO3 curves which is C2. It's called S03Smooth
