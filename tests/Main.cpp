@@ -90,8 +90,8 @@ void CompareCurves(const curve1& c1, const curve2& c2,
     std::cout
         << errMsg
         << "CompareCurves, ERROR, time min and max of curves do not match ["
-        << T_min << "," << T_max << "] " << " and [" << c2.min() << ","
-        << c2.max() << "] " << std::endl;
+        << T_min << "," << T_max << "] "
+        << " and [" << c2.min() << "," << c2.max() << "] " << std::endl;
     error = true;
   } else {
     // derivative in T_min and T_max
