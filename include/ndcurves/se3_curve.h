@@ -41,9 +41,9 @@ struct SE3Curve : public curve_abc<Time, Numeric, Safe,
   typedef curve_abc<Time, Numeric, Safe, matrix3_t, point3_t>
       curve_rotation_t;  // templated class used for the rotation (return
                          // dimension are fixed)
-  typedef boost::shared_ptr<curve_X_t> curve_ptr_t;
-  typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
-  typedef boost::shared_ptr<curve_translation_t> curve_translation_ptr_t;
+  typedef std::shared_ptr<curve_X_t> curve_ptr_t;
+  typedef std::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
+  typedef std::shared_ptr<curve_translation_t> curve_translation_ptr_t;
 
   typedef SO3Linear<Time, Numeric, Safe> SO3Linear_t;
   typedef polynomial<Time, Numeric, Safe, pointX_t> polynomial_t;

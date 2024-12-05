@@ -11,9 +11,8 @@
 #ifndef _STRUCT_CURVE_ABC
 #define _STRUCT_CURVE_ABC
 
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/smart_ptr/shared_ptr.hpp>
 #include <functional>
+#include <memory>
 
 #include "MathDefs.h"
 #include "serialization/archive.hpp"
@@ -43,7 +42,7 @@ struct curve_abc : public serialization::Serializable {
       curve_t;  // parent class
   typedef curve_abc<Time, Numeric, Safe, point_derivate_t>
       curve_derivate_t;  // parent class
-  typedef boost::shared_ptr<curve_t> curve_ptr_t;
+  typedef std::shared_ptr<curve_t> curve_ptr_t;
 
   /* Constructors - destructors */
  public:

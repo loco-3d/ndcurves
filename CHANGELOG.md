@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- :warning: BREAKING: switch from boost smart pointers to std ones
+- setup nix
+- setup mergify
+
 ## [1.4.1] - 2024-04-12
 
 - tests: fix use of np.random in tests
