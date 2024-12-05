@@ -1,7 +1,7 @@
-#include <boost/smart_ptr/shared_ptr.hpp>
 #include <cmath>
 #include <ctime>
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "load_problem.h"
@@ -1311,12 +1311,12 @@ void piecewiseCurveTest(bool& error) {
     vec2.push_back(b);  // x=2, y=1, z=1
     vec3.push_back(c);  // x=3, y=1, z=1
     // Create three polynomials of constant value in the interval of definition
-    boost::shared_ptr<polynomial_t> pol1_ptr(
-        new polynomial_t(vec1.begin(), vec1.end(), 0, 1));
-    boost::shared_ptr<polynomial_t> pol2_ptr(
-        new polynomial_t(vec2.begin(), vec2.end(), 1, 2));
-    boost::shared_ptr<polynomial_t> pol3_ptr(
-        new polynomial_t(vec3.begin(), vec3.end(), 2, 3));
+    std::shared_ptr<polynomial_t> pol1_ptr =
+        std::make_shared<polynomial_t>(vec1.begin(), vec1.end(), 0, 1);
+    std::shared_ptr<polynomial_t> pol2_ptr =
+        std::make_shared<polynomial_t>(vec2.begin(), vec2.end(), 1, 2);
+    std::shared_ptr<polynomial_t> pol3_ptr =
+        std::make_shared<polynomial_t>(vec3.begin(), vec3.end(), 2, 3);
     // 1 polynomial in curve
     piecewise_t pc(pol1_ptr);
     res = pc(0.5);
@@ -1355,10 +1355,10 @@ void piecewiseCurveTest(bool& error) {
     params1.push_back(c0);
     params1.push_back(b0);
     params1.push_back(a0);
-    boost::shared_ptr<bezier_t> bc0_ptr(
-        new bezier_t(params0.begin(), params0.end(), 0., 1.));
-    boost::shared_ptr<bezier_t> bc1_ptr(
-        new bezier_t(params1.begin(), params1.end(), 1., 2.));
+    std::shared_ptr<bezier_t> bc0_ptr =
+        std::make_shared<bezier_t>(params0.begin(), params0.end(), 0., 1.);
+    std::shared_ptr<bezier_t> bc1_ptr =
+        std::make_shared<bezier_t>(params1.begin(), params1.end(), 1., 2.);
     piecewise_t pc_C0(bc0_ptr);
     pc_C0.add_curve_ptr(bc1_ptr);
     // Check value in t=0.5 and t=1.5
@@ -1388,14 +1388,14 @@ void piecewiseCurveTest(bool& error) {
     time_control_points0.push_back(1.);  // hermite 0 between [0,1]
     time_control_points1.push_back(1.);
     time_control_points1.push_back(3.);  // hermite 1 between [1,3]
-    boost::shared_ptr<cubic_hermite_spline_t> chs0_ptr(
-        new cubic_hermite_spline_t(control_points_0.begin(),
-                                   control_points_0.end(),
-                                   time_control_points0));
-    boost::shared_ptr<cubic_hermite_spline_t> chs1_ptr(
-        new cubic_hermite_spline_t(control_points_1.begin(),
-                                   control_points_1.end(),
-                                   time_control_points1));
+    std::shared_ptr<cubic_hermite_spline_t> chs0_ptr =
+        std::make_shared<cubic_hermite_spline_t>(control_points_0.begin(),
+                                                 control_points_0.end(),
+                                                 time_control_points0);
+    std::shared_ptr<cubic_hermite_spline_t> chs1_ptr =
+        std::make_shared<cubic_hermite_spline_t>(control_points_1.begin(),
+                                                 control_points_1.end(),
+                                                 time_control_points1);
     piecewise_t pc_C1(chs0_ptr);
     pc_C1.add_curve_ptr(chs1_ptr);
     // Create piecewise curve C2
@@ -1408,10 +1408,10 @@ void piecewiseCurveTest(bool& error) {
     // in [1,2]
     vecb.push_back(b1);
     vecb.push_back(b1);  // x=(t-1)+1, y=(t-1)+1, z=(t-1)+1
-    boost::shared_ptr<polynomial_t> pola_ptr(
-        new polynomial_t(veca.begin(), veca.end(), 0, 1));
-    boost::shared_ptr<polynomial_t> polb_ptr(
-        new polynomial_t(vecb.begin(), vecb.end(), 1, 2));
+    std::shared_ptr<polynomial_t> pola_ptr =
+        std::make_shared<polynomial_t>(veca.begin(), veca.end(), 0, 1);
+    std::shared_ptr<polynomial_t> polb_ptr =
+        std::make_shared<polynomial_t>(vecb.begin(), vecb.end(), 1, 2);
     piecewise_t pc_C2(pola_ptr);
     pc_C2.add_curve_ptr(polb_ptr);
     // check C0 continuity
@@ -2323,8 +2323,8 @@ void se3CurveTest(bool& error) {
     params.push_back(b);
     params.push_back(c);
     params.push_back(d);
-    boost::shared_ptr<bezier3_t> translation_bezier(
-        new bezier3_t(params.begin(), params.end(), min, max));
+    std::shared_ptr<bezier3_t> translation_bezier =
+        std::make_shared<bezier3_t>(params.begin(), params.end(), min, max);
     cBezier = SE3Curve_t(translation_bezier, q0.toRotationMatrix(),
                          q1.toRotationMatrix());
     p0 = (*translation_bezier)(min);
@@ -2522,8 +2522,8 @@ void Se3serializationTest(bool& error) {
     params.push_back(b);
     params.push_back(c);
     params.push_back(d);
-    boost::shared_ptr<bezier3_t> translation_bezier(
-        new bezier3_t(params.begin(), params.end(), min, max));
+    std::shared_ptr<bezier3_t> translation_bezier =
+        std::make_shared<bezier3_t>(params.begin(), params.end(), min, max);
     cBezier = SE3Curve_t(translation_bezier, q0, q1);
   }
 
@@ -3172,10 +3172,12 @@ void testOperatorEqual(bool& error) {
 
   // SE3
   polynomial3_t pol3_0 = polynomial_from_curve<polynomial3_t>(bc3_0);
-  boost::shared_ptr<bezier3_t> translation_bezier(new bezier3_t(bc3_0));
-  boost::shared_ptr<bezier3_t> translation_bezier2(new bezier3_t(bc3_0));
-  boost::shared_ptr<polynomial3_t> translation_polynomial(
-      new polynomial3_t(pol3_0));
+  std::shared_ptr<bezier3_t> translation_bezier =
+      std::make_shared<bezier3_t>(bc3_0);
+  std::shared_ptr<bezier3_t> translation_bezier2 =
+      std::make_shared<bezier3_t>(bc3_0);
+  std::shared_ptr<polynomial3_t> translation_polynomial =
+      std::make_shared<polynomial3_t>(pol3_0);
   SE3Curve_t se3_bezier1 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(),
                                       q1.toRotationMatrix());
   SE3Curve_t se3_bezier12 = SE3Curve_t(
@@ -3185,8 +3187,8 @@ void testOperatorEqual(bool& error) {
   SE3Curve_t se3_bezier2(se3_bezier1);
   SE3Curve_t se3_bezier3 = SE3Curve_t(translation_bezier, q0.toRotationMatrix(),
                                       q2.toRotationMatrix());
-  boost::shared_ptr<polynomial3_t> translation_polynomial2(
-      new polynomial3_t(pol3_2));
+  std::shared_ptr<polynomial3_t> translation_polynomial2 =
+      std::make_shared<polynomial3_t>(pol3_2);
   SE3Curve_t se3_pol2 = SE3Curve_t(
       translation_polynomial2, q0.toRotationMatrix(), q1.toRotationMatrix());
   // std::cout<<"Should call se3 method : "<<std::endl;
@@ -3240,10 +3242,10 @@ void testOperatorEqual(bool& error) {
   params1.push_back(c0);
   params1.push_back(b0);
   params1.push_back(a0);
-  boost::shared_ptr<bezier_t> bc0_ptr(
-      new bezier_t(params0.begin(), params0.end(), 0., 1.));
-  boost::shared_ptr<bezier_t> bc1_ptr(
-      new bezier_t(params1.begin(), params1.end(), 1., 2.));
+  std::shared_ptr<bezier_t> bc0_ptr =
+      std::make_shared<bezier_t>(params0.begin(), params0.end(), 0., 1.);
+  std::shared_ptr<bezier_t> bc1_ptr =
+      std::make_shared<bezier_t>(params1.begin(), params1.end(), 1., 2.);
   piecewise_t pc_C0(bc0_ptr);
   pc_C0.add_curve_ptr(bc1_ptr);
   piecewise_t pc_C1(bc0_ptr);
@@ -3251,8 +3253,8 @@ void testOperatorEqual(bool& error) {
   piecewise_t pc_C2(pc_C0);
   piecewise_t pc_C3(bc0_ptr);
   piecewise_t pc_C4(bc0_ptr);
-  boost::shared_ptr<bezier_t> bc2_ptr(
-      new bezier_t(params0.begin(), params0.end(), 1., 2.));
+  std::shared_ptr<bezier_t> bc2_ptr =
+      std::make_shared<bezier_t>(params0.begin(), params0.end(), 1., 2.);
   pc_C4.add_curve_ptr(bc2_ptr);
   // std::cout<<"Should call piecewise method -> bezier , bezier: "<<std::endl;
   if (pc_C0 != pc_C1) {
@@ -3297,16 +3299,17 @@ void testOperatorEqual(bool& error) {
       translation_polynomial->derivate(translation_polynomial->max(), 1));
   point3_t p_end_se3(1, -2, 6);
   point3_t dp_end_se3(3.5, 2.5, -9);
-  boost::shared_ptr<polynomial3_t> translation_pol3(new polynomial3_t(
-      p_init_se3, dp_init_se3, p_end_se3, dp_end_se3,
-      translation_polynomial->max(), translation_polynomial->max() + 2.5));
+  std::shared_ptr<polynomial3_t> translation_pol3 =
+      std::make_shared<polynomial3_t>(p_init_se3, dp_init_se3, p_end_se3,
+                                      dp_end_se3, translation_polynomial->max(),
+                                      translation_polynomial->max() + 2.5);
   curve_SE3_ptr_t se3_pol_3(new SE3Curve_t(
       translation_pol3, q1.toRotationMatrix(), q2.toRotationMatrix()));
   pc_se3_1.add_curve_ptr(se3_pol_3);
   piecewise_SE3_t pc_se3_2(pc_se3_1);
-  piecewise_SE3_t pc_se3_3(boost::make_shared<SE3Curve_t>(se3_pol1));
+  piecewise_SE3_t pc_se3_3(std::make_shared<SE3Curve_t>(se3_pol1));
   pc_se3_3.add_curve_ptr(se3_pol_3);
-  piecewise_SE3_t pc_se3_4(boost::make_shared<SE3Curve_t>(se3_pol2));
+  piecewise_SE3_t pc_se3_4(std::make_shared<SE3Curve_t>(se3_pol2));
   pc_se3_4.add_curve_ptr(se3_pol_3);
   // std::cout<<"Should call piecewise method -> SE3 , SE3: "<<std::endl;
   if (pc_se3_1 != pc_se3_2) {
