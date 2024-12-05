@@ -38,7 +38,7 @@ struct bezier_curve : public curve_abc<Time, Numeric, Safe, Point> {
   typedef std::vector<point_t, Eigen::aligned_allocator<point_t> > t_point_t;
   typedef typename t_point_t::const_iterator cit_point_t;
   typedef bezier_curve<Time, Numeric, Safe, Point> bezier_curve_t;
-  typedef boost::shared_ptr<bezier_curve_t> bezier_curve_ptr_t;
+  typedef std::shared_ptr<bezier_curve_t> bezier_curve_ptr_t;
   typedef piecewise_curve<Time, Numeric, Safe, point_t, point_t, bezier_curve_t>
       piecewise_curve_t;
   typedef curve_abc<Time, Numeric, Safe, point_t> curve_abc_t;  // parent class

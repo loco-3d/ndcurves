@@ -12,7 +12,6 @@
  */
 
 #include <boost/serialization/shared_ptr.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include "ndcurves/bezier_curve.h"
 #include "ndcurves/constant_curve.h"

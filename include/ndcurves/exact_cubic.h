@@ -116,8 +116,8 @@ struct exact_cubic : public piecewise_curve<Time, Numeric, Safe, Point> {
   std::size_t getNumberSplines() { return this->getNumberCurves(); }
 
   spline_t getSplineAt(std::size_t index) {
-    boost::shared_ptr<spline_t> s_ptr =
-        boost::dynamic_pointer_cast<spline_t>(this->curves_.at(index));
+    std::shared_ptr<spline_t> s_ptr =
+        std::dynamic_pointer_cast<spline_t>(this->curves_.at(index));
     if (s_ptr)
       return *s_ptr;
     else

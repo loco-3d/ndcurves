@@ -9,8 +9,8 @@
 #define _CLASS_PIECEWISE_CURVE
 
 #include <boost/serialization/vector.hpp>
-#include <boost/smart_ptr/shared_ptr.hpp>
 #include <fstream>
+#include <memory>
 #include <sstream>
 
 #include "curve_abc.h"
@@ -46,7 +46,7 @@ struct piecewise_curve
   typedef curve_abc<Time, Numeric, Safe, point_t, point_derivate_t>
       base_curve_t;           // parent class
   typedef CurveType curve_t;  // contained curves base class
-  typedef boost::shared_ptr<curve_t> curve_ptr_t;
+  typedef std::shared_ptr<curve_t> curve_ptr_t;
   typedef typename std::vector<curve_ptr_t> t_curve_ptr_t;
   typedef typename std::vector<Time> t_time_t;
   typedef piecewise_curve<Time, Numeric, Safe, Point, Point_derivate, CurveType>
@@ -54,7 +54,7 @@ struct piecewise_curve
   typedef piecewise_curve<Time, Numeric, Safe, Point_derivate, Point_derivate,
                           typename CurveType::curve_derivate_t>
       piecewise_curve_derivate_t;
-  typedef boost::shared_ptr<typename piecewise_curve_derivate_t::curve_t>
+  typedef std::shared_ptr<typename piecewise_curve_derivate_t::curve_t>
       curve_derivate_ptr_t;
 
  public:
@@ -174,7 +174,7 @@ struct piecewise_curve
 
   template <typename Curve>
   void add_curve(const Curve& curve) {
-    curve_ptr_t curve_ptr = boost::make_shared<Curve>(curve);
+    curve_ptr_t curve_ptr = std::make_shared<Curve>(curve);
     add_curve_ptr(curve_ptr);
   }
 

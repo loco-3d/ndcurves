@@ -10,7 +10,7 @@
 #ifndef CURVES_FWD_H
 #define CURVES_FWD_H
 #include <Eigen/Dense>
-#include <boost/smart_ptr/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 
 namespace ndcurves {
@@ -94,11 +94,11 @@ typedef curve_abc<double, double, true, transform_t, point6_t>
                   // (return dimension are fixed)
 
 // shared pointer to abstract types:
-typedef boost::shared_ptr<curve_abc_t> curve_ptr_t;
-typedef boost::shared_ptr<curve_3_t> curve3_ptr_t;
-typedef boost::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
-typedef boost::shared_ptr<curve_translation_t> curve_translation_ptr_t;
-typedef boost::shared_ptr<curve_SE3_t> curve_SE3_ptr_t;
+typedef std::shared_ptr<curve_abc_t> curve_ptr_t;
+typedef std::shared_ptr<curve_3_t> curve3_ptr_t;
+typedef std::shared_ptr<curve_rotation_t> curve_rotation_ptr_t;
+typedef std::shared_ptr<curve_translation_t> curve_translation_ptr_t;
+typedef std::shared_ptr<curve_SE3_t> curve_SE3_ptr_t;
 
 // definition of all curves class with pointX as return type:
 typedef polynomial<double, double, true, pointX_t, t_pointX_t> polynomial_t;
