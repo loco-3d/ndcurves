@@ -161,4 +161,6 @@ if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
 endif(BUILD_PYTHON_INTERFACE)
 
-add_subdirectory(tests)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
