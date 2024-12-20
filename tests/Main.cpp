@@ -2737,7 +2737,7 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
 void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
   constraint_flag flag = optimization::END_POS;
   point3_t init_pos = point3_t(1., 1., 1.);
-  var_pair_t res = setup_control_points(5, flag, init_pos);
+  var_pair_t res = setup_control_points(5, flag, init_pos, init_pos);
   T_linear_variable_t& vars = res.first;
   vartype exptecdvars[] = {variable, variable, variable,
                            variable, variable, constant};
@@ -2809,7 +2809,7 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
 void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
   constraint_flag flag = END_POS | INIT_POS;
   point3_t init_pos = point3_t(1., 1., 1.);
-  var_pair_t res = setup_control_points(5, flag, init_pos);
+  var_pair_t res = setup_control_points(5, flag, init_pos, init_pos);
   T_linear_variable_t& vars = res.first;
   vartype exptecdvars[] = {constant, variable, variable,
                            variable, variable, constant};
@@ -2881,7 +2881,7 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
 void BezierLinearProblemInitInequalities(bool& error) {
   constraint_flag flag = INIT_POS | END_POS;
   point3_t init_pos = point3_t(1., 1., 1.);
-  var_pair_t res = setup_control_points(5, flag, init_pos);
+  var_pair_t res = setup_control_points(5, flag, init_pos, init_pos);
   T_linear_variable_t& vars = res.first;
   vartype exptecdvars[] = {constant, variable, variable,
                            variable, variable, constant};
