@@ -18,6 +18,7 @@ get_relative_rpath(${${wrap}_INSTALL_DIR} ${wrap}_INSTALL_RPATH)
 set_target_properties(
   ${wrap}
   PROPERTIES PREFIX ""
+             SUFFIX ${PYTHON_EXT_SUFFIX}
              OUTPUT_NAME ${PROJECT_NAME}
              INSTALL_RPATH "${${wrap}_INSTALL_RPATH}")
 cxx_flags_by_compiler_frontend(GNU -Wno-conversion OUTPUT PRIVATE_OPTIONS
