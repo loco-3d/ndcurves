@@ -1,0 +1,53 @@
+name: Build ndcurves for Windows via pixi
+
+on: [push, pull_request]
+
+jobs:
+  ndcurves-pixi:
+    name: "CI on ${{ matrix.os }} / python ${{ matrix.python-version }} with pixi"
+    runs-on: "${{ matrix.os }}"
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        python-version: ["3.9", "3.12"]
+        compiler: [cl, clang-cl]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: false
+          run-install: false
+      - name: Create pixi.toml
+        run: |
+          pixi init
+          pixi add cmake ^
+                   ninja ^
+                   cxx-compiler ^
+                   eigen ^
+                   eigenpy ^
+                   pinocchio ^
+                   libboost-devel ^
+                   libboost-python-devel
+
+      - name: Configure
+        shell: pixi run bash -e {0}
+        env:
+          COMPILER: ${{ matrix.compiler }}
+        run: |
+          export CXX=$COMPILER
+          cmake -B build \
+            -S . \
+            -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_PYTHON_INTERFACE=ON \
+            -DGENERATE_PYTHON_STUB=ON \
+            -DCURVES_WITH_PINOCCHIO_SUPPORT=ON
+      - name: Build
+        shell: pixi run bash -e {0}
+        run: cmake --build build
+      - name: Test
+        shell: pixi run bash -e {0}
+        run: cmake --build build -t test
