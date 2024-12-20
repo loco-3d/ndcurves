@@ -220,6 +220,20 @@ struct linear_variable : public serialization::Serializable {
     return (*this - other).norm() < prec;
   }
 
+  /// \brief Check if actual linear variable and other are equal.
+  /// \param other : the other linear_variable to check.
+  /// \return true if the two linear_variable are equals.
+  virtual bool operator==(const linear_variable& other) const {
+    return this->B_ == other.B_ && this->c_ == other.c_;
+  }
+
+  /// \brief Check if actual linear variable and other are different.
+  /// \param other : the other linear_variable to check.
+  /// \return true if the two linear_variable are different.
+  virtual bool operator!=(const linear_variable& other) const {
+    return !(*this == other);
+  }
+
   const matrix_x_t& B() const { return B_; }
   const vector_x_t& c() const { return c_; }
   bool isZero() const { return zero; }

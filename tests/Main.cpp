@@ -1432,7 +1432,7 @@ void piecewiseCurveTest(bool& error) {
     }
     // C0
     isC0 = pc_C0.is_continuous(0);
-    if (not isC0) {
+    if (!isC0) {
       std::cout << errmsg2 << " pc_C0 " << std::endl;
       error = true;
     }
@@ -1444,7 +1444,7 @@ void piecewiseCurveTest(bool& error) {
     }
     // C1
     isC1 = pc_C1.is_continuous(1);
-    if (not isC1) {
+    if (!isC1) {
       std::cout << errmsg3 << " pc_C1 " << std::endl;
       error = true;
     }
@@ -1456,7 +1456,7 @@ void piecewiseCurveTest(bool& error) {
     }
     // C2
     isC2 = pc_C2.is_continuous(2);
-    if (not isC2) {
+    if (!isC2) {
       std::cout << errmsg4 << " pc_C2 " << std::endl;
       error = true;
     }
