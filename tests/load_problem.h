@@ -19,7 +19,7 @@
 namespace ndcurves {
 
 typedef Eigen::Vector3d point_t;
-typedef std::vector<point_t, Eigen::aligned_allocator<point_t> > t_point_t;
+typedef std::vector<point_t, Eigen::aligned_allocator<point_t>> t_point_t;
 typedef Eigen::VectorXd pointX_t;
 typedef std::pair<double, pointX_t> Waypoint;
 typedef std::vector<Waypoint> T_Waypoint;
@@ -41,9 +41,10 @@ typedef quadratic_problem<point_t, double> problem_t;
 
 #define MAXBUFSIZE ((int)1e6)
 
-Eigen::MatrixXd readMatrix(std::ifstream& infile) {
+Eigen::MatrixXd readMatrix(std::ifstream &infile) {
   int cols = 0, rows = 0;
-  double buff[MAXBUFSIZE];
+  std::vector<double> buff;
+  buff.resize(MAXBUFSIZE);
 
   // Read numbers from file into buffer.
   // ifstream infile;
@@ -54,7 +55,8 @@ Eigen::MatrixXd readMatrix(std::ifstream& infile) {
 
     int temp_cols = 0;
     std::stringstream stream(line);
-    while (!stream.eof()) stream >> buff[cols * rows + temp_cols++];
+    while (!stream.eof())
+      stream >> buff[static_cast<size_t>(cols * rows + temp_cols++)];
 
     if (temp_cols == 0) continue;
 
@@ -73,7 +75,7 @@ Eigen::MatrixXd readMatrix(std::ifstream& infile) {
   return result;
 }
 
-problem_definition_t loadproblem(const std::string& filename) {
+problem_definition_t loadproblem(const std::string &filename) {
   problem_definition_t pDef(3);
   std::ifstream in(filename.c_str());
   if (!in.is_open()) throw std::runtime_error("cant open filename");
