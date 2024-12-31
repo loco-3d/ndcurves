@@ -18,9 +18,12 @@ get_relative_rpath(${${wrap}_INSTALL_DIR} ${wrap}_INSTALL_RPATH)
 set_target_properties(
   ${wrap}
   PROPERTIES PREFIX ""
+             SUFFIX ${PYTHON_EXT_SUFFIX}
              OUTPUT_NAME ${PROJECT_NAME}
              INSTALL_RPATH "${${wrap}_INSTALL_RPATH}")
-target_compile_options(${wrap} PRIVATE "-Wno-conversion")
+cxx_flags_by_compiler_frontend(GNU -Wno-conversion OUTPUT PRIVATE_OPTIONS
+                               FILTER)
+target_compile_options(${wrap} PRIVATE ${PRIVATE_OPTIONS})
 target_link_libraries(${wrap} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
 
 if(GENERATE_PYTHON_STUBS)

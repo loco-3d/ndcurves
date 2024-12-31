@@ -1432,7 +1432,7 @@ void piecewiseCurveTest(bool& error) {
     }
     // C0
     isC0 = pc_C0.is_continuous(0);
-    if (not isC0) {
+    if (!isC0) {
       std::cout << errmsg2 << " pc_C0 " << std::endl;
       error = true;
     }
@@ -1444,7 +1444,7 @@ void piecewiseCurveTest(bool& error) {
     }
     // C1
     isC1 = pc_C1.is_continuous(1);
-    if (not isC1) {
+    if (!isC1) {
       std::cout << errmsg3 << " pc_C1 " << std::endl;
       error = true;
     }
@@ -1456,7 +1456,7 @@ void piecewiseCurveTest(bool& error) {
     }
     // C2
     isC2 = pc_C2.is_continuous(2);
-    if (not isC2) {
+    if (!isC2) {
       std::cout << errmsg4 << " pc_C2 " << std::endl;
       error = true;
     }
@@ -2737,7 +2737,7 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialInit(bool& error) {
 void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
   constraint_flag flag = optimization::END_POS;
   point3_t init_pos = point3_t(1., 1., 1.);
-  var_pair_t res = setup_control_points(5, flag, init_pos);
+  var_pair_t res = setup_control_points(5, flag, init_pos, init_pos);
   T_linear_variable_t& vars = res.first;
   vartype exptecdvars[] = {variable, variable, variable,
                            variable, variable, constant};
@@ -2809,7 +2809,7 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialEnd(bool& error) {
 void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
   constraint_flag flag = END_POS | INIT_POS;
   point3_t init_pos = point3_t(1., 1., 1.);
-  var_pair_t res = setup_control_points(5, flag, init_pos);
+  var_pair_t res = setup_control_points(5, flag, init_pos, init_pos);
   T_linear_variable_t& vars = res.first;
   vartype exptecdvars[] = {constant, variable, variable,
                            variable, variable, constant};
@@ -2881,7 +2881,7 @@ void BezierLinearProblemsetup_control_pointsVarCombinatorialMix(bool& error) {
 void BezierLinearProblemInitInequalities(bool& error) {
   constraint_flag flag = INIT_POS | END_POS;
   point3_t init_pos = point3_t(1., 1., 1.);
-  var_pair_t res = setup_control_points(5, flag, init_pos);
+  var_pair_t res = setup_control_points(5, flag, init_pos, init_pos);
   T_linear_variable_t& vars = res.first;
   vartype exptecdvars[] = {constant, variable, variable,
                            variable, variable, constant};

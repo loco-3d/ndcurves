@@ -1,0 +1,72 @@
+name: Build ndcurves for Windows via conda
+
+on:
+  push:
+    branches:
+      - devel
+      - master
+  pull_request:
+    branches:
+      - devel
+      - master
+
+jobs:
+  ndcurves-conda:
+    name: "CI on ${{ matrix.os }} / compiler ${{ matrix.compiler }}  / python ${{ matrix.python-version }} with conda"
+    runs-on: "${{ matrix.os }}"
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        python-version: ["3.9", "3.12"]
+        compiler: [cl, clang-cl]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          channels: conda-forge
+          python-version: ${{ matrix.python-version }}
+          activate-environment: ndcurve
+
+      - name: Create conda environment
+        shell: bash -l {0}
+        run: |
+          conda install cmake \
+                        ninja \
+                        cxx-compiler \
+                        eigen \
+                        eigenpy \
+                        pinocchio \
+                        libboost-devel \
+                        libboost-python-devel
+
+      - name: Configure
+        shell: cmd /C CALL {0}
+        env:
+          COMPILER: ${{ matrix.compiler }}
+        run: |
+          set CC=${{ matrix.compiler }}
+          set CXX=${{ matrix.compiler }}
+
+          call conda info
+          call conda list
+
+          cmake -B build ^
+            -S . ^
+            -GNinja ^
+            -DCMAKE_INSTALL_PREFIX=%CONDA_PREFIX%\Library ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DPYTHON_SITELIB=%CONDA_PREFIX%\Lib\site-packages ^
+            -DPYTHON_EXECUTABLE=%CONDA_PREFIX%\python.exe ^
+            -DBUILD_PYTHON_INTERFACE=ON ^
+            -DGENERATE_PYTHON_STUB=ON ^
+            -DCURVES_WITH_PINOCCHIO_SUPPORT=ON
+      - name: Build
+        shell: cmd /C CALL {0}
+        run: cmake --build build -j2
+      - name: Test
+        shell: cmd /C CALL {0}
+        run: ctest --test-dir build --output-on-failure

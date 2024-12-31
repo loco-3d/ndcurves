@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(from_quat_and_time_constructor) {
 BOOST_AUTO_TEST_CASE(from_quat_and_time_generate) {
   // Create some start variables.
   quaternion_t init_quat = quaternion_t::UnitRandom();
-  matrix3_t init_rot = init_quat.toRotationMatrix();
+  matrix3_t init_rot = init_quat.normalized().toRotationMatrix();
   quaternion_t end_quat = quaternion_t::UnitRandom();
   matrix3_t end_rot = end_quat.toRotationMatrix();
   double t_min = generateRandomNumber(0.0, 100.0);

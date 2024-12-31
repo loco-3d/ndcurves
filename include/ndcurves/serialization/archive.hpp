@@ -118,7 +118,7 @@ struct Serializable {
   /// \brief Loads a Derived object from an binary file.
   template <class Derived>
   void loadFromBinary(const std::string& filename) {
-    std::ifstream ifs(filename.c_str());
+    std::ifstream ifs(filename.c_str(), std::ios::binary);
     if (ifs) {
       boost::archive::binary_iarchive ia(ifs);
       ia >> derived<Derived>();
@@ -132,7 +132,7 @@ struct Serializable {
   /// \brief Saved a Derived object as an binary file.
   template <class Derived>
   void saveAsBinary(const std::string& filename) const {
-    std::ofstream ofs(filename.c_str());
+    std::ofstream ofs(filename.c_str(), std::ios::binary);
     if (ofs) {
       boost::archive::binary_oarchive oa(ofs);
       oa << derived<Derived>();
