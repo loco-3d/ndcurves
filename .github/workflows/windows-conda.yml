@@ -1,6 +1,14 @@
 name: Build ndcurves for Windows via conda
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - devel
+      - master
+  pull_request:
+    branches:
+      - devel
+      - master
 
 jobs:
   ndcurves-conda:
