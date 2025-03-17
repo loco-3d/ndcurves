@@ -49,7 +49,7 @@ struct Bern {
     if (!(u >= 0. && u <= 1.)) {
       throw std::invalid_argument("u needs to be betwen 0 and 1.");
     }
-    return bin_m_i_ * (pow(u, i_))*pow((1 - u), m_minus_i);
+    return bin_m_i_ * (pow(u, i_)) * pow((1 - u), m_minus_i);
   }
 
   /// \brief Check if actual Bernstein polynomial and other are approximately
