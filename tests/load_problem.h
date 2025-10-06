@@ -41,7 +41,7 @@ typedef quadratic_problem<point_t, double> problem_t;
 
 #define MAXBUFSIZE ((int)1e6)
 
-Eigen::MatrixXd readMatrix(std::ifstream &infile) {
+Eigen::MatrixXd readMatrix(std::ifstream& infile) {
   int cols = 0, rows = 0;
   std::vector<double> buff;
   buff.resize(MAXBUFSIZE);
@@ -75,7 +75,7 @@ Eigen::MatrixXd readMatrix(std::ifstream &infile) {
   return result;
 }
 
-problem_definition_t loadproblem(const std::string &filename) {
+problem_definition_t loadproblem(const std::string& filename) {
   problem_definition_t pDef(3);
   std::ifstream in(filename.c_str());
   if (!in.is_open()) throw std::runtime_error("cant open filename");
