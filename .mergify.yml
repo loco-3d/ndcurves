@@ -1,18 +1,12 @@
 pull_request_rules:
-  - name: merge automatically when CI passes and PR is approved
+  - name: merge [bot] PRs when CI pass
     conditions:
-      - check-success = "CI on ubuntu-latest / python 3.8 with pip"
-      - check-success = "CI on ubuntu-latest / python 3.9 with pip"
-      - check-success = "CI on ubuntu-latest / python 3.10 with pip"
-      - check-success = "CI on ubuntu-latest / python 3.11 with pip"
-      - check-success = "CI on ubuntu-latest / python 3.12 with pip"
-      - check-success = "gitlab-ci"
-      - check-success = "nix (macos)"
-      - check-success = "nix (ubuntu)"
+      - check-success = "check-macos-linux-nix"
       - check-success = "pre-commit.ci - pr"
       - or:
-        - author = github-actions[bot]
-        - author = dependabot[bot]
-        - author = pre-commit-ci[bot]
+          - author = dependabot[bot]
+          - author = github-actions[bot]
+          - author = hrp2-14
+          - author = pre-commit-ci[bot]
     actions:
       merge:
