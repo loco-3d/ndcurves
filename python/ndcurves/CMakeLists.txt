@@ -24,7 +24,8 @@ set_target_properties(
 cxx_flags_by_compiler_frontend(GNU -Wno-conversion OUTPUT PRIVATE_OPTIONS
                                FILTER)
 target_compile_options(${wrap} PRIVATE ${PRIVATE_OPTIONS})
-target_link_libraries(${wrap} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
+target_link_libraries(${wrap} PUBLIC ${PROJECT_NAME}::${PROJECT_NAME}
+                                     eigenpy::eigenpy)
 
 if(GENERATE_PYTHON_STUBS)
   load_stubgen()

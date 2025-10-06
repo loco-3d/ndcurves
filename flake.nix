@@ -28,8 +28,8 @@
             program = pkgs.python3.withPackages (_: [ self'.packages.default ]);
           };
           packages = {
-            default = self'.packages.ndcurves;
-            ndcurves = pkgs.python3Packages.ndcurves.overrideAttrs {
+            default = self'.packages.py-ndcurves;
+            ndcurves = pkgs.ndcurves.overrideAttrs {
               src = lib.fileset.toSource {
                 root = ./.;
                 fileset = lib.fileset.unions [
@@ -42,6 +42,25 @@
                 ];
               };
             };
+            py-ndcurves = pkgs.python3Packages.toPythonModule (
+              self'.packages.ndcurves.overrideAttrs (super: {
+                pname = "py-${super.pname}";
+                cmakeFlags = super.cmakeFlags ++ [
+                  (lib.cmakeBool "BUILD_PYTHON_INTERFACE" true)
+                  (lib.cmakeBool "BUILD_STANDALONE_PYTHON_INTERFACE" true)
+                ];
+                nativeBuildInputs = super.nativeBuildInputs ++ [
+                  pkgs.python3Packages.python
+                ];
+                propagatedBuildInputs = [
+                  pkgs.python3Packages.pinocchio
+                  self'.packages.ndcurves
+                ] ++ super.propagatedBuildInputs;
+                nativeCheckInputs = [
+                  pkgs.python3Packages.pythonImportsCheckHook
+                ];
+              })
+            );
           };
         };
     };

@@ -1,20 +1,16 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.22)
 
 # Project properties
 set(PROJECT_ORG loco-3d)
 set(PROJECT_NAME ndcurves)
-set(PROJECT_DESCRIPTION "creatie and manipulate spline and bezier curves.")
+set(PROJECT_DESCRIPTION "create and manipulate spline and bezier curves.")
 set(PROJECT_URL "https://github.com/${PROJECT_ORG}/${PROJECT_NAME}")
 
 # Project options
-option(BUILD_PYTHON_INTERFACE "Build the python bindings" ON)
-option(INSTALL_PYTHON_INTERFACE_ONLY "Install *ONLY* the python bindings" OFF)
 option(SUFFIX_SO_VERSION "Suffix library name with its version" ON)
 
 # Project configuration
-if(NOT INSTALL_PYTHON_INTERFACE_ONLY)
-  set(PROJECT_USE_CMAKE_EXPORT TRUE)
-endif(NOT INSTALL_PYTHON_INTERFACE_ONLY)
+set(PROJECT_USE_CMAKE_EXPORT TRUE)
 set(CXX_DISABLE_WERROR TRUE)
 
 # JRL-cmakemodule setup
@@ -29,14 +25,6 @@ else()
       TARGET jrl-cmakemodules::jrl-cmakemodules
       PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
     message(STATUS "JRL cmakemodules found on system at ${JRL_CMAKE_MODULES}")
-  elseif(${CMAKE_VERSION} VERSION_LESS "3.14.0")
-    message(
-      FATAL_ERROR
-        "\nCan't find jrl-cmakemodules. Please either:\n"
-        "  - use git submodule: 'git submodule update --init'\n"
-        "  - or install https://github.com/jrl-umi3218/jrl-cmakemodules\n"
-        "  - or upgrade your CMake version to >= 3.14 to allow automatic fetching\n"
-    )
   else()
     message(STATUS "JRL cmakemodules not found. Let's fetch it.")
     include(FetchContent)
@@ -65,8 +53,6 @@ project(${PROJECT_NAME} ${PROJECT_ARGS})
 check_minimal_cxx_standard(14 ENFORCE)
 
 # Project dependencies
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/find-external/CppAD/"
-                      ${CMAKE_MODULE_PATH})
 find_package(Eigen3 QUIET NO_CMAKE_PACKAGE_REGISTRY)
 if(Eigen3_FOUND)
   add_project_dependency(Eigen3 REQUIRED NO_CMAKE_PACKAGE_REGISTRY
@@ -95,7 +81,7 @@ add_project_dependency(Boost REQUIRED COMPONENTS serialization)
 if(BUILD_PYTHON_INTERFACE)
   add_project_dependency(eigenpy 3.0.0 REQUIRED PKG_CONFIG_REQUIRES
                          "eigenpy >= 3.0.0")
-endif(BUILD_PYTHON_INTERFACE)
+endif()
 
 # Main Library
 set(${PROJECT_NAME}_HEADERS
@@ -130,41 +116,47 @@ set(${PROJECT_NAME}_HEADERS
     include/${PROJECT_NAME}/so3_linear.h
     include/${PROJECT_NAME}/so3_smooth.h)
 
-add_library(${PROJECT_NAME} INTERFACE)
-modernize_target_link_libraries(
-  ${PROJECT_NAME}
-  SCOPE
-  INTERFACE
-  TARGETS
-  Eigen3::Eigen
-  INCLUDE_DIRS
-  ${EIGEN3_INCLUDE_DIR})
-target_include_directories(
-  ${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-                            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-target_link_libraries(${PROJECT_NAME} INTERFACE Boost::serialization)
-if(CURVES_WITH_PINOCCHIO_SUPPORT)
-  target_link_libraries(${PROJECT_NAME} INTERFACE pinocchio::pinocchio)
-  target_compile_definitions(${PROJECT_NAME}
-                             INTERFACE -DCURVES_WITH_PINOCCHIO_SUPPORT)
-endif(CURVES_WITH_PINOCCHIO_SUPPORT)
+if(BUILD_STANDALONE_PYTHON_INTERFACE)
+  add_project_dependency(${PROJECT_NAME} REQUIRED)
+  set(PROJECT_EXPORT_NO_TARGET ON)
+else()
+  add_library(${PROJECT_NAME} INTERFACE)
+  add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+  modernize_target_link_libraries(
+    ${PROJECT_NAME}
+    SCOPE
+    INTERFACE
+    TARGETS
+    Eigen3::Eigen
+    INCLUDE_DIRS
+    ${EIGEN3_INCLUDE_DIR})
+  target_include_directories(
+    ${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                              $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  target_link_libraries(${PROJECT_NAME} INTERFACE Boost::serialization)
+  if(CURVES_WITH_PINOCCHIO_SUPPORT)
+    target_link_libraries(${PROJECT_NAME} INTERFACE pinocchio::pinocchio)
+    target_compile_definitions(${PROJECT_NAME}
+                               INTERFACE -DCURVES_WITH_PINOCCHIO_SUPPORT)
+  endif(CURVES_WITH_PINOCCHIO_SUPPORT)
 
-# Define M_PI constant in <cmath>
-cxx_flags_by_compiler_frontend(MSVC _USE_MATH_DEFINES OUTPUT PUBLIC_DEFINITION)
-target_compile_definitions(${PROJECT_NAME} INTERFACE ${PUBLIC_DEFINITION})
+  # Define M_PI constant in <cmath>
+  cxx_flags_by_compiler_frontend(MSVC _USE_MATH_DEFINES OUTPUT
+                                 PUBLIC_DEFINITION)
+  target_compile_definitions(${PROJECT_NAME} INTERFACE ${PUBLIC_DEFINITION})
+endif()
 
-if(NOT INSTALL_PYTHON_INTERFACE_ONLY)
+if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   install(
     TARGETS ${PROJECT_NAME}
     EXPORT ${TARGETS_EXPORT_NAME}
     DESTINATION lib)
-  install(FILES package.xml DESTINATION share/${PROJECT_NAME})
-endif(NOT INSTALL_PYTHON_INTERFACE_ONLY)
+endif()
 
 if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
 endif(BUILD_PYTHON_INTERFACE)
 
-if(BUILD_TESTING)
+if(BUILD_TESTING AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   add_subdirectory(tests)
 endif()
