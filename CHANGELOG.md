@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 1980-01-01
+
 - tooling & packaging updates
 
 ## [2.0.0] - 2024-12-05
@@ -182,7 +184,8 @@ Changes since v0.2.0:
 
 - Initial release
 
-[Unreleased]: https://github.com/loco-3d/ndcurves/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/loco-3d/ndcurves/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/loco-3d/ndcurves/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/loco-3d/ndcurves/compare/v1.4.1...v2.0.0
 [1.4.1]: https://github.com/loco-3d/ndcurves/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/loco-3d/ndcurves/compare/v1.3.1...v1.4.0
