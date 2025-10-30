@@ -76,12 +76,12 @@ endif(CURVES_WITH_PINOCCHIO_SUPPORT)
 set(PACKAGE_EXTRA_MACROS
     "SET(CURVES_WITH_PINOCCHIO_SUPPORT ${CURVES_WITH_PINOCCHIO_SUPPORT})")
 
-add_project_dependency(Boost REQUIRED COMPONENTS serialization)
-
 if(BUILD_PYTHON_INTERFACE)
   add_project_dependency(eigenpy 3.0.0 REQUIRED PKG_CONFIG_REQUIRES
                          "eigenpy >= 3.0.0")
 endif()
+
+add_project_dependency(Boost REQUIRED COMPONENTS serialization)
 
 # Main Library
 set(${PROJECT_NAME}_HEADERS
