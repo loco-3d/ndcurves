@@ -24,6 +24,7 @@
   <depend>eigenpy</depend>
   <depend>graphviz</depend>
   <depend>pinocchio</depend>
+  <depend>jrl_cmakemodules</depend>
 
   <export>
     <build_type>cmake</build_type>
