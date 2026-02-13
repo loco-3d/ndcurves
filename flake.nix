@@ -44,7 +44,7 @@
             };
             packages = {
               default = self'.packages.ndcurves;
-              ndcurves = pkgs.python3Packages.ndcurves.override { standalone = false; };
+              ndcurves = pkgs.python3Packages.ndcurves.override { buildStandalone = false; };
             };
           };
       }
