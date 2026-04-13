@@ -18,7 +18,7 @@
           {
             flakoboros = {
               extraDevPyPackages = [ "ndcurves" ];
-              overrideAttrs.ndcurves = _: {
+              overrideAttrs.ndcurves = {
                 src = lib.fileset.toSource {
                   root = ./.;
                   fileset = lib.fileset.unions [
