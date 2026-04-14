@@ -97,11 +97,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1775937477,
-        "narHash": "sha256-X5ctO+LWWL6BsshJ2aKgXDdqcQtj1BK75JxidhyV1UE=",
+        "lastModified": 1776113076,
+        "narHash": "sha256-rQp/6mgQc4szevay50RbGXOXwL3xC7oHktywFPrmbAM=",
         "owner": "gepetto",
         "repo": "flakoboros",
-        "rev": "89191b517bacdf1116ff7d7c97785c05ebdd192f",
+        "rev": "07a89fe2a47f2f0364e795cf3e69c045de14a3b2",
         "type": "github"
       },
       "original": {
@@ -148,11 +148,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1776087343,
-        "narHash": "sha256-h68bVp9EOsqtuRSaaNnhst0+mTeB6wJsYoKusZYnVqM=",
+        "lastModified": 1776113232,
+        "narHash": "sha256-VtzAiez4xLmUY/TrQ31ECKjnOFDrnorQcu6WfsAF2nk=",
         "owner": "gepetto",
         "repo": "gazebros2nix",
-        "rev": "0bf6ae2988c15786f8bee74f5dba7f8adaaa0942",
+        "rev": "43783392a112e894b857bdb56ede7044437069f4",
         "type": "github"
       },
       "original": {
@@ -199,11 +199,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1776088787,
-        "narHash": "sha256-9Q0xufnt4AB/k6SCdFCGab8dBhbz5Li7Vt6bQCrodmo=",
+        "lastModified": 1776179705,
+        "narHash": "sha256-7mrCYnNjgnB5wVjL2Mk6ND0mgrkgSM3A+dbjqbXp31s=",
         "owner": "gepetto",
         "repo": "nix",
-        "rev": "0d5b8d94a1a39c9a933004f48842d1a7f94272b4",
+        "rev": "20b24c29f89877ff627e1a3e1c9cede1d5febcb4",
         "type": "github"
       },
       "original": {
@@ -416,15 +416,7 @@
     },
     "root": {
       "inputs": {
-        "flake-parts": [
-          "gepetto",
-          "flake-parts"
-        ],
-        "gepetto": "gepetto",
-        "systems": [
-          "gepetto",
-          "systems"
-        ]
+        "gepetto": "gepetto"
       }
     },
     "system-manager": {
@@ -437,11 +429,11 @@
         "userborn": "userborn"
       },
       "locked": {
-        "lastModified": 1776087471,
-        "narHash": "sha256-64JrixQoIOy4xChAt2XRgn5H3m/dr8RVkrTz3EoopKU=",
+        "lastModified": 1776108115,
+        "narHash": "sha256-QDa17vvigUyEAk/kTkDHOBFqmbWIe7aZDCjSgl9BG2c=",
         "owner": "numtide",
         "repo": "system-manager",
-        "rev": "96b4bf07f8431fbb173dea39e7804ec9e5a5cebd",
+        "rev": "e028253c2f1ea1b3eba2ce84ae8f770d823fe4ac",
         "type": "github"
       },
       "original": {
