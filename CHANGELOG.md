@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- CMake: remove submodule
+- nix: switch to flakoboros
+- format: switch to gersemi
+
 ## [2.1.1] - 2026-02-11
 
 - Add jrl-cmakemodules to the package.xml as "depend"
