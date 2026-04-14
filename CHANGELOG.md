@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-04-14
+
 - CMake: remove submodule
 - nix: switch to flakoboros
 - format: switch to gersemi
@@ -192,7 +194,8 @@ Changes since v0.2.0:
 
 - Initial release
 
-[Unreleased]: https://github.com/loco-3d/ndcurves/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/loco-3d/ndcurves/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/loco-3d/ndcurves/compare/v2.1.1...v2.3.0
 [2.1.1]: https://github.com/loco-3d/ndcurves/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/loco-3d/ndcurves/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/loco-3d/ndcurves/compare/v1.4.1...v2.0.0
