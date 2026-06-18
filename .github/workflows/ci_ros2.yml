@@ -2,6 +2,7 @@ name: ROS2 Continuous Integration
 on:
   push:
     branches:
+      - devel
       - main
   pull_request:
 jobs:
