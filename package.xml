@@ -2,14 +2,12 @@
 <package format="3">
   <name>ndcurves</name>
   <version>2.3.0</version>
-  <description>
-      A template-based Library for creating curves of arbitrary order and dimension
-  </description>
+  <description>A template-based Library for creating curves of arbitrary order and dimension</description>
   <maintainer email="guilhem.saurel@laas.fr">Guilhem Saurel</maintainer>
   <author>Pierre Fernbach</author>
   <author>Steve Tonneau</author>
   <author>Jason Chemin</author>
-  <license>BSD</license>
+  <license>BSD-2-Clause</license>
 
   <url>http://github.com/loco-3d/ndcurves</url>
 
