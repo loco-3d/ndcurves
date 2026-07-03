@@ -1,0 +1,6 @@
+[ndcurves]
+src_deps = ["pinocchio"]
+url = "."
+
+[pinocchio]
+url = "github:stack-of-tasks"
